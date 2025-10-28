@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Intelligent Airport Check-in System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Welcome to the Intelligent Airport Check-in System</h1>
+    <p>This is the frontend interface (placeholder).</p>
+</body>
+</html>
