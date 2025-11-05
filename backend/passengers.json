@@ -1,0 +1,28 @@
+[
+    {
+        "name": "Gabriel Onsomu Kebiro",
+        "passport": "54321",
+        "flight": "FL-1234",
+        "seat": 1,
+        "email": "kebirogabriel@gmail.com"
+    },
+    {
+        "name": "John Smith",
+        "passport": "PS123456",
+        "flight": "FL-1234",
+        "seat": "6A",
+        "email": "johnsmith@example.com",
+        "baggage_count": 0,
+        "baggage_details": null,
+        "baggage_fee": 0,
+        "baggage_paid": true,
+        "checked_in": true
+    },
+    {
+        "name": "Ashley Mwende",
+        "passport": "TS654321",
+        "email": "ashleymwende47@gmail.com",
+        "phone": "0714259032",
+        "checked_in": false
+    }
+]

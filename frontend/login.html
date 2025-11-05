@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Login - Intelligent Airport</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="login-hero">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="logo">IA</div>
+        <div>
+          <h1>Intelligent Airport</h1>
+          <div class="muted">Secure check-in and boarding</div>
+        </div>
+      </div>
+
+      <p class="lead">Sign in as a passenger or admin to continue.</p>
+
+      <form id="loginForm">
+        <div class="role-row">
+          <label class="muted">Role</label>
+          <select id="role">
+            <option value="passenger">Passenger</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div id="passengerFields">
+          <div class="field"><label>Passport</label><input id="p_passport" placeholder="Passport number" /></div>
+          <div class="field"><label>Access code</label><input id="p_code" placeholder="6-digit code" /></div>
+          <p class="muted">If you don't have a code, use the lookup page to request one.</p>
+        </div>
+
+        <div id="adminFields" style="display:none">
+          <div class="field"><label>Username</label><input id="a_user" placeholder="Admin username" /></div>
+          <div class="field"><label>Password</label><input id="a_pass" type="password" placeholder="Password" /></div>
+        </div>
+
+        <div class="login-actions">
+          <button class="btn primary large" type="submit">Login</button>
+        </div>
+      </form>
+
+      <p style="text-align:center;margin-top:12px"><a class="small-link" href="/lookup">Find your booking</a></p>
+    </div>
+  </div>
+
+  <script>
+    const roleEl = document.getElementById('role');
+    const passengerFields = document.getElementById('passengerFields');
+    const adminFields = document.getElementById('adminFields');
+
+    roleEl.addEventListener('change', () => {
+      if (roleEl.value === 'admin') {
+        passengerFields.style.display = 'none';
+        adminFields.style.display = 'block';
+      } else {
+        passengerFields.style.display = 'block';
+        adminFields.style.display = 'none';
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const role = roleEl.value;
+      const tokenField = localStorage;
+      if (role === 'passenger') {
+        const passport = document.getElementById('p_passport').value.trim();
+        const code = document.getElementById('p_code').value.trim();
+        const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ role: 'passenger', passport, code }) });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('session', data.token);
+          document.cookie = `session=${data.token};path=/`;
+          window.location = '/passenger.html';
+        } else {
+          alert(data.error || data.detail || 'Login failed');
+        }
+      } else {
+        const username = document.getElementById('a_user').value.trim();
+        const password = document.getElementById('a_pass').value.trim();
+        const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ role: 'admin', username, password }) });
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem('session', data.token);
+          document.cookie = `session=${data.token};path=/`;
+          window.location = '/admin/merged-dashboard.html';
+        } else {
+          alert(data.error || data.detail || 'Login failed');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

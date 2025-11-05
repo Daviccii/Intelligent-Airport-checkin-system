@@ -1,5 +1,0 @@
-def main():
-    print("Welcome to the Intelligent Airport Check-in System!")
-
-if __name__ == "__main__":
-    main()

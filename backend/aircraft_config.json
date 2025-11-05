@@ -1,0 +1,38 @@
+{
+  "B737": {
+    "name": "Boeing 737-800",
+    "capacity": 189,
+    "seat_map": {
+      "rows": 32,
+      "columns": 6,
+      "layout": "3-3",
+      "blocked_seats": ["1A", "1F"],
+      "emergency_exits": [15, 16],
+      "priority_seats": ["12A", "12B", "12C", "12D", "12E", "12F"]
+    }
+  },
+  "A320": {
+    "name": "Airbus A320",
+    "capacity": 180,
+    "seat_map": {
+      "rows": 30,
+      "columns": 6,
+      "layout": "3-3",
+      "blocked_seats": ["1A", "1F"],
+      "emergency_exits": [13, 14],
+      "priority_seats": ["11A", "11B", "11C", "11D", "11E", "11F"]
+    }
+  },
+  "B777": {
+    "name": "Boeing 777-300ER",
+    "capacity": 396,
+    "seat_map": {
+      "rows": 44,
+      "columns": 9,
+      "layout": "3-3-3",
+      "blocked_seats": ["1A", "1K"],
+      "emergency_exits": [20, 21],
+      "priority_seats": ["15A", "15B", "15C", "15D", "15E", "15F", "15G", "15H", "15K"]
+    }
+  }
+}

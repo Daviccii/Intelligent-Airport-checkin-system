@@ -1,6 +1,48 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
-    text-align: center;
-    margin-top: 50px;
+:root{
+    --bg:#f4f7fb;
+    --card:#ffffff;
+    --accent:#0b74de;
+    --muted:#6b7280;
+    --success:#1f9d55;
+    --danger:#d03d3d;
+    --radius:10px;
+    --maxw:980px;
+}
+
+*{box-sizing:border-box;font-family:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+body{margin:0;background:linear-gradient(180deg,#eaf2ff 0%,var(--bg) 100%);color:#0f1724}
+.container{max-width:var(--maxw);margin:20px auto;padding:0 16px}
+
+.topbar{background:var(--accent);color:#fff;padding:22px 0;border-bottom-left-radius:18px;border-bottom-right-radius:18px}
+.topbar h1{margin:0;font-weight:600}
+.topbar .subtitle{margin:6px 0 0;color:rgba(255,255,255,0.9)}
+
+.panel{background:var(--card);padding:18px;border-radius:var(--radius);box-shadow:0 6px 18px rgba(15,23,36,0.06);margin-bottom:16px}
+.panel h2{margin:0 0 12px;font-size:18px}
+.form .row{display:flex;flex-direction:column;margin-bottom:10px}
+.form label{font-size:13px;color:var(--muted);margin-bottom:6px}
+.form input{padding:10px;border:1px solid #e6e9ef;border-radius:8px;font-size:15px}
+.actions{display:flex;gap:8px;align-items:center;margin-top:8px}
+.btn{padding:9px 12px;border-radius:8px;border:1px solid #d6dbe6;background:#fff;cursor:pointer;font-weight:600}
+.btn.primary{background:var(--accent);color:#fff;border:none;box-shadow:0 6px 14px rgba(11,116,222,0.18)}
+.btn:active{transform:translateY(1px)}
+
+.message{margin-top:10px;padding:10px;border-radius:8px;display:inline-block}
+.message.success{background:rgba(31,157,85,0.1);color:var(--success);border:1px solid rgba(31,157,85,0.12)}
+.message.error{background:rgba(208,61,61,0.06);color:var(--danger);border:1px solid rgba(208,61,61,0.08)}
+
+.list-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.list-header .controls{display:flex;gap:8px;align-items:center}
+.list-header input{padding:8px;border-radius:8px;border:1px solid #e6e9ef}
+
+.table-wrapper{overflow:auto}
+.pass-table{width:100%;border-collapse:collapse}
+.pass-table th, .pass-table td{padding:10px 8px;text-align:left;border-bottom:1px solid #f1f3f7;font-size:14px}
+.pass-table thead th{background:#fafbff;position:sticky;top:0}
+.empty{padding:14px;color:var(--muted)}
+
+.footer{padding:12px 0;text-align:center;color:var(--muted);font-size:13px}
+@media (min-width:900px){
+    main.container{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    .panel:first-child{min-height:230px}
 }

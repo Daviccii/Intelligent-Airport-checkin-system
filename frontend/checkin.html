@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Check-in — Intelligent Airport</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container" style="padding-top:40px;">
+    <h1>Check-in</h1>
+    <p>Quick check-in page. Use this when scanning or entering passport to find passengers.</p>
+
+    <div class="panel">
+      <label for="q">Search by passport or name</label>
+      <input id="q" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #e6e9ef;" />
+      <div id="results" style="margin-top:12px"></div>
+    </div>
+
+    <div class="panel">
+      <h3>Facial enroll / verify (mock)</h3>
+      <p>Enroll a passport image then verify by uploading a live image (mock similarity).</p>
+        <!-- Consent modal trigger: ensures user gives consent before biometric capture -->
+        <div id="consentBanner" style="margin-top:8px;">
+          <button id="openConsent" class="btn">Biometric enrollment requires consent — Click to review</button>
+        </div>
+      <label for="enroll_passport">Passport to enroll</label>
+      <input id="enroll_passport" placeholder="e.g. X1234567" />
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <input id="enroll_image" type="file" accept="image/*" />
+        <button id="enrollFromCam" class="btn">Capture & Enroll (camera)</button>
+        <button id="enrollBtn" class="btn">Upload Enroll</button>
+      </div>
+
+      <hr />
+
+      <label for="verify_passport">Passport to verify</label>
+      <input id="verify_passport" placeholder="e.g. X1234567" />
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <input id="verify_image" type="file" accept="image/*" />
+        <button id="verifyFromCam" class="btn primary">Capture & Verify (camera)</button>
+        <button id="verifyBtn" class="btn primary">Upload Verify</button>
+      </div>
+      <div id="faceResult" style="margin-top:10px"></div>
+    </div>
+
+    <div class="panel" id="cameraPanel" style="display:none">
+      <h3>Camera</h3>
+      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <video id="camPreview" autoplay playsinline style="width:320px;height:240px;background:#000;border-radius:8px"></video>
+        <div>
+          <canvas id="camCanvas" width="320" height="240" style="display:none"></canvas>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <button id="startCam" class="btn">Start Camera</button>
+            <button id="stopCam" class="btn">Stop Camera</button>
+            <button id="captureBtn" class="btn primary">Capture</button>
+          </div>
+          <div id="camStatus" style="margin-top:8px;color:#6b7280"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consent Modal -->
+  <div id="consentModal" class="consent-modal" aria-hidden="true">
+    <div class="consent-modal__backdrop"></div>
+    <div class="consent-modal__box" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
+      <h2 id="consentTitle">Biometric Data Consent</h2>
+      <p>By enrolling your biometric data (face image) you consent to it being used for identity verification for check-in and boarding pass issuance. Data will be stored securely and retained only for the duration necessary for flight processing (configurable). You can withdraw consent at any time.</p>
+      <p><strong>Key points:</strong></p>
+      <ul>
+        <li>Purpose: identity verification for check-in.</li>
+        <li>Retention: temporary; deleted on request.</li>
+        <li>Storage: encrypted at rest in production (demo stores locally).</li>
+      </ul>
+      <label style="display:block;margin-top:8px"><input type="checkbox" id="consentCheckbox" /> I have read and agree to the biometric data usage above.</label>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+        <button id="consentCancel" class="btn">Cancel</button>
+        <button id="consentAccept" class="btn primary" disabled>Accept and Continue</button>
+      </div>
+    </div>
+  </div>
+<script>
+async function search(q){
+  try{
+    const res = await fetch('/api/passengers');
+    const list = await res.json();
+    const out = list.filter(p => (p.passport||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q));
+    const el = document.getElementById('results');
+    if(!out.length) return el.innerHTML = '<div class="empty">No matching passenger</div>';
+    el.innerHTML = out.map(p=>`<div style="padding:8px;border-bottom:1px solid #eee">${p.name} — ${p.passport} — ${p.flight} — seat ${p.seat}</div>`).join('');
+  }catch(e){ console.error(e); }
+}
+let t;
+document.getElementById('q').addEventListener('input', e=>{
+  const v = e.target.value.trim().toLowerCase();
+  clearTimeout(t); t = setTimeout(()=>search(v),200);
+});
+
+function readFileAsFormData(input){
+  const fd = new FormData();
+  return new Promise((resolve, reject)=>{
+    const file = input.files && input.files[0];
+    if(!file) return resolve(null);
+    resolve({file});
+  });
+}
+
+document.getElementById('enrollBtn').addEventListener('click', async ()=>{
+  const passport = document.getElementById('enroll_passport').value.trim();
+  const fileInput = document.getElementById('enroll_image');
+  if(!passport || !fileInput.files.length){ alert('passport and image required'); return; }
+  const fd = new FormData(); fd.append('passport', passport); fd.append('image', fileInput.files[0]);
+  const res = await fetch('/api/face/enroll', {method:'POST', body: fd});
+  const body = await res.json();
+  if(res.ok) alert('Enrolled: ' + passport); else alert('Enroll failed: ' + (body.error||JSON.stringify(body)));
+});
+
+document.getElementById('verifyBtn').addEventListener('click', async ()=>{
+  const passport = document.getElementById('verify_passport').value.trim();
+  const fileInput = document.getElementById('verify_image');
+  const out = document.getElementById('faceResult'); out.innerHTML='';
+  if(!passport || !fileInput.files.length){ out.textContent='passport and image required'; return; }
+  const fd = new FormData(); fd.append('passport', passport); fd.append('image', fileInput.files[0]);
+  const res = await fetch('/api/face/verify', {method:'POST', body: fd});
+  const body = await res.json();
+    if(res.ok){
+    out.innerHTML = `<div>Match: ${body.match} — score: ${body.score}</div>`;
+    if(body.match){
+      // Navigate directly to the boarding pass page
+      window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(passport);
+    }
+  } else {
+    out.textContent = body.error || 'verify failed';
+  }
+});
+
+// Camera support
+let stream = null;
+const camPanel = document.getElementById('cameraPanel');
+const camPreview = document.getElementById('camPreview');
+const camCanvas = document.getElementById('camCanvas');
+const camStatus = document.getElementById('camStatus');
+
+async function startCamera(){
+  if(stream) return;
+  try{
+    stream = await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}, audio:false});
+    camPreview.srcObject = stream;
+    camPanel.style.display = 'block';
+    camStatus.textContent = 'Camera started';
+  }catch(err){
+    camStatus.textContent = 'Camera error: ' + (err.message||err);
+  }
+}
+
+function stopCamera(){
+  if(!stream) return;
+  stream.getTracks().forEach(t=>t.stop());
+  stream = null;
+  camPreview.srcObject = null;
+  camPanel.style.display = 'none';
+  camStatus.textContent = 'Camera stopped';
+}
+
+function captureBlob(){
+  return new Promise((resolve,reject)=>{
+    try{
+      const ctx = camCanvas.getContext('2d');
+      ctx.drawImage(camPreview, 0, 0, camCanvas.width, camCanvas.height);
+      camCanvas.toBlob(blob=>{
+        resolve(blob);
+      }, 'image/jpeg', 0.9);
+    }catch(e){ reject(e); }
+  });
+}
+
+document.getElementById('startCam').addEventListener('click', ()=>startCamera());
+document.getElementById('stopCam').addEventListener('click', ()=>stopCamera());
+document.getElementById('captureBtn').addEventListener('click', async ()=>{
+  camStatus.textContent = 'Capturing...';
+  try{
+    const blob = await captureBlob();
+    camStatus.textContent = 'Captured image';
+    // Put the last capture into a temporary data attribute so capture enrol/verify buttons can use it
+    camPreview.dataset.lastcapture = URL.createObjectURL(blob);
+    camPreview.lastBlob = blob;
+  }catch(e){ camStatus.textContent = 'Capture failed'; }
+});
+
+// Helper to send a blob to enroll/verify
+async function sendBlobFor(action, passport, blob){
+  const fd = new FormData(); fd.append('passport', passport); fd.append('image', blob, 'capture.jpg');
+  const res = await fetch(action, {method:'POST', body: fd});
+  return res;
+}
+
+// Hook camera capture enroll/verify buttons
+document.getElementById('enrollFromCam').addEventListener('click', async ()=>{
+  const passport = document.getElementById('enroll_passport').value.trim();
+  if(!passport){ alert('Enter passport to enroll'); return; }
+  if(!camPreview.lastBlob){
+    // auto start and capture once
+    await startCamera();
+    camStatus.textContent = 'Please position subject and click Capture then click Capture & Enroll';
+    return;
+  }
+  const res = await sendBlobFor('/api/face/enroll', passport, camPreview.lastBlob);
+  const body = await res.json();
+  if(res.ok){ alert('Enrolled from camera: ' + passport); } else { alert('Enroll failed: ' + (body.error||JSON.stringify(body))); }
+});
+
+document.getElementById('verifyFromCam').addEventListener('click', async ()=>{
+  const passport = document.getElementById('verify_passport').value.trim();
+  const out = document.getElementById('faceResult'); out.innerHTML='';
+  if(!passport){ out.textContent='Enter passport to verify'; return; }
+  if(!camPreview.lastBlob){
+    await startCamera();
+    camStatus.textContent = 'Please position subject and click Capture then click Capture & Verify';
+    return;
+  }
+  const res = await sendBlobFor('/api/face/verify', passport, camPreview.lastBlob);
+  const body = await res.json();
+  if(res.ok){
+    out.innerHTML = `<div>Match: ${body.match} — score: ${body.score}</div>`;
+    if(body.match){
+      // Navigate to boarding pass on success
+      window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(passport);
+    }
+  } else {
+    out.textContent = body.error || 'verify failed';
+  }
+});
+
+// Consent modal logic
+const consentModal = document.getElementById('consentModal');
+const consentCheckbox = document.getElementById('consentCheckbox');
+const consentAccept = document.getElementById('consentAccept');
+const consentCancel = document.getElementById('consentCancel');
+const openConsent = document.getElementById('openConsent');
+
+function hasConsent(){
+  return localStorage.getItem('biometricConsent') === 'true';
+}
+
+function showConsent(){
+  consentModal.setAttribute('aria-hidden','false');
+  consentCheckbox.checked = false;
+  consentAccept.disabled = true;
+}
+
+function hideConsent(){
+  consentModal.setAttribute('aria-hidden','true');
+}
+
+openConsent.addEventListener('click', (e)=>{ showConsent(); });
+consentCheckbox.addEventListener('change', ()=>{ consentAccept.disabled = !consentCheckbox.checked; });
+consentCancel.addEventListener('click', ()=>{ hideConsent(); });
+consentAccept.addEventListener('click', ()=>{
+  localStorage.setItem('biometricConsent', 'true');
+  hideConsent();
+  // optionally auto-start camera when accepted
+  startCamera();
+});
+
+// enforce consent when attempting camera or enroll/verify actions
+function requireConsentOrShow(){
+  if(!hasConsent()){
+    showConsent();
+    return false;
+  }
+  return true;
+}
+
+// Patch start camera/enroll/verify buttons to require consent
+const startBtn = document.getElementById('startCam');
+const enrollCamBtn = document.getElementById('enrollFromCam');
+const verifyCamBtn = document.getElementById('verifyFromCam');
+startBtn.addEventListener('click', ()=>{ if(requireConsentOrShow()){ startCamera(); } });
+enrollCamBtn.addEventListener('click', async (e)=>{ if(!hasConsent()){ showConsent(); return; } /* original handler remains attached above */ });
+verifyCamBtn.addEventListener('click', async (e)=>{ if(!hasConsent()){ showConsent(); return; } /* original handler remains attached above */ });
+
+// If consent already given, hide banner
+if(hasConsent()){
+  const banner = document.getElementById('consentBanner'); if(banner) banner.style.display='none';
+}
+</script>
+</body>
+</html>

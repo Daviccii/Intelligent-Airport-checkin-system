@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SmartFly</title>
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            background: #1a2b3c;
+            color: white;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+            width: 250px;
+            overflow-y: auto;
+        }
+
+        .admin-content {
+            margin-left: 250px;
+            padding: 30px;
+            background: #f8fafc;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 30px;
+        }
+
+        .admin-logo .logo {
+            width: 35px;
+            height: 35px;
+        }
+
+        .admin-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .admin-menu li {
+            margin-bottom: 5px;
+        }
+
+        .admin-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            color: #a0aec0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .admin-menu a:hover, .admin-menu a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .admin-menu svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 5px;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a2b3c;
+        }
+
+        .data-table {
+            width: 100%;
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 30px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .data-table th {
+            background: #f8fafc;
+            font-weight: 500;
+            color: var(--muted);
+        }
+
+        .data-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .tab-container {
+            margin-bottom: 20px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-content > div {
+            display: none;
+        }
+
+        .tab-content > div.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-badge.warning {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .status-badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                </div>
+                <h2 class="logo-text">SmartFly</h2>
+            </div>
+
+            <nav>
+                <ul class="admin-menu">
+                    <li>
+                        <a href="#" class="active" onclick="showTab('dashboard')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showTab('flights')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                            </svg>
+                            Flights
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showTab('passengers')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            Passengers
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showTab('bookings')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                            Bookings
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showTab('users')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            Admin Users
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#" onclick="showTab('settings')">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                            </svg>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="admin-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-header">
+                    <h1>Dashboard</h1>
+                    <div class="header-actions">
+                        <button class="btn" onclick="exportReport()">Export Report</button>
+                        <button class="btn btn-danger" onclick="deleteAllPassengers()" style="margin-left: 10px;">Delete All Passengers</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card" id="totalPassengers">
+                        <h3>Total Passengers</h3>
+                        <div class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card" id="activeFlights">
+                        <h3>Active Flights</h3>
+                        <div class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card" id="checkedIn">
+                        <h3>Checked In</h3>
+                        <div class="stat-value">Loading...</div>
+                    </div>
+                    <div class="stat-card" id="totalRevenue">
+                        <h3>Total Revenue</h3>
+                        <div class="stat-value">Loading...</div>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <h2>Recent Activity</h2>
+                    <div id="recentActivity">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Action</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="activityLog">
+                                <!-- Activity logs will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Flights Tab -->
+            <div id="flights" class="tab-content">
+                <div class="dashboard-header">
+                    <h1>Flight Management</h1>
+                    <div class="header-actions">
+                        <button class="btn" onclick="showAddFlightModal()">Add New Flight</button>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Flight Number</th>
+                                <th>Origin</th>
+                                <th>Destination</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="flightsList">
+                            <!-- Flights will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Passengers Tab -->
+            <div id="passengers" class="tab-content">
+                <div class="dashboard-header">
+                    <h1>Passenger Management</h1>
+                    <div class="header-actions">
+                        <button class="btn" onclick="showAddPassengerModal()">Add New Passenger</button>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Passport</th>
+                                <th>Flight</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="passengersList">
+                            <!-- Passengers will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Bookings Tab -->
+            <div id="bookings" class="tab-content">
+                <div class="dashboard-header">
+                    <h1>Booking Management</h1>
+                </div>
+
+                <div class="action-panel">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Passenger</th>
+                                <th>Flight</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsList">
+                            <!-- Bookings will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Users Tab -->
+            <div id="users" class="tab-content">
+                <div class="dashboard-header">
+                    <h1>Admin User Management</h1>
+                    <div class="header-actions">
+                        <button class="btn" onclick="showAddAdminModal()">Add New Admin</button>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Last Login</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersList">
+                            <!-- Admin users will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="dashboard-header">
+                    <h1>System Settings</h1>
+                </div>
+
+                <div class="action-panel">
+                    <form id="settingsForm">
+                        <div class="form-group">
+                            <label>Check-in Window</label>
+                            <input type="number" id="checkInWindow" min="1" max="48" value="24">
+                            <small>Hours before departure</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Maximum Baggage Items</label>
+                            <input type="number" id="maxBaggage" min="1" max="10" value="3">
+                        </div>
+                        <div class="form-group">
+                            <label>Email Notifications</label>
+                            <select id="emailNotifications">
+                                <option value="all">All Events</option>
+                                <option value="important">Important Only</option>
+                                <option value="none">Disabled</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn">Save Settings</button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="addFlightModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('addFlightModal')">&times;</span>
+            <h2>Add New Flight</h2>
+            <form id="addFlightForm">
+                <div class="form-group">
+                    <label>Flight Number</label>
+                    <input type="text" id="flightNumber" required>
+                </div>
+                <div class="form-group">
+                    <label>Origin</label>
+                    <input type="text" id="origin" required>
+                </div>
+                <div class="form-group">
+                    <label>Destination</label>
+                    <input type="text" id="destination" required>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="datetime-local" id="flightDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Capacity</label>
+                    <input type="number" id="capacity" required>
+                </div>
+                <button type="submit" class="btn">Add Flight</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addPassengerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('addPassengerModal')">&times;</span>
+            <h2>Add New Passenger</h2>
+            <form id="addPassengerForm">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="passengerName" required>
+                </div>
+                <div class="form-group">
+                    <label>Passport Number</label>
+                    <input type="text" id="passportNumber" required>
+                </div>
+                <div class="form-group">
+                    <label>Flight</label>
+                    <select id="passengerFlight" required>
+                        <!-- Flights will be populated here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="passengerEmail">
+                </div>
+                <button type="submit" class="btn">Add Passenger</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="addAdminModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('addAdminModal')">&times;</span>
+            <h2>Add New Admin User</h2>
+            <form id="addAdminForm">
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" id="adminUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="adminPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="adminRole">
+                        <option value="admin">Admin</option>
+                        <option value="super_admin">Super Admin</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Add Admin User</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Global state
+        let currentTab = 'dashboard';
+        let token = localStorage.getItem('adminToken');
+
+        // Check authentication
+        function checkAuth() {
+            if (!token) {
+                window.location.href = '/login.html';
+            }
+        }
+
+        // Tab switching
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.admin-menu a').forEach(link => {
+                link.classList.remove('active');
+            });
+            document.getElementById(tabId).classList.add('active');
+            event.target.closest('a').classList.add('active');
+            currentTab = tabId;
+            loadTabData(tabId);
+        }
+
+        // Modal functions
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+
+        // Delete all passengers
+        function deleteAllPassengers() {
+            if (confirm('Are you sure you want to delete ALL passengers? This action cannot be undone.')) {
+                fetch('http://127.0.0.1:5000/api/passengers', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-SESSION': token
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('All passengers have been deleted successfully');
+                    loadDashboardStats();
+                    if (currentTab === 'passengers') {
+                        loadPassengers();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to delete passengers. Please try again.');
+                });
+            }
+        }
+
+        // Load data based on current tab
+        function loadTabData(tab) {
+            switch(tab) {
+                case 'dashboard':
+                    loadDashboardStats();
+                    loadRecentActivity();
+                    break;
+                case 'flights':
+                    loadFlights();
+                    break;
+                case 'passengers':
+                    loadPassengers();
+                    break;
+                case 'bookings':
+                    loadBookings();
+                    break;
+                case 'users':
+                    loadAdminUsers();
+                    break;
+            }
+        }
+
+        // Dashboard stats
+        function loadDashboardStats() {
+            fetch('http://127.0.0.1:5000/api/admin/dashboard/stats', {
+                headers: {
+                    'X-SESSION': token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector('#totalPassengers .stat-value').textContent = data.passengers.total;
+                document.querySelector('#activeFlights .stat-value').textContent = data.flights.active;
+                document.querySelector('#checkedIn .stat-value').textContent = 
+                    `${data.passengers.checked_in} (${data.passengers.check_in_rate}%)`;
+                document.querySelector('#totalRevenue .stat-value').textContent = 
+                    `$${data.baggage.total_fees.toFixed(2)}`;
+            })
+            .catch(error => console.error('Error loading stats:', error));
+        }
+
+        // Load passengers
+        function loadPassengers() {
+            fetch('http://127.0.0.1:5000/api/admin/passengers', {
+                headers: {
+                    'X-SESSION': token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('passengersList');
+                tbody.innerHTML = '';
+                data.passengers.forEach(passenger => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${passenger.name}</td>
+                        <td>${passenger.passport}</td>
+                        <td>${passenger.flight || 'N/A'}</td>
+                        <td>
+                            <span class="status-badge ${passenger.checked_in ? 'success' : 'warning'}">
+                                ${passenger.checked_in ? 'Checked In' : 'Not Checked In'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="editPassenger('${passenger.passport}')">Edit</button>
+                            <button class="btn btn-danger" onclick="deletePassenger('${passenger.passport}')">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => console.error('Error loading passengers:', error));
+        }
+
+        // Load flights
+        function loadFlights() {
+            fetch('http://127.0.0.1:5000/api/admin/flights', {
+                headers: {
+                    'X-SESSION': token
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('flightsList');
+                tbody.innerHTML = '';
+                data.flights.forEach(flight => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${flight.flight}</td>
+                        <td>${flight.origin || 'N/A'}</td>
+                        <td>${flight.destination || 'N/A'}</td>
+                        <td>${new Date(flight.time).toLocaleString()}</td>
+                        <td>
+                            <span class="status-badge ${flight.status === 'active' ? 'success' : 'warning'}">
+                                ${flight.status || 'Scheduled'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-secondary" onclick="editFlight('${flight.flight}')">Edit</button>
+                            <button class="btn btn-danger" onclick="deleteFlight('${flight.flight}')">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            })
+            .catch(error => console.error('Error loading flights:', error));
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadTabData('dashboard');
+
+            // Add form submit handlers
+            document.getElementById('addFlightForm').addEventListener('submit', handleAddFlight);
+            document.getElementById('addPassengerForm').addEventListener('submit', handleAddPassenger);
+            document.getElementById('addAdminForm').addEventListener('submit', handleAddAdmin);
+            document.getElementById('settingsForm').addEventListener('submit', handleSaveSettings);
+        });
+
+        // Form handlers
+        function handleAddFlight(e) {
+            e.preventDefault();
+            // Add flight logic here
+            closeModal('addFlightModal');
+            loadFlights();
+        }
+
+        function handleAddPassenger(e) {
+            e.preventDefault();
+            // Add passenger logic here
+            closeModal('addPassengerModal');
+            loadPassengers();
+        }
+
+        function handleAddAdmin(e) {
+            e.preventDefault();
+            // Add admin logic here
+            closeModal('addAdminModal');
+            loadAdminUsers();
+        }
+
+        function handleSaveSettings(e) {
+            e.preventDefault();
+            // Save settings logic here
+            alert('Settings saved successfully');
+        }
+
+        // Modal triggers
+        function showAddFlightModal() {
+            showModal('addFlightModal');
+        }
+
+        function showAddPassengerModal() {
+            showModal('addPassengerModal');
+        }
+
+        function showAddAdminModal() {
+            showModal('addAdminModal');
+        }
+
+        // Export function
+        function exportReport() {
+            alert('Generating report... This feature will be available soon.');
+        }
+    </script>
+</body>
+</html>

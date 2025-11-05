@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SmartFly</title>
+    <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .admin-layout {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            min-height: 100vh;
+        }
+
+        .admin-sidebar {
+            background: #1a2b3c;
+            color: white;
+            padding: 20px;
+        }
+
+        .admin-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            margin-bottom: 30px;
+        }
+
+        .admin-logo .logo {
+            width: 35px;
+            height: 35px;
+        }
+
+        .admin-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .admin-menu li {
+            margin-bottom: 5px;
+        }
+
+        .admin-menu a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            color: #a0aec0;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .admin-menu a:hover, .admin-menu a.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+        }
+
+        .admin-menu svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .admin-content {
+            padding: 30px;
+            background: #f8fafc;
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card h3 {
+            margin: 0 0 5px;
+            color: var(--muted);
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a2b3c;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            color: var(--danger);
+        }
+
+        .recent-bookings {
+            background: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 30px;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .table-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .bookings-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .bookings-table th, .bookings-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .bookings-table th {
+            font-weight: 500;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-badge.confirmed {
+            background: #e6f6ed;
+            color: var(--success);
+        }
+
+        .status-badge.pending {
+            background: #fff7e6;
+            color: #d97706;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chart-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .chart-container {
+            height: 300px;
+            /* Chart will be rendered here */
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                </div>
+                <h2 class="logo-text">SmartFly</h2>
+            </div>
+
+            <nav>
+                <ul class="admin-menu">
+                    <li>
+                        <a href="dashboard.html" class="active">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="flights.html">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                            </svg>
+                            Flights
+                        </a>
+                    </li>
+                    <li>
+                        <a href="bookings.html">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                            </svg>
+                            Bookings
+                        </a>
+                    </li>
+                    <li>
+                        <a href="users.html">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            Users
+                        </a>
+                    </li>
+                    <li>
+                        <a href="reports.html">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            Reports
+                        </a>
+                    </li>
+                    <li>
+                        <a href="settings.html">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.07.63-.07.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+                            </svg>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="admin-content">
+            <div class="dashboard-header">
+                <h1>Dashboard</h1>
+                <div class="header-actions">
+                    <button class="btn" onclick="exportReport()">Export Report</button>
+                    <button class="btn btn-danger" onclick="deleteAllPassengers()" style="margin-left: 10px; background-color: #dc3545; color: white;">Delete All Passengers</button>
+                </div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Total Bookings</h3>
+                    <div class="stat-value">1,284</div>
+                    <div class="stat-change positive">
+                        <svg viewBox="0 0 24 24" style="width:16px;height:16px">
+                            <path d="M7 14l5-5 5 5z"/>
+                        </svg>
+                        12.5% vs last week
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Revenue</h3>
+                    <div class="stat-value">$89,240</div>
+                    <div class="stat-change positive">
+                        <svg viewBox="0 0 24 24" style="width:16px;height:16px">
+                            <path d="M7 14l5-5 5 5z"/>
+                        </svg>
+                        8.2% vs last week
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Flights</h3>
+                    <div class="stat-value">42</div>
+                    <div class="stat-change negative">
+                        <svg viewBox="0 0 24 24" style="width:16px;height:16px">
+                            <path d="M7 10l5 5 5-5z"/>
+                        </svg>
+                        3.1% vs last week
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <h3>Customer Satisfaction</h3>
+                    <div class="stat-value">94%</div>
+                    <div class="stat-change positive">
+                        <svg viewBox="0 0 24 24" style="width:16px;height:16px">
+                            <path d="M7 14l5-5 5 5z"/>
+                        </svg>
+                        2.3% vs last week
+                    </div>
+                </div>
+            </div>
+
+            <div class="recent-bookings">
+                <div class="table-header">
+                    <h2>Recent Bookings</h2>
+                    <button class="btn">View All</button>
+                </div>
+                <table class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Passenger</th>
+                            <th>Flight</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>#BK-2411</td>
+                            <td>John Smith</td>
+                            <td>NY-LON-789</td>
+                            <td>Nov 3, 2025</td>
+                            <td><span class="status-badge confirmed">Confirmed</span></td>
+                            <td>$750</td>
+                        </tr>
+                        <tr>
+                            <td>#BK-2410</td>
+                            <td>Sarah Johnson</td>
+                            <td>LA-CHI-456</td>
+                            <td>Nov 3, 2025</td>
+                            <td><span class="status-badge pending">Pending</span></td>
+                            <td>$420</td>
+                        </tr>
+                        <tr>
+                            <td>#BK-2409</td>
+                            <td>Michael Brown</td>
+                            <td>SF-NYC-123</td>
+                            <td>Nov 3, 2025</td>
+                            <td><span class="status-badge confirmed">Confirmed</span></td>
+                            <td>$380</td>
+                        </tr>
+                        <tr>
+                            <td>#BK-2408</td>
+                            <td>Emma Wilson</td>
+                            <td>MIA-BOS-234</td>
+                            <td>Nov 2, 2025</td>
+                            <td><span class="status-badge confirmed">Confirmed</span></td>
+                            <td>$290</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="chart-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2>Booking Trends</h2>
+                        <select class="btn">
+                            <option>Last 7 Days</option>
+                            <option>Last 30 Days</option>
+                            <option>Last 90 Days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <!-- Chart will be rendered here -->
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h2>Popular Routes</h2>
+                        <select class="btn">
+                            <option>Last 7 Days</option>
+                            <option>Last 30 Days</option>
+                            <option>Last 90 Days</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <!-- Chart will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Add your dashboard interaction logic here
+        
+        function deleteAllPassengers() {
+            if (confirm('Are you sure you want to delete ALL passengers? This action cannot be undone.')) {
+                fetch('http://127.0.0.1:5000/api/passengers', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert('All passengers have been deleted successfully');
+                    // Refresh the page to update the statistics
+                    window.location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Failed to delete passengers. Please try again.');
+                });
+            }
+        }
+
+        function exportReport() {
+            // Add export functionality here
+            alert('Export feature coming soon!');
+        }
+
+        // Example: Charts, data updates, etc.
+    </script>
+</body>
+</html>

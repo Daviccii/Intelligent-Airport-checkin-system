@@ -1,0 +1,22 @@
+[
+  {
+    "flight": "FL-1234",
+    "time": "2025-11-04T09:00:00Z",
+    "capacity": null,
+    "aircraft": "Boeing",
+    "gate": "B",
+    "arrival": null,
+    "checkin_enabled": true,
+    "blocked_seats": []
+  },
+  {
+    "flight": "KQ101",
+    "time": "2025-11-05T00:00:00Z",
+    "capacity": null,
+    "aircraft": "Kenya Airways",
+    "gate": "A",
+    "arrival": null,
+    "checkin_enabled": true,
+    "blocked_seats": []
+  }
+]

@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Lookup Flight</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Passenger start</h1>
+    <p>Enter your full name and ID/passport to continue to booking.</p>
+
+    <form id="startForm">
+      <label>Full name</label>
+      <input type="text" id="name" name="name" placeholder="Full name" required>
+
+      <label>ID / Passport number</label>
+      <input type="text" id="passport" name="passport" placeholder="Passport or ID" required>
+
+      <button type="submit">Continue</button>
+    </form>
+
+    <section id="message"></section>
+  </main>
+
+  <script>
+    const form = document.getElementById('startForm');
+    const msg = document.getElementById('message');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.innerHTML = '<p>Signing you in and loading booking options...</p>';
+      const passport = document.getElementById('passport').value.trim();
+      const name = document.getElementById('name').value.trim();
+      try {
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'passenger', passport, name })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          msg.innerHTML = `<p class="error">Login failed: ${data.error || data.detail || 'unknown'}</p>`;
+          return;
+        }
+        // store session token and go to passenger dashboard
+        localStorage.setItem('session', data.token);
+        document.cookie = `session=${data.token};path=/`;
+        window.location = '/passenger.html';
+      } catch (err) {
+        msg.innerHTML = '<p class="error">Failed to contact server.</p>';
+      }
+    });
+  </script>
+</body>
+</html>

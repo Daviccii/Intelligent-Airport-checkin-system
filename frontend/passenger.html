@@ -1,0 +1,244 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Passenger Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Passenger check-in</h1>
+    <div id="wizard">
+      <ol id="steps">
+        <li class="step active" data-step="start">Start</li>
+        <li class="step" data-step="auth">Login / Register</li>
+        <li class="step" data-step="lookup">Flight Lookup</li>
+        <li class="step" data-step="select">Select Flight</li>
+        <li class="step" data-step="confirm">Confirm Details</li>
+        <li class="step" data-step="seat">Seat Selection</li>
+        <li class="step" data-step="baggage">Baggage & Pay</li>
+        <li class="step" data-step="boarding">Generate Boarding Pass</li>
+        <li class="step" data-step="done">Done</li>
+      </ol>
+
+      <section id="stepContent">
+        <div id="start" class="pane">
+          <p>Welcome — proceed to Login or Register to begin.</p>
+          <button id="toAuth">Login / Register</button>
+        </div>
+
+        <div id="auth" class="pane" style="display:none">
+          <h2>Login or Register</h2>
+          <form id="authForm">
+            <label>Email <input id="authEmail" type="email" placeholder="email (optional)"></label>
+            <label>Phone <input id="authPhone" placeholder="phone (optional)"></label>
+            <label>Full name <input id="authName" placeholder="Full name"></label>
+            <label>Passport/ID <input id="authPassport" placeholder="Passport or ID"></label>
+            <button type="submit">Continue</button>
+          </form>
+          <div id="authMsg"></div>
+        </div>
+
+        <div id="lookup" class="pane" style="display:none">
+          <h2>Find your booking (optional)</h2>
+          <form id="lookupForm">
+            <label>Booking ref or ticket#<input id="lookupRef"></label>
+            <label>Passport/ID<input id="lookupPassport"></label>
+            <label>Name<input id="lookupName"></label>
+            <button id="doLookup">Search</button>
+          </form>
+          <div id="lookupResults"></div>
+        </div>
+
+        <div id="select" class="pane" style="display:none">
+          <h2>Select flight</h2>
+          <div id="flightList">Loading flights...</div>
+        </div>
+
+        <div id="confirm" class="pane" style="display:none">
+          <h2>Confirm passenger details</h2>
+          <div id="confirmDetails"></div>
+          <button id="editDetails">Edit</button>
+          <button id="toSeat">Next: Seat Selection</button>
+        </div>
+
+        <div id="seat" class="pane" style="display:none">
+          <h2>Seat selection</h2>
+          <label>Seat preference <input id="seatPref" placeholder="e.g. 12A"></label>
+          <div id="seatMsg"></div>
+          <button id="assignSeatBtn">Assign seat</button>
+        </div>
+
+        <div id="baggage" class="pane" style="display:none">
+          <h2>Baggage & Payment</h2>
+          <label>Number of bags <input id="bagCount" type="number" min="0" value="0"></label>
+          <p>Fee: <span id="bagFee">$0</span></p>
+          <button id="payBags">Pay baggage fees</button>
+        </div>
+
+        <div id="boarding" class="pane" style="display:none">
+          <h2>Boarding pass</h2>
+          <p>Generate and download your boarding pass below.</p>
+          <button id="generateBP">Generate Boarding Pass</button>
+          <div id="bpResult"></div>
+        </div>
+
+        <div id="done" class="pane" style="display:none">
+          <h2>Ready to board</h2>
+          <p id="doneMsg">You're all set. Notifications will be sent for updates.</p>
+          <p><a href="/">Home</a> | <a id="logout" href="#">Logout</a></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    // Minimal wizard implementation wiring to backend APIs
+    let W = {
+      token: localStorage.getItem('session'),
+      state: {
+        passenger: {},
+        selectedFlight: null
+      }
+    };
+
+    function setStep(name) {
+      document.querySelectorAll('#steps .step').forEach(s => s.classList.remove('active'));
+      const el = document.querySelector(`#steps .step[data-step="${name}"]`);
+      if (el) el.classList.add('active');
+      document.querySelectorAll('#stepContent .pane').forEach(p => p.style.display='none');
+      const pane = document.getElementById(name);
+      if (pane) pane.style.display = 'block';
+    }
+
+    document.getElementById('toAuth').addEventListener('click', () => setStep('auth'));
+
+    // Auth form
+    document.getElementById('authForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value.trim();
+      const phone = document.getElementById('authPhone').value.trim();
+      const name = document.getElementById('authName').value.trim();
+      const passport = document.getElementById('authPassport').value.trim();
+      const payload = { role: 'passenger', email: email || undefined, phone: phone || undefined, name: name || undefined, passport: passport || undefined };
+      const res = await fetch('/api/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      const j = await res.json();
+      const msg = document.getElementById('authMsg');
+      if (!res.ok) { msg.innerText = 'Login failed: ' + (j.error || j.detail || 'unknown'); return; }
+      // store token
+      W.token = j.token; localStorage.setItem('session', j.token); document.cookie = `session=${j.token};path=/`;
+      // store passenger minimal identity
+      W.state.passenger = { name: name || '', passport: passport || '', email: email || '', phone: phone || '' };
+      setStep('lookup');
+    });
+
+    // Lookup
+    document.getElementById('doLookup').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const ref = document.getElementById('lookupRef').value.trim();
+      const passport = document.getElementById('lookupPassport').value.trim();
+      const name = document.getElementById('lookupName').value.trim();
+      const body = {};
+      if (ref) body.booking_ref = ref;
+      if (passport) body.passport = passport;
+      if (name) body.name = name;
+      const res = await fetch('/api/lookup', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const j = await res.json();
+      const el = document.getElementById('lookupResults');
+      if (!res.ok) { el.innerText = 'Lookup failed'; return; }
+      if (!j.results || j.results.length === 0) { el.innerHTML = '<p>No bookings found. Continue to select a flight.</p><button id="skipToSelect">Continue</button>'; document.getElementById('skipToSelect').addEventListener('click', () => setStep('select')); return; }
+      el.innerHTML = j.results.map(p => `<div class="card"><b>${p.name}</b> — ${p.flight || 'No flight'}<br/>Passport: ${p.passport}<br/><button class="useResult" data-passport="${p.passport}">Use this</button></div>`).join('');
+      el.querySelectorAll('.useResult').forEach(b => b.addEventListener('click', (ev) => { const pp = ev.target.getAttribute('data-passport'); W.state.passenger = j.results.find(x=>x.passport===pp) || W.state.passenger; setStep('select'); }));
+    });
+
+    // Flights list (select)
+    async function loadFlightsForSelect() {
+      const el = document.getElementById('flightList');
+      el.innerHTML = 'Loading...';
+      const r = await fetch('/api/flights'); const j = await r.json();
+      if (!r.ok) { el.innerHTML = 'Failed to load flights'; return; }
+      if (!j.flights || j.flights.length===0) { el.innerHTML = '<p>No flights</p>'; return; }
+      el.innerHTML = j.flights.map(f=>`<div class="card"><b>${f.flight}</b> — ${f.time||'N/A'} <br/>Capacity: ${f.capacity||'∞'} <br/><button class="selectFlight" data-flight="${f.flight}">Select</button></div>`).join('');
+      el.querySelectorAll('.selectFlight').forEach(b=>b.addEventListener('click', (ev)=>{ W.state.selectedFlight = ev.target.getAttribute('data-flight'); setStep('confirm'); renderConfirm(); }));
+    }
+
+    // Confirm details
+    function renderConfirm() {
+      const d = document.getElementById('confirmDetails');
+      const p = W.state.passenger || {};
+      d.innerHTML = `
+        <p>Name: <input id="cname" value="${p.name || ''}"></p>
+        <p>Passport: <input id="cpassport" value="${p.passport || ''}"></p>
+        <p>Email: <input id="cemail" value="${p.email || ''}"></p>
+        <p>Phone: <input id="cphone" value="${p.phone || ''}"></p>
+        <p>Selected flight: <b>${W.state.selectedFlight}</b></p>
+      `;
+      document.getElementById('editDetails').addEventListener('click', ()=>{ document.getElementById('cname').removeAttribute('readonly'); });
+      document.getElementById('toSeat').addEventListener('click', ()=>{
+        // update passenger state
+        W.state.passenger.name = document.getElementById('cname').value.trim();
+        W.state.passenger.passport = document.getElementById('cpassport').value.trim();
+        W.state.passenger.email = document.getElementById('cemail').value.trim();
+        W.state.passenger.phone = document.getElementById('cphone').value.trim();
+        setStep('seat');
+      });
+    }
+
+    // Seat selection
+    document.getElementById('assignSeatBtn').addEventListener('click', async () => {
+      const seat = document.getElementById('seatPref').value.trim();
+      const passport = W.state.passenger.passport;
+      const res = await fetch(`/api/passengers/${encodeURIComponent(passport)}/seat`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': W.token}, body: JSON.stringify({ seat }) });
+      const j = await res.json();
+      const msg = document.getElementById('seatMsg');
+      if (!res.ok) { msg.innerText = 'Seat assign failed: ' + (j.error||j.detail||'unknown'); return; }
+      msg.innerText = 'Seat assigned: ' + (j.passenger && j.passenger.seat);
+      setStep('baggage');
+    });
+
+    // baggage
+    function recalcBagFee() {
+      const n = parseInt(document.getElementById('bagCount').value||0);
+      const fee = n<=1 ? 0 : 50*(n-1);
+      document.getElementById('bagFee').innerText = '$' + fee;
+      return fee;
+    }
+    document.getElementById('bagCount').addEventListener('input', recalcBagFee);
+    document.getElementById('payBags').addEventListener('click', async () => {
+      const fee = recalcBagFee();
+      if (fee <= 0) { alert('No fee'); setStep('boarding'); return; }
+      const passport = W.state.passenger.passport;
+      const res = await fetch('/api/baggage/pay', { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': W.token}, body: JSON.stringify({ passport, amount: fee }) });
+      const j = await res.json();
+      if (!res.ok) { alert('Payment failed: ' + (j.error||j.detail||'unknown')); return; }
+      alert('Payment recorded');
+      setStep('boarding');
+    });
+
+    document.getElementById('generateBP').addEventListener('click', async () => {
+      const passport = W.state.passenger.passport;
+      const res = await fetch(`/api/boardingpass?passport=${encodeURIComponent(passport)}`, { headers: { 'X-SESSION': W.token }});
+      const el = document.getElementById('bpResult');
+      if (!res.ok) { const j = await res.json().catch(()=>({})); el.innerText = 'Failed to generate: ' + (j.error || j.detail || 'unknown'); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      el.innerHTML = `<a href="${url}" target="_blank">Open Boarding Pass</a>`;
+      setStep('done');
+    });
+
+    document.getElementById('logout').addEventListener('click', async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('session');
+      await fetch('/api/logout', { method: 'POST', headers: { 'X-SESSION': token }});
+      localStorage.removeItem('session');
+      document.cookie = 'session=;path=/;max-age=0';
+      window.location = '/';
+    });
+
+    // initialize
+    setStep('start');
+    loadFlightsForSelect();
+  </script>
+</body>
+</html>

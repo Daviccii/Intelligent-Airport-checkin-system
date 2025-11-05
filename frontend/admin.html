@@ -1,0 +1,772 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Admin Dashboard</h1>
+    <nav>
+      <button id="tabDashboard" class="active">Dashboard</button>
+      <button id="tabFlights">Flights</button>
+      <button id="tabPassengers">Passengers</button>
+      <button id="tabBoarding">Boarding</button>
+      <button id="tabAnalytics">Analytics</button>
+      <button id="tabUsers">Admin Users</button>
+      <button id="logout">Logout</button>
+    </nav>
+    
+    <!-- Auto-refresh indicator -->
+    <div style="margin:8px 0;font-size:13px;color:var(--muted)">
+      Auto-refresh: <span id="refreshStatus">active</span>
+      (<span id="refreshCountdown">30</span>s)
+      <button onclick="toggleAutoRefresh()" style="margin-left:4px;padding:2px 8px;font-size:12px" id="refreshToggle">Pause</button>
+    </div>
+
+    <section id="content">Loading...</section>
+
+    <!-- Edit Flight Modal (hidden) -->
+    <div id="editFlightModal" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:1rem;max-width:600px;margin:auto;border-radius:6px;box-shadow:0 8px 24px rgba(0,0,0,0.2);">
+        <h3 id="modalTitle">Edit Flight</h3>
+        <form id="editFlightForm">
+          <input id="modalOrigFlight" type="hidden" />
+          <label>Flight number <input id="modalFlight" required /></label>
+          <label>Time <input id="modalTime" type="datetime-local" /></label>
+          <label>Arrival <input id="modalArrival" type="datetime-local" /></label>
+          <label>Aircraft <input id="modalAircraft" /></label>
+          <label>Gate <input id="modalGate" /></label>
+          <label>Capacity <input id="modalCapacity" type="number" min="0" /></label>
+          <label>Check-in enabled <input id="modalCheckin" type="checkbox" /></label>
+          <div style="margin-top:.5rem;display:flex;gap:.5rem;justify-content:flex-end;">
+            <button type="button" id="modalCancel">Cancel</button>
+            <button type="submit" id="modalSave">Save</button>
+          </div>
+          <div id="modalMsg" style="margin-top:.5rem;color:crimson"></div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script>
+    // Toast notification system
+    function showToast(message, type = 'success', duration = 3000) {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        ${message}
+        <button onclick="this.parentElement.remove()">&times;</button>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.animation = 'slideOut 0.3s ease-out forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+
+    // Auto-refresh settings
+    const REFRESH_INTERVAL = 30000; // 30 seconds
+    let currentTab = 'dashboard';
+    let refreshTimer = null;
+
+    function startAutoRefresh() {
+      if (refreshTimer) clearInterval(refreshTimer);
+      refreshTimer = setInterval(() => {
+        // Only refresh dashboard and flights
+        if (currentTab === 'dashboard') {
+          document.getElementById('tabDashboard').click();
+        } else if (currentTab === 'flights') {
+          document.getElementById('tabFlights').click();
+        }
+      }, REFRESH_INTERVAL);
+    }
+
+    // Initialize state
+    let token = localStorage.getItem('session');
+
+    // Auto-refresh toggle function
+    let autoRefreshEnabled = true;
+    let countdownInterval = null;
+
+    function toggleAutoRefresh() {
+      autoRefreshEnabled = !autoRefreshEnabled;
+      const btn = document.getElementById('refreshToggle');
+      const status = document.getElementById('refreshStatus');
+      btn.textContent = autoRefreshEnabled ? 'Pause' : 'Resume';
+      status.textContent = autoRefreshEnabled ? 'active' : 'paused';
+      
+      if (autoRefreshEnabled) {
+        startAutoRefresh();
+        updateCountdown();
+      } else {
+        if (refreshTimer) clearInterval(refreshTimer);
+        if (countdownInterval) clearInterval(countdownInterval);
+      }
+    }
+
+    function updateCountdown() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      let count = 30;
+      const el = document.getElementById('refreshCountdown');
+      countdownInterval = setInterval(() => {
+        count--;
+        if (el) el.textContent = count;
+        if (count <= 0) count = 30;
+      }, 1000);
+    }
+
+    // Update nav button styles
+    document.querySelectorAll('nav button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Check for token on load
+    if (!token) {
+      // Try to get token from cookie
+      const cookies = document.cookie.split(';');
+      const sessionCookie = cookies.find(c => c.trim().startsWith('session='));
+      if (sessionCookie) {
+        token = sessionCookie.split('=')[1].trim();
+        localStorage.setItem('session', token);
+      }
+    }
+
+    // Verify token validity
+    async function verifyToken() {
+      try {
+        const res = await fetch('/api/admin/verify', { 
+          headers: { 'X-SESSION': token }
+        });
+        if (!res.ok) throw new Error('Invalid token');
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    // Check token on load
+    (async () => {
+      if (!token || !(await verifyToken())) {
+        window.location = '/login.html';
+        return;
+      }
+    })();
+
+    document.getElementById('tabDashboard').addEventListener('click', async () => {
+      currentTab = 'dashboard';
+      // Dashboard overview: summary + quick actions
+      document.getElementById('content').innerHTML = `<h2>Dashboard</h2><div id="dashboardSummary">Loading...</div><div id="dashboardFlights">Loading flights...</div>`;
+      try {
+        const [aj, fj] = await Promise.all([fetch('/api/analytics', { headers: { 'X-SESSION': token }}).then(r=>r.json()), fetch('/api/flights', { headers: { 'X-SESSION': token }}).then(r=>r.json())]);
+        const sum = document.getElementById('dashboardSummary');
+        sum.innerHTML = `<p>Total bookings: ${aj.total_bookings}</p><p>Checked-in: ${aj.checked_in}</p><p>Baggage items: ${aj.baggage_total}</p>`;
+        const flightsDiv = document.getElementById('dashboardFlights');
+        flightsDiv.innerHTML = '<h3>Flights</h3>' + (fj.flights && fj.flights.length ? fj.flights.map(f=>`<div class="card"><b>${f.flight}</b> — ${f.time||'N/A'} — ${f.checkin_enabled?'<em>Check-in open</em>':'<em>Closed</em>'} <br/><button class="gotoFlight" data-flight="${f.flight}">Manage</button> <button class="startBoardQuick" data-flight="${f.flight}">Start Boarding</button></div>`).join('') : '<p>No flights</p>');
+        document.getElementById('dashboardFlights').addEventListener('click', async (ev)=>{
+          const g = ev.target.closest && ev.target.closest('.gotoFlight');
+          const sb = ev.target.closest && ev.target.closest('.startBoardQuick');
+          if (g) { const flight = g.getAttribute('data-flight'); document.getElementById('tabFlights').click(); setTimeout(()=>{ const vp = document.querySelector(`button.view-passengers[data-flight="${flight}"]`); if (vp) vp.click(); },300); }
+          if (sb) { const flight = sb.getAttribute('data-flight'); await fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ action: 'start' }) }); alert('Start requested'); }
+        });
+      } catch (e) {
+        document.getElementById('content').innerHTML = '<p>Failed to load dashboard.</p>';
+      }
+    });
+
+    // Also keep Flights handler under same element id
+    document.getElementById('tabFlights').addEventListener('click', async () => {
+      currentTab = 'flights';
+      const res = await fetch('/api/flights', { headers: { 'X-SESSION': token }});
+      const data = await res.json();
+      if (!res.ok) { alert('Unauthorized'); window.location = '/login'; return; }
+      const html = `<h2>Flights</h2>` + (data.flights.length ? data.flights.map(f => `
+        <div class="card" data-flight="${f.flight}">
+          <strong>${f.flight}</strong> — <span class="bookings">${f.bookings}</span> bookings
+          <div>Time: <span class="ftime">${f.time || 'N/A'}</span></div>
+          <div>Arrival: <span class="farrival">${f.arrival || 'N/A'}</span></div>
+          <div>Aircraft: <span class="faircraft">${f.aircraft || 'N/A'}</span></div>
+          <div>Gate: <span class="fgate">${f.gate || 'N/A'}</span></div>
+          <div>Capacity: <span class="fcapacity">${f.capacity != null ? f.capacity : 'N/A'}</span></div>
+          <div>Check-in: <span class="fcheckin">${f.checkin_enabled ? 'Enabled' : 'Disabled'}</span> <button class="toggle-checkin" data-flight="${f.flight}">${f.checkin_enabled ? 'Disable' : 'Enable'} check-in</button></div>
+          <div>Blocked seats: <span class="fblocked">${(f.blocked_seats || []).join(', ') || 'None'}</span> <input class="blockSeatInput" placeholder="e.g. 12A" /> <button class="blockSeatBtn" data-flight="${f.flight}">Block</button> <button class="unblockSeatBtn" data-flight="${f.flight}">Unblock</button></div>
+          <div>
+            <button class="edit-flight" data-flight="${f.flight}">Edit</button>
+            <button class="delete-flight" data-flight="${f.flight}">Delete</button>
+            <button class="view-passengers" data-flight="${f.flight}">Passengers</button>
+          </div>
+          <div class="edit-area" style="display:none">
+            <label>Flight number <input class="edit-flight-num" value="${f.flight}" /></label>
+            <label>Time <input class="edit-flight-time" type="datetime-local" value="${f.time ? f.time.replace('T',' ') : ''}" /></label>
+            <label>Arrival <input class="edit-flight-arrival" type="datetime-local" value="${f.arrival ? f.arrival.replace('T',' ') : ''}" /></label>
+            <label>Aircraft <input class="edit-flight-aircraft" value="${f.aircraft || ''}" /></label>
+            <label>Gate <input class="edit-flight-gate" value="${f.gate || ''}" /></label>
+            <label>Capacity <input class="edit-flight-capacity" type="number" min="1" value="${f.capacity != null ? f.capacity : ''}" /></label>
+            <label>Check-in enabled <input type="checkbox" class="edit-flight-checkin" ${f.checkin_enabled ? 'checked' : ''} /></label>
+            <button class="save-flight">Save</button>
+            <button class="cancel-edit">Cancel</button>
+          </div>
+        </div>
+      `).join('') : '<p>No flights yet</p>');
+      document.getElementById('content').innerHTML = html + '\n\n' + `
+        <h3>Create Flight</h3>
+        <form id="createFlight">
+          <input id="flightNum" placeholder="Flight number" required />
+          <label>Time <input id="flightTime" type="datetime-local" /></label>
+          <label>Arrival <input id="flightArrival" type="datetime-local" /></label>
+          <label>Aircraft <input id="flightAircraft" /></label>
+          <label>Gate <input id="flightGate" /></label>
+          <label>Capacity <input id="flightCapacity" type="number" min="1" placeholder="Optional capacity" /></label>
+          <label>Enable check-in <input id="flightCheckin" type="checkbox" checked /></label>
+          <button type="submit">Create</button>
+        </form>
+      `;
+
+      // attach create handler
+      document.getElementById('createFlight').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const flight = document.getElementById('flightNum').value.trim();
+        const time = document.getElementById('flightTime').value;
+        const arrival = document.getElementById('flightArrival').value;
+        const aircraft = document.getElementById('flightAircraft').value.trim();
+        const gate = document.getElementById('flightGate').value.trim();
+        const capacity = document.getElementById('flightCapacity').value;
+        const checkin_enabled = document.getElementById('flightCheckin').checked;
+        const payload = { flight, time, arrival, aircraft, gate, checkin_enabled };
+        if (capacity) payload.capacity = parseInt(capacity, 10);
+        const r = await fetch('/api/flights', { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify(payload) });
+        if (r.ok) { showToast('Flight created successfully', 'success'); document.getElementById('tabFlights').click(); } else { const d=await r.json(); showToast('Failed to create: '+(d.error||d.detail||'unknown'), 'error'); }
+      });
+
+      // delegate edit/delete clicks
+      document.getElementById('content').addEventListener('click', async (ev) => {
+        const editBtn = ev.target.closest && ev.target.closest('.edit-flight');
+        const delBtn = ev.target.closest && ev.target.closest('.delete-flight');
+        const saveBtn = ev.target.closest && ev.target.closest('.save-flight');
+        const cancelBtn = ev.target.closest && ev.target.closest('.cancel-edit');
+        const viewPax = ev.target.closest && ev.target.closest('.view-passengers');
+        if (editBtn) {
+          // open modal instead of inline edit-area
+          const flight = editBtn.getAttribute('data-flight');
+          const card = editBtn.closest('.card');
+          // gather current values from card
+          const time = card.querySelector('.ftime') ? card.querySelector('.ftime').innerText : '';
+          const arrival = card.querySelector('.farrival') ? card.querySelector('.farrival').innerText : '';
+          const aircraft = card.querySelector('.faircraft') ? card.querySelector('.faircraft').innerText : '';
+          const gate = card.querySelector('.fgate') ? card.querySelector('.fgate').innerText : '';
+          const capacity = card.querySelector('.fcapacity') ? card.querySelector('.fcapacity').innerText : '';
+          const checkin = card.querySelector('.fcheckin') && card.querySelector('.fcheckin').innerText.indexOf('Enabled') !== -1;
+          // populate modal
+          document.getElementById('modalOrigFlight').value = flight;
+          document.getElementById('modalFlight').value = flight;
+          try { document.getElementById('modalTime').value = time && time !== 'N/A' ? time.replace(' ','T') : ''; } catch(e) {}
+          try { document.getElementById('modalArrival').value = arrival && arrival !== 'N/A' ? arrival.replace(' ','T') : ''; } catch(e) {}
+          document.getElementById('modalAircraft').value = aircraft || '';
+          document.getElementById('modalGate').value = gate || '';
+          document.getElementById('modalCapacity').value = (capacity && capacity !== 'N/A') ? capacity : '';
+          document.getElementById('modalCheckin').checked = !!checkin;
+          document.getElementById('modalMsg').innerText = '';
+          document.getElementById('editFlightModal').style.display = 'flex';
+        }
+        if (cancelBtn) {
+          const card = cancelBtn.closest('.card');
+          card.querySelector('.edit-area').style.display = 'none';
+        }
+        if (delBtn) {
+          if (!confirm('Delete this flight?')) return;
+          const flight = delBtn.getAttribute('data-flight');
+          const r = await fetch(`/api/flights/${encodeURIComponent(flight)}`, { method: 'DELETE', headers: { 'X-SESSION': token }});
+          if (r.ok) { showToast('Flight deleted successfully', 'success'); document.getElementById('tabFlights').click(); } else { showToast('Failed to delete flight', 'error'); }
+        }
+        if (saveBtn) {
+          const card = saveBtn.closest('.card');
+          const orig = card.getAttribute('data-flight');
+          const newFlight = card.querySelector('.edit-flight-num').value.trim();
+          const newTime = card.querySelector('.edit-flight-time').value; // datetime-local
+          const newArrival = card.querySelector('.edit-flight-arrival').value;
+          const newAircraft = card.querySelector('.edit-flight-aircraft').value.trim();
+          const newGate = card.querySelector('.edit-flight-gate').value.trim();
+          const newCapacity = card.querySelector('.edit-flight-capacity').value;
+          const newCheckin = card.querySelector('.edit-flight-checkin').checked;
+          const payload = { flight: newFlight, time: newTime, arrival: newArrival, aircraft: newAircraft, gate: newGate, checkin_enabled: newCheckin };
+          if (newCapacity !== undefined) payload.capacity = newCapacity === '' ? null : parseInt(newCapacity, 10);
+          const r = await fetch(`/api/flights/${encodeURIComponent(orig)}`, { method: 'PUT', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify(payload)});
+          const d = await r.json();
+          if (r.ok) { showToast('Flight updated successfully', 'success'); document.getElementById('tabFlights').click(); } else { showToast('Update failed: '+(d.error||d.detail||'unknown'), 'error'); }
+        }
+        if (viewPax) {
+          const flight = viewPax.getAttribute('data-flight');
+          document.getElementById('tabPassengers').click();
+          // small delay to let passengers tab load
+          setTimeout(()=> loadPassengersForFlight(flight), 250);
+        }
+        // handle check-in toggle
+        const toggleBtn = ev.target.closest && ev.target.closest('.toggle-checkin');
+        if (toggleBtn) {
+          const flight = toggleBtn.getAttribute('data-flight');
+          const enable = toggleBtn.textContent.indexOf('Disable') === -1; // if button says 'Enable' then enable
+          await fetch(`/api/flights/${encodeURIComponent(flight)}/checkin-toggle`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ enabled: enable }) });
+          document.getElementById('tabFlights').click();
+        }
+
+        // handle seat block/unblock
+        const blockBtn = ev.target.closest && ev.target.closest('.blockSeatBtn');
+        if (blockBtn) {
+          const flight = blockBtn.getAttribute('data-flight');
+          const input = blockBtn.parentElement.querySelector('.blockSeatInput');
+          const seat = input && input.value.trim();
+          if (!seat) { showToast('Please enter a seat to block', 'error'); return; }
+          await fetch(`/api/flights/${encodeURIComponent(flight)}/seat_block`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ seat, action: 'block' }) });
+          document.getElementById('tabFlights').click();
+        }
+        const unblockBtn = ev.target.closest && ev.target.closest('.unblockSeatBtn');
+        if (unblockBtn) {
+          const flight = unblockBtn.getAttribute('data-flight');
+          const input = unblockBtn.parentElement.querySelector('.blockSeatInput');
+          const seat = input && input.value.trim();
+          if (!seat) { showToast('Please enter a seat to unblock', 'error'); return; }
+          await fetch(`/api/flights/${encodeURIComponent(flight)}/seat_block`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ seat, action: 'unblock' }) });
+          document.getElementById('tabFlights').click();
+        }
+        // modal save/cancel handlers
+        const modalCancel = ev.target.closest && ev.target.closest('#modalCancel');
+        if (modalCancel) {
+          document.getElementById('editFlightModal').style.display = 'none';
+        }
+        const modalSave = ev.target.closest && ev.target.closest('#modalSave');
+        if (modalSave) {
+          // allow form submit to handle
+          return;
+        }
+      });
+    });
+
+    document.getElementById('tabPassengers').addEventListener('click', async () => {
+      currentTab = 'passengers';
+      const html = `
+        <h2>Passengers</h2>
+        <label>Filter by flight <select id="filterFlight"><option value="">-- select --</option></select></label>
+        <div id="passengerBulkActions" style="display:none;margin:8px 0">
+          <button id="bulkMarkBoarded">Mark selected as boarded</button>
+          <button id="bulkPayBaggage">Record baggage payment for selected</button>
+          <button id="bulkClearSelection">Clear selection</button>
+        </div>
+        <div id="passengerList">Select a flight to view passengers.</div>
+      `;
+      document.getElementById('content').innerHTML = html;
+      // populate flights
+      const fl = await fetch('/api/flights', { headers: { 'X-SESSION': token }});
+      const flj = await fl.json();
+      const sel = document.getElementById('filterFlight');
+      (flj.flights || []).forEach(f => { const o = document.createElement('option'); o.value = f.flight; o.textContent = f.flight; sel.appendChild(o); });
+      sel.addEventListener('change', (e) => loadPassengersForFlight(e.target.value));
+    });
+
+    async function loadPassengersForFlight(flight) {
+      const list = document.getElementById('passengerList');
+      list.innerHTML = '<p>Loading...</p>';
+      if (!flight) { list.innerHTML = '<p>Please select a flight.</p>'; return; }
+      const res = await fetch(`/api/flights/${encodeURIComponent(flight)}/passengers`, { headers: { 'X-SESSION': token }});
+      if (!res.ok) { list.innerHTML = '<p>Failed to load passengers.</p>'; return; }
+      const j = await res.json();
+      if (!j.passengers || j.passengers.length === 0) { list.innerHTML = '<p>No passengers on this flight.</p>'; return; }
+      // render with selection checkbox for bulk actions
+      const html = j.passengers.map(p => `
+        <article class="card" data-passport="${p.passport}">
+          <label style="display:flex;align-items:center;gap:.5rem"><input type="checkbox" class="pselect" data-passport="${p.passport}" /> <strong>${p.name}</strong> — ${p.passport}</label>
+          <p>Seat: ${p.seat || 'N/A'} | Checked-in: ${p.checked_in ? 'Yes' : 'No'} | Bags: ${p.baggage_count || 0}</p>
+          <p>
+            <button class="assign-seat" data-passport="${p.passport}">Assign seat</button>
+            <button class="override" data-passport="${p.passport}">Override</button>
+            <button class="pay-baggage" data-passport="${p.passport}">Record baggage payment</button>
+            <button class="mark-boarded" data-passport="${p.passport}">Mark boarded</button>
+          </p>
+        </article>
+      `).join('');
+      list.innerHTML = html;
+      list.addEventListener('click', async (ev) => {
+        const as = ev.target.closest && ev.target.closest('.assign-seat');
+        const ov = ev.target.closest && ev.target.closest('.override');
+        if (as) {
+          const passport = as.getAttribute('data-passport');
+          const seat = prompt('Enter seat (e.g. 12A)');
+          if (!seat) return;
+          const r = await fetch(`/api/passengers/${encodeURIComponent(passport)}/seat`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ seat }) });
+          const dj = await r.json();
+          if (r.ok) { alert('Seat assigned'); loadPassengersForFlight(flight); } else { alert('Failed: '+(dj.error||dj.detail||'unknown')); }
+        }
+        if (ov) {
+          const passport = ov.getAttribute('data-passport');
+          const action = prompt('Action (set_checked_in, clear_checked_in, resolve_issue)');
+          if (!action) return;
+          const note = prompt('Note (optional)');
+          const r = await fetch(`/api/passengers/${encodeURIComponent(passport)}/override`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ action, note }) });
+          const dj = await r.json();
+          if (r.ok) { showToast('Override applied successfully', 'success'); loadPassengersForFlight(flight); } else { showToast('Failed: '+(dj.error||dj.detail||'unknown'), 'error'); }
+        }
+        const payBtn = ev.target.closest && ev.target.closest('.pay-baggage');
+        if (payBtn) {
+          const passport = payBtn.getAttribute('data-passport');
+          // open baggage modal for this passport
+          openBaggageModal([passport]);
+        }
+
+        const mb = ev.target.closest && ev.target.closest('.mark-boarded');
+        if (mb) {
+          const passport = mb.getAttribute('data-passport');
+          const r = await fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ action: 'mark_boarded', passport }) });
+          if (r.ok) { showToast('Passenger marked as boarded', 'success'); loadPassengersForFlight(flight); } else { const dj = await r.json().catch(()=>({})); showToast('Failed: '+(dj.error||dj.detail||'unknown'), 'error'); }
+        }
+
+        // checkbox selection change is handled separately
+      });
+
+      // show/hide bulk action bar depending on selection
+      function updateBulkUI() {
+        const sel = document.querySelectorAll('#passengerList .pselect:checked');
+        const bar = document.getElementById('passengerBulkActions');
+        if (!bar) return;
+        bar.style.display = sel.length > 0 ? 'block' : 'none';
+      }
+
+      list.addEventListener('change', (ev) => {
+        if (ev.target && ev.target.classList && ev.target.classList.contains('pselect')) updateBulkUI();
+      });
+
+      // bulk action handlers
+      document.getElementById('passengerBulkActions').addEventListener('click', async (ev) => {
+        const bm = ev.target.closest && ev.target.closest('#bulkMarkBoarded');
+        const bp = ev.target.closest && ev.target.closest('#bulkPayBaggage');
+        const bc = ev.target.closest && ev.target.closest('#bulkClearSelection');
+        const checked = [...document.querySelectorAll('#passengerList .pselect:checked')].map(i=>i.getAttribute('data-passport'));
+        if (bc) { document.querySelectorAll('#passengerList .pselect').forEach(i=>i.checked=false); updateBulkUI(); return; }
+        if (!checked.length) { alert('No passengers selected'); return; }
+        if (bm) {
+          if (!confirm(`Mark ${checked.length} passenger(s) as boarded?`)) return;
+          for (const pk of checked) {
+            await fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ action: 'mark_boarded', passport: pk }) });
+          }
+          showToast(`${checked.length} passenger(s) marked as boarded`, 'success');
+          loadPassengersForFlight(flight);
+        }
+        if (bp) {
+          // open baggage modal with selected passports
+          openBaggageModal(checked);
+        }
+      });
+    }
+
+    document.getElementById('tabBoarding').addEventListener('click', async () => {
+      currentTab = 'boarding';
+      document.getElementById('content').innerHTML = `
+        <h2>Boarding Control</h2>
+        <label>Flight <select id="boardingFlight"><option value="">--select--</option></select></label>
+        <div id="boardingState">Choose a flight to manage boarding.</div>
+      `;
+      const fl = await fetch('/api/flights', { headers: { 'X-SESSION': token }});
+      const flj = await fl.json();
+      const sel = document.getElementById('boardingFlight');
+      (flj.flights || []).forEach(f => { const o = document.createElement('option'); o.value = f.flight; o.textContent = f.flight; sel.appendChild(o); });
+      sel.addEventListener('change', () => loadBoardingState(sel.value));
+    });
+
+    async function loadBoardingState(flight) {
+      const el = document.getElementById('boardingState');
+      if (!flight) { el.innerHTML = '<p>Select a flight.</p>'; return; }
+      el.innerHTML = '<p>Initializing boarding control...</p>';
+      // load initial state via REST (admin auth header required)
+      try {
+        const res = await fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { headers: { 'X-SESSION': token }});
+        const j = await res.json();
+        if (!res.ok) { el.innerHTML = '<p>Failed to load boarding state.</p>'; return; }
+        renderBoardingStateUI(flight, j);
+      } catch (err) {
+        el.innerHTML = '<p>Error loading boarding state.</p>';
+        return;
+      }
+
+      // open SSE connection for live updates (backend checks session cookie)
+      openBoardingSSE(flight);
+    }
+
+    function renderBoardingStateUI(flight, state) {
+      const el = document.getElementById('boardingState');
+      const started = state.boarding_started || false;
+      const boarded = state.boarded || [];
+      el.innerHTML = `
+        <p>Boarding started: <strong id="boardStarted">${started}</strong> <span id="sseStatus" style="margin-left:1rem;color:gray">(connecting...)</span></p>
+        <p>Boarded count: <strong id="boardedCount">${boarded.length}</strong></p>
+        <p>
+          <button id="startBoard">Start</button> <button id="stopBoard">Stop</button>
+          &nbsp; Mark boarded: <input id="markPassport" placeholder="passport/id" /> <button id="markBtn">Mark</button>
+        </p>
+        <div id="boardedList">${boarded.map(b => `<div>${b}</div>`).join('')}</div>
+      `;
+
+      document.getElementById('startBoard').addEventListener('click', async () => { await fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ action: 'start' }) }); });
+      document.getElementById('stopBoard').addEventListener('click', async () => { await fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ action: 'stop' }) }); });
+      document.getElementById('markBtn').addEventListener('click', async () => {
+        const passport = document.getElementById('markPassport').value.trim();
+        if (!passport) { alert('Enter passport'); return; }
+        const r = await fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ action: 'mark_boarded', passport }) });
+        if (!r.ok) { const d = await r.json().catch(()=>({})); alert('Failed: ' + (d.error||d.detail||'unknown')); }
+      });
+    }
+
+    // SSE helpers
+    function openBoardingSSE(flight) {
+      // close previous
+      closeBoardingSSE();
+      // Use same-origin cookie-based session; EventSource will send cookies automatically
+      const url = `/api/flights/${encodeURIComponent(flight)}/boarding/stream`;
+      try {
+        const es = new EventSource(url);
+        window._boardingES = es;
+        const statusEl = () => document.getElementById('sseStatus');
+        es.onopen = () => { if (statusEl()) statusEl().innerText = '(connected)'; };
+        es.onerror = (e) => { if (statusEl()) statusEl().innerText = '(error, falling back)'; es.close(); // try a short polling fallback
+          // small backoff then resume REST polling
+          if (window._boardingPoll) clearInterval(window._boardingPoll);
+          window._boardingPoll = setInterval(()=> fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { headers: { 'X-SESSION': token }}).then(r=>r.json()).then(j=> updateBoardingFromState(j)).catch(()=>{}), 5000);
+        };
+        es.onmessage = (ev) => {
+          try {
+            const data = JSON.parse(ev.data);
+            updateBoardingFromState(data);
+          } catch (e) {
+            console.warn('Invalid SSE data', e);
+          }
+        };
+      } catch (e) {
+        // fallback to polling
+        window._boardingPoll = setInterval(()=> fetch(`/api/flights/${encodeURIComponent(flight)}/boarding`, { headers: { 'X-SESSION': token }}).then(r=>r.json()).then(j=> updateBoardingFromState(j)).catch(()=>{}), 5000);
+      }
+    }
+
+    function closeBoardingSSE() {
+      if (window._boardingES) { try { window._boardingES.close(); } catch (e) {} window._boardingES = null; }
+      if (window._boardingPoll) { clearInterval(window._boardingPoll); window._boardingPoll = null; }
+    }
+
+    function updateBoardingFromState(state) {
+      const started = state.boarding_started || false;
+      const boarded = state.boarded || [];
+      const elStarted = document.getElementById('boardStarted');
+      const elCount = document.getElementById('boardedCount');
+      const list = document.getElementById('boardedList');
+      if (elStarted) elStarted.innerText = started;
+      if (elCount) elCount.innerText = boarded.length;
+      if (list) list.innerHTML = boarded.map(b => `<div>${b}</div>`).join('');
+      const sse = document.getElementById('sseStatus'); if (sse && sse.innerText.indexOf('connected') === -1) sse.innerText = '(connected)';
+    }
+
+    document.getElementById('tabAnalytics').addEventListener('click', async () => {
+      currentTab = 'analytics';
+      const res = await fetch('/api/analytics', { headers: { 'X-SESSION': token }});
+      if (!res.ok) { alert('Unauthorized'); window.location = '/login'; return; }
+      const j = await res.json();
+      let html = `<h2>Analytics</h2>
+        <p>Total bookings: ${j.total_bookings}</p>
+        <p>Checked-in: ${j.checked_in}</p>
+        <p>Total baggage items: ${j.baggage_total}</p>
+        <h3>Per flight</h3>
+        <ul>`;
+      for (const f in j.per_flight) {
+        html += `<li>${f}: bookings ${j.per_flight[f].bookings}, checked-in ${j.per_flight[f].checked_in}</li>`;
+      }
+      html += '</ul>';
+      document.getElementById('content').innerHTML = html;
+    });
+
+    document.getElementById('tabUsers').addEventListener('click', async () => {
+      currentTab = 'users';
+      document.getElementById('content').innerHTML = `
+        <h2>Admin Users</h2>
+        <div id="userList">Loading...</div>
+        <h3>Create Admin User</h3>
+        <form id="createAdmin">
+          <input id="adminUser" placeholder="username" required />
+          <input id="adminPass" placeholder="password" type="password" required />
+          <button>Create</button>
+        </form>
+      `;
+      const res = await fetch('/api/admin/users', { headers: { 'X-SESSION': token }});
+      const j = await res.json();
+      document.getElementById('userList').innerHTML = `<pre>${JSON.stringify(j.users || [], null, 2)}</pre>`;
+      document.getElementById('createAdmin').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('adminUser').value.trim();
+        const password = document.getElementById('adminPass').value;
+        const r = await fetch('/api/admin/users', { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ username, password }) });
+        if (r.ok) { alert('User created'); document.getElementById('tabUsers').click(); } else { const d=await r.json(); alert('Failed: '+(d.error||d.detail||'unknown')); }
+      });
+    });
+
+    // Modal form submit handler (outside delegation to avoid interference)
+    document.getElementById('editFlightForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const orig = document.getElementById('modalOrigFlight').value;
+      const flight = document.getElementById('modalFlight').value.trim();
+      const time = document.getElementById('modalTime').value || null;
+      const arrival = document.getElementById('modalArrival').value || null;
+      const aircraft = document.getElementById('modalAircraft').value.trim() || null;
+      const gate = document.getElementById('modalGate').value.trim() || null;
+      const capacityRaw = document.getElementById('modalCapacity').value;
+      const checkin_enabled = document.getElementById('modalCheckin').checked;
+      const msgEl = document.getElementById('modalMsg'); msgEl.innerText = '';
+      if (!flight) { msgEl.innerText = 'Flight number is required'; return; }
+      let capacity = null;
+      if (capacityRaw !== undefined && capacityRaw !== '') {
+        const n = parseInt(capacityRaw, 10);
+        if (Number.isNaN(n) || n < 0) { msgEl.innerText = 'Capacity must be a non-negative integer'; return; }
+        capacity = n;
+      }
+      // send update
+      try {
+        const payload = { flight, time, arrival, aircraft, gate, checkin_enabled };
+        if (capacity !== null) payload.capacity = capacity; else payload.capacity = null;
+        const r = await fetch(`/api/flights/${encodeURIComponent(orig)}`, { method: 'PUT', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify(payload) });
+        const j = await r.json().catch(()=>({}));
+        if (!r.ok) { msgEl.innerText = 'Update failed: ' + (j.error || j.detail || 'unknown'); return; }
+        // success — update card inline
+        const card = document.querySelector(`.card[data-flight="${orig}"]`);
+        if (card) {
+          // update data-flight attr if flight changed
+          if (orig !== flight) {
+            card.setAttribute('data-flight', flight);
+            // update buttons that reference data-flight
+            const btns = card.querySelectorAll('[data-flight]');
+            btns.forEach(b => b.setAttribute('data-flight', flight));
+            const viewBtn = card.querySelector('.view-passengers');
+            if (viewBtn) viewBtn.setAttribute('data-flight', flight);
+          }
+          const ftime = card.querySelector('.ftime'); if (ftime) ftime.innerText = time || 'N/A';
+          const farrival = card.querySelector('.farrival'); if (farrival) farrival.innerText = arrival || 'N/A';
+          const faircraft = card.querySelector('.faircraft'); if (faircraft) faircraft.innerText = aircraft || 'N/A';
+          const fgate = card.querySelector('.fgate'); if (fgate) fgate.innerText = gate || 'N/A';
+          const fcap = card.querySelector('.fcapacity'); if (fcap) fcap.innerText = capacity !== null ? capacity : 'N/A';
+          const fcheck = card.querySelector('.fcheckin'); if (fcheck) fcheck.innerText = checkin_enabled ? 'Enabled' : 'Disabled';
+          const toggleBtn = card.querySelector('.toggle-checkin'); if (toggleBtn) toggleBtn.textContent = checkin_enabled ? 'Disable check-in' : 'Enable check-in';
+        }
+        document.getElementById('editFlightModal').style.display = 'none';
+      } catch (e) {
+        msgEl.innerText = 'Update error: ' + (e && e.message || e);
+      }
+    });
+
+    // Passenger override modal + baggage modal (reusable)
+    // Add modal HTML at end of body
+    const pmHtml = `
+      <div id="passengerModal" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:1rem;max-width:520px;margin:auto;border-radius:6px;">
+          <h3 id="pmTitle">Passenger Action</h3>
+          <form id="pmForm">
+            <input id="pmPassport" type="hidden" />
+            <label>Action <select id="pmAction"><option value="set_checked_in">Set checked in</option><option value="clear_checked_in">Clear checked in</option><option value="resolve_issue">Resolve issue</option></select></label>
+            <label>Note <textarea id="pmNote" rows="3" style="width:100%"></textarea></label>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem"><button type="button" id="pmCancel">Cancel</button><button type="submit">Apply</button></div>
+            <div id="pmMsg" style="color:crimson;margin-top:.5rem"></div>
+          </form>
+        </div>
+      </div>
+
+      <div id="baggageModal" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
+        <div style="background:#fff;padding:1rem;max-width:520px;margin:auto;border-radius:6px;">
+          <h3 id="bgTitle">Record Baggage Payment</h3>
+          <form id="bgForm">
+            <div id="bgList"></div>
+            <label>Number of bags <input id="bgCount" type="number" min="0" value="1" /></label>
+            <p>Fee (first bag free): <strong id="bgFee">$0</strong></p>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:.5rem"><button type="button" id="bgCancel">Cancel</button><button type="submit">Record Payment</button></div>
+            <div id="bgMsg" style="color:crimson;margin-top:.5rem"></div>
+          </form>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', pmHtml);
+
+    // pm handlers
+    function openPassengerModal(passport) {
+      document.getElementById('pmPassport').value = passport;
+      document.getElementById('pmAction').value = 'set_checked_in';
+      document.getElementById('pmNote').value = '';
+      document.getElementById('pmMsg').innerText = '';
+      document.getElementById('pmTitle').innerText = `Passenger: ${passport}`;
+      document.getElementById('passengerModal').style.display = 'flex';
+    }
+    document.getElementById('pmCancel').addEventListener('click', () => document.getElementById('passengerModal').style.display = 'none');
+    document.getElementById('pmForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const passport = document.getElementById('pmPassport').value;
+      const action = document.getElementById('pmAction').value;
+      const note = document.getElementById('pmNote').value.trim();
+      const msg = document.getElementById('pmMsg'); msg.innerText = '';
+      try {
+        const r = await fetch(`/api/passengers/${encodeURIComponent(passport)}/override`, { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ action, note }) });
+        const j = await r.json().catch(()=>({}));
+        if (!r.ok) { msg.innerText = 'Failed: ' + (j.error||j.detail||'unknown'); return; }
+        document.getElementById('passengerModal').style.display = 'none';
+        // refresh passenger list (if flight context available)
+        const sel = document.getElementById('filterFlight'); if (sel && sel.value) loadPassengersForFlight(sel.value);
+      } catch (err) { msg.innerText = 'Error: ' + (err && err.message || err); }
+    });
+
+    // baggage modal handlers
+    function openBaggageModal(passports) {
+      document.getElementById('bgList').innerHTML = `<p>Passengers:<br/>${passports.map(p=>`<div>${p}</div>`).join('')}</p>`;
+      document.getElementById('bgCount').value = '1';
+      document.getElementById('bgFee').innerText = '$0';
+      document.getElementById('bgMsg').innerText = '';
+      document.getElementById('baggageModal').setAttribute('data-passports', JSON.stringify(passports));
+      document.getElementById('baggageModal').style.display = 'flex';
+      recalcBgFee();
+    }
+    function recalcBgFee() {
+      const n = parseInt(document.getElementById('bgCount').value||'0',10);
+      const fee = n<=1 ? 0 : 50*(n-1);
+      document.getElementById('bgFee').innerText = '$' + fee;
+      return fee;
+    }
+    document.getElementById('bgCount').addEventListener('input', recalcBgFee);
+    document.getElementById('bgCancel').addEventListener('click', () => document.getElementById('baggageModal').style.display = 'none');
+    document.getElementById('bgForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const passports = JSON.parse(document.getElementById('baggageModal').getAttribute('data-passports') || '[]');
+      const n = parseInt(document.getElementById('bgCount').value||'0',10);
+      const fee = n<=1 ? 0 : 50*(n-1);
+      const msg = document.getElementById('bgMsg'); msg.innerText = '';
+      try {
+        for (const pk of passports) {
+          const r = await fetch('/api/baggage/pay', { method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ passport: pk, amount: fee }) });
+          if (!r.ok) { const dj = await r.json().catch(()=>({})); msg.innerText = 'One or more payments failed: ' + (dj.error||dj.detail||'unknown'); return; }
+        }
+        document.getElementById('baggageModal').style.display = 'none';
+        const sel = document.getElementById('filterFlight'); if (sel && sel.value) loadPassengersForFlight(sel.value);
+      } catch (err) { msg.innerText = 'Error: ' + (err && err.message || err); }
+    });
+
+    document.getElementById('logout').addEventListener('click', async () => {
+      await fetch('/api/logout', { method: 'POST', headers: { 'X-SESSION': token }});
+      localStorage.removeItem('session');
+      document.cookie = 'session=;path=/;max-age=0';
+      window.location = '/';
+    });
+
+  // Initialize auto-refresh
+  startAutoRefresh();
+  updateCountdown();
+
+  // default tab
+  document.getElementById('tabDashboard').click();
+  </script>
+</body>
+</html>

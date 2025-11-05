@@ -1,0 +1,8 @@
+flask
+pillow
+qrcode
+python-dotenv
+bcrypt
+PyJWT
+flask-cors
+datetime

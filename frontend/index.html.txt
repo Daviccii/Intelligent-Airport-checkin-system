@@ -1,11 +1,147 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Intelligent Airport Check-in System</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Intelligent Airport Check‑in</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>/* small fallback for fonts */
+      @font-face{font-family:Inter;src:local('Segoe UI');}
+    </style>
 </head>
 <body>
-    <h1>Welcome to the Intelligent Airport Check-in System</h1>
-    <p>This is the frontend interface (placeholder).</p>
+    <header class="topbar">
+        <div class="container">
+            <h1>Intelligent Airport — Check‑in</h1>
+            <p class="subtitle">Register passengers and view assigned seats</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="panel">
+            <h2>Register Passenger</h2>
+            <form id="registerForm" class="form">
+                <div class="row">
+                    <label for="name">Full name</label>
+                    <input id="name" name="name" required />
+                </div>
+                <div class="row">
+                    <label for="passport">Passport #</label>
+                    <input id="passport" name="passport" required />
+                </div>
+                <div class="row">
+                    <label for="flight">Flight code</label>
+                    <input id="flight" name="flight" required />
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn primary">Register</button>
+                    <button type="button" id="clearBtn" class="btn">Clear</button>
+                </div>
+            </form>
+            <div id="message" class="message" aria-live="polite"></div>
+        </section>
+
+        <section class="panel">
+            <div class="list-header">
+                <h2>Passengers</h2>
+                <div class="controls">
+                    <input id="filterFlight" placeholder="Filter by flight" />
+                    <button id="refreshBtn" class="btn">Refresh</button>
+                </div>
+            </div>
+            <div id="passengerList" class="table-wrapper">
+                <!-- populated by JS -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">Run backend: python backend/app.py — UI connects to /api</div>
+    </footer>
+
+<script>
+const api = {
+    list: "/api/passengers",
+    register: "/api/register"
+};
+
+function el(tag, cls, text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text) e.textContent=text; return e; }
+
+async function fetchPassengers(){
+    try{
+        const res = await fetch(api.list);
+        return res.ok ? await res.json() : [];
+    }catch(e){
+        return [];
+    }
+}
+
+function renderTable(data){
+    const container = document.getElementById("passengerList");
+    container.innerHTML = "";
+    if(!data.length){
+        container.appendChild(el("div","empty","No passengers yet."));
+        return;
+    }
+    const table = el("table","pass-table");
+    const thead = el("thead"); thead.innerHTML = "<tr><th>#</th><th>Name</th><th>Passport</th><th>Flight</th><th>Seat</th></tr>";
+    table.appendChild(thead);
+    const tbody = el("tbody");
+    data.forEach((p,i)=>{
+        const tr = el("tr");
+        tr.innerHTML = `<td>${i+1}</td><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.passport)}</td><td>${escapeHtml(p.flight)}</td><td>${p.seat}</td>`;
+        tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    container.appendChild(table);
+}
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+
+async function refreshList(){
+    const all = await fetchPassengers();
+    const filter = document.getElementById("filterFlight").value.trim().toLowerCase();
+    const filtered = filter ? all.filter(p=>p.flight && p.flight.toLowerCase().includes(filter)) : all;
+    renderTable(filtered);
+}
+
+async function submitForm(e){
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const passport = document.getElementById("passport").value.trim();
+    const flight = document.getElementById("flight").value.trim();
+    const msg = document.getElementById("message");
+    msg.textContent = "";
+    if(!name||!passport||!flight){ msg.textContent="All fields are required."; msg.className="message error"; return; }
+    try{
+        const res = await fetch(api.register, {
+            method: "POST",
+            headers: {"Content-Type":"application/json"},
+            body: JSON.stringify({name, passport, flight})
+        });
+        const body = await res.json();
+        if(!res.ok){
+            msg.textContent = body.error || "Registration failed";
+            msg.className = "message error";
+            return;
+        }
+        msg.textContent = `Registered ${body.name} — seat ${body.seat} on ${body.flight}`;
+        msg.className = "message success";
+        document.getElementById("registerForm").reset();
+        await refreshList();
+    }catch(err){
+        msg.textContent = "Network error";
+        msg.className = "message error";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", ()=> {
+    document.getElementById("registerForm").addEventListener("submit", submitForm);
+    document.getElementById("refreshBtn").addEventListener("click", refreshList);
+    document.getElementById("filterFlight").addEventListener("input", refreshList);
+    document.getElementById("clearBtn").addEventListener("click", ()=>document.getElementById("registerForm").reset());
+    refreshList();
+});
+</script>
 </body>
 </html>
