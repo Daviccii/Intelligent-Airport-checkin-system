@@ -1,7 +1,9 @@
 :root{
-    --bg:#f4f7fb;
+    /* SmartFly theme variables (light mode) */
+    --primary-color: #1A73E8; /* Corporate Blue */
+    --accent: #FFD700; /* Gold accent */
+    --bg:#F4F6F8; /* light gray */
     --card:#ffffff;
-    --accent:#0b74de;
     --muted:#6b7280;
     --success:#1f9d55;
     --danger:#d03d3d;
@@ -10,8 +12,45 @@
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
     --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
     --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
-    --gradient-primary: linear-gradient(135deg, #0b74de 0%, #00a6ff 100%);
+    --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, #00a6ff 100%);
+    --logo-gradient: linear-gradient(135deg, var(--primary-color), #0084ff);
 }
+
+/* Dark mode overrides */
+body.dark {
+    --primary-color: #004AAD;
+    --accent: #FFD700;
+    --bg: #121212;
+    --card: #1e1e1e;
+    --muted: #9aa3b2;
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.6);
+    --shadow-md: 0 4px 6px rgba(0,0,0,0.7);
+    --gradient-primary: linear-gradient(135deg, #004AAD 0%, #1A73E8 100%);
+}
+
+/* Plane loader */
+.plane-loader {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    width: 64px;
+    height: 64px;
+    z-index: 1200;
+    display: none;
+}
+.plane-loader.active { display: block; }
+.plane-loader svg { width:100%; height:100%; transform-origin: 50% 50%; animation: plane-spin 2s linear infinite; filter: drop-shadow(0 6px 12px rgba(0,0,0,0.12)); }
+@keyframes plane-spin { 0%{ transform: translateY(0) rotate(0deg) } 50%{ transform: translateY(-6px) rotate(10deg) } 100%{ transform: translateY(0) rotate(0deg) } }
+
+/* Seat map styles (compact) */
+.seat-map { display:grid; gap:6px; }
+.seat-map button { padding:8px 6px; border-radius:6px; border:none; cursor:pointer; font-weight:600 }
+.seat-available { background: linear-gradient(180deg, rgba(26,115,232,0.08), rgba(26,115,232,0.02)); color: var(--primary-color) }
+.seat-taken { background:#eee; color:#666; cursor:not-allowed }
+.seat-blocked { background: #fdecea; color:#a33 }
+.seat-held { background: linear-gradient(180deg, rgba(255,215,0,0.12), rgba(255,215,0,0.02)); color: #b57a00 }
+.seat-selected { outline: 3px solid rgba(26,115,232,0.25); }
+
 
 *{box-sizing:border-box;font-family:'Poppins',Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
 body{margin:0;background:linear-gradient(180deg,#eaf2ff 0%,var(--bg) 100%);color:#0f1724;min-height:100vh}

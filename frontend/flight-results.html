@@ -232,112 +232,36 @@
             </div>
         </div>
 
-        <div class="flight-results">
-            <!-- Flight Card 1 -->
-            <div class="flight-card">
-                <div class="airline-logo">
-                    <svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:var(--accent)">
-                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-                    </svg>
-                </div>
-                <div class="flight-details">
-                    <div class="detail-group">
-                        <h4>Departure</h4>
-                        <p>07:30 AM</p>
-                        <small>JFK</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Arrival</h4>
-                        <p>09:45 PM</p>
-                        <small>LHR</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Duration</h4>
-                        <p>7h 15m</p>
-                        <small>Non-stop</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Airline</h4>
-                        <p>British Airways</p>
-                        <small>BA 178</small>
-                    </div>
-                </div>
-                <div class="price-section">
-                    <div class="price">$750</div>
-                    <button class="book-btn">Select Flight</button>
-                </div>
-            </div>
-
-            <!-- Flight Card 2 -->
-            <div class="flight-card">
-                <div class="airline-logo">
-                    <svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:var(--accent)">
-                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-                    </svg>
-                </div>
-                <div class="flight-details">
-                    <div class="detail-group">
-                        <h4>Departure</h4>
-                        <p>11:00 AM</p>
-                        <small>JFK</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Arrival</h4>
-                        <p>11:15 PM</p>
-                        <small>LHR</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Duration</h4>
-                        <p>7h 15m</p>
-                        <small>Non-stop</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Airline</h4>
-                        <p>American Airlines</p>
-                        <small>AA 100</small>
-                    </div>
-                </div>
-                <div class="price-section">
-                    <div class="price">$680</div>
-                    <button class="book-btn">Select Flight</button>
-                </div>
-            </div>
-
-            <!-- Flight Card 3 -->
-            <div class="flight-card">
-                <div class="airline-logo">
-                    <svg viewBox="0 0 24 24" style="width:30px;height:30px;fill:var(--accent)">
-                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-                    </svg>
-                </div>
-                <div class="flight-details">
-                    <div class="detail-group">
-                        <h4>Departure</h4>
-                        <p>02:30 PM</p>
-                        <small>JFK</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Arrival</h4>
-                        <p>04:45 AM</p>
-                        <small>LHR</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Duration</h4>
-                        <p>7h 15m</p>
-                        <small>Non-stop</small>
-                    </div>
-                    <div class="detail-group">
-                        <h4>Airline</h4>
-                        <p>Delta Airlines</p>
-                        <small>DL 401</small>
-                    </div>
-                </div>
-                <div class="price-section">
-                    <div class="price">$720</div>
-                    <button class="book-btn">Select Flight</button>
-                </div>
-            </div>
+        <div class="flight-results" id="flightResultsContainer">
+            <!-- dynamically rendered flight cards will appear here -->
         </div>
+        <script>
+            async function renderFlights(){
+                try{
+                    const res = await fetch('/api/flights');
+                    const j = await res.json();
+                    const flights = j.flights || [];
+                    const container = document.getElementById('flightResultsContainer');
+                    container.innerHTML = flights.map(f=>{
+                        const logo = f.logo ? `<div class="airline-logo"><img src="${f.logo}" alt="${f.airline||''}" style="width:40px;height:40px;object-fit:contain"/></div>` : `<div class="airline-logo"></div>`;
+                        const dep = f.time ? new Date(f.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
+                        const arr = f.arrival ? new Date(f.arrival).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
+                        return `
+            <div class="flight-card">
+                ${logo}
+                <div class="flight-details">
+                    <div class="detail-group"><h4>Departure</h4><p>${dep}</p><small>${f.gate||'TBA'}</small></div>
+                    <div class="detail-group"><h4>Arrival</h4><p>${arr}</p><small>${f.arrival?new Date(f.arrival).toLocaleDateString():''}</small></div>
+                    <div class="detail-group"><h4>Airline</h4><p>${f.airline||f.aircraft||''}</p><small>${f.flight}</small></div>
+                    <div class="detail-group"><h4>Seats</h4><p>${f.bookings||0}/${f.capacity||'—'}</p><small></small></div>
+                </div>
+                <div class="price-section"><div class="price">${f.price?('$'+f.price):''}</div><button class="book-btn" data-flight="${f.flight}">Select Flight</button></div>
+            </div>`;
+                    }).join('\n');
+                }catch(e){ console.error('Failed to render flights', e); }
+            }
+            renderFlights();
+        </script>
     </main>
 
     <footer class="main-footer">
@@ -391,13 +315,21 @@
     </footer>
 
     <script>
-        // Add your flight results interaction logic here
-        document.querySelectorAll('.book-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Add booking logic here
-                alert('Redirecting to booking page...');
-            });
+        // Handle Select Flight clicks using event delegation so it works after async render
+        document.getElementById('flightResultsContainer').addEventListener('click', function(e){
+            const btn = e.target.closest('.book-btn');
+            if(!btn) return;
+            const flight = btn.dataset.flight;
+            if(!flight){
+                // Fallback: just open check-in page
+                window.location.href = '/checkin.html';
+                return;
+            }
+            // Save selected flight for convenience and navigate to check-in with query param
+            try{ sessionStorage.setItem('selectedFlight', flight); }catch(err){}
+            window.location.href = '/checkin.html?flight=' + encodeURIComponent(flight);
         });
     </script>
 </body>
 </html>
+<script src="/frontend/includes/fragment-loader.js"></script>

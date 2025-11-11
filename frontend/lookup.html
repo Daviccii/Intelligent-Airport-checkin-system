@@ -3,55 +3,693 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Lookup Flight</title>
+  <title>Smart Fly — Check-in</title>
   <link rel="stylesheet" href="/style.css">
+  <style>
+    /* Small, self-contained styles to modernize the lookup page without changing global CSS */
+    :root{--brand:#0b73ff;--muted:#666;--bg:#f6f8fb}
+    body{font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); margin:0}
+    .header{background:white;padding:18px 24px;display:flex;align-items:center;gap:16px;box-shadow:0 2px 6px rgba(12,20,40,.06)}
+    .logo{font-weight:700;color:var(--brand);font-size:20px}
+    .sub{color:var(--muted);font-size:13px}
+    main.container{max-width:980px;margin:28px auto;padding:24px;background:white;border-radius:10px;box-shadow:0 6px 20px rgba(12,20,40,.06)}
+    .grid{display:grid;grid-template-columns:1fr 360px;gap:24px}
+    h1{margin:0 0 8px 0}
+    .card{padding:16px;border-radius:8px;background:#fff;border:1px solid #eef2f7}
+    label{display:block;margin:12px 0 6px;color:#333;font-weight:600}
+    input[type=text], input[type=password], select{width:100%;padding:10px;border:1px solid #d7e0ef;border-radius:6px}
+    .role-switch{display:flex;gap:8px}
+    .role-btn{padding:8px 12px;border-radius:999px;border:1px solid #d7e0ef;background:#fff;cursor:pointer}
+    .role-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+    button.primary{background:var(--brand);color:#fff;padding:10px 14px;border:none;border-radius:8px;cursor:pointer}
+    .muted{color:var(--muted);font-size:14px}
+    #message{margin-top:12px}
+    .error{color:#b00020}
+    .flight-result{border-left:4px solid var(--brand);padding:12px;border-radius:6px;background:#fbfdff}
+    .admin-note{font-size:13px;color:#444;margin-top:8px}
+    @media (max-width:900px){.grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
+  <header class="header">
+    <div class="logo">Smart Fly</div>
+    <div class="sub">Self-service check-in • Access for passengers & admins</div>
+  </header>
+
   <main class="container">
-    <h1>Passenger start</h1>
-    <p>Enter your full name and ID/passport to continue to booking.</p>
+    <div class="grid">
+      <section>
+        <h1>Check in or lookup booking</h1>
+        <p class="muted">Lookup by PNR or Passport / Last name. For admin actions, switch to Admin and sign in.</p>
 
-    <form id="startForm">
-      <label>Full name</label>
-      <input type="text" id="name" name="name" placeholder="Full name" required>
+        <div class="card" aria-live="polite">
+          <div class="role-switch" role="tablist" aria-label="Choose mode">
+            <button id="btnPassenger" class="role-btn active" role="tab" aria-selected="true">Passenger</button>
+            <button id="btnAdmin" class="role-btn" role="tab" aria-selected="false">Admin</button>
+          </div>
 
-      <label>ID / Passport number</label>
-      <input type="text" id="passport" name="passport" placeholder="Passport or ID" required>
+          <!-- Passenger form -->
+          <form id="lookupForm" style="margin-top:12px">
+            <label>Lookup method</label>
+            <select id="lookupMethod" aria-label="Lookup method">
+              <option value="pnr">PNR / Booking reference</option>
+              <option value="passport">Passport / ID + Last name</option>
+            </select>
 
-      <button type="submit">Continue</button>
-    </form>
+            <div id="pnrFields">
+              <label>PNR / Booking ref</label>
+              <input type="text" id="pnr" name="pnr" placeholder="e.g. ABC123" autocomplete="off">
+            </div>
 
-    <section id="message"></section>
+            <div id="passportFields" style="display:none">
+              <label>Passport / ID</label>
+              <input type="text" id="passport" name="passport" placeholder="Passport or ID">
+              <label>Last name</label>
+              <input type="text" id="lname" name="lname" placeholder="Family name">
+            </div>
+
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+              <button type="submit" class="primary">Search</button>
+              <div class="muted">or continue as guest</div>
+            </div>
+          </form>
+
+          <!-- Admin form (hidden until admin selected) -->
+          <form id="adminForm" style="display:none;margin-top:12px">
+            <label>Admin username</label>
+            <input type="text" id="adminUser" placeholder="admin username">
+            <label>Password</label>
+            <input type="password" id="adminPass" placeholder="password">
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+              <button type="submit" class="primary">Sign in</button>
+              <div class="muted">Admin access is restricted</div>
+            </div>
+            <div class="admin-note">Admins must authenticate before accessing management pages.</div>
+          </form>
+
+          <div id="message"></div>
+        </div>
+      </section>
+
+      <aside>
+        <div class="card">
+          <h3>Quick demo: what you get</h3>
+          <p class="muted">After a successful lookup you'll see flight details, seat map, baggage options and a boarding pass preview.</p>
+          <div style="margin-top:12px" class="flight-result">
+            <strong>FL 452</strong> &middot; LAX → JFK<br>
+            Depart: 12:30 • Gate A12 • Seat: 21A (if already assigned)
+          </div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button id="demoBtn" class="role-btn">Run demo</button>
+            <div class="muted">Try the demo walkthrough without backend</div>
+          </div>
+        </div>
+      </aside>
+    </div>
   </main>
 
-  <script>
-    const form = document.getElementById('startForm');
-    const msg = document.getElementById('message');
+  <!-- Step-by-step check-in modal / area (hidden until passenger flow starts) -->
+  <div id="checkinArea" style="max-width:980px;margin:18px auto;padding:20px;background:white;border-radius:10px;display:none">
+    <div class="card">
+      <h2 id="stepTitle">Step 1 — Select flight</h2>
+      <div id="stepContent">
+        <div id="flightSelect" style="display:block">
+          <label>Choose your flight</label>
+          <select id="flightList"></select>
+          <div style="margin-top:12px;display:flex;gap:8px"><button id="toSeat" class="primary">Continue to seat selection</button><button id="backToLookup" style="padding:10px;border-radius:8px">Back</button></div>
+        </div>
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      msg.innerHTML = '<p>Signing you in and loading booking options...</p>';
-      const passport = document.getElementById('passport').value.trim();
-      const name = document.getElementById('name').value.trim();
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ role: 'passenger', passport, name })
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          msg.innerHTML = `<p class="error">Login failed: ${data.error || data.detail || 'unknown'}</p>`;
-          return;
-        }
-        // store session token and go to passenger dashboard
-        localStorage.setItem('session', data.token);
-        document.cookie = `session=${data.token};path=/`;
-        window.location = '/passenger.html';
-      } catch (err) {
-        msg.innerHTML = '<p class="error">Failed to contact server.</p>';
+        <div id="seatSelect" style="display:none">
+          <label>Select a seat</label>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+            <label style="margin:0">Preference</label>
+            <select id="seatPref">
+              <option value="any">Auto-assign (any)</option>
+              <option value="window">Window</option>
+              <option value="aisle">Aisle</option>
+              <option value="middle">Middle</option>
+            </select>
+            <button id="autoAssignBtn" class="role-btn">Auto-assign seat</button>
+          </div>
+          <div id="seatMap" style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:8px"></div>
+          <div style="margin-top:12px;display:flex;gap:8px"><button id="toBaggage" class="primary">Continue</button><button id="seatBack" style="padding:10px;border-radius:8px">Back</button></div>
+        </div>
+
+        <div id="baggageStep" style="display:none">
+          <label>Baggage</label>
+          <input type="number" id="baggageCount" min="0" value="0">
+          <div class="muted" id="baggageFee">Fee: $0</div>
+          <div style="margin-top:12px;display:flex;gap:8px"><button id="toConfirm" class="primary">Continue to confirm</button><button id="baggageBack" style="padding:10px;border-radius:8px">Back</button></div>
+        </div>
+
+        <div id="confirmStep" style="display:none">
+          <h3>Confirm check-in</h3>
+          <div id="confirmSummary" class="muted"></div>
+          <div style="margin-top:12px;display:flex;gap:8px"><button id="doCheckin" class="primary">Check in and get boarding pass</button><button id="confirmBack" style="padding:10px;border-radius:8px">Back</button></div>
+        </div>
+
+        <div id="boardingPassStep" style="display:none">
+          <h3>Your boarding pass</h3>
+          <div id="boardingHolder" style="margin-top:12px"></div>
+          <div style="margin-top:12px"><button id="doneBtn" class="primary">Done</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // insert plane loader element
+    (function(){
+      const pl = document.createElement('div'); pl.id='planeLoader'; pl.className='plane-loader'; pl.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="url(#g)" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#1A73E8"/><stop offset="1" stop-color="#00a6ff"/></linearGradient></defs></svg>`;
+      document.body.appendChild(pl);
+    })();
+    // Elements
+    const btnPassenger = document.getElementById('btnPassenger');
+    const btnAdmin = document.getElementById('btnAdmin');
+    const lookupForm = document.getElementById('lookupForm');
+    const adminForm = document.getElementById('adminForm');
+    const lookupMethod = document.getElementById('lookupMethod');
+    const pnrFields = document.getElementById('pnrFields');
+    const passportFields = document.getElementById('passportFields');
+    const message = document.getElementById('message');
+
+    function setMode(mode){
+      const isAdmin = mode === 'admin';
+      btnPassenger.classList.toggle('active', !isAdmin);
+      btnAdmin.classList.toggle('active', isAdmin);
+      btnPassenger.setAttribute('aria-selected', String(!isAdmin));
+      btnAdmin.setAttribute('aria-selected', String(isAdmin));
+      lookupForm.style.display = isAdmin ? 'none' : 'block';
+      adminForm.style.display = isAdmin ? 'block' : 'none';
+      message.innerHTML = '';
+    }
+
+    btnPassenger.addEventListener('click', () => setMode('passenger'));
+    btnAdmin.addEventListener('click', () => setMode('admin'));
+
+    lookupMethod.addEventListener('change', (e) => {
+      if (e.target.value === 'pnr'){
+        pnrFields.style.display = 'block';
+        passportFields.style.display = 'none';
+      } else {
+        pnrFields.style.display = 'none';
+        passportFields.style.display = 'block';
       }
     });
+
+    // Helper to post JSON and return parsed JSON or throw
+    async function postJson(url, body, extraHeaders={}){
+      const headers = Object.assign({'Content-Type':'application/json'}, extraHeaders);
+      const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), credentials: 'same-origin' });
+      const j = await res.json().catch(()=> ({}));
+      if (!res.ok) throw Object.assign(new Error('Request failed'), { status: res.status, body: j });
+      return j;
+    }
+
+    // Passenger lookup/login submit
+    lookupForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      message.innerHTML = '<p>Searching for booking...</p>';
+      const method = lookupMethod.value;
+      let payload = { role: 'passenger' };
+      if (method === 'pnr'){
+        const pnr = document.getElementById('pnr').value.trim();
+        if (!pnr){ message.innerHTML = '<p class="error">Please enter a PNR.</p>'; return; }
+        payload.pnr = pnr;
+      } else {
+        const passport = document.getElementById('passport').value.trim();
+        const lname = document.getElementById('lname').value.trim();
+        if (!passport || !lname){ message.innerHTML = '<p class="error">Please enter passport and last name.</p>'; return; }
+        payload.passport = passport; payload.name = lname;
+      }
+
+      try {
+        const data = await postJson('/api/login', payload);
+        // store session token if returned
+        if (data.token){ localStorage.setItem('session', data.token); document.cookie = `session=${data.token};path=/`; }
+
+        // If passport path, lookup passenger records and begin flow
+        if (payload.passport){
+          try{
+            const hdr = data.token ? { 'X-SESSION': data.token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+            const lres = await fetch('/api/lookup', { method: 'POST', headers: hdr, body: JSON.stringify({ passport: payload.passport }), credentials: 'same-origin' });
+            const lj = await lres.json().catch(()=>({}));
+            const found = (lj.results && lj.results.length) ? lj.results[0] : null;
+            if (found){
+              message.innerHTML = '<p>Booking found — starting check-in flow...</p>';
+              beginPassengerFlow({ name: found.name || payload.name || '', passport: found.passport || payload.passport });
+              return;
+            }
+            // fallback: begin flow with minimal passenger info
+            message.innerHTML = '<p>Booking created — starting check-in flow...</p>';
+            beginPassengerFlow({ name: payload.name || 'Guest', passport: payload.passport });
+            return;
+          }catch(e){
+            console.warn('lookup failed', e);
+            message.innerHTML = '<p class="error">Failed to load booking details for check-in.</p>';
+            return;
+          }
+        }
+        // PNR path or other fallbacks
+        message.innerHTML = '<p>Found booking — redirecting to passenger dashboard (PNR path).</p>';
+        setTimeout(()=> window.location = '/passenger.html', 800);
+      } catch (err){
+        const body = err && err.body ? err.body : {};
+        message.innerHTML = `<p class="error">Lookup failed: ${body.error || body.detail || err.message}</p>`;
+      }
+    });
+
+    // Admin login
+    adminForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      message.innerHTML = '<p>Signing in as admin...</p>';
+      const user = document.getElementById('adminUser').value.trim();
+      const pass = document.getElementById('adminPass').value;
+      if (!user || !pass){ message.innerHTML = '<p class="error">Enter username and password.</p>'; return; }
+      try {
+        const data = await postJson('/api/admin/login', { username: user, password: pass });
+        if (data.token){ localStorage.setItem('session', data.token); document.cookie = `session=${data.token};path=/`; }
+        message.innerHTML = '<p>Welcome, admin — redirecting to admin dashboard...</p>';
+        setTimeout(()=> window.location = '/admin.html', 600);
+      } catch (err){
+        const body = err && err.body ? err.body : {};
+        message.innerHTML = `<p class="error">Admin login failed: ${body.error || err.message}</p>`;
+      }
+    });
+
+    // initialize
+    setMode('passenger');
+    // --- Multi-step checkin flow handlers ---
+    const checkinArea = document.getElementById('checkinArea');
+    const flightList = document.getElementById('flightList');
+    const toSeat = document.getElementById('toSeat');
+    const backToLookup = document.getElementById('backToLookup');
+    const seatMap = document.getElementById('seatMap');
+    const toBaggage = document.getElementById('toBaggage');
+    const seatBack = document.getElementById('seatBack');
+    const baggageStep = document.getElementById('baggageStep');
+    const baggageCount = document.getElementById('baggageCount');
+    const baggageFee = document.getElementById('baggageFee');
+    const toConfirm = document.getElementById('toConfirm');
+    const confirmStep = document.getElementById('confirmStep');
+    const confirmSummary = document.getElementById('confirmSummary');
+    const doCheckin = document.getElementById('doCheckin');
+    const boardingPassStep = document.getElementById('boardingPassStep');
+    const boardingHolder = document.getElementById('boardingHolder');
+    const doneBtn = document.getElementById('doneBtn');
+
+    // Face UI elements (created dynamically in confirm step)
+    let faceContainer = null;
+
+    let currentFlight = null;
+    let selectedSeat = null;
+    let currentPassenger = null; // {name, passport}
+
+    async function loadFlights(){
+      try{
+        const res = await fetch('/api/flights');
+        const j = await res.json();
+        flightList.innerHTML = '';
+        (j.flights || []).forEach(f => {
+          const opt = document.createElement('option'); opt.value = f.flight; opt.textContent = `${f.flight} — ${f.aircraft || ''} ${f.time ? '('+f.time+')':''}`;
+          flightList.appendChild(opt);
+        });
+      }catch(e){ console.warn('failed to load flights', e); }
+    }
+
+    async function showSeatMap(flightId){
+      seatMap.innerHTML = '';
+      try{
+        const res = await fetch(`/api/flights/${encodeURIComponent(flightId)}/seats`);
+        const j = await res.json();
+        const seats = j.seats || [];
+        // Improved seat map rendering with hold support
+        // Build a grid container with 6 columns by default
+        seatMap.classList.add('seat-map');
+        seatMap.style.gridTemplateColumns = 'repeat(6, 1fr)';
+        seats.forEach(s => {
+          const btn = document.createElement('button');
+          btn.textContent = s.seat;
+          btn.dataset.seat = s.seat;
+          btn.className = 'seat-available';
+          if (s.status === 'taken') { btn.className = 'seat-taken'; btn.disabled = true; }
+          else if (s.status === 'blocked'){ btn.className = 'seat-blocked'; btn.disabled = true; }
+          else if (s.status === 'held'){
+            btn.className = 'seat-held';
+            // held_by indicates passport; if it's held by current passenger allow confirm
+            if (s.held_by && currentPassenger && s.held_by === currentPassenger.passport){
+              btn.title = 'Held by you until ' + (s.held_expires || 'soon');
+              btn.addEventListener('click', ()=>{ selectSeatHeld(s.seat, btn); });
+            } else {
+              btn.title = 'Held by another passenger'; btn.disabled = true;
+            }
+          } else {
+            btn.className = 'seat-available';
+            btn.addEventListener('click', ()=>{ attemptHoldSeat(flightId, s.seat, btn); });
+          }
+          seatMap.appendChild(btn);
+        });
+      }catch(e){ console.warn('seat map failed', e); }
+    }
+
+    // Attempt to place a temporary hold on a seat via API
+    async function attemptHoldSeat(flightId, seat, btn){
+      if (!currentPassenger || !currentPassenger.passport){ alert('Please login or provide passport to hold a seat.'); return; }
+      try{
+        // show loading state
+        const pl = document.getElementById('planeLoader'); if (pl) pl.classList.add('active');
+        const token = localStorage.getItem('session');
+        const hdr = token ? { 'X-SESSION': token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+        const res = await fetch(`/api/flights/${encodeURIComponent(flightId)}/seats/hold`, { method: 'POST', headers: hdr, body: JSON.stringify({ passport: currentPassenger.passport, seat: seat, ttl_seconds: 300 }) });
+        const j = await res.json().catch(()=>({}));
+        if (!res.ok){ alert('Hold failed: ' + (j.error||j.detail||'unknown')); return; }
+        // success: mark button as held and show confirm UI
+        btn.className = 'seat-held seat-selected';
+        selectedSeat = seat;
+        // Add confirm/release controls
+        showSeatConfirmControls(seat, j.expires);
+      }catch(e){ alert('Hold error: ' + e); }
+      finally{ const pl = document.getElementById('planeLoader'); if (pl) pl.classList.remove('active'); }
+    }
+
+    function showSeatConfirmControls(seat, expires){
+      // ensure container
+      let ctr = document.getElementById('seatConfirm');
+      if (!ctr){ ctr = document.createElement('div'); ctr.id = 'seatConfirm'; ctr.style.marginTop = '12px'; document.getElementById('seatSelect').appendChild(ctr); }
+      ctr.innerHTML = `<div style="display:flex;gap:8px;align-items:center"><div>Held: <strong>${seat}</strong> until ${expires}</div><button id="confirmSeatBtn" class="primary">Confirm seat</button><button id="releaseSeatBtn" class="role-btn">Release</button></div>`;
+      document.getElementById('confirmSeatBtn').addEventListener('click', async ()=>{
+        await confirmSeatSelection(currentFlight, seat);
+      });
+      document.getElementById('releaseSeatBtn').addEventListener('click', async ()=>{
+        await releaseSeat(currentFlight, seat);
+        ctr.innerHTML = '';
+        await showSeatMap(currentFlight);
+      });
+    }
+
+    async function confirmSeatSelection(flightId, seat){
+      try{
+        const pl = document.getElementById('planeLoader'); if (pl) pl.classList.add('active');
+        const token = localStorage.getItem('session');
+        if (!token){ alert('Session required to confirm seat. Please login.'); return; }
+        const res = await fetch(`/api/flights/${encodeURIComponent(flightId)}/seats/select`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-SESSION': token }, body: JSON.stringify({ seat: seat }) });
+        const j = await res.json().catch(()=>({}));
+        if (!res.ok){ alert('Confirm failed: ' + (j.error||j.detail||'unknown')); return; }
+        alert('Seat confirmed: ' + j.seat);
+        selectedSeat = j.seat;
+        // refresh seat map
+        await showSeatMap(flightId);
+        // remove confirm controls
+        const ctr = document.getElementById('seatConfirm'); if (ctr) ctr.innerHTML='';
+      }catch(e){ alert('Confirm error: '+e); }
+      finally{ const pl = document.getElementById('planeLoader'); if (pl) pl.classList.remove('active'); }
+    }
+
+    async function releaseSeat(flightId, seat){
+      try{
+        const token = localStorage.getItem('session');
+        const hdr = token ? { 'X-SESSION': token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+        await fetch(`/api/flights/${encodeURIComponent(flightId)}/seats/release`, { method: 'POST', headers: hdr, body: JSON.stringify({ passport: currentPassenger.passport, seat: seat }) });
+      }catch(e){ console.warn('release failed', e); }
+    }
+
+    function selectSeatHeld(seat, btn){
+      // if held by current passenger, allow confirm
+      showSeatConfirmControls(seat, 'soon');
+    }
+
+    document.getElementById('autoAssignBtn').addEventListener('click', async ()=>{
+      const pref = document.getElementById('seatPref').value;
+      if (!currentFlight || !currentPassenger) { alert('Select flight and ensure passenger logged in'); return; }
+      try{
+        const token = localStorage.getItem('session');
+        const hdr = token ? { 'X-SESSION': token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+        const res = await fetch(`/api/flights/${encodeURIComponent(currentFlight)}/seats/autoassign`, { method: 'POST', headers: hdr, body: JSON.stringify({ passport: currentPassenger.passport, preference: pref }) });
+        const j = await res.json();
+        if (!res.ok){ alert('Auto-assign failed: '+(j.error||j.detail||'unknown')); return; }
+        selectedSeat = j.seat; // assigned label
+        // highlight selected seat in seatMap
+        Array.from(seatMap.querySelectorAll('button')).forEach(b=>{ if (b.textContent === selectedSeat) b.style.outline='3px solid var(--brand)'; else b.style.outline=''; });
+      }catch(e){ alert('Auto assign error: '+e); }
+    });
+
+    function selectSeat(seat, btn){
+      // deselect previous
+      Array.from(seatMap.querySelectorAll('button')).forEach(b=> b.style.outline='');
+      btn.style.outline='3px solid var(--brand)';
+      selectedSeat = seat;
+    }
+
+    function calcBaggageFee(count){
+      const n = parseInt(count||0);
+      if (isNaN(n) || n <= 1) return 0;
+      return 50 * (n-1);
+    }
+
+    // Wire flow buttons
+    backToLookup.addEventListener('click', ()=>{ checkinArea.style.display='none'; });
+    toSeat.addEventListener('click', async ()=>{
+      currentFlight = flightList.value;
+      if (!currentFlight){ alert('Choose a flight'); return; }
+      document.getElementById('stepTitle').textContent='Step 2 — Choose seat';
+      document.getElementById('flightSelect').style.display='none';
+      document.getElementById('seatSelect').style.display='block';
+      await showSeatMap(currentFlight);
+    });
+    seatBack.addEventListener('click', ()=>{
+      document.getElementById('stepTitle').textContent='Step 1 — Select flight';
+      document.getElementById('seatSelect').style.display='none';
+      document.getElementById('flightSelect').style.display='block';
+    });
+    toBaggage.addEventListener('click', ()=>{
+      document.getElementById('stepTitle').textContent='Step 3 — Baggage';
+      document.getElementById('seatSelect').style.display='none';
+      baggageStep.style.display='block';
+    });
+    baggageBack.addEventListener('click', ()=>{
+      document.getElementById('stepTitle').textContent='Step 2 — Choose seat';
+      baggageStep.style.display='none';
+      document.getElementById('seatSelect').style.display='block';
+    });
+    baggageCount.addEventListener('input', ()=>{
+      const fee = calcBaggageFee(baggageCount.value);
+      baggageFee.textContent = `Fee: $${fee}`;
+    });
+    toConfirm.addEventListener('click', ()=>{
+      // summary
+      document.getElementById('stepTitle').textContent='Step 4 — Confirm';
+      baggageStep.style.display='none';
+      confirmStep.style.display='block';
+      confirmSummary.innerHTML = `Flight: <strong>${currentFlight}</strong><br>Seat: <strong>${selectedSeat || '(auto-assigned)'}</strong><br>Bags: <strong>${baggageCount.value}</strong> (fee: $${calcBaggageFee(baggageCount.value)})`;
+      // attach face UI
+      attachFaceUI();
+    });
+    confirmBack.addEventListener('click', ()=>{
+      confirmStep.style.display='none';
+      baggageStep.style.display='block';
+    });
+
+    // Face enroll/verify helpers
+    function attachFaceUI(){
+      if (faceContainer) return;
+      faceContainer = document.createElement('div');
+      faceContainer.style.marginTop = '12px';
+      faceContainer.innerHTML = `
+        <label>Optional face verification</label>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="btnEnrollFace" class="role-btn">Enroll face</button>
+          <button id="btnVerifyFace" class="role-btn">Verify face</button>
+          <button id="btnRequestCode" class="role-btn">Request access code</button>
+        </div>
+        <div id="facePreview" style="margin-top:10px"></div>
+      `;
+      confirmSummary.parentNode.appendChild(faceContainer);
+
+      document.getElementById('btnEnrollFace').addEventListener('click', ()=>{ captureAndSend('/api/face/enroll', true); });
+      document.getElementById('btnVerifyFace').addEventListener('click', ()=>{ captureAndSend('/api/face/verify', false); });
+      document.getElementById('btnRequestCode').addEventListener('click', requestAccessCode);
+    }
+
+    async function captureAndSend(endpoint, isEnroll){
+      if (!currentPassenger || !currentPassenger.passport){ alert('Passenger passport required to enroll/verify.'); return; }
+      // open webcam and capture one frame
+      try{
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const v = document.createElement('video'); v.autoplay = true; v.srcObject = stream; v.width = 320; v.height = 240;
+        const preview = document.getElementById('facePreview'); preview.innerHTML = ''; preview.appendChild(v);
+        // wait for frame
+        await new Promise((r)=> setTimeout(r, 900));
+        const c = document.createElement('canvas'); c.width = v.videoWidth || 320; c.height = v.videoHeight || 240; const ctx = c.getContext('2d'); ctx.drawImage(v,0,0,c.width,c.height);
+        // stop stream
+        stream.getTracks().forEach(t=>t.stop());
+        // show captured
+        preview.innerHTML = ''; const img = document.createElement('img'); img.src = c.toDataURL('image/jpeg'); img.style.maxWidth='200px'; img.style.border='1px solid #ddd'; img.style.borderRadius='6px'; preview.appendChild(img);
+
+        // convert dataURL to blob
+        const res = await fetch(img.src); const blob = await res.blob();
+        const form = new FormData(); form.append('passport', currentPassenger.passport); form.append('image', blob, `${currentPassenger.passport}.jpg`);
+        const headers = {}; // fetch will set multipart boundary
+        const r = await fetch(endpoint, { method: 'POST', body: form, headers: headers });
+        const j = await r.json().catch(()=>({}));
+        if (!r.ok){ alert(`Face ${isEnroll? 'enroll':'verify'} failed: ${j.error||j.detail||'unknown'}`); return; }
+        if (!isEnroll){ // verify response contains match/score
+          preview.innerHTML += `<div class="muted">Match: ${j.match} • Score: ${j.score}</div>`;
+        } else {
+          preview.innerHTML += `<div class="muted">Enrolled successfully</div>`;
+        }
+      }catch(e){ console.warn('camera error', e); alert('Camera access failed or not available.'); }
+    }
+
+    async function requestAccessCode(){
+      if (!currentPassenger || !currentPassenger.passport){ alert('Passenger passport required to request code.'); return; }
+      try{
+        const j = await postJson('/api/request_code', { passport: currentPassenger.passport });
+        alert('Access code requested; check your email. Server response: '+(j.status||'ok'));
+      }catch(e){ const body = e && e.body ? e.body : {}; alert('Failed to request code: '+(body.error||e.message)); }
+    }
+
+    doCheckin.addEventListener('click', async ()=>{
+      doCheckin.disabled = true; doCheckin.textContent='Checking in...';
+      try{
+        // Ensure we have a passenger session token — if not, automatically create one via /api/login
+        let token = localStorage.getItem('session');
+        if (!token){
+          try{
+            const loginRes = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role: 'passenger', passport: currentPassenger.passport, name: currentPassenger.name }) });
+            const lj = await loginRes.json().catch(()=>({}));
+            if (loginRes.ok && lj.token){ token = lj.token; localStorage.setItem('session', token); document.cookie = `session=${token};path=/`; }
+          }catch(err){ console.warn('auto-login failed', err); }
+        }
+
+        const hdr = token ? { 'X-SESSION': token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+        const payload = { flight: currentFlight, passengers: [ { name: currentPassenger.name, passport: currentPassenger.passport, seat: selectedSeat, baggage_count: parseInt(baggageCount.value||0) } ] };
+        const res = await fetch('/api/checkin', { method: 'POST', headers: hdr, body: JSON.stringify(payload), credentials: 'same-origin' });
+        const j = await res.json().catch(()=>({}));
+        if (!res.ok){
+          // If checkin was rejected due to authorization, attempt to request a one-time code (best-effort) and inform user
+          if (j && (j.error === 'unauthorized' || j.error === 'access_denied')){
+            try{
+              const rc = await fetch('/api/request_code', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ passport: currentPassenger.passport }) });
+              const rcj = await rc.json().catch(()=>({}));
+              alert('Check-in requires verification. Requested access code; please check your email. Server response: '+(rcj.status||rcj.error||'ok'));
+            }catch(e){ alert('Check-in failed and requesting code also failed: '+(j.error||j.detail||e)); }
+          } else {
+            alert('Check-in failed: '+(j.error||j.detail||'unknown'));
+          }
+          doCheckin.disabled=false; doCheckin.textContent='Check in and get boarding pass';
+          return;
+        }
+
+        // show boarding pass
+        confirmStep.style.display='none';
+        document.getElementById('stepTitle').textContent='Step 5 — Boarding pass';
+        boardingPassStep.style.display='block';
+
+        // fetch boarding pass image (use token if available)
+        const bres = await fetch(`/api/boardingpass?passport=${encodeURIComponent(currentPassenger.passport)}`, { headers: token ? { 'X-SESSION': token } : {} });
+        if (bres.ok){
+          const blob = await bres.blob();
+          const url = URL.createObjectURL(blob);
+          boardingHolder.innerHTML = `<img src="${url}" alt="boarding pass" style="max-width:100%;height:auto;border:1px solid #ddd;border-radius:8px">`;
+        } else {
+          const err = await bres.json().catch(()=>({}));
+          boardingHolder.innerHTML = `<div class="error">Unable to generate boarding pass: ${err.error || err.detail || 'unknown'}</div>`;
+        }
+      }catch(e){ alert('Checkin error: '+e); }
+      doCheckin.disabled=false; doCheckin.textContent='Check in and get boarding pass';
+    });
+
+    doneBtn.addEventListener('click', ()=>{ checkinArea.style.display='none'; });
+
+    // When passenger logs in, prepare flow
+    async function beginPassengerFlow(passenger){
+      currentPassenger = passenger;
+      await loadFlights();
+      checkinArea.style.display = 'block';
+      document.getElementById('flightSelect').style.display='block';
+      document.getElementById('seatSelect').style.display='none';
+      baggageStep.style.display='none';
+      confirmStep.style.display='none';
+      boardingPassStep.style.display='none';
+      document.getElementById('stepTitle').textContent='Step 1 — Select flight';
+    }
+
+    // --- Demo mode support (client-side only, no backend) ---
+    const demoBtn = document.getElementById('demoBtn');
+    const demoFlights = [
+      { flight: 'DF100', aircraft: 'A320', time: '2025-11-05T12:30Z' , capacity: 30 },
+      { flight: 'DF200', aircraft: 'B737', time: '2025-11-05T15:00Z' , capacity: 24 }
+    ];
+
+    function populateFlightsLocal(flights){
+      flightList.innerHTML = '';
+      flights.forEach(f => {
+        const opt = document.createElement('option'); opt.value = f.flight; opt.textContent = `${f.flight} — ${f.aircraft || ''} ${f.time ? '('+f.time+')':''}`;
+        flightList.appendChild(opt);
+      });
+    }
+
+    function showSeatMapLocal(flightId){
+      // create a simple seat layout for demo
+      seatMap.innerHTML = '';
+      const cap = (demoFlights.find(d=>d.flight===flightId)||{capacity:24}).capacity || 24;
+      for(let i=1;i<=cap;i++){
+        const btn = document.createElement('button');
+        btn.textContent = String(i);
+        btn.style.padding='8px'; btn.style.borderRadius='6px'; btn.style.cursor='pointer'; btn.style.background='#f7fbff';
+        // mark some seats taken
+        if (i%7===0){ btn.style.background='#eee'; btn.disabled=true; }
+        btn.addEventListener('click', ()=>{ selectSeat(String(i), btn); });
+        seatMap.appendChild(btn);
+      }
+    }
+
+    function renderDemoBoardingPass(passenger, flight, seat){
+      const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='400'>
+        <rect width='100%' height='100%' fill='#fff' rx='8' ry='8'/>
+        <text x='24' y='40' font-size='28' fill='#0b73ff' font-family='Arial'>Smart Fly — Boarding Pass</text>
+        <text x='24' y='90' font-size='20' fill='#000' font-family='Arial'>Name: ${passenger.name}</text>
+        <text x='24' y='130' font-size='18' fill='#000' font-family='Arial'>Passport: ${passenger.passport}</text>
+        <text x='24' y='170' font-size='18' fill='#000' font-family='Arial'>Flight: ${flight}</text>
+        <text x='24' y='210' font-size='18' fill='#000' font-family='Arial'>Seat: ${seat}</text>
+        <rect x='560' y='80' width='200' height='200' fill='#eee' rx='6' ry='6'/>
+        </svg>`;
+      const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+      boardingHolder.innerHTML = `<img src="${url}" alt="boarding pass" style="max-width:100%;height:auto;border:1px solid #ddd;border-radius:8px">`;
+    }
+
+    demoBtn.addEventListener('click', async ()=>{
+      // simulate a passenger
+      const demoPassenger = { name: 'Demo Passenger', passport: 'DEMO123' };
+      currentPassenger = demoPassenger;
+      populateFlightsLocal(demoFlights);
+      checkinArea.style.display='block';
+      document.getElementById('flightSelect').style.display='block';
+      document.getElementById('seatSelect').style.display='none';
+      document.getElementById('stepTitle').textContent='Step 1 — Select flight (demo)';
+
+      // auto-select first flight after short pause
+      setTimeout(()=>{
+        flightList.value = demoFlights[0].flight;
+        // move to seat selection
+        toSeat.click();
+        // show local seat map
+        showSeatMapLocal(demoFlights[0].flight);
+        // auto-select a seat
+        setTimeout(()=>{
+          const btns = seatMap.querySelectorAll('button:not([disabled])');
+          if (btns && btns[2]){ btns[2].click(); }
+          // continue to baggage
+          setTimeout(()=>{ toBaggage.click(); baggageCount.value='1'; baggageCount.dispatchEvent(new Event('input'));
+            // continue to confirm
+            setTimeout(()=>{ toConfirm.click();
+              // finalize (mock) and show boarding pass
+              setTimeout(()=>{ renderDemoBoardingPass(demoPassenger, demoFlights[0].flight, selectedSeat || '3'); document.getElementById('stepTitle').textContent='Step 5 — Boarding pass (demo)'; document.getElementById('confirmStep').style.display='none'; document.getElementById('boardingPassStep').style.display='block'; }, 800);
+            }, 700);
+          }, 800);
+      }, 600);
+    });
   </script>
+  <script src="/frontend/includes/fragment-loader.js"></script>
 </body>
 </html>

@@ -9,6 +9,7 @@
 <body>
   <div class="container" style="padding-top:40px;">
     <h1>Check-in</h1>
+    <div id="selectedFlightBanner" style="margin-top:8px;padding:10px;border-radius:8px;background:#f8fafc;display:none"></div>
     <p>Quick check-in page. Use this when scanning or entering passport to find passengers.</p>
 
     <div class="panel">
@@ -81,6 +82,44 @@
     </div>
   </div>
 <script>
+// Prefill selected flight from query param or sessionStorage and show basic flight details
+function getQueryParam(name){
+  const params = new URLSearchParams(window.location.search);
+  return params.get(name);
+}
+
+async function showSelectedFlight(){
+  const qFlight = getQueryParam('flight');
+  const stored = sessionStorage.getItem('selectedFlight');
+  const flightCode = qFlight || stored;
+  const banner = document.getElementById('selectedFlightBanner');
+  if(!flightCode){ banner.style.display='none'; return; }
+  // keep the selection in sessionStorage for later steps
+  try{ sessionStorage.setItem('selectedFlight', flightCode); }catch(e){}
+  // attempt to fetch flight details from the API
+  try{
+    const res = await fetch('/api/flights');
+    const data = await res.json();
+    const flights = data.flights || [];
+    const f = flights.find(x => String(x.flight) === String(flightCode));
+    if(f){
+      const time = f.time ? new Date(f.time).toLocaleString() : '';
+      banner.innerHTML = `<strong>Selected:</strong> ${f.airline || ''} — ${f.flight} &nbsp; <small>${f.gate?('Gate '+f.gate):''} ${time?('- '+time):''}</small>`;
+    } else {
+      banner.innerHTML = `<strong>Selected Flight:</strong> ${flightCode}`;
+    }
+    banner.style.display = 'block';
+    // focus the quick search field so user can continue
+    const q = document.getElementById('q'); if(q) q.focus();
+  }catch(err){
+    banner.innerHTML = `<strong>Selected Flight:</strong> ${flightCode}`;
+    banner.style.display = 'block';
+  }
+}
+
+// Run on load
+document.addEventListener('DOMContentLoaded', ()=>{ showSelectedFlight(); });
+
 async function search(q){
   try{
     const res = await fetch('/api/passengers');
@@ -285,5 +324,6 @@ if(hasConsent()){
   const banner = document.getElementById('consentBanner'); if(banner) banner.style.display='none';
 }
 </script>
+<script src="/frontend/includes/fragment-loader.js"></script>
 </body>
 </html>

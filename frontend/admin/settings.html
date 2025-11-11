@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin — Settings</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo"><h2>SmartFly</h2></div>
+      <nav>
+        <ul class="admin-menu">
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="flights.html">Flights</a></li>
+          <li><a href="bookings.html">Bookings</a></li>
+          <li><a href="users.html">Users</a></li>
+          <li><a href="reports.html">Reports</a></li>
+          <li><a href="settings.html" class="active">Settings</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <div class="dashboard-header">
+        <h1>Settings</h1>
+        <div class="header-actions">
+          <button class="btn" id="btnSave">Save</button>
+        </div>
+      </div>
+
+      <div style="background:white;padding:16px;border-radius:8px;box-shadow:var(--shadow-sm)">
+        <h3>Admin session TTL (seconds)</h3>
+        <input id="adminTtl" type="number" min="60" />
+        <p style="color:var(--muted);font-size:13px">Change how long admin sessions remain valid (for the cookie / session token).</p>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const token = (document.cookie.split(';').find(c=>c.trim().startsWith('session='))||'').split('=')[1] || localStorage.getItem('session');
+    async function loadSettings(){
+      try{
+        const res = await fetch('/api/admin/system/config', { headers: { 'X-SESSION': token }});
+        if (!res.ok){ document.getElementById('adminTtl').value=''; return; }
+        const j = await res.json();
+        // try several possible keys
+        document.getElementById('adminTtl').value = j.ADMIN_SESSION_TTL_SECONDS || j.admin_session_ttl_seconds || 3600;
+      }catch(e){ }
+    }
+    document.getElementById('btnSave').addEventListener('click', async ()=>{
+      const ttl = parseInt(document.getElementById('adminTtl').value) || 3600;
+      try{
+        const res = await fetch('/api/admin/system/config', { method: 'PUT', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify(Object.assign({}, { ADMIN_SESSION_TTL_SECONDS: ttl })) });
+        if (!res.ok){ alert('Save failed'); return; }
+        alert('Saved');
+      }catch(e){ alert('Save failed'); }
+    });
+    loadSettings();
+  </script>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin — Reports</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo"><h2>SmartFly</h2></div>
+      <nav>
+        <ul class="admin-menu">
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="flights.html">Flights</a></li>
+          <li><a href="bookings.html">Bookings</a></li>
+          <li><a href="users.html">Users</a></li>
+          <li><a href="reports.html" class="active">Reports</a></li>
+          <li><a href="settings.html">Settings</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <div class="dashboard-header">
+        <h1>Reports</h1>
+        <div class="header-actions">
+          <button class="btn" id="btnRefresh">Refresh</button>
+          <button class="btn" id="btnExport">Export CSV</button>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <h3>Booking Trends</h3>
+        <div id="chartArea">Loading...</div>
+      </div>
+
+      <div style="margin-top:16px;background:white;padding:16px;border-radius:8px;box-shadow:var(--shadow-sm)">
+        <h3>Summary</h3>
+        <div id="summary">Loading...</div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const token = (document.cookie.split(';').find(c=>c.trim().startsWith('session='))||'').split('=')[1] || localStorage.getItem('session');
+    async function loadReports(){
+      try{
+        const res = await fetch('/api/analytics',{ headers: { 'X-SESSION': token }});
+        if (!res.ok){ document.getElementById('chartArea').textContent='Unauthorized or failed'; return; }
+        const j = await res.json();
+        document.getElementById('summary').innerHTML = `<p>Total bookings: ${j.total_bookings}</p><p>Checked in: ${j.checked_in}</p><p>Baggage: ${j.baggage_total}</p>`;
+        document.getElementById('chartArea').textContent = 'Chart placeholder — implement Chart.js if desired';
+      }catch(e){ document.getElementById('chartArea').textContent = 'Failed to load reports'; }
+    }
+    document.getElementById('btnRefresh').addEventListener('click', loadReports);
+    document.getElementById('btnExport').addEventListener('click', ()=>alert('Export not implemented yet'));
+    loadReports();
+  </script>
+</body>
+</html>
