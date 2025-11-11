@@ -1,22 +1,90 @@
 [
   {
-    "flight": "FL-1234",
-    "time": "2025-11-04T09:00:00Z",
-    "capacity": null,
-    "aircraft": "Boeing",
-    "gate": "B",
-    "arrival": null,
+    "flight": "DL401",
+    "time": "2025-11-03T14:30:00Z",
+    "capacity": 180,
+    "aircraft": "Boeing 737",
+    "gate": "A12",
+    "arrival": "2025-11-03T22:45:00Z",
     "checkin_enabled": true,
+    "airline": "Delta Airlines",
     "blocked_seats": []
   },
   {
-    "flight": "KQ101",
-    "time": "2025-11-05T00:00:00Z",
-    "capacity": null,
-    "aircraft": "Kenya Airways",
-    "gate": "A",
-    "arrival": null,
+    "flight": "AA202",
+    "time": "2025-11-04T07:15:00Z",
+    "capacity": 200,
+    "aircraft": "Airbus A320",
+    "gate": "B5",
+    "arrival": "2025-11-04T11:30:00Z",
     "checkin_enabled": true,
+    "airline": "American Airlines",
+    "blocked_seats": []
+  },
+  {
+    "flight": "DF100",
+    "time": "2025-11-05T09:00:00Z",
+    "capacity": 150,
+    "aircraft": "Embraer E195",
+    "gate": "C3",
+    "arrival": "2025-11-05T13:15:00Z",
+    "checkin_enabled": false,
+    "airline": "Delta Force",
+    "blocked_seats": []
+  }
+  ,{
+    "flight": "UA700",
+    "time": "2025-11-06T10:00:00Z",
+    "capacity": 220,
+    "aircraft": "Boeing 777",
+    "gate": "D7",
+    "arrival": "2025-11-06T18:30:00Z",
+    "checkin_enabled": true,
+    "airline": "United Airlines",
+    "blocked_seats": []
+  },
+  {
+    "flight": "EK303",
+    "time": "2025-11-07T02:00:00Z",
+    "capacity": 300,
+    "aircraft": "Airbus A380",
+    "gate": "E1",
+    "arrival": "2025-11-07T14:00:00Z",
+    "checkin_enabled": true,
+    "airline": "Emirates",
+    "blocked_seats": []
+  },
+  {
+    "flight": "BA180",
+    "time": "2025-11-08T16:30:00Z",
+    "capacity": 250,
+    "aircraft": "Boeing 787",
+    "gate": "F4",
+    "arrival": "2025-11-08T22:10:00Z",
+    "checkin_enabled": true,
+    "airline": "British Airways",
+    "blocked_seats": []
+  },
+  {
+    "flight": "AF44",
+    "time": "2025-11-09T12:00:00Z",
+    "capacity": 240,
+    "aircraft": "Airbus A350",
+    "gate": "G2",
+    "arrival": "2025-11-09T20:15:00Z",
+    "checkin_enabled": true,
+    "airline": "Air France",
+    "blocked_seats": []
+  },
+  {
+    "flight": "KL412",
+    "time": "2025-11-10T06:45:00Z",
+    "capacity": 190,
+    "aircraft": "Boeing 737",
+    "gate": "H3",
+    "arrival": "2025-11-10T10:05:00Z",
+    "checkin_enabled": true,
+    "airline": "KLM",
     "blocked_seats": []
   }
 ]

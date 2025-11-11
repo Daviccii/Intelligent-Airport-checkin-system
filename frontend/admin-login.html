@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin Login — SmartFly</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container" style="padding-top:100px;max-width:480px">
+    <div class="card">
+      <h2>Admin Login</h2>
+      <p class="muted">Enter your admin credentials to access the dashboard.</p>
+      <form id="adminLoginForm">
+        <label>Username <input id="username" required></label>
+        <label>Password <input id="password" type="password" required></label>
+        <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+          <button type="submit" class="btn login-btn">Sign in</button>
+        </div>
+      </form>
+      <div id="loginMsg" style="margin-top:12px"></div>
+    </div>
+  </main>
+
+  <script>
+    async function postJson(url, body){
+      const res = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const j = await res.json().catch(()=>({}));
+      if (!res.ok) throw j;
+      return j;
+    }
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value;
+      const msg = document.getElementById('loginMsg'); msg.innerText='Signing in...';
+      try{
+        const j = await postJson('/api/admin/login', { username: u, password: p });
+        if (j.token){
+          localStorage.setItem('session', j.token);
+          document.cookie = `session=${j.token};path=/`;
+          // redirect to admin dashboard
+          window.location.href = '/admin.html';
+        } else {
+          msg.innerText = 'Unexpected response from server';
+        }
+      }catch(err){
+        msg.innerText = 'Login failed: ' + (err && err.error ? err.error : JSON.stringify(err));
+      }
+    });
+  </script>
+
+  <script src="/frontend/includes/fragment-loader.js"></script>
+</body>
+</html>

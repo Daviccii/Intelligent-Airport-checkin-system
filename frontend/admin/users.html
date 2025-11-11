@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin — Users</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="admin-logo"><h2>SmartFly</h2></div>
+      <nav>
+        <ul class="admin-menu">
+          <li><a href="dashboard.html">Dashboard</a></li>
+          <li><a href="flights.html">Flights</a></li>
+          <li><a href="bookings.html">Bookings</a></li>
+          <li><a href="users.html" class="active">Users</a></li>
+          <li><a href="reports.html">Reports</a></li>
+          <li><a href="settings.html">Settings</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-content">
+      <div class="dashboard-header">
+        <h1>Admin Users</h1>
+        <div class="header-actions">
+          <button class="btn" id="btnRefresh">Refresh</button>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <h3>Existing Admin Users</h3>
+        <div id="usersList">Loading...</div>
+      </div>
+
+      <div class="stat-card" style="margin-top:16px">
+        <h3>Create Admin User</h3>
+        <form id="createUserForm">
+          <label>Username<br/><input id="newUser" required></label>
+          <label>Password<br/><input id="newPass" type="password" required></label>
+          <div style="margin-top:8px"><button type="submit" class="btn primary">Create</button></div>
+        </form>
+        <div id="createMsg" style="margin-top:8px"></div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const token = (document.cookie.split(';').find(c=>c.trim().startsWith('session='))||'').split('=')[1] || localStorage.getItem('session');
+    async function loadUsers(){
+      try{
+        const res = await fetch('/api/admin/users',{ headers: { 'X-SESSION': token }});
+        if (!res.ok) { document.getElementById('usersList').textContent = 'Unauthorized or failed'; return; }
+        const j = await res.json();
+        const list = j.users || [];
+        document.getElementById('usersList').innerHTML = list.length ? '<ul>'+list.map(u=>`<li>${u} <button data-user="'+u+'" class="delUser">Delete</button></li>`).join('')+'</ul>' : '<p>No admin users</p>';
+      }catch(e){ document.getElementById('usersList').textContent = 'Failed to load users'; }
+    }
+    document.getElementById('btnRefresh').addEventListener('click', loadUsers);
+    document.getElementById('createUserForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const u = document.getElementById('newUser').value.trim();
+      const p = document.getElementById('newPass').value;
+      try{
+        const res = await fetch('/api/admin/users',{ method: 'POST', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify({ username: u, password: p }) });
+        const body = await res.json().catch(()=>({}));
+        if (!res.ok){ document.getElementById('createMsg').textContent = 'Create failed: '+(body.error||'unknown'); return; }
+        document.getElementById('createMsg').textContent = 'Created '+(body.username||u);
+        document.getElementById('newUser').value=''; document.getElementById('newPass').value='';
+        loadUsers();
+      }catch(e){ document.getElementById('createMsg').textContent = 'Request failed'; }
+    });
+    loadUsers();
+  </script>
+</body>
+</html>

@@ -269,6 +269,8 @@
                 <button class="btn primary" onclick="openFlightModal('add')">Add New Flight</button>
             </div>
 
+                <div id="flash" style="margin-bottom:12px;display:none;padding:10px;border-radius:8px"></div>
+
             <div class="search-filters">
                 <div class="search-input">
                     <svg viewBox="0 0 24 24">
@@ -294,12 +296,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>Flight No.</th>
+                            <th>Flight</th>
                             <th>Route</th>
                             <th>Departure</th>
                             <th>Arrival</th>
                             <th>Status</th>
-                            <th>Capacity</th>
+                            <th>Bookings / Capacity</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -362,11 +364,12 @@
                 <div class="form-grid">
                     <div class="form-field">
                         <label>Flight Number</label>
-                        <input type="text" required>
+                        <input id="flightNumber" type="text" required>
                     </div>
                     <div class="form-field">
                         <label>Aircraft</label>
-                        <select required>
+                        <select id="aircraft" required>
+                            <option value="">Select aircraft</option>
                             <option>Boeing 737</option>
                             <option>Airbus A320</option>
                             <option>Boeing 787</option>
@@ -374,23 +377,23 @@
                     </div>
                     <div class="form-field">
                         <label>Departure Airport</label>
-                        <input type="text" required>
+                        <input id="departAirport" type="text" required>
                     </div>
                     <div class="form-field">
                         <label>Arrival Airport</label>
-                        <input type="text" required>
+                        <input id="arriveAirport" type="text" required>
                     </div>
                     <div class="form-field">
                         <label>Departure Time</label>
-                        <input type="datetime-local" required>
+                        <input id="departTime" type="datetime-local" required>
                     </div>
                     <div class="form-field">
                         <label>Arrival Time</label>
-                        <input type="datetime-local" required>
+                        <input id="arriveTime" type="datetime-local" required>
                     </div>
                     <div class="form-field">
                         <label>Status</label>
-                        <select required>
+                        <select id="statusField" required>
                             <option>Scheduled</option>
                             <option>Active</option>
                             <option>Delayed</option>
@@ -399,7 +402,7 @@
                     </div>
                     <div class="form-field">
                         <label>Capacity</label>
-                        <input type="number" required>
+                        <input id="capacityField" type="number" required>
                     </div>
                 </div>
 
@@ -425,12 +428,136 @@
             modal.classList.remove('active');
         }
 
-        // Form submission
-        document.getElementById('flightForm').addEventListener('submit', (e) => {
+        // Flight management logic
+        const flightTableBody = document.querySelector('.flights-table tbody');
+        const flightForm = document.getElementById('flightForm');
+        let editMode = false;
+        let editingFlightId = null;
+
+        function getSessionHeader(){
+            const token = localStorage.getItem('session');
+            return token ? { 'X-SESSION': token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
+        }
+
+        async function loadFlights(){
+            try{
+                const res = await fetch('/api/flights');
+                const data = await res.json();
+                const rows = data.flights || [];
+                flightTableBody.innerHTML = '';
+                rows.forEach(f => {
+                    const tr = document.createElement('tr');
+                    const logo = f.logo ? `<img src="${f.logo}" alt="${f.airline||''}" style="width:36px;height:24px;object-fit:contain;margin-right:8px;vertical-align:middle">` : '';
+                    tr.innerHTML = `
+                        <td>${logo}<strong>${f.flight}</strong><div style="font-size:12px;color:var(--muted)">${f.airline||f.aircraft||''}</div></td>
+                        <td>${(f.route || '')}</td>
+                        <td>${f.time || ''}</td>
+                        <td>${f.arrival || ''}</td>
+                        <td><span class="status-pill ${f.status || (f.checkin_enabled ? 'active' : 'scheduled')}">${f.status || (f.checkin_enabled ? 'Active' : 'Scheduled')}</span></td>
+                        <td>${f.bookings || 0}/${f.capacity || '—'}</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-icon" data-action="edit" data-flight="${f.flight}"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg></button>
+                                <button class="btn-icon" data-action="delete" data-flight="${f.flight}"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+                            </div>
+                        </td>
+                    `;
+                    flightTableBody.appendChild(tr);
+                });
+            }catch(e){
+                console.error('Failed to load flights', e);
+            }
+        }
+
+        // Open modal for add or edit
+        function openFlightModal(type, flight){
+            editMode = (type === 'edit');
+            editingFlightId = flight || null;
+            modal.classList.add('active');
+            modalTitle.textContent = type === 'add' ? 'Add New Flight' : 'Edit Flight';
+            // clear or populate form fields
+            const inputs = flightForm.querySelectorAll('input, select');
+            inputs.forEach(i => i.value = '');
+            if (editMode && flight){
+                // fetch flight details
+                fetch(`/api/flights`).then(r=>r.json()).then(j=>{
+                    const f = (j.flights||[]).find(x=>x.flight===flight);
+                    if (f){
+                        // populate form fields by id
+                        document.getElementById('flightNumber').value = f.flight || '';
+                        document.getElementById('aircraft').value = f.aircraft || '';
+                        document.getElementById('departAirport').value = f.departure || '';
+                        document.getElementById('arriveAirport').value = f.arrivalAirport || '';
+                        // parse ISO times if present
+                        try{ if (f.time) document.getElementById('departTime').value = new Date(f.time).toISOString().slice(0,16); }catch(e){}
+                        try{ if (f.arrival) document.getElementById('arriveTime').value = new Date(f.arrival).toISOString().slice(0,16); }catch(e){}
+                        document.getElementById('statusField').value = f.status || 'Scheduled';
+                        document.getElementById('capacityField').value = f.capacity || '';
+                    }
+                }).catch(()=>{});
+            }
+        }
+
+        function closeFlightModal() {
+            modal.classList.remove('active');
+            editMode = false; editingFlightId = null;
+        }
+
+        flightForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Add your form submission logic here
-            closeFlightModal();
+            // read form values by id
+            const flightNumber = document.getElementById('flightNumber').value.trim();
+            const aircraft = document.getElementById('aircraft').value.trim();
+            const depart = document.getElementById('departAirport').value.trim();
+            const arrive = document.getElementById('arriveAirport').value.trim();
+            const departTime = document.getElementById('departTime').value ? new Date(document.getElementById('departTime').value).toISOString() : null;
+            const arriveTime = document.getElementById('arriveTime').value ? new Date(document.getElementById('arriveTime').value).toISOString() : null;
+            const status = document.getElementById('statusField').value || 'Scheduled';
+            const capacity = document.getElementById('capacityField').value ? parseInt(document.getElementById('capacityField').value) : null;
+
+            const payload = { flight: flightNumber, aircraft: aircraft, time: departTime, arrival: arriveTime, checkin_enabled: status !== 'Cancelled', capacity: capacity };
+            try{
+                const headers = getSessionHeader();
+                if (!editMode){
+                    const res = await fetch('/api/flights', { method: 'POST', headers: headers, body: JSON.stringify(payload) });
+                    if (!res.ok){ const body = await res.json().catch(()=>({})); alert('Create failed: '+(body.error||body.detail||'unknown')); return; }
+                } else {
+                    const res = await fetch(`/api/flights/${encodeURIComponent(editingFlightId)}`, { method: 'PUT', headers: headers, body: JSON.stringify(payload) });
+                    if (!res.ok){ const body = await res.json().catch(()=>({})); alert('Update failed: '+(body.error||body.detail||'unknown')); return; }
+                }
+                closeFlightModal();
+                await loadFlights();
+            }catch(e){ console.error('Save flight failed', e); alert('Save failed'); }
         });
+
+        // Table actions (edit/delete)
+        document.querySelector('.flights-table').addEventListener('click', async (ev)=>{
+            const btn = ev.target.closest('button[data-action]');
+            if (!btn) return;
+            const action = btn.getAttribute('data-action');
+            const flightId = btn.getAttribute('data-flight');
+                    if (action === 'edit'){
+                        openFlightModal('edit', flightId);
+                    } else if (action === 'delete'){
+                        if (!confirm('Delete flight '+flightId+'?')) return;
+                        try{
+                            const headers = getSessionHeader();
+                            const res = await fetch(`/api/flights/${encodeURIComponent(flightId)}`, { method: 'DELETE', headers: headers });
+                            if (!res.ok){ const body = await res.json().catch(()=>({})); showFlash('error','Delete failed: '+(body.error||'unknown')); return; }
+                            showFlash('success','Flight deleted');
+                            await loadFlights();
+                        }catch(e){ console.error('Delete failed', e); showFlash('error','Delete failed'); }
+                    }
+        });
+
+        function showFlash(type, text){
+            const el = document.getElementById('flash');
+            el.style.display = 'block';
+            el.style.background = type === 'error' ? '#fee' : '#eef9ee';
+            el.style.border = type === 'error' ? '1px solid #f2a' : '1px solid #8fd28f';
+            el.textContent = text;
+            setTimeout(()=>{ el.style.display = 'none'; }, 4000);
+        }
 
         // Close modal when clicking outside
         modal.addEventListener('click', (e) => {
@@ -438,6 +565,9 @@
                 closeFlightModal();
             }
         });
+
+        // initial load
+        loadFlights();
     </script>
 </body>
 </html>

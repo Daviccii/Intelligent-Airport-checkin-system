@@ -1,9 +1,10 @@
 # ...existing code...
-from flask import Flask, request, jsonify, send_from_directory
-from security_utils import security_manager, require_admin, sanitize_input
+from flask import Flask, request, jsonify, send_from_directory, redirect
+from security_utils import security_manager, require_admin, sanitize_input, validate_passport
 from flight_manager import FlightManager
 import json
 import os
+import threading
 from PIL import Image, ImageChops, ImageStat
 import io
 import qrcode
@@ -30,6 +31,20 @@ ACCESS_CODES_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "acc
 ADMIN_USERS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "admin_users.json"))
 FLIGHTS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "flights.json"))
 BOARDING_STATE_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "boarding_state.json"))
+OPENAPI_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "openapi.json"))
+HOLDS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "holds.json"))
+
+# Try to initialize Redis/RQ if configured
+RQ_QUEUE = None
+try:
+    import redis as _redis
+    from rq import Queue as _Queue
+    REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
+    _redis_conn = _redis.from_url(REDIS_URL)
+    RQ_QUEUE = _Queue('default', connection=_redis_conn)
+except Exception:
+    RQ_QUEUE = None
+
 
 # Ensure face_store exists
 if not os.path.exists(FACE_DIR):
@@ -141,6 +156,58 @@ def _compute_baggage_fee(baggage_count: int):
     if n <= 1:
         return 0
     return 50 * (n - 1)
+
+
+def autoassign_seat_from_capacity(capacity, existing_seats=None, blocked_seats=None, preference='any', cols=None):
+    """Deterministic seat auto-assignment helper.
+    - capacity: int number of seats
+    - existing_seats: iterable of seat labels already taken (strings)
+    - blocked_seats: iterable of seat labels blocked/unavailable
+    - preference: 'window'|'aisle'|'middle'|'any'
+    - cols: optional list of column letters (defaults to 6-abreast A-F)
+
+    Returns a seat label string (e.g. '1A') or None if no seats available.
+    """
+    try:
+        cap = int(capacity)
+    except Exception:
+        return None
+    if cap <= 0:
+        return None
+
+    if existing_seats is None:
+        existing = set()
+    else:
+        existing = set(str(s) for s in existing_seats if s)
+    blocked = set(str(s) for s in (blocked_seats or []) if s)
+
+    if cols is None:
+        cols = ['A', 'B', 'C', 'D', 'E', 'F']
+
+    labels = []
+    rows = (cap + len(cols) - 1) // len(cols)
+    count = 0
+    for r in range(1, rows + 1):
+        for c in cols:
+            count += 1
+            if count > cap:
+                break
+            labels.append({'label': f"{r}{c}", 'row': r, 'col': c})
+
+    def seat_type(col):
+        if col in ('A', 'F'):
+            return 'window'
+        if col in ('C', 'D'):
+            return 'aisle'
+        return 'middle'
+
+    pref = (preference or 'any').lower()
+    candidates = [s['label'] for s in labels if s['label'] not in existing and s['label'] not in blocked and (pref == 'any' or seat_type(s['col']) == pref)]
+    if not candidates:
+        candidates = [s['label'] for s in labels if s['label'] not in existing and s['label'] not in blocked]
+    if not candidates:
+        return None
+    return candidates[0]
 
 def _load_access_codes():
     try:
@@ -262,9 +329,15 @@ def _save_sessions(sessions: dict):
     except Exception:
         pass
 
-def _create_session(role: str, passport: str = None, ttl_minutes: int = 60):
+def _create_session(role: str, passport: str = None, ttl_minutes: int = 60, ttl_seconds: float = None):
+    """Create a session token.
+    By default uses ttl_minutes. If ttl_seconds is provided it takes precedence and allows short lifetimes (e.g., admin testing).
+    """
     token = __import__('uuid').uuid4().hex
-    expires = (datetime.utcnow() + timedelta(minutes=ttl_minutes)).isoformat() + 'Z'
+    if ttl_seconds is not None:
+        expires = (datetime.utcnow() + timedelta(seconds=float(ttl_seconds))).isoformat() + 'Z'
+    else:
+        expires = (datetime.utcnow() + timedelta(minutes=ttl_minutes)).isoformat() + 'Z'
     sessions = _load_sessions()
     sessions[token] = {'role': role, 'passport': passport, 'expires': expires}
     _save_sessions(sessions)
@@ -336,15 +409,133 @@ def api_get_passengers():
         save_passengers()
         return jsonify({"message": "All passengers deleted successfully"}), 200
 
+
+@app.route('/api/admin/passengers', methods=['POST','PUT','DELETE'])
+def api_admin_passengers():
+    """Admin-only passenger CRUD. Uses JSON body for inputs.
+       POST: create passenger { name, passport, flight, seat?, email? }
+       PUT: update passenger identified by passport and flight: { passport, flight, fields... }
+       DELETE: delete passenger(s) by passport and optional flight: { passport, flight? }
+    """
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
+    data = request.get_json() or {}
+    if request.method == 'POST':
+        name = sanitize_input(data.get('name') or '')
+        passport = sanitize_input(data.get('passport') or '')
+        flight = sanitize_input(data.get('flight') or '')
+        email = sanitize_input(data.get('email') or '')
+        seat = data.get('seat')
+        if not (name and passport and flight):
+            return jsonify({'error': 'name, passport and flight are required'}), 400
+        ok, reason = validate_passport(passport)
+        if not ok:
+            return jsonify({'error': 'invalid_passport', 'detail': reason}), 400
+        if find_duplicate(passport, flight):
+            return jsonify({'error': 'duplicate_passenger'}), 400
+        # determine seat if not provided
+        if seat is None:
+            seat = sum(1 for p in passengers if p.get('flight') == flight) + 1
+        p = {'name': name, 'passport': passport, 'flight': flight, 'seat': seat}
+        if email:
+            p['email'] = email
+        passengers.append(p)
+        try:
+            save_passengers()
+        except Exception:
+            pass
+        log_event({'type': 'admin_create_passenger', 'passport': passport, 'flight': flight, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+        return jsonify(p), 201
+
+    if request.method == 'PUT':
+        passport = sanitize_input(data.get('passport') or '')
+        flight = sanitize_input(data.get('flight') or '')
+        if not passport or not flight:
+            return jsonify({'error': 'passport and flight required to identify record'}), 400
+        # find passenger index
+        idx = next((i for i,p in enumerate(passengers) if str(p.get('passport')) == str(passport) and str(p.get('flight')) == str(flight)), None)
+        if idx is None:
+            return jsonify({'error': 'passenger_not_found'}), 404
+        # allowed update fields
+        allowed = {'name','email','phone','seat','checked_in','baggage_count','baggage_paid','baggage_details'}
+        changed = {}
+        for k,v in data.items():
+            if k in allowed:
+                passengers[idx][k] = v
+                changed[k] = v
+        try:
+            save_passengers()
+        except Exception:
+            pass
+        log_event({'type': 'admin_update_passenger', 'passport': passport, 'flight': flight, 'changed': changed, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+        return jsonify({'status': 'updated', 'passenger': passengers[idx]}), 200
+
+    if request.method == 'DELETE':
+        passport = sanitize_input(data.get('passport') or '')
+        flight = sanitize_input(data.get('flight') or '')
+        if not passport:
+            return jsonify({'error': 'passport required to delete passenger(s)'}), 400
+        before = len(passengers)
+        if flight:
+            # remove matching passport+flight
+            passengers[:] = [p for p in passengers if not (str(p.get('passport')) == str(passport) and str(p.get('flight')) == str(flight))]
+        else:
+            # remove all records with this passport
+            passengers[:] = [p for p in passengers if not (str(p.get('passport')) == str(passport))]
+        removed = before - len(passengers)
+        try:
+            save_passengers()
+        except Exception:
+            pass
+        log_event({'type': 'admin_delete_passenger', 'passport': passport, 'flight': flight or 'ALL', 'removed': removed, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+        return jsonify({'status': 'deleted', 'removed': removed}), 200
+
+
+@app.route('/api/admin/events', methods=['GET'])
+def api_admin_events():
+    """Admin-only events / audit log access.
+       Query params:
+         - passport (optional): filter events for this passport
+         - limit (optional): integer max records to return (default 200)
+    """
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
+    passport = (request.args.get('passport') or '').strip()
+    try:
+        limit = int(request.args.get('limit') or 200)
+    except Exception:
+        limit = 200
+    events = []
+    try:
+        if os.path.exists(EVENTS_FILE):
+            with open(EVENTS_FILE, 'r') as f:
+                events = json.load(f) or []
+    except Exception:
+        events = []
+    if passport:
+        filtered = [e for e in events if str(e.get('passport') or '') == str(passport)]
+        # return in reverse chronological (assuming appended)
+        return jsonify({'events': filtered[-limit:][::-1]}), 200
+    # no passport -> return last `limit` events
+    return jsonify({'events': (events[-limit:] or [])[::-1]}), 200
+
 @app.route("/api/register", methods=["POST"])
 def api_register():
     data = request.get_json() or {}
-    name = data.get("name")
-    passport = data.get("passport")
-    email = data.get("email")
-    flight = data.get("flight")
+    name = sanitize_input(data.get("name") or '')
+    passport = sanitize_input(data.get("passport") or '')
+    email = sanitize_input(data.get("email") or '')
+    flight = sanitize_input(data.get("flight") or '')
+
     if not (name and passport and flight):
         return jsonify({"error": "name, passport and flight are required"}), 400
+
+    # validate passport format
+    ok, reason = validate_passport(passport)
+    if not ok:
+        return jsonify({"error": "invalid_passport", "detail": reason}), 400
 
     if find_duplicate(passport, flight):
         return jsonify({"error": "Passenger already registered for this flight"}), 400
@@ -371,7 +562,8 @@ def api_register():
     email_sent = False
     try:
         if passenger.get('email'):
-            send_boarding_pass_email(passenger)
+            # enqueue email send in background to avoid blocking
+            enqueue_boarding_email(passenger)
             email_sent = True
     except Exception:
         email_sent = False
@@ -388,6 +580,9 @@ def api_face_enroll():
     img = request.files.get('image')
     if not (passport and img):
         return jsonify({"error": "passport and image are required"}), 400
+    ok, reason = validate_passport(passport)
+    if not ok:
+        return jsonify({"error": "invalid_passport", "detail": reason}), 400
     # Save file to face store
     safe_name = passport.replace('/', '_')
     dest = os.path.join(FACE_DIR, f"{safe_name}.jpg")
@@ -438,6 +633,9 @@ def api_face_verify():
     img = request.files.get('image')
     if not (passport and img):
         return jsonify({"error": "passport and image are required"}), 400
+    ok, reason = validate_passport(passport)
+    if not ok:
+        return jsonify({"error": "invalid_passport", "detail": reason}), 400
     safe_name = passport.replace('/', '_')
     stored = os.path.join(FACE_DIR, f"{safe_name}.jpg")
     if not os.path.exists(stored):
@@ -538,13 +736,22 @@ def api_boardingpass():
     else:
         return jsonify({'error': 'access_denied', 'detail': 'provide a valid session, code, or master password'}), 403
 
-    # Create a simple boarding pass image
+    # Create a simple boarding pass image or PDF
     try:
         img = create_boarding_pass_image(p)
-        buf = io.BytesIO()
-        img.save(buf, format='PNG')
-        buf.seek(0)
-        return send_file(buf, mimetype='image/png', as_attachment=False, download_name=f"boardingpass_{passport}.png")
+        fmt = (request.args.get('format') or '').lower()
+        if fmt == 'pdf':
+            buf = io.BytesIO()
+            # PIL can save an image to PDF directly
+            img_rgb = img.convert('RGB')
+            img_rgb.save(buf, format='PDF')
+            buf.seek(0)
+            return send_file(buf, mimetype='application/pdf', as_attachment=False, download_name=f"boardingpass_{passport}.pdf")
+        else:
+            buf = io.BytesIO()
+            img.save(buf, format='PNG')
+            buf.seek(0)
+            return send_file(buf, mimetype='image/png', as_attachment=False, download_name=f"boardingpass_{passport}.png")
     except Exception as e:
         return jsonify({"error": "failed to generate boarding pass", "detail": str(e)}), 500
 
@@ -593,6 +800,27 @@ def api_lookup():
         pass
 
     return jsonify({'results': results}), 200
+
+
+@app.route('/api/openapi.json')
+def api_openapi():
+    try:
+        return send_from_directory(os.path.dirname(OPENAPI_FILE), os.path.basename(OPENAPI_FILE), mimetype='application/json')
+    except Exception:
+        try:
+            with open(OPENAPI_FILE, 'r') as f:
+                return jsonify(json.load(f))
+        except Exception:
+            return jsonify({'error': 'openapi not available'}), 404
+
+
+@app.route('/api/docs')
+def api_docs():
+    # Serve a simple Redoc page pointing at /api/openapi.json
+    try:
+        return send_from_directory(os.path.dirname(OPENAPI_FILE), 'openapi_docs.html')
+    except Exception:
+        return "API docs not available", 404
 
 
 @app.route('/api/bookings', methods=['GET'])
@@ -651,6 +879,8 @@ def api_flights():
     time = data.get('time')
     aircraft = (data.get('aircraft') or '').strip() or None
     gate = (data.get('gate') or '').strip() or None
+    airline = (data.get('airline') or '').strip() or None
+    logo = (data.get('logo') or '').strip() or None
     arrival = data.get('arrival')
     checkin_enabled = data.get('checkin_enabled') if 'checkin_enabled' in data else True
     if not flight:
@@ -672,7 +902,7 @@ def api_flights():
             capacity = int(data.get('capacity'))
     except Exception:
         return jsonify({'error': 'invalid_capacity'}), 400
-    entry = {'flight': flight, 'time': time_iso, 'capacity': capacity, 'aircraft': aircraft, 'gate': gate, 'arrival': arrival_iso, 'checkin_enabled': bool(checkin_enabled), 'blocked_seats': []}
+    entry = {'flight': flight, 'time': time_iso, 'capacity': capacity, 'aircraft': aircraft, 'gate': gate, 'arrival': arrival_iso, 'checkin_enabled': bool(checkin_enabled), 'blocked_seats': [], 'airline': airline, 'logo': logo}
     flights.append(entry)
     _save_flights(flights)
     log_event({'type': 'flight_created', 'flight': flight, 'time': time_iso, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
@@ -791,6 +1021,12 @@ def api_checkin():
             results.append({'passport': passport, 'status': 'error', 'detail': 'passport,name,flight required'})
             continue
 
+        # validate passport format
+        ok, reason = validate_passport(passport)
+        if not ok:
+            results.append({'passport': passport, 'status': 'error', 'detail': 'invalid_passport', 'reason': reason})
+            continue
+
         # find or create passenger record
         p = next((x for x in passengers if x.get('passport') == passport), None)
         if p is None:
@@ -815,15 +1051,49 @@ def api_checkin():
                 results.append({'passport': passport, 'status': 'error', 'detail': 'flight_full'})
                 continue
 
-        # assign seat: if requested and available, use it; else next integer seat
-        existing_seats = [int(pp.get('seat')) for pp in passengers if pp.get('flight') == flight and pp.get('seat')]
+        # assign seat: support both explicit seat labels and preference keywords
+        existing_seats = [str(pp.get('seat')) for pp in passengers if pp.get('flight') == flight and pp.get('seat')]
         assigned_seat = None
         try:
-            if seat_pref:
-                if str(seat_pref) not in [str(s) for s in existing_seats]:
+            # If seat_pref is a preference keyword (window/aisle/middle/any)
+            if isinstance(seat_pref, str) and seat_pref.lower() in ('window','aisle','middle','any'):
+                capacity = flight_entry.get('capacity') if flight_entry else None
+                assigned_seat = autoassign_seat_from_capacity(capacity, existing_seats=existing_seats, blocked_seats=flight_entry.get('blocked_seats') if flight_entry else None, preference=seat_pref)
+            # If seat_pref is a direct seat label and available
+            if not assigned_seat and seat_pref:
+                if str(seat_pref) not in existing_seats:
                     assigned_seat = seat_pref
+            # fallback numeric increment for legacy numeric seats
             if not assigned_seat:
-                assigned_seat = (max(existing_seats) + 1) if existing_seats else 1
+                # try numeric labels first
+                nums = []
+                for s in existing_seats:
+                    try:
+                        nums.append(int(s))
+                    except Exception:
+                        pass
+                assigned_seat = (max(nums) + 1) if nums else None
+                if assigned_seat is None:
+                    # if no numeric seats, pick first available label from seat map
+                    if flight_entry and flight_entry.get('capacity'):
+                        cap = int(flight_entry.get('capacity'))
+                        cols = ['A','B','C','D','E','F']
+                        labels = []
+                        rows = (cap + len(cols) - 1) // len(cols)
+                        count = 0
+                        for r in range(1, rows+1):
+                            for c in cols:
+                                count += 1
+                                if count > cap:
+                                    break
+                                label = f"{r}{c}"
+                                if label not in existing_seats and label not in (flight_entry.get('blocked_seats') or []):
+                                    assigned_seat = label
+                                    break
+                            if assigned_seat:
+                                break
+                if assigned_seat is None:
+                    assigned_seat = 1
         except Exception:
             assigned_seat = 1
 
@@ -849,11 +1119,11 @@ def api_checkin():
         # Log event
         log_event({'type': 'checkin', 'passport': passport, 'flight': flight, 'seat': assigned_seat, 'baggage_count': baggage_count, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
 
-        # attempt to send boarding pass by email if email present
+        # attempt to send boarding pass by email if email present (enqueue)
         email_sent = False
         if p.get('email'):
             try:
-                send_boarding_pass_email(p)
+                enqueue_boarding_email(p)
                 email_sent = True
             except Exception:
                 email_sent = False
@@ -963,11 +1233,58 @@ def api_flight_seats(flight_id):
     if not flight:
         return jsonify({'error': 'flight_not_found'}), 404
 
-    # determine capacity
+    # determine capacity and generate seat labels (e.g., 1A,1B,...)
     capacity = flight.get('capacity')
-    # collect taken seats
     taken = { str(p.get('seat')): p for p in passengers if p.get('flight') == flight_id and p.get('seat') }
     blocked = { str(s): True for s in (flight.get('blocked_seats') or []) }
+    # load holds and filter expired
+    def _load_holds():
+        try:
+            if os.path.exists(HOLDS_FILE):
+                with open(HOLDS_FILE, 'r') as f:
+                    return json.load(f) or {}
+        except Exception:
+            pass
+        return {}
+
+    def _save_holds(h):
+        try:
+            with open(HOLDS_FILE, 'w') as f:
+                json.dump(h, f, indent=2)
+        except Exception:
+            pass
+
+    holds = _load_holds().get(flight_id, [])
+    # cleanup expired holds
+    now = datetime.utcnow()
+    active_holds = []
+    for h in holds:
+        try:
+            exp = datetime.fromisoformat(h.get('expires').replace('Z',''))
+        except Exception:
+            continue
+        if exp > now:
+            active_holds.append(h)
+    # write back if any expired were removed
+    if len(active_holds) != len(holds):
+        all_holds = _load_holds()
+        all_holds[flight_id] = active_holds
+        _save_holds(all_holds)
+    holds = active_holds
+
+    def _generate_seat_labels(cap):
+        # Simple layout: 6 seats per row labeled A-F
+        cols = ['A','B','C','D','E','F']
+        seats = []
+        rows = (cap + len(cols) - 1) // len(cols)
+        count = 0
+        for r in range(1, rows+1):
+            for c in cols:
+                count += 1
+                if count > cap:
+                    break
+                seats.append(f"{r}{c}")
+        return seats
 
     seats = []
     if capacity:
@@ -976,10 +1293,14 @@ def api_flight_seats(flight_id):
         except Exception:
             cap = None
         if cap:
-            for i in range(1, cap+1):
-                s = str(i)
+            labels = _generate_seat_labels(cap)
+            for s in labels:
+                # check holds first
+                hold_entry = next((hh for hh in holds if hh.get('seat') == s), None)
                 if s in taken:
                     seats.append({'seat': s, 'status': 'taken', 'passenger': {'name': taken[s].get('name'), 'passport': taken[s].get('passport')}})
+                elif hold_entry:
+                    seats.append({'seat': s, 'status': 'held', 'held_by': hold_entry.get('passport'), 'held_expires': hold_entry.get('expires')})
                 elif s in blocked:
                     seats.append({'seat': s, 'status': 'blocked'})
                 else:
@@ -1040,6 +1361,160 @@ def api_flight_seat_select(flight_id):
 
     log_event({'type': 'seat_selected', 'flight': flight_id, 'passport': passport, 'seat': seat, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'ok', 'seat': seat, 'passenger': p}), 200
+
+
+@app.route('/api/flights/<flight_id>/seats/autoassign', methods=['POST'])
+def api_flight_seat_autoassign(flight_id):
+    """Auto-assign a seat based on preference: window, aisle, middle, any.
+    Body: { passport: str, preference?: 'window'|'aisle'|'middle'|'any' }
+    """
+    session = _require_session(request)
+    # allow kiosk/no-session calls but prefer session passenger
+    data = request.get_json() or {}
+    passport = (data.get('passport') or (session.get('passport') if session else '')).strip()
+    pref = (data.get('preference') or 'any').lower()
+
+    if not passport:
+        return jsonify({'error': 'passport_required'}), 400
+
+    flights = _load_flights()
+    flight = next((f for f in flights if f.get('flight') == flight_id), None)
+    if not flight:
+        return jsonify({'error': 'flight_not_found'}), 404
+
+    capacity = flight.get('capacity')
+    if not capacity:
+        # fallback to numeric assignment
+        existing = [str(p.get('seat')) for p in passengers if p.get('flight') == flight_id and p.get('seat')]
+        assigned = None
+        n = 1
+        while True:
+            if str(n) not in existing:
+                assigned = str(n); break
+            n += 1
+        if not assigned:
+            return jsonify({'error': 'no_seat_available'}), 400
+        # assign
+        p = next((x for x in passengers if x.get('passport') == passport), None)
+        if p is None:
+            p = {'name': '', 'passport': passport, 'flight': flight_id}
+            passengers.append(p)
+        p['seat'] = assigned
+        try: save_passengers()
+        except Exception: pass
+        log_event({'type': 'seat_autoassign', 'flight': flight_id, 'passport': passport, 'seat': assigned, 'preference': pref, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+        return jsonify({'status': 'ok', 'seat': assigned}), 200
+
+    assigned = autoassign_seat_from_capacity(capacity, existing_seats=[str(p.get('seat')) for p in passengers if p.get('flight') == flight_id and p.get('seat')], blocked_seats=flight.get('blocked_seats') or [], preference=pref)
+    if not assigned:
+        return jsonify({'error': 'no_seat_available'}), 400
+
+    # assign to passenger record
+    p = next((x for x in passengers if x.get('passport') == passport), None)
+    if p is None:
+        p = {'name': '', 'passport': passport, 'flight': flight_id}
+        passengers.append(p)
+    p['seat'] = assigned
+    try: save_passengers()
+    except Exception: pass
+
+    log_event({'type': 'seat_autoassign', 'flight': flight_id, 'passport': passport, 'seat': assigned, 'preference': pref, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+    return jsonify({'status': 'ok', 'seat': assigned}), 200
+
+
+@app.route('/api/flights/<flight_id>/seats/hold', methods=['POST'])
+def api_flight_seat_hold(flight_id):
+    """Place a temporary hold on a seat for a passenger.
+    Body: { passport?: str, seat: '1A', ttl_seconds?: int }
+    Requires passenger session or passport provided.
+    """
+    data = request.get_json() or {}
+    session = _require_session(request)
+    passport = (data.get('passport') or (session.get('passport') if session else '') or '').strip()
+    seat = str(data.get('seat') or '').strip()
+    try:
+        ttl = int(data.get('ttl_seconds') or 300)
+    except Exception:
+        ttl = 300
+    if not passport or not seat:
+        return jsonify({'error': 'passport_and_seat_required'}), 400
+
+    flights = _load_flights()
+    flight = next((f for f in flights if f.get('flight') == flight_id), None)
+    if not flight:
+        return jsonify({'error': 'flight_not_found'}), 404
+
+    # check blocked or already taken
+    if str(seat) in [str(x) for x in (flight.get('blocked_seats') or [])]:
+        return jsonify({'error': 'seat_blocked'}), 400
+    conflict = next((p for p in passengers if p.get('flight') == flight_id and str(p.get('seat')) == str(seat) and p.get('passport') != passport), None)
+    if conflict:
+        return jsonify({'error': 'seat_taken', 'by': conflict.get('passport')}), 400
+
+    # load holds
+    try:
+        holds_all = {}
+        if os.path.exists(HOLDS_FILE):
+            with open(HOLDS_FILE, 'r') as f:
+                holds_all = json.load(f) or {}
+    except Exception:
+        holds_all = {}
+    flight_holds = holds_all.get(flight_id, [])
+    # cleanup expired
+    now = datetime.utcnow()
+    valid_holds = []
+    for h in flight_holds:
+        try:
+            exp = datetime.fromisoformat(h.get('expires').replace('Z', ''))
+            if exp > now:
+                valid_holds.append(h)
+        except Exception:
+            continue
+    flight_holds = valid_holds
+    # check existing hold conflict
+    if any(h.get('seat') == seat and h.get('passport') != passport for h in flight_holds):
+        return jsonify({'error': 'seat_held'}), 400
+
+    expires = (datetime.utcnow() + timedelta(seconds=ttl)).isoformat() + 'Z'
+    hold = {'seat': seat, 'passport': passport, 'expires': expires}
+    # replace any existing hold by this passport on same seat
+    flight_holds = [h for h in flight_holds if not (h.get('seat') == seat and h.get('passport') == passport)]
+    flight_holds.append(hold)
+    holds_all[flight_id] = flight_holds
+    try:
+        with open(HOLDS_FILE, 'w') as f:
+            json.dump(holds_all, f, indent=2)
+    except Exception:
+        pass
+
+    log_event({'type': 'seat_hold', 'flight': flight_id, 'passport': passport, 'seat': seat, 'expires': expires, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+    return jsonify({'status': 'held', 'seat': seat, 'expires': expires}), 200
+
+
+@app.route('/api/flights/<flight_id>/seats/release', methods=['POST'])
+def api_flight_seat_release(flight_id):
+    data = request.get_json() or {}
+    passport = (data.get('passport') or '').strip()
+    seat = str(data.get('seat') or '').strip()
+    if not passport or not seat:
+        return jsonify({'error': 'passport_and_seat_required'}), 400
+    try:
+        holds_all = {}
+        if os.path.exists(HOLDS_FILE):
+            with open(HOLDS_FILE, 'r') as f:
+                holds_all = json.load(f) or {}
+    except Exception:
+        holds_all = {}
+    flight_holds = holds_all.get(flight_id, [])
+    new_holds = [h for h in flight_holds if not (h.get('seat') == seat and h.get('passport') == passport)]
+    holds_all[flight_id] = new_holds
+    try:
+        with open(HOLDS_FILE, 'w') as f:
+            json.dump(holds_all, f, indent=2)
+    except Exception:
+        pass
+    log_event({'type': 'seat_release', 'flight': flight_id, 'passport': passport, 'seat': seat, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+    return jsonify({'status': 'released'}), 200
 
 
 @app.route('/api/passengers/<passport>/override', methods=['POST'])
@@ -1298,35 +1773,7 @@ def api_admin_flight(flight_id):
         _save_flights(flights)
         return jsonify({'status': 'success', 'deleted': deleted_flight}), 200
 
-@app.route('/api/admin/passengers', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def api_admin_passengers():
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'unauthorized'}), 401
 
-    if request.method == 'GET':
-        return jsonify({'passengers': passengers}), 200
-    
-    if request.method == 'POST':
-        data = request.get_json()
-        if not data or 'name' not in data or 'passport' not in data:
-            return jsonify({'error': 'Missing required passenger information'}), 400
-        
-        if any(p['passport'] == data['passport'] for p in passengers):
-            return jsonify({'error': 'Passenger already exists'}), 400
-        
-        new_passenger = {
-            'name': data['name'],
-            'passport': data['passport'],
-            'email': data.get('email'),
-            'flight': data.get('flight'),
-            'seat': data.get('seat'),
-            'checked_in': data.get('checked_in', False)
-        }
-        
-        passengers.append(new_passenger)
-        save_passengers()
-        return jsonify({'status': 'success', 'passenger': new_passenger}), 201
 
 @app.route('/api/admin/system/config', methods=['GET', 'PUT'])
 def api_admin_system_config():
@@ -1500,35 +1947,73 @@ def api_admin_passenger(passport):
     session = _require_session(request, require_role='admin')
     if not session:
         return jsonify({'error': 'unauthorized'}), 401
+    # Support identifying a specific booking by optional 'flight' parameter (query or JSON body)
+    flight = (request.args.get('flight') or (request.get_json(silent=True) or {}).get('flight') or '').strip()
 
-    passenger_index = next((i for i, p in enumerate(passengers) if p['passport'] == passport), None)
-    
-    if passenger_index is None:
+    # find all indices for this passport
+    indices = [i for i, p in enumerate(passengers) if str(p.get('passport')) == str(passport)]
+    if not indices:
         return jsonify({'error': 'Passenger not found'}), 404
 
+    # helper to select index based on flight if provided
+    def _select_index():
+        if flight:
+            idx = next((i for i, p in enumerate(passengers) if str(p.get('passport')) == str(passport) and str(p.get('flight') or '') == str(flight)), None)
+            return idx
+        # if only one record exists for this passport, return it
+        if len(indices) == 1:
+            return indices[0]
+        # ambiguous: multiple bookings for same passport, caller should specify flight
+        return None
+
     if request.method == 'GET':
-        return jsonify({'passenger': passengers[passenger_index]}), 200
-    
+        # If flight specified, return that record; otherwise return all records for this passport
+        if flight:
+            idx = _select_index()
+            if idx is None:
+                return jsonify({'error': 'Passenger for specified flight not found'}), 404
+            return jsonify({'passenger': passengers[idx]}), 200
+        matched = [p for i, p in enumerate(passengers) if i in indices]
+        return jsonify({'passengers': matched}), 200
+
     if request.method == 'PUT':
-        data = request.get_json()
+        data = request.get_json() or {}
         if not data:
             return jsonify({'error': 'No update data provided'}), 400
-        
-        passengers[passenger_index].update({
-            'name': data.get('name', passengers[passenger_index]['name']),
-            'email': data.get('email', passengers[passenger_index].get('email')),
-            'flight': data.get('flight', passengers[passenger_index].get('flight')),
-            'seat': data.get('seat', passengers[passenger_index].get('seat')),
-            'checked_in': data.get('checked_in', passengers[passenger_index].get('checked_in', False))
-        })
-        
-        save_passengers()
-        return jsonify({'status': 'success', 'passenger': passengers[passenger_index]}), 200
-    
+        idx = _select_index()
+        if idx is None:
+            return jsonify({'error': 'multiple_records_found', 'detail': 'Specify flight to identify which booking to update'}), 400
+
+        # allowed updates
+        allowed = {'name', 'email', 'flight', 'seat', 'checked_in', 'phone', 'baggage_count', 'baggage_paid', 'baggage_details'}
+        changed = {}
+        for k, v in data.items():
+            if k in allowed:
+                passengers[idx][k] = v
+                changed[k] = v
+        try:
+            save_passengers()
+        except Exception:
+            pass
+        log_event({'type': 'admin_update_passenger', 'passport': passport, 'flight': passengers[idx].get('flight'), 'changed': changed, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+        return jsonify({'status': 'success', 'passenger': passengers[idx]}), 200
+
     if request.method == 'DELETE':
-        deleted_passenger = passengers.pop(passenger_index)
-        save_passengers()
-        return jsonify({'status': 'success', 'deleted': deleted_passenger}), 200
+        # If flight specified, delete that booking; otherwise delete all bookings for passport
+        removed = []
+        if flight:
+            new_list = [p for p in passengers if not (str(p.get('passport')) == str(passport) and str(p.get('flight') or '') == str(flight))]
+            removed = [p for p in passengers if (str(p.get('passport')) == str(passport) and str(p.get('flight') or '') == str(flight))]
+            passengers[:] = new_list
+        else:
+            removed = [p for p in passengers if str(p.get('passport')) == str(passport)]
+            passengers[:] = [p for p in passengers if not (str(p.get('passport')) == str(passport))]
+        try:
+            save_passengers()
+        except Exception:
+            pass
+        log_event({'type': 'admin_delete_passenger', 'passport': passport, 'flight': flight or 'ALL', 'removed': len(removed), 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+        return jsonify({'status': 'success', 'removed': len(removed), 'deleted': removed}), 200
 
 @app.route('/api/flights/<flight_id>/boarding/stream')
 def api_boarding_stream(flight_id):
@@ -1608,19 +2093,31 @@ def api_admin_login():
     if username in users:
         stored_hash = users[username]['password_hash']
         try:
-            if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
-                token, expires = _create_session('admin', None)
+                if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+                    # admin sessions have a short TTL for the admin portal (seconds), configurable via ADMIN_SESSION_TTL_SECONDS
+                    try:
+                        # Default admin session TTL to 1 hour unless overridden
+                        admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '3600'))
+                    except Exception:
+                        admin_ttl = 3600.0
+                    token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
                 log_event({
                     'type': 'admin_login',
                     'username': username,
                     'timestamp': datetime.utcnow().isoformat() + 'Z'
                 })
-                return jsonify({
+                resp = jsonify({
                     'token': token,
                     'role': 'admin',
                     'expires': expires,
                     'username': username
-                }), 200
+                })
+                try:
+                    # set a cookie so browser navigation to admin pages includes session
+                    resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax')
+                except Exception:
+                    pass
+                return resp, 200
         except Exception:
             pass
     
@@ -1683,6 +2180,12 @@ def api_login():
         if not ((passport and name) or email or phone):
             return jsonify({'error': 'provide passport+name, or email, or phone to login/register'}), 400
 
+        # validate passport format if provided
+        if passport:
+            ok, reason = validate_passport(passport)
+            if not ok:
+                return jsonify({'error': 'invalid_passport', 'detail': reason}), 400
+
         p = None
         # Try to find by passport
         if passport:
@@ -1737,7 +2240,12 @@ def api_login():
         master_pw = os.getenv('MASTER_ACCESS')
         # Check master password first
         if password and master_pw and password == master_pw:
-            token, expires = _create_session('admin', None)
+            try:
+                # Default to 1 hour for master-password admin sessions
+                admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '3600'))
+            except Exception:
+                admin_ttl = 3600.0
+            token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
             log_event({'type': 'login', 'role': 'admin', 'username': username or 'master', 'timestamp': datetime.utcnow().isoformat() + 'Z'})
             return jsonify({'token': token, 'role': 'admin', 'expires': expires}), 200
 
@@ -1758,7 +2266,11 @@ def api_login():
             except Exception:
                 ok = False
             if ok:
-                token, expires = _create_session('admin', None)
+                try:
+                    admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '3600'))
+                except Exception:
+                    admin_ttl = 3600.0
+                token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
                 log_event({'type': 'login', 'role': 'admin', 'username': username, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
                 return jsonify({'token': token, 'role': 'admin', 'expires': expires}), 200
 
@@ -1783,6 +2295,95 @@ def _require_session(request, require_role=None):
     if require_role and entry.get('role') != require_role:
         return None
     return entry
+
+
+# Serve admin static files only to authenticated admin sessions.
+@app.route('/admin')
+@app.route('/admin/')
+def admin_root():
+    # Redirect to the dashboard entrypoint
+    return redirect('/admin/dashboard.html')
+
+
+@app.route('/admin/<path:filename>')
+def admin_files(filename):
+    # Only allow serving admin files to an authenticated admin session
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return redirect('/admin-login.html')
+    # serve from frontend/admin directory
+    admin_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'admin'))
+    # Allow common admin HTML pages; otherwise redirect HTML requests to the canonical dashboard
+    # This keeps static assets (css/js/png/svg/woff, etc.) served directly while preventing stray HTML pages.
+    allowed_html = {
+        'dashboard.html', 'flights.html', 'bookings.html', 'users.html', 'reports.html', 'settings.html', 'merged-dashboard.html'
+    }
+    lower = filename.lower()
+    if lower.endswith('.html'):
+        base = os.path.basename(lower)
+        if base not in allowed_html:
+            return redirect('/admin/dashboard.html')
+    return send_from_directory(admin_dir, filename)
+
+
+@app.route('/admin-login.html', methods=['GET'])
+def admin_login_page():
+    # Serve a simple server-rendered login page; show optional error message via query param
+    err = request.args.get('error')
+    msg = ''
+    if err:
+        msg = '<p style="color:crimson">Invalid credentials, please try again.</p>'
+    html = f'''<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Login</title><link rel="stylesheet" href="/style.css"></head>
+<body><main class="container" style="max-width:420px;margin:4rem auto;padding:2rem;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08)">
+<h2>Admin Login</h2>
+{msg}
+<form method="post" action="/admin/login">
+<div style="margin:.5rem 0"><label>Username<br/><input name="username" required></label></div>
+<div style="margin:.5rem 0"><label>Password<br/><input name="password" type="password" required></label></div>
+<div style="margin-top:1rem"><button type="submit" class="btn primary">Sign in</button></div>
+</form>
+</main></body></html>'''
+    return html
+
+
+@app.route('/admin/login', methods=['POST'])
+def admin_login_server():
+    # Server-side login handler for admin login form
+    username = (request.form.get('username') or '').strip()
+    password = request.form.get('password') or ''
+    if not username or not password:
+        return redirect('/admin-login.html?error=1')
+    users = _load_admin_users()
+    if username in users:
+        stored_hash = users[username].get('password_hash')
+        try:
+            if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+                try:
+                    admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '3600'))
+                except Exception:
+                    admin_ttl = 3600.0
+                token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
+                log_event({'type': 'admin_login', 'username': username, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+                resp = redirect('/admin/dashboard.html')
+                try:
+                    resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax')
+                except Exception:
+                    pass
+                return resp
+        except Exception:
+            pass
+    return redirect('/admin-login.html?error=1')
+
+
+@app.route('/admin.html')
+def serve_root_admin_html():
+    # Protect the legacy /admin.html page as well
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return redirect('/admin-login.html')
+    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+    return send_from_directory(frontend_dir, 'admin.html')
 
 
 def create_boarding_pass_image(p):
@@ -1891,67 +2492,74 @@ def send_boarding_pass_email(passenger):
         except Exception:
             pass
 
-# Serve frontend files
+
+def _email_worker(passenger):
+    try:
+        send_boarding_pass_email(passenger)
+        log_event({'type': 'email_sent_background', 'passport': passenger.get('passport'), 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+    except Exception as e:
+        log_event({'type': 'email_send_failed_background', 'passport': passenger.get('passport'), 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+
+
+def enqueue_boarding_email(passenger):
+    """Enqueue sending boarding pass email.
+    Prefer RQ/Redis if available; fall back to background thread otherwise.
+    """
+    try:
+        if RQ_QUEUE is not None:
+            try:
+                # enqueue the function by import path (app.send_boarding_pass_email)
+                RQ_QUEUE.enqueue('app.send_boarding_pass_email', passenger)
+                log_event({'type': 'email_rq_enqueued', 'passport': passenger.get('passport'), 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+                return
+            except Exception as e:
+                log_event({'type': 'email_rq_enqueue_failed', 'passport': passenger.get('passport'), 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+
+        # fallback to thread-based enqueue
+        t = threading.Thread(target=_email_worker, args=(passenger,), daemon=True)
+        t.start()
+        log_event({'type': 'email_thread_queued', 'passport': passenger.get('passport'), 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+    except Exception as e:
+        log_event({'type': 'email_queue_failed', 'passport': passenger.get('passport'), 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+
+# Serve frontend files (single, canonical handlers)
 @app.route("/", defaults={'path': 'index.html'})
 @app.route("/<path:path>")
 def index(path):
     try:
         return send_from_directory(FRONTEND_DIR, path)
-    except:
+    except Exception:
         return send_from_directory(FRONTEND_DIR, "index.html")
+
 
 @app.route("/style.css")
 def style():
     return send_from_directory(FRONTEND_DIR, "style.css")
 
+
 @app.route("/checkin")
 def checkin():
-    return send_from_directory(FRONTEND_DIR, "checkin.html")
+    return send_from_directory(FRONTEND_DIR, "checkin.html", mimetype="text/html")
+
 
 @app.route("/lookup")
 def lookup():
-    return send_from_directory(FRONTEND_DIR, "lookup.html")
+    return send_from_directory(FRONTEND_DIR, "lookup.html", mimetype="text/html")
+
 
 @app.route("/login")
 def login():
-    return send_from_directory(FRONTEND_DIR, "login.html")
+    return send_from_directory(FRONTEND_DIR, "login.html", mimetype="text/html")
+
 
 @app.route("/passenger")
 def passenger():
-    return send_from_directory(FRONTEND_DIR, "passenger.html")
+    return send_from_directory(FRONTEND_DIR, "passenger.html", mimetype="text/html")
 
-@app.route("/admin")
-def admin():
-    return send_from_directory(os.path.join(FRONTEND_DIR, "admin"), "merged-dashboard.html")
-
-# Serve files from subdirectories
-@app.route('/admin/<path:path>')
-def serve_admin(path):
-    return send_from_directory(os.path.join(FRONTEND_DIR, 'admin'), path)
 
 @app.route('/assets/<path:path>')
 def serve_assets(path):
     return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), path)
-
-
-@app.route("/lookup")
-def lookup_page():
-    return send_from_directory(FRONTEND_DIR, "lookup.html", mimetype="text/html")
-
-
-@app.route('/login')
-def login_page():
-    return send_from_directory(FRONTEND_DIR, 'login.html', mimetype='text/html')
-
-
-@app.route('/passenger.html')
-def passenger_page():
-    return send_from_directory(FRONTEND_DIR, 'passenger.html', mimetype='text/html')
-
-
-@app.route('/admin.html')
-def admin_page():
-    return send_from_directory(FRONTEND_DIR, 'admin.html', mimetype='text/html')
 
 # Simple CORS for local development
 @app.after_request

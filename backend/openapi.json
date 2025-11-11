@@ -1,0 +1,29 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Intelligent Airport Check-in System API",
+    "version": "0.1.0",
+    "description": "Minimal OpenAPI spec for key endpoints used by the kiosk and admin UI."
+  },
+  "paths": {
+    "/api/login": {
+      "post": {
+        "summary": "Login (passenger or admin)",
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object" } } } },
+        "responses": { "200": { "description": "Token response" } }
+      }
+    },
+    "/api/checkin": {
+      "post": { "summary": "Check-in passengers", "responses": { "200": { "description": "Checkin results" } } }
+    },
+    "/api/flights": {
+      "get": { "summary": "List flights", "responses": { "200": { "description": "Flights list" } } }
+    },
+    "/api/flights/{flight_id}/seats/autoassign": {
+      "post": { "summary": "Autoassign seat for passenger", "parameters": [ { "name": "flight_id", "in": "path", "required": true, "schema": { "type": "string" } } ], "responses": { "200": { "description": "Assigned seat" } } }
+    },
+    "/api/boardingpass": {
+      "get": { "summary": "Get boarding pass image or PDF", "parameters": [ { "name": "passport", "in": "query", "required": true, "schema": { "type": "string" } }, { "name": "format", "in": "query", "schema": { "type": "string", "enum": ["png","pdf"] } } ], "responses": { "200": { "description": "boarding pass binary" } } }
+    }
+  }
+}

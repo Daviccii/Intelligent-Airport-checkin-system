@@ -87,7 +87,8 @@
         if (res.ok) {
           localStorage.setItem('session', data.token);
           document.cookie = `session=${data.token};path=/`;
-          window.location = '/admin/merged-dashboard.html';
+          // Redirect admins to the canonical dashboard
+          window.location = '/admin/dashboard.html';
         } else {
           alert(data.error || data.detail || 'Login failed');
         }
@@ -96,3 +97,4 @@
   </script>
 </body>
 </html>
+  <script src="/frontend/includes/fragment-loader.js"></script>
