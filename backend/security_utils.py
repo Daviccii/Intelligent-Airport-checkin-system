@@ -169,3 +169,24 @@ def validate_ip_address(ip):
     """Validate IP address format."""
     pattern = r'^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
     return bool(re.match(pattern, ip))
+
+
+def validate_passport(passport: str):
+    """Basic passport/ID validation.
+
+    This function performs lightweight validation to catch common input errors:
+    - Must be a non-empty string
+    - Length between 3 and 20 characters
+    - Allowed characters: letters, digits, dash, underscore
+
+    Returns (True, '') on success or (False, 'reason') on failure.
+    """
+    if not passport or not isinstance(passport, str):
+        return False, 'passport_required'
+    p = passport.strip()
+    if len(p) < 3 or len(p) > 20:
+        return False, 'passport_length_invalid'
+    # allow common passport formats: alphanumeric, dash, underscore
+    if not re.match(r'^[A-Za-z0-9\-_]+$', p):
+        return False, 'passport_chars_invalid'
+    return True, ''

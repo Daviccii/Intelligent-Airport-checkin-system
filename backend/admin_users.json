@@ -1,5 +1,8 @@
 {
   "Riley Gabi": {
     "password_hash": "$2b$12$FH4vPVg/AwqN/qHCqpAnt.2RSItA50Nsv305xjf/HgWGsd9s/HOzq"
+  },
+  "admin": {
+    "password_hash": "$2b$12$NGOPGgfRfq9F29iL6CgKmeH.nNQzgL622q.jU4wMRGxlRuvBefub6"
   }
 }

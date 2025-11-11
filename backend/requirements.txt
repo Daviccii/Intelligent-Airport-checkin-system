@@ -6,3 +6,8 @@ bcrypt
 PyJWT
 flask-cors
 datetime
+rq
+redis
+stripe
+# rq and redis added for background worker support
+gunicorn

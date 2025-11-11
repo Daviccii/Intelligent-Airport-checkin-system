@@ -644,5 +644,243 @@
     "role": "admin",
     "username": "Riley Gabi",
     "timestamp": "2025-11-04T07:50:01.924362Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-05T09:21:03.989952Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-05T09:21:04.554636Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "admin",
+    "timestamp": "2025-11-05T09:22:14.561988Z"
+  },
+  {
+    "type": "lookup",
+    "query_passport": true,
+    "query_name": true,
+    "query_flight": false,
+    "matches": 1,
+    "timestamp": "2025-11-05T09:24:14.405749Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "master",
+    "timestamp": "2025-11-05T11:59:12.055507Z"
+  },
+  {
+    "type": "flight_created",
+    "flight": "TST123",
+    "time": "2025-12-01T10:00:00Z",
+    "timestamp": "2025-11-05T11:59:12.058598Z"
+  },
+  {
+    "type": "flight_deleted",
+    "flight": "TST123",
+    "timestamp": "2025-11-05T11:59:12.060974Z"
+  },
+  {
+    "type": "passenger_created_via_login",
+    "passport": "SMOKE999",
+    "email": null,
+    "phone": null,
+    "timestamp": "2025-11-05T12:22:53.388381Z"
+  },
+  {
+    "type": "login",
+    "role": "passenger",
+    "passport": "SMOKE999",
+    "timestamp": "2025-11-05T12:22:53.389994Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "SMOKE999",
+    "flight": "SMK200",
+    "seat": "1",
+    "baggage_count": 1,
+    "timestamp": "2025-11-05T12:22:53.392608Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "master",
+    "timestamp": "2025-11-10T08:23:16.767356Z"
+  },
+  {
+    "type": "flight_created",
+    "flight": "TST123",
+    "time": "2025-12-01T10:00:00Z",
+    "timestamp": "2025-11-10T08:23:16.771322Z"
+  },
+  {
+    "type": "flight_deleted",
+    "flight": "TST123",
+    "timestamp": "2025-11-10T08:23:16.774192Z"
+  },
+  {
+    "type": "login",
+    "role": "passenger",
+    "passport": "TP12345",
+    "timestamp": "2025-11-10T08:23:16.778900Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "TP12345",
+    "flight": "FL-TST",
+    "seat": 2,
+    "baggage_count": 2,
+    "timestamp": "2025-11-10T08:23:16.785803Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "master",
+    "timestamp": "2025-11-10T08:27:05.526755Z"
+  },
+  {
+    "type": "flight_created",
+    "flight": "TST123",
+    "time": "2025-12-01T10:00:00Z",
+    "timestamp": "2025-11-10T08:27:05.529133Z"
+  },
+  {
+    "type": "flight_deleted",
+    "flight": "TST123",
+    "timestamp": "2025-11-10T08:27:05.531751Z"
+  },
+  {
+    "type": "login",
+    "role": "passenger",
+    "passport": "TP12345",
+    "timestamp": "2025-11-10T08:27:05.536474Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "TP12345",
+    "flight": "FL-TST",
+    "seat": 2,
+    "baggage_count": 2,
+    "timestamp": "2025-11-10T08:27:05.539023Z"
+  },
+  {
+    "type": "login",
+    "role": "passenger",
+    "passport": "54321",
+    "timestamp": "2025-11-10T08:47:32.119198Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T08:55:39.129524Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T08:55:39.139200Z"
+  },
+  {
+    "type": "passenger_created_via_login",
+    "passport": "KA654321",
+    "email": "kennedyac@gmail.com",
+    "phone": "0712345678",
+    "timestamp": "2025-11-10T08:57:19.069242Z"
+  },
+  {
+    "type": "login",
+    "role": "passenger",
+    "passport": "KA654321",
+    "timestamp": "2025-11-10T08:57:19.070847Z"
+  },
+  {
+    "type": "lookup",
+    "query_passport": true,
+    "query_name": true,
+    "query_flight": false,
+    "matches": 1,
+    "timestamp": "2025-11-10T08:57:36.523768Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "KA654321",
+    "flight": "KQ101",
+    "seat": "6A",
+    "baggage_count": 0,
+    "timestamp": "2025-11-10T08:57:54.496082Z"
+  },
+  {
+    "type": "baggage_payment",
+    "passport": "KA654321",
+    "amount": 150.0,
+    "timestamp": "2025-11-10T08:58:06.502987Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T10:00:50.311377Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T10:00:50.971191Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T10:56:53.466651Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T10:57:44.221462Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T11:13:16.462388Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T11:15:48.523941Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T11:22:42.269580Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T12:03:52.780019Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T12:23:36.748044Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T12:35:26.304426Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-10T12:52:13.951371Z"
   }
 ]

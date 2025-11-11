@@ -24,5 +24,29 @@
         "email": "ashleymwende47@gmail.com",
         "phone": "0714259032",
         "checked_in": false
+    },
+    {
+        "name": "Smoke Tester",
+        "passport": "SMOKE999",
+        "checked_in": true,
+        "flight": "SMK200",
+        "seat": "1",
+        "baggage_count": 1,
+        "baggage_details": null,
+        "baggage_fee": 0,
+        "baggage_paid": false
+    },
+    {
+        "name": "Kennedy AC",
+        "passport": "KA654321",
+        "email": "kennedyac@gmail.com",
+        "phone": "0712345678",
+        "checked_in": true,
+        "flight": "KQ101",
+        "seat": "6A",
+        "baggage_count": 0,
+        "baggage_details": null,
+        "baggage_fee": 0,
+        "baggage_paid": true
     }
 ]
