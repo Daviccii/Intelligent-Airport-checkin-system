@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flight Results - SmartFly</title>
-    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         .results-header {
-            background: var(--gradient-primary);
+            background: linear-gradient(180deg, #7ec8ff 0%, #bfe9ff 100%);
             padding: 40px 0;
-            color: white;
+            color: #012a4a;
             margin-top: 70px;
         }
 
@@ -125,7 +125,7 @@
         }
 
         .book-btn {
-            background: var(--gradient-primary);
+            background: linear-gradient(90deg,#0366a6,#0288d1);
             color: white;
             border: none;
             padding: 10px 25px;
@@ -157,6 +157,22 @@
                 text-align: center;
             }
         }
+        /* Page theme: sky-blue background */
+        body {
+            background: linear-gradient(180deg, #eaf7ff 0%, #ddf3ff 100%);
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            border: 4px solid rgba(0,0,0,0.08);
+            border-top: 4px solid var(--primary-color, #007bff);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -164,9 +180,7 @@
         <div class="container nav-container">
             <div class="logo-container">
                 <div class="logo">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-                    </svg>
+                    <!-- plane logo removed for cleaner, less-distracting results page -->
                 </div>
                 <h2 class="logo-text">SmartFly</h2>
             </div>
@@ -184,15 +198,13 @@
             <div class="search-summary">
                 <div class="route-info">
                     <div class="city-info">
-                        <div class="city-name">New York (JFK)</div>
-                        <div class="flight-date">Mon, Nov 3</div>
+                        <div class="city-name" id="cityFromName">New York (JFK)</div>
+                        <div class="flight-date" id="dateDepart">Mon, Nov 3</div>
                     </div>
-                    <svg viewBox="0 0 24 24" style="width:24px;height:24px;fill:white">
-                        <path d="M16 17.01V10h-2v7.01h-3L15 21l4-3.99h-3zM9 3L5 6.99h3V14h2V6.99h3L9 3z"/>
-                    </svg>
+                    <!-- decorative airplane removed to simplify the header -->
                     <div class="city-info">
-                        <div class="city-name">London (LHR)</div>
-                        <div class="flight-date">Tue, Nov 4</div>
+                        <div class="city-name" id="cityToName">London (LHR)</div>
+                        <div class="flight-date" id="dateReturn">Tue, Nov 4</div>
                     </div>
                 </div>
                 <button class="btn white">Modify Search</button>
@@ -201,34 +213,17 @@
     </header>
 
     <main class="container" style="padding-top:30px;padding-bottom:60px">
+        <!-- Fare options derived from booking widget (if present in query params) -->
+        <div id="fareOptionsContainer" style="margin-bottom:18px"></div>
+
         <div class="results-filters">
-            <div class="filter-options">
-                <div class="filter-group">
-                    <label>Sort by</label>
-                    <select>
-                        <option>Price: Low to High</option>
-                        <option>Price: High to Low</option>
-                        <option>Duration: Shortest</option>
-                        <option>Duration: Longest</option>
-                    </select>
+            <div class="filter-options" style="display:flex;justify-content:space-between;align-items:center">
+                <div role="tablist" aria-label="Flight filters" style="display:flex;gap:8px;align-items:center">
+                    <button class="btn small" id="filterPrice" data-filter="price" type="button">Price</button>
+                    <button class="btn small" id="filterStops" data-filter="stops" type="button">Non-stop</button>
+                    <button class="btn small" id="filterAirlines" data-filter="airlines" type="button">Top Airline</button>
                 </div>
-                <div class="filter-group">
-                    <label>Stops</label>
-                    <select>
-                        <option>Any</option>
-                        <option>Non-stop only</option>
-                        <option>1 stop max</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Airlines</label>
-                    <select>
-                        <option>All Airlines</option>
-                        <option>American Airlines</option>
-                        <option>British Airways</option>
-                        <option>Delta</option>
-                    </select>
-                </div>
+                <div id="activeFilterLabel" style="font-size:0.95rem;color:#444">Showing: <strong id="activeFilterName">All</strong></div>
             </div>
         </div>
 
@@ -236,32 +231,290 @@
             <!-- dynamically rendered flight cards will appear here -->
         </div>
         <script>
-            async function renderFlights(){
-                try{
-                    const res = await fetch('/api/flights');
-                    const j = await res.json();
-                    const flights = j.flights || [];
-                    const container = document.getElementById('flightResultsContainer');
-                    container.innerHTML = flights.map(f=>{
-                        const logo = f.logo ? `<div class="airline-logo"><img src="${f.logo}" alt="${f.airline||''}" style="width:40px;height:40px;object-fit:contain"/></div>` : `<div class="airline-logo"></div>`;
-                        const dep = f.time ? new Date(f.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
-                        const arr = f.arrival ? new Date(f.arrival).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
-                        return `
-            <div class="flight-card">
-                ${logo}
-                <div class="flight-details">
-                    <div class="detail-group"><h4>Departure</h4><p>${dep}</p><small>${f.gate||'TBA'}</small></div>
-                    <div class="detail-group"><h4>Arrival</h4><p>${arr}</p><small>${f.arrival?new Date(f.arrival).toLocaleDateString():''}</small></div>
-                    <div class="detail-group"><h4>Airline</h4><p>${f.airline||f.aircraft||''}</p><small>${f.flight}</small></div>
-                    <div class="detail-group"><h4>Seats</h4><p>${f.bookings||0}/${f.capacity||'—'}</p><small></small></div>
-                </div>
-                <div class="price-section"><div class="price">${f.price?('$'+f.price):''}</div><button class="book-btn" data-flight="${f.flight}">Select Flight</button></div>
-            </div>`;
-                    }).join('\n');
-                }catch(e){ console.error('Failed to render flights', e); }
-            }
-            renderFlights();
-        </script>
+                // Parse incoming query params once for reuse across handlers
+                const __qp = new URLSearchParams(window.location.search);
+                const from = __qp.get('from') || __qp.get('origin') || '';
+                const to = __qp.get('to') || __qp.get('destination') || '';
+                const depart = __qp.get('depart') || __qp.get('departure') || '';
+                const ret = __qp.get('return') || __qp.get('ret') || '';
+                const trip = __qp.get('trip') || 'roundtrip';
+
+                // Flights rendering with filters (Price / Non-stop / Top Airline)
+                (function(){
+                    var currentList = [];
+                    var activeFilter = 'none'; // 'none' | 'price' | 'stops' | 'airlines'
+                    function $id(id){ return document.getElementById(id); }
+                    var container = $id('flightResultsContainer');
+                    var btnPrice = $id('filterPrice');
+                    var btnStops = $id('filterStops');
+                    var btnAir = $id('filterAirlines');
+                    var activeFilterName = $id('activeFilterName');
+
+                    function fmt(v,curr){ try{ return new Intl.NumberFormat(undefined,{style:'currency',currency: curr||'USD'}).format(Number(v)); }catch(e){ return v?('$'+v):''; } }
+
+                    function normalizeFlight(f){
+                        var copy = Object.assign({}, f);
+                        // price normalization
+                        if(!copy.price){
+                            if(copy.prices && copy.prices.standard) copy.price = { currency: copy.currency || 'USD', amount: copy.prices.standard };
+                            else if(copy.price_amount) copy.price = { currency: copy.currency || 'USD', amount: copy.price_amount };
+                            else if(copy.prices && typeof copy.prices === 'object' && (copy.prices.standard || copy.prices.stand || copy.prices.s)) copy.price = { currency: copy.currency || 'USD', amount: copy.prices.standard || copy.prices.stand || copy.prices.s };
+                            else if(copy.price) copy.price = (typeof copy.price === 'number' || typeof copy.price === 'string') ? { currency: copy.currency||'USD', amount: copy.price } : copy.price;
+                            else copy.price = { currency: copy.currency || 'USD', amount: ((Math.random()*300)+50).toFixed(2) };
+                        } else if(typeof copy.price === 'number' || typeof copy.price === 'string'){
+                            copy.price = { currency: copy.currency||'USD', amount: copy.price };
+                        }
+                        // stops
+                        if(typeof copy.stops === 'undefined'){
+                            if(typeof copy.numberOfStops !== 'undefined') copy.stops = copy.numberOfStops;
+                            else copy.stops = (copy.stopsCount || 0);
+                        }
+                        copy.airline = copy.airline || copy.aircraft || copy.operator || copy.carrier || 'Unknown';
+                        return copy;
+                    }
+
+                    function ensureDistinctFares(s, f, sp){
+                        function toNum(x){
+                            const n = Number(x);
+                            return isFinite(n) && n > 0 ? n : null;
+                        }
+                        let sN = toNum(s), fN = toNum(f), spN = toNum(sp);
+                        // If none provided, bail (caller will handle)
+                        if (!sN && !fN && !spN) return { s: null, f: null, sp: null };
+                        // Use the minimum available as base
+                        const candidates = [sN, fN, spN].filter(v => v);
+                        let base = Math.min.apply(null, candidates);
+                        // If values are missing or too close/equal, derive with multipliers
+                        const distinctEnough = (a,b) => a && b && Math.abs(a-b) / Math.max(a,b) > 0.05; // >5%
+                        let needRecalc = false;
+                        if (!sN || !fN || !spN) needRecalc = true;
+                        if (!needRecalc){
+                            if (!distinctEnough(sN, fN) || !distinctEnough(fN, spN) || !distinctEnough(sN, spN)) needRecalc = true;
+                        }
+                        if (needRecalc){
+                            sN = Math.round(base);
+                            fN = Math.round(base * 1.22);
+                            spN = Math.round(base * 1.48);
+                        }
+                        return { s: sN, f: fN, sp: spN };
+                    }
+
+                    function buildCard(f){
+                        var card = document.createElement('div');
+                        card.className = 'flight-card';
+                        card.style.position = 'relative';
+
+                        var logoHTML = f.logo ? `<div class="airline-logo"><img src="${f.logo}" alt="${f.airline||''}" style="width:40px;height:40px;object-fit:contain"/></div>` : `<div class="airline-logo"></div>`;
+                        var dep = f.time ? new Date(f.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
+                        var arr = f.arrival ? new Date(f.arrival).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
+
+                        // fare band values
+                        var prices = { standard: null, flex: null, super: null };
+                        if (f.prices && typeof f.prices === 'object'){
+                            prices.standard = f.prices.standard || f.prices.stand || f.prices.s;
+                            prices.flex = f.prices.flex || f.prices.f;
+                            prices.super = f.prices.super || f.prices.superFlex || f.prices.sf;
+                        }
+                        if ((!prices.standard && !prices.flex && !prices.super) && f.price){
+                            var base = Number((typeof f.price === 'object' ? f.price.amount : f.price) || 0);
+                            prices.standard = Math.round(base);
+                            prices.flex = Math.round(base * 1.25);
+                            prices.super = Math.round(base * 1.5);
+                        }
+                        // Guarantee distinct fares if backend provided equal/too-close values
+                        const normalized = ensureDistinctFares(prices.standard, prices.flex, prices.super);
+                        prices.standard = normalized.s;
+                        prices.flex = normalized.f;
+                        prices.super = normalized.sp;
+
+                        var currency = f.currency || (f.price && f.price.currency) || 'USD';
+                        var offerBadge = f.offer ? `<div style="position:absolute;left:16px;top:12px;background:#ffeb3b;color:#012a4a;padding:6px 8px;border-radius:6px;font-weight:700;font-size:12px">${String(f.offer).toUpperCase()}</div>` : '';
+
+                        var fareUI = `
+                                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+                                    <div style="display:flex;gap:8px;flex-direction:column;align-items:flex-end">
+                                        <div style="font-size:13px;color:#666">Standard</div>
+                                        <div style="font-weight:700">${prices.standard?fmt(prices.standard,currency):'—'}</div>
+                                    </div>
+                                    <div style="display:flex;gap:8px;flex-direction:column;align-items:flex-end">
+                                        <div style="font-size:13px;color:#666">Flex</div>
+                                        <div style="font-weight:700">${prices.flex?fmt(prices.flex,currency):'—'}</div>
+                                    </div>
+                                    <div style="display:flex;gap:8px;flex-direction:column;align-items:flex-end">
+                                        <div style="font-size:13px;color:#666">Super Flex</div>
+                                        <div style="font-weight:700">${prices.super?fmt(prices.super,currency):'—'}</div>
+                                    </div>
+                                    <div style="display:flex;gap:8px;margin-top:8px">
+                                        <button class="book-btn" data-flight="${f.flight||f.flightNumber||''}" data-class="standard" data-fare="${prices.standard||''}">Select Standard</button>
+                                        <button class="book-btn" data-flight="${f.flight||f.flightNumber||''}" data-class="flex" data-fare="${prices.flex||''}">Select Flex</button>
+                                        <button class="book-btn" data-flight="${f.flight||f.flightNumber||''}" data-class="super" data-fare="${prices.super||''}">Select Super</button>
+                                    </div>
+                                </div>`;
+
+                        card.innerHTML = `
+                                ${offerBadge}
+                                ${logoHTML}
+                                <div class="flight-details">
+                                    <div class="detail-group"><h4>Departure</h4><p>${dep}</p><small>${f.gate||'TBA'}</small></div>
+                                    <div class="detail-group"><h4>Arrival</h4><p>${arr}</p><small>${f.arrival?new Date(f.arrival).toLocaleDateString():''}</small></div>
+                                    <div class="detail-group"><h4>Airline</h4><p>${f.airline||''}</p><small>${f.flight||f.flightNumber||''}</small></div>
+                                    <div class="detail-group"><h4>Stops</h4><p>${f.stops||0}</p><small></small></div>
+                                </div>
+                        `;
+
+                        var fareContainer = document.createElement('div');
+                        fareContainer.style.gridColumn = '3';
+                        fareContainer.innerHTML = fareUI;
+                        card.appendChild(fareContainer);
+                        return card;
+                    }
+
+                    function renderList(list){
+                        if(!container) return;
+                        container.innerHTML = '';
+                        if(!list || !list.length){ container.innerHTML = '<p>No flights found.</p>'; return; }
+                        list.forEach(function(f){ container.appendChild(buildCard(f)); });
+                    }
+
+                    function applyFilter(){
+                        var list = (currentList || []).slice();
+                        if(activeFilter === 'price'){
+                            list.sort(function(a,b){ return Number(a.price && a.price.amount || 0) - Number(b.price && b.price.amount || 0); });
+                            var min = Number(list[0] && list[0].price && list[0].price.amount || 0);
+                            var threshold = min * 1.15;
+                            list = list.filter(function(x){ return Number(x.price && x.price.amount || 0) <= threshold; });
+                            if(activeFilterName) activeFilterName.textContent = 'Best prices';
+                        } else if(activeFilter === 'stops'){
+                            list = list.filter(function(x){ return Number(x.stops || 0) === 0; });
+                            list.sort(function(a,b){ return Number(a.stops || 0) - Number(b.stops || 0); });
+                            if(activeFilterName) activeFilterName.textContent = 'Non-stop only';
+                        } else if(activeFilter === 'airlines'){
+                            var counts = {};
+                            list.forEach(function(x){ var a = x.airline || 'Unknown'; counts[a] = (counts[a]||0)+1; });
+                            var sorted = Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
+                            var top = sorted.length ? sorted[0] : null;
+                            if(top) list = list.filter(function(x){ return (x.airline||'Unknown') === top; });
+                            if(activeFilterName) activeFilterName.textContent = top ? (top + ' — top airline') : 'Top airline';
+                        } else {
+                            if(activeFilterName) activeFilterName.textContent = 'All';
+                        }
+                        renderList(list);
+                    }
+
+                    function setActiveFilter(mode){
+                        if(activeFilter === mode) activeFilter = 'none'; else activeFilter = mode;
+                        [btnPrice, btnStops, btnAir].forEach(function(b){ if(!b) return; b.classList.remove('active'); });
+                        if(activeFilter === 'price' && btnPrice) btnPrice.classList.add('active');
+                        if(activeFilter === 'stops' && btnStops) btnStops.classList.add('active');
+                        if(activeFilter === 'airlines' && btnAir) btnAir.classList.add('active');
+                        applyFilter();
+                    }
+
+                    async function loadAndRender(){
+                        try{
+                            var res = await fetch('/api/flights');
+                            var j = await res.json();
+                            var flights = j.flights || j.results || j || [];
+                            flights = Array.isArray(flights) ? flights : [];
+                            currentList = flights.map(normalizeFlight).map(function(item){
+                                // Normalize card-level fares to ensure distinct values
+                                if (item && item.prices){
+                                    const n = ensureDistinctFares(item.prices.standard || item.prices.stand || item.prices.s,
+                                                                 item.prices.flex || item.prices.f,
+                                                                 item.prices.super || item.prices.superFlex || item.prices.sf);
+                                    item.prices.standard = n.s;
+                                    item.prices.flex = n.f;
+                                    item.prices.super = n.sp;
+                                }
+                                return item;
+                            });
+                            activeFilter = 'none';
+                            try{ [btnPrice, btnStops, btnAir].forEach(function(b){ if(b) b.classList.remove('active'); }); }catch(e){}
+                            applyFilter();
+                        }catch(e){ console.error('Failed to render flights', e); }
+                    }
+
+                    // wire buttons
+                    try{
+                        if(btnPrice) btnPrice.addEventListener('click', function(){ setActiveFilter('price'); });
+                        if(btnStops) btnStops.addEventListener('click', function(){ setActiveFilter('stops'); });
+                        if(btnAir) btnAir.addEventListener('click', function(){ setActiveFilter('airlines'); });
+                    }catch(e){ console.error('[filters] wiring failed', e); }
+
+                    // Try rendering offer-alternatives first (exclusive view)
+                    async function tryOffersFirst(){
+                        try{
+                            const qp = new URLSearchParams();
+                            if (from) qp.set('from', from);
+                            if (to) qp.set('to', to);
+                            if (depart) qp.set('start', depart);
+                            if (ret) qp.set('end', ret);
+                            qp.set('currency', 'USD');
+                            const url = '/api/prices/offers?' + qp.toString();
+                            const r = await fetch(url, { cache: 'no-store' });
+                            if (!r.ok) return false;
+                            const data = await r.json().catch(()=>null);
+                            if (!data) return false;
+                            if (data.alternatives && data.alternatives.length){
+                                renderAlternativeCards(data);
+                                return true;
+                            }
+                            return false;
+                        }catch(e){ console.debug('[flight-results] tryOffersFirst failed', e); return false; }
+                    }
+
+                    function renderAlternativeCards(data){
+                        try{
+                            // Render large, expanded alternative carrier cards and skip flights
+                            container.innerHTML = '';
+                            const wrapper = document.createElement('div'); wrapper.style.display = 'grid'; wrapper.style.gridTemplateColumns = 'repeat(auto-fill, minmax(320px, 1fr))'; wrapper.style.gap = '18px';
+                            data.alternatives.forEach(a => {
+                                const card = document.createElement('div'); card.className = 'flight-card';
+                                card.style.borderRadius = '12px'; card.style.padding = '20px'; card.style.display = 'flex'; card.style.flexDirection = 'column'; card.style.justifyContent = 'space-between'; card.style.height = '220px';
+                                // background/logo
+                                if (a.logo_url){ card.style.backgroundImage = `linear-gradient(to top, rgba(0,0,0,0.28), rgba(0,0,0,0.08)), url('${a.logo_url}')`; card.style.backgroundSize='cover'; card.style.backgroundPosition='center'; card.style.color = '#fff'; }
+                                else { card.style.background = '#0366a6'; card.style.color = '#fff'; }
+
+                                const title = document.createElement('div'); title.innerHTML = `<div style="font-weight:800;font-size:20px">${escapeHtml(a.airline||'Carrier')}</div><div style="margin-top:6px;font-size:15px;opacity:0.95">${escapeHtml(data.currency||'USD')} ${escapeHtml((a.price||'-').toString())}</div>`;
+                                const meta = document.createElement('div'); meta.style.display='flex'; meta.style.justifyContent='space-between'; meta.style.alignItems='center'; meta.style.marginTop='12px';
+                                const btn = document.createElement('button'); btn.className = 'book-btn'; btn.textContent = 'Book'; btn.style.background = 'linear-gradient(90deg,#0366a6,#0288d1)'; btn.style.color='#fff'; btn.style.border='none'; btn.style.padding='10px 18px'; btn.style.borderRadius='8px';
+                                const href = (a.booking_url_template ? a.booking_url_template.replace('{date}', encodeURIComponent(Object.keys(data.days||{})[0]||'')) : (a.booking_url||''));
+                                btn.addEventListener('click', (ev)=>{ ev.preventDefault(); try{ localStorage.setItem('smf_pending_booking_url', href||''); localStorage.setItem('openBooking','1'); }catch(e){} window.location.href='/'; });
+                                meta.appendChild(btn);
+
+                                card.appendChild(title);
+                                card.appendChild(meta);
+                                wrapper.appendChild(card);
+                            });
+                            container.appendChild(wrapper);
+                        }catch(e){ console.debug('[flight-results] renderAlternativeCards error', e); container.innerHTML = '<p>Failed to render alternatives.</p>'; }
+                    }
+
+                    // initial load: try offers first, otherwise fallback to flights list
+                    tryOffersFirst().then(found => { if (!found) loadAndRender(); });
+
+                    // Delegate Select button clicks
+                    if(container) container.addEventListener('click', function(e){
+                        var btn = e.target.closest('.book-btn');
+                        if(!btn) return;
+                        var flight = btn.dataset.flight;
+                        var cls = btn.dataset.class || 'standard';
+                        var fare = btn.dataset.fare || '';
+                        try{ sessionStorage.setItem('selectedFlight', flight); sessionStorage.setItem('selectedFareClass', cls); }catch(err){}
+                        var q = new URLSearchParams();
+                        if (flight) q.set('flight', flight);
+                        q.set('class', cls);
+                        if (fare) q.set('fare', fare);
+                        if (from) q.set('from', from);
+                        if (to) q.set('to', to);
+                        if (depart) q.set('depart', depart);
+                        if (ret) q.set('return', ret);
+                        if (trip) q.set('trip', trip);
+                        // Redirect to availability page first so user chooses price/fare options there
+                        window.location.href = '/availability.html?' + q.toString();
+                    });
+                })();
+            </script>
     </main>
 
     <footer class="main-footer">
@@ -296,11 +549,7 @@
                 </div>
                 <div class="footer-section">
                     <h3>Connect</h3>
-                    <div class="social-links">
-                        <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z"/></svg></a>
-                        <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24"><path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/></svg></a>
-                        <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2c2.717 0 3.056.01 4.122.06 1.065.05 1.79.217 2.428.465.66.254 1.216.598 1.772 1.153a4.908 4.908 0 0 1 1.153 1.772c.247.637.415 1.363.465 2.428.047 1.066.06 1.405.06 4.122 0 2.717-.01 3.056-.06 4.122-.05 1.065-.218 1.79-.465 2.428a4.883 4.883 0 0 1-1.153 1.772 4.915 4.915 0 0 1-1.772 1.153c-.637.247-1.363.415-2.428.465-1.066.047-1.405.06-4.122.06-2.717 0-3.056-.01-4.122-.06-1.065-.05-1.79-.218-2.428-.465a4.89 4.89 0 0 1-1.772-1.153 4.904 4.904 0 0 1-1.153-1.772c-.248-.637-.415-1.363-.465-2.428C2.013 15.056 2 14.717 2 12c0-2.717.01-3.056.06-4.122.05-1.066.217-1.79.465-2.428a4.88 4.88 0 0 1 1.153-1.772A4.897 4.897 0 0 1 5.45 2.525c.638-.248 1.362-.415 2.428-.465C8.944 2.013 9.283 2 12 2zm0 5a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm6.5-.25a1.25 1.25 0 0 0-2.5 0 1.25 1.25 0 0 0 2.5 0zM12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6z"/></svg></a>
-                    </div>
+                    <!-- Social icons removed per design request -->
                 </div>
             </div>
             <div class="footer-bottom">
@@ -315,20 +564,110 @@
     </footer>
 
     <script>
-        // Handle Select Flight clicks using event delegation so it works after async render
-        document.getElementById('flightResultsContainer').addEventListener('click', function(e){
-            const btn = e.target.closest('.book-btn');
-            if(!btn) return;
-            const flight = btn.dataset.flight;
-            if(!flight){
-                // Fallback: just open check-in page
-                window.location.href = '/checkin.html';
-                return;
-            }
-            // Save selected flight for convenience and navigate to check-in with query param
-            try{ sessionStorage.setItem('selectedFlight', flight); }catch(err){}
-            window.location.href = '/checkin.html?flight=' + encodeURIComponent(flight);
-        });
+        // Parse incoming query params (from booking widget) and pre-fill UI
+        (function(){
+            try{
+                const params = new URLSearchParams(window.location.search);
+                const fareStandard = params.get('fareStandard');
+                const fareFlex = params.get('fareFlex');
+                const fareSuper = params.get('fareSuper');
+
+                function fmtDate(iso){
+                    try { if (!iso) return ''; const d = new Date(iso); return d.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }); } catch(e){ return iso; }
+                }
+
+                // Fill header values
+                const cf = document.getElementById('cityFromName'); if (cf) cf.textContent = from ? `${from}` : cf.textContent;
+                const ct = document.getElementById('cityToName'); if (ct) ct.textContent = to ? `${to}` : ct.textContent;
+                const dd = document.getElementById('dateDepart'); if (dd) dd.textContent = depart ? fmtDate(depart) : dd.textContent;
+                const dr = document.getElementById('dateReturn'); if (dr) dr.textContent = ret ? fmtDate(ret) : dr.textContent;
+
+                // Render fare options: if fares are in query params use them, otherwise
+                // fetch authoritative fares from the backend `/api/prices` endpoint.
+                (function(){
+                    const fareContainer = document.getElementById('fareOptionsContainer');
+                    if (!fareContainer) return;
+                    const fmt = (v) => { try{ return new Intl.NumberFormat(undefined,{style:'currency',currency:'USD'}).format(Number(v)); }catch(e){ return v?('$'+v):''; } };
+
+                    async function fetchPricesIfNeeded(){
+                        try{
+                            let s = fareStandard; let f = fareFlex; let sp = fareSuper;
+                            if ((!s || !f || !sp) && from && to){
+                                // show a lightweight spinner while fetching prices
+                                try{
+                                    fareContainer.innerHTML = `
+                                        <div class="card" aria-live="polite">
+                                            <div style="display:flex;align-items:center;gap:12px">
+                                                <div class="loading-spinner" aria-hidden="true"></div>
+                                                <div>Fetching fares</div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }catch(e){}
+
+                                try{
+                                    const q = new URLSearchParams({ from: from, to: to, trip: trip });
+                                    const res = await fetch('/api/prices?' + q.toString(), { cache: 'no-store' });
+                                    if (res && res.ok){
+                                        const data = await res.json();
+                                        s = data.fareStandard || data.standard || s;
+                                        f = data.fareFlex || data.flex || f;
+                                        sp = data.fareSuper || data.super || sp;
+                                    }
+                                }catch(e){ console.debug('[flight-results] /api/prices fetch failed', e); }
+                            }
+
+                            // Enforce distinct fare values even if backend returned equal numbers
+                            const distinct = ensureDistinctFares(s, f, sp);
+                            s = distinct.s; f = distinct.f; sp = distinct.sp;
+
+                            if (s || f || sp){
+                                fareContainer.innerHTML = `
+                                    <div class="card" aria-live="polite">
+                                        <h4>Choose fare & class</h4>
+                                        <form id="fareSelectForm" role="radiogroup" aria-label="Select fare class" style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+                                            <label><input type="radio" name="fareClass" value="standard" checked aria-checked="true"/> <span>Economy Standard</span> <strong aria-hidden="true" style="margin-left:6px">${fmt(s)}</strong></label>
+                                            <label><input type="radio" name="fareClass" value="flex" aria-checked="false"/> <span>Economy Flex</span> <strong aria-hidden="true" style="margin-left:6px">${fmt(f)}</strong></label>
+                                            <label><input type="radio" name="fareClass" value="super" aria-checked="false"/> <span>Economy Super Flex</span> <strong aria-hidden="true" style="margin-left:6px">${fmt(sp)}</strong></label>
+                                            <div style="margin-left:auto"><button id="proceedFareBtn" class="btn primary" type="button" aria-label="Proceed with selected fare">Proceed</button></div>
+                                        </form>
+                                    </div>
+                                `;
+                            } else if (from && to){
+                                fareContainer.innerHTML = `
+                                    <div class="card">
+                                        <h4>Estimated fares</h4>
+                                        <p style="color:#666">Fares will be shown after fetching available flights.</p>
+                                    </div>
+                                `;
+                            }
+
+                            // Wire proceed button
+                            setTimeout(()=>{
+                                const btn = document.getElementById('proceedFareBtn');
+                                if (!btn) return;
+                                btn.addEventListener('click', ()=>{
+                                    const form = document.getElementById('fareSelectForm');
+                                    const sel = form ? (form.querySelector('input[name="fareClass"]:checked') || {}).value : 'standard';
+                                    try{ sessionStorage.setItem('selectedFareClass', sel); }catch(e){}
+                                    const q = new URLSearchParams();
+                                    if (from) q.set('from', from);
+                                    if (to) q.set('to', to);
+                                    if (depart) q.set('depart', depart);
+                                    if (ret) q.set('return', ret);
+                                    q.set('class', sel);
+                                    const chosenFare = sel === 'flex' ? f : (sel === 'super' ? sp : s);
+                                    if (chosenFare) q.set('fare', String(chosenFare));
+                                    window.location.href = '/checkin.html?' + q.toString();
+                                });
+                            }, 10);
+                        }catch(e){ console.debug('[flight-results] fetchAndRenderFares error', e); }
+                    }
+
+                    fetchPricesIfNeeded();
+                })();
+            } catch(e){ console.debug('[flight-results] prefill failed', e); }
+        })();
     </script>
 </body>
 </html>

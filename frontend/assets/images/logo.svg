@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="SmartFly logo">
+  <defs>
+    <linearGradient id="g" x1="0" x2="1">
+      <stop offset="0" stop-color="#007bff"/>
+      <stop offset="1" stop-color="#0056b3"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="20" fill="url(#g)" />
+  <g transform="translate(16,16)" fill="#fff">
+    <path d="M24 20 L56 8 L88 20 L80 28 L56 18 L32 28 Z" opacity="0.95" />
+    <text x="64" y="92" font-family="Poppins, Arial, sans-serif" font-size="28" font-weight="700" text-anchor="middle" fill="#ffffff">SF</text>
+  </g>
+</svg>

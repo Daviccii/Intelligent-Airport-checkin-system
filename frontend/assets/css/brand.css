@@ -1,0 +1,117 @@
+/* Brand overrides: deep-blue theme and icon+text brand styles */
+:root{
+    --brand-deep: #062f6b; /* deep royal blue */
+    --brand-deep-700: #021f45;
+    --brand-accent: #1e90ff; /* bright accent */
+    --brand-muted: #6b7a8a;
+}
+
+/* Brand block in nav */
+.nav-links .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    text-decoration:none;
+    color:var(--brand-deep);
+    font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+}
+
+.brand-logo{ display:inline-flex; align-items:center; justify-content:center; }
+/* If using an img-based mark */
+/* When using inline SVG mark */
+.brand-mark{ display:block; width:auto; height:34px; }
+.brand-mark path{ vector-effect: non-scaling-stroke; }
+
+.visually-hidden{ position:absolute !important; height:1px; width:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); white-space:nowrap; border:0; padding:0; margin:-1px; }
+
+.brand-logo .logo-svg{ display:block; width:28px; height:28px; color:var(--brand-accent); }
+
+.brand-name{
+    font-weight:700;
+    letter-spacing: -0.02em;
+    font-size:1.175rem;
+    color: var(--brand-deep-700);
+    line-height:1;
+}
+
+/* Visible brand text pieces (when DOM text is used) */
+.brand-text{ display:flex; flex-direction:column; line-height:1; margin-left:10px; }
+.brand-main{ font-family: 'Playfair Display', Georgia, serif; font-weight:700; font-size:1.15rem; color:var(--brand-deep-700); letter-spacing:-0.02em; }
+.brand-sub{ font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size:0.82rem; color:var(--brand-accent); margin-top:-4px; }
+
+/* Optional small tag under the brand if needed in future */
+.brand-tag{ font-size:0.72rem; color:var(--brand-muted); display:block; line-height:1 }
+
+/* Ensure home tab contrasts nicely against deep theme */
+.nav-links .home-tab{
+    background: linear-gradient(180deg, var(--brand-accent), var(--brand-deep));
+    color: #fff;
+    box-shadow: 0 8px 30px rgba(6,47,107,0.18);
+}
+
+/* Header tabs accent color */
+.header-tabs .tab-link{ color:var(--brand-deep-700); }
+.header-tabs .tab-link.active{ background: rgba(10,70,180,0.06); box-shadow: 0 6px 18px rgba(2,6,20,0.06); }
+
+/* Make brand feel prominent on small screens */
+@media (max-width:680px){
+    .brand-name{ font-size:1rem; }
+    .brand-logo .logo-svg{ width:22px; height:22px; }
+}
+
+/* Dark mode / prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+    :root{
+        --brand-deep: #9fc9ff; /* lighter for contrast */
+        --brand-deep-700: #dceeff;
+        --brand-accent: #83b9ff;
+        --brand-muted: #9aa9b6;
+    }
+    .nav-links .home-tab{ background: linear-gradient(180deg, var(--brand-accent), #03233d); }
+    .header-tabs .tab-link{ color:var(--brand-deep-700); }
+}
+
+/* Small-screen adjustments (stack / smaller mark) */
+@media (max-width:480px){
+    .brand-image{ height:28px; }
+    .brand-main{ font-size:1rem; }
+    .brand-sub{ font-size:0.72rem; }
+    .nav-links .brand{ gap:8px; }
+}
+
+/* Header background: sky-blue gradient for the whole nav */
+.main-nav{
+    background: linear-gradient(90deg, #c9f6ff 0%, #9fe0ff 45%, #6fc3ff 100%);
+    padding: 8px 0; /* vertical padding so gradient reads as a band */
+    box-shadow: 0 6px 20px rgba(6,28,60,0.08);
+    position: relative;
+    z-index: 50;
+}
+
+/* Ensure the container doesn't add a competing background */
+.nav-container{ background: transparent; }
+
+/* Make header tabs visible over the gradient */
+.header-tabs .tab-link{
+    background: rgba(255,255,255,0.92);
+    color: var(--brand-deep-700);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid rgba(15,68,140,0.06);
+    box-shadow: 0 4px 12px rgba(2,6,20,0.06);
+    transition: background 180ms ease, transform 120ms ease, box-shadow 180ms ease;
+}
+.header-tabs .tab-link:hover{ transform: translateY(-2px); box-shadow: 0 8px 18px rgba(2,6,20,0.08); }
+
+.header-tabs .tab-link.active{
+    background: linear-gradient(180deg, rgba(255,255,255,0.99), rgba(245,248,255,0.96));
+    color: var(--brand-deep-700);
+    box-shadow: 0 8px 22px rgba(2,6,20,0.12);
+    transform: translateY(-2px);
+}
+
+@media (prefers-color-scheme: dark){
+    .main-nav{ background: linear-gradient(90deg, #0f2b45 0%, #08324f 45%, #04233a 100%); box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+    .header-tabs .tab-link{ background: rgba(255,255,255,0.03); color:var(--brand-deep-700); border: 1px solid rgba(255,255,255,0.04); box-shadow: none; }
+    .header-tabs .tab-link.active{ background: rgba(255,255,255,0.06); box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
+}

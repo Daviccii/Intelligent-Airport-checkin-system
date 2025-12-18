@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>Available Flights — SmartFly</title>
+	<link rel="stylesheet" href="/assets/css/style.css">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+	<script src="/assets/js/pricing.js"></script>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; }
+		body { 
+			font-family: 'Poppins', system-ui, sans-serif; 
+			background: #f5f7fa;
+			min-height: 100vh;
+			padding: 20px;
+		}
+		.container { max-width: 1200px; margin: 0 auto; }
+		
+		/* Navigation */
+		.navbar {
+			background: rgba(255,255,255,0.95);
+			backdrop-filter: blur(10px);
+			padding: 16px 0;
+			margin-bottom: 40px;
+			border-radius: 12px;
+			box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+		}
+		.nav-content {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+		.logo-text { font-size: 24px; font-weight: 700; color: #667eea; }
+		.nav-links a { margin-left: 30px; text-decoration: none; color: #333; font-weight: 500; transition: color 0.3s; }
+		.nav-links a:hover { color: #667eea; }
+		
+		/* Header Section */
+		.header-section {
+			background: white;
+			border-radius: 16px;
+			padding: 32px;
+			margin-bottom: 40px;
+			box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+		}
+		
+		.trip-summary {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 24px;
+			padding-bottom: 24px;
+			border-bottom: 2px solid #f0f4f8;
+		}
+		
+		.route-info {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+			flex: 1;
+		}
+		
+		.airport-info {
+			display: flex;
+			flex-direction: column;
+		}
+		
+		.airport-code {
+			font-size: 24px;
+			font-weight: 700;
+			color: #667eea;
+		}
+		
+		.airport-name {
+			font-size: 13px;
+			color: #888;
+			margin-top: 4px;
+		}
+		
+		.route-arrow {
+			font-size: 28px;
+			color: #667eea;
+			margin: 0 20px;
+			opacity: 0.6;
+		}
+		
+		.trip-details {
+			display: flex;
+			gap: 24px;
+			margin-left: auto;
+		}
+		
+		.detail-item {
+			display: flex;
+			flex-direction: column;
+		}
+		
+		.detail-label {
+			font-size: 12px;
+			color: #999;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			font-weight: 600;
+			margin-bottom: 6px;
+		}
+		
+		.detail-value {
+			font-size: 16px;
+			font-weight: 600;
+			color: #222;
+		}
+		
+		.action-buttons {
+			display: flex;
+			gap: 12px;
+		}
+		
+		.btn-secondary {
+			padding: 10px 20px;
+			background: #f0f4f8;
+			color: #667eea;
+			border: none;
+			border-radius: 8px;
+			font-weight: 600;
+			cursor: pointer;
+			transition: all 0.3s;
+			font-size: 14px;
+		}
+		
+		.btn-secondary:hover {
+			background: #667eea;
+			color: white;
+		}
+		
+		/* Fares Section */
+		.fares-section {
+			margin-bottom: 40px;
+		}
+		
+		.section-header {
+			display: flex;
+			align-items: center;
+			margin-bottom: 28px;
+		}
+		
+		.section-title {
+			font-size: 28px;
+			font-weight: 700;
+			color: white;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+		
+		.section-title::before {
+			content: "✈";
+			font-size: 32px;
+		}
+		
+		.section-subtitle {
+			color: rgba(255,255,255,0.8);
+			font-size: 14px;
+			margin-top: 8px;
+			line-height: 1.6;
+		}
+		
+		.fare-grid { 
+			display: grid; 
+			grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); 
+			gap: 24px;
+		}
+		
+		.fare-card { 
+			background: white;
+			padding: 28px;
+			border-radius: 16px;
+			box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+			display: flex;
+			flex-direction: column;
+			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+			border: 2px solid transparent;
+			position: relative;
+			overflow: hidden;
+		}
+		
+		.fare-card::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 4px;
+			background: linear-gradient(90deg, #667eea, #764ba2);
+		}
+		
+		.fare-card:hover {
+			transform: translateY(-8px);
+			box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+			border-color: #667eea;
+		}
+		
+		.fare-header {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin-bottom: 20px;
+		}
+		
+		.fare-title {
+			font-size: 18px;
+			font-weight: 700;
+			color: #222;
+		}
+		
+		.fare-badge {
+			display: inline-block;
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			color: white;
+			padding: 4px 12px;
+			border-radius: 20px;
+			font-size: 11px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+		}
+		
+		.fare-price {
+			font-size: 36px;
+			font-weight: 800;
+			color: #667eea;
+			margin-bottom: 16px;
+		}
+		
+		.fare-price-label {
+			font-size: 12px;
+			color: #999;
+			margin-top: -12px;
+			margin-bottom: 16px;
+		}
+		
+		.fare-details {
+			list-style: none;
+			margin-bottom: 24px;
+			flex: 1;
+		}
+		
+		.fare-details li {
+			padding: 10px 0;
+			border-bottom: 1px solid #f0f4f8;
+			font-size: 14px;
+			color: #555;
+			display: flex;
+			align-items: center;
+		}
+		
+		.fare-details li::before {
+			content: "✓";
+			color: #667eea;
+			font-weight: 700;
+			margin-right: 10px;
+			font-size: 16px;
+		}
+		
+		.fare-details li:last-child {
+			border-bottom: none;
+		}
+		
+		.fare-button {
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			color: white;
+			border: none;
+			padding: 14px 24px;
+			border-radius: 10px;
+			font-weight: 700;
+			cursor: pointer;
+			font-size: 15px;
+			transition: all 0.3s;
+			width: 100%;
+		}
+		
+		.fare-button:hover {
+			transform: scale(1.02);
+			box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+		}
+		
+		.fare-button:active {
+			transform: scale(0.98);
+		}
+		
+		/* Footer */
+		.footer {
+			text-align: center;
+			color: rgba(255,255,255,0.7);
+			font-size: 13px;
+			margin-top: 40px;
+		}
+
+		/* Results Table */
+		.results-table-card { background:#fff; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,0.08); margin: 24px 0; overflow:hidden; }
+		.results-table-header { padding:14px 16px; border-bottom:1px solid #eef2f7; display:flex; align-items:center; justify-content:space-between }
+		.results-table-header h3 { margin:0; font-size:18px; color:#0a1f44 }
+		.flights-table { width:100%; border-collapse: collapse; }
+		.flights-table th, .flights-table td { padding:12px 10px; text-align:left; border-bottom: 1px solid #f2f5f9; font-size:14px }
+		.flights-table thead th { background:#f7f9fd; color:#495a75; font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.4px }
+		.flights-table tbody tr:hover { background:#fafcff }
+		.flights-table .price { font-weight:700; color:#0b74de }
+		.flights-table .seats-low { color:#b71c1c; font-weight:700 }
+		.flights-table .terminal { font-weight:600; color:#334b6b }
+		.flights-table .time { font-weight:700; color:#0a1f44 }
+		.flights-table .is-cheapest { background: #f0fbf4 !important }
+		.badge-cheapest { display:inline-block; margin-left:8px; background:#16a34a; color:#fff; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:800 }
+		
+		@media (max-width: 768px) {
+			.header-section { padding: 20px; }
+			.trip-summary { flex-direction: column; align-items: flex-start; gap: 16px; }
+			.route-arrow { margin: 0; transform: rotate(90deg); }
+			.trip-details { flex-direction: column; margin-left: 0; }
+			.fare-grid { grid-template-columns: 1fr; }
+			.section-title { font-size: 24px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<!-- Navigation -->
+		<nav class="navbar">
+			<div class="nav-content">
+				<div class="logo-text">SmartFly</div>
+				<div class="nav-links">
+					<a href="/">← Back</a>
+				</div>
+			</div>
+		</nav>
+
+		<!-- Header Section with Trip Summary -->
+		<div class="header-section">
+			<div class="trip-summary">
+				<div class="route-info">
+					<div class="airport-info">
+						<div class="airport-code" id="fromCode">—</div>
+						<div class="airport-name" id="fromCity">—</div>
+					</div>
+					<div class="route-arrow">→</div>
+					<div class="airport-info">
+						<div class="airport-code" id="toCode">—</div>
+						<div class="airport-name" id="toCity">—</div>
+					</div>
+				</div>
+				
+				<div class="trip-details">
+					<div class="detail-item">
+						<div class="detail-label">Departure</div>
+						<div class="detail-value" id="departDate">—</div>
+					</div>
+					<div class="detail-item" id="returnContainer" style="display:none">
+						<div class="detail-label">Return</div>
+						<div class="detail-value" id="returnDate">—</div>
+					</div>
+				</div>
+				
+				<div class="action-buttons">
+					<button class="btn-secondary" onclick="window.location.href='/'">Modify</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Loading State -->
+		<div class="loading" id="loadingState">
+			<div class="spinner"></div>
+			<p style="color: white;">Searching for available flights...</p>
+		</div>
+
+		<!-- Flights Container -->
+		<div class="flights-container" id="flightsContainer" style="display: none;">
+			<!-- Flight cards will be dynamically inserted here -->
+		</div>
+
+		<!-- Results Table Container -->
+		<div id="resultsTableContainer" class="results-table-card" style="display:none;">
+			<div class="results-table-header">
+				<h3>Flight Options (Table)</h3>
+				<div id="resultsTableNote" style="font-size:12px;color:#60708c"></div>
+			</div>
+			<div style="overflow:auto">
+				<table class="flights-table" id="flightsTable">
+					<thead>
+						<tr>
+							<th>Flight</th>
+							<th>Depart</th>
+							<th>Arrive</th>
+							<th>Duration</th>
+							<th>Stops</th>
+							<th>Terminal</th>
+							<th>Economy</th>
+							<th>Business</th>
+							<th>Seats</th>
+						</tr>
+					</thead>
+					<tbody id="flightsTableBody"></tbody>
+				</table>
+			</div>
+		</div>
+
+		<!-- Empty State -->
+		<div class="empty-state" id="emptyState" style="display: none;">
+			<i class="fas fa-plane-slash"></i>
+			<h3>No Flights Found</h3>
+			<p>We couldn't find any flights matching your search criteria. Please try different dates or routes.</p>
+			<button class="btn-secondary" onclick="window.location.href='/'">New Search</button>
+		</div>
+
+		<!-- Footer -->
+		<div class="footer">
+			<p>SmartFly © 2025 • All prices are in USD and include taxes and fees</p>
+		</div>
+	</div>
+
+	<script>
+		function qs(){ const p = new URLSearchParams(window.location.search); const o = {}; for (const [k,v] of p.entries()) o[k]=v; return o; }
+		function fmtCurrency(v,c){ try{ return new Intl.NumberFormat(undefined,{style:'currency',currency:c||'USD'}).format(Number(v)); }catch(e){ return v; } }
+
+		const q = qs();
+		const from = q.from || '';
+		const to = q.to || '';
+		const departureDate = q.departureDate || q.depart || '';
+		const returnDate = q.returnDate || q.return || '';
+		const tripType = q.tripType || 'roundtrip';
+		
+		// Get full airport names from sessionStorage
+		let searchData = {};
+		try {
+			const stored = sessionStorage.getItem('flightSearchData');
+			if (stored) searchData = JSON.parse(stored);
+		} catch(e) {}
+		
+		const fromFull = searchData.fromFull || sessionStorage.getItem('search_from') || from;
+		const toFull = searchData.toFull || sessionStorage.getItem('search_to') || to;
+
+		// Extract airport codes
+		const fromCode = from.toUpperCase() || '—';
+		const toCode = to.toUpperCase() || '—';
+		const fromCity = fromFull.replace(/\s*\([^)]*\)$/, '') || '—';
+		const toCity = toFull.replace(/\s*\([^)]*\)$/, '') || '—';
+
+		// Update trip summary
+		document.getElementById('fromCode').textContent = fromCode;
+		document.getElementById('fromCity').textContent = fromCity;
+		document.getElementById('toCode').textContent = toCode;
+		document.getElementById('toCity').textContent = toCity;
+		document.getElementById('departDate').textContent = departureDate ? new Date(departureDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}) : '—';
+		
+		if (returnDate && tripType === 'roundtrip') {
+			document.getElementById('returnContainer').style.display = 'block';
+			document.getElementById('returnDate').textContent = new Date(returnDate).toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+		}
+
+		// Create flight card HTML
+		// Load airports globally for pricing
+		let __airportsData = [];
+		async function loadAirportsData() {
+			if (__airportsData.length > 0) return __airportsData;
+			try {
+				const res = await fetch('/assets/data/airports.json');
+				if (res.ok) {
+					__airportsData = await res.json();
+				}
+			} catch(e) {
+				console.error('Failed to load airports:', e);
+			}
+			return __airportsData;
+		}
+
+		function createFlightCard(flight, isAlternative = false) {
+			const bookedCount = flight.booked_count || 0;
+			const capacity = flight.capacity || 150;
+			const available = capacity - bookedCount;
+			const occupancyPercent = Math.round((bookedCount / capacity) * 100);
+			
+			const originCode = flight.origin || 'N/A';
+			const destCode = flight.destination || 'N/A';
+			const originCity = flight.origin_city || flight.origin;
+			const destCity = flight.destination_city || flight.destination;
+			
+			const statusClass = flight.status === 'active' ? 'status-active' : 
+								flight.status === 'cancelled' ? 'status-cancelled' : 'status-scheduled';
+			
+			const duration = flight.duration || 'N/A';
+			const dateStr = flight.departure_date ? new Date(flight.departure_date).toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric', year:'numeric'}) : 'N/A';
+			
+			// Calculate dynamic price based on distance
+			let price = fmtCurrency(0, 'USD');
+			let priceValue = 0;
+			let distanceInfo = '';
+			
+			if (window.FlightPricing && __airportsData.length > 0) {
+				const originAirport = window.FlightPricing.findAirportByCode(originCode, __airportsData);
+				const destAirport = window.FlightPricing.findAirportByCode(destCode, __airportsData);
+				
+				if (originAirport && destAirport) {
+					const fareClass = flight.fare_class || 'standard';
+					const pricing = window.FlightPricing.calculateFlightPrice(originAirport, destAirport, fareClass);
+					
+					if (!pricing.error) {
+						priceValue = pricing.finalFare;
+						price = window.FlightPricing.formatPrice(priceValue);
+						distanceInfo = `${window.FlightPricing.formatDistance(pricing.distance)} • ${pricing.fareClassName}`;
+					}
+				}
+			}
+			
+			const alternativeBadge = isAlternative ? '<div class="fare-badge" style="background:#ffc107;color:#000;margin-left:8px;">Alternative</div>' : '';
+			
+			return `
+				<div class="flight-card">
+					<div class="flight-header">
+						<div style="display:flex;align-items:center;gap:8px;">
+							<div class="flight-number">${flight.flight_number || 'N/A'}</div>
+							${alternativeBadge}
+						</div>
+						<div class="flight-status ${statusClass}">${(flight.status || 'scheduled').toUpperCase()}</div>
+					</div>
+					
+					<div class="flight-route">
+						<div class="route-location origin">
+							<div class="route-code">${originCode}</div>
+							<div class="route-city">${originCity}</div>
+							<div class="route-time">${flight.departure_time || 'N/A'}</div>
+						</div>
+						
+						<div class="route-arrow-icon">
+							<i class="fas fa-plane"></i>
+							<div class="route-duration">${duration}</div>
+						</div>
+						
+						<div class="route-location destination">
+							<div class="route-code">${destCode}</div>
+							<div class="route-city">${destCity}</div>
+							<div class="route-time">${flight.arrival_time || 'N/A'}</div>
+						</div>
+					</div>
+					
+					<div class="flight-details">
+						<div class="detail-item">
+							<i class="fas fa-calendar"></i>
+							<div>
+								<div class="detail-label">Date</div>
+								<div class="detail-value">${dateStr}</div>
+							</div>
+						</div>
+						<div class="detail-item">
+							<i class="fas fa-tag"></i>
+							<div>
+								<div class="detail-label">Price</div>
+								<div class="detail-value" style="color:#667eea;font-weight:600;">${price}</div>
+								${distanceInfo ? `<div style="font-size:11px;color:#666;margin-top:2px;">${distanceInfo}</div>` : ''}
+							</div>
+						</div>
+						<div class="detail-item">
+							<i class="fas fa-door-open"></i>
+							<div>
+								<div class="detail-label">Gate</div>
+								<div class="detail-value">${flight.gate || 'TBA'}</div>
+							</div>
+						</div>
+						<div class="detail-item">
+							<i class="fas fa-building"></i>
+							<div>
+								<div class="detail-label">Terminal</div>
+								<div class="detail-value">${flight.terminal || 'N/A'}</div>
+							</div>
+						</div>
+						<div class="detail-item">
+							<i class="fas fa-plane-departure"></i>
+							<div>
+								<div class="detail-label">Aircraft</div>
+								<div class="detail-value">${flight.aircraft || 'N/A'}</div>
+							</div>
+						</div>
+						<div class="detail-item">
+							<i class="fas fa-chair"></i>
+							<div>
+								<div class="detail-label">Available Seats</div>
+								<div class="detail-value">${available} / ${capacity}</div>
+							</div>
+						</div>
+					</div>
+					
+					<div class="flight-footer">
+						<div class="capacity-info">
+							<div class="capacity-item" style="width:200px;">
+								<div class="capacity-label">Occupancy: ${occupancyPercent}%</div>
+								<div class="capacity-bar">
+									<div class="capacity-fill" style="width: ${occupancyPercent}%"></div>
+								</div>
+							</div>
+						</div>
+						<div>
+							<button class="fare-button" onclick="bookFlight('${flight.flight_number}', '${originCode}', '${destCode}', ${priceValue})">
+								Book for ${price}
+							</button>
+						</div>
+					</div>
+				</div>
+			`;
+		}
+
+		// Book flight handler
+		function bookFlight(flightNumber, origin, destination, price) {
+			try {
+				sessionStorage.setItem('selected_flight', flightNumber);
+				sessionStorage.setItem('selected_origin', origin);
+				sessionStorage.setItem('selected_destination', destination);
+				sessionStorage.setItem('selected_price', price);
+			} catch(e) {}
+			window.location.href = '/book.html?flight=' + encodeURIComponent(flightNumber);
+		}
+
+		// Get alternative dates (±3 days)
+		function getAlternativeDates(dateStr) {
+			if (!dateStr) return [];
+			const date = new Date(dateStr);
+			const alternatives = [];
+			for (let i = -3; i <= 3; i++) {
+				if (i === 0) continue; // Skip original date
+				const altDate = new Date(date);
+				altDate.setDate(date.getDate() + i);
+				alternatives.push(altDate.toISOString().split('T')[0]);
+			}
+			return alternatives;
+		}
+
+		// Fetch and display flights with smart matching
+		async function loadFlights() {
+			const loadingState = document.getElementById('loadingState');
+			const flightsContainer = document.getElementById('flightsContainer');
+			const emptyState = document.getElementById('emptyState');
+			
+			try {
+				// Load airports data for pricing calculations
+				await loadAirportsData();
+				
+				// Try to load from mock data first, fallback to API
+				let flights = [];
+				try {
+					const mockResponse = await fetch('/assets/data/flights-mock.json');
+					if (mockResponse.ok) {
+						flights = await mockResponse.json();
+					}
+				} catch(e) {
+					console.log('Mock data not available, trying API...');
+				}
+				
+				// If mock data failed or empty, try API
+				if (flights.length === 0) {
+					const apiResponse = await fetch('/api/flights');
+					if (apiResponse.ok) {
+						const data = await apiResponse.json();
+						flights = data.flights || [];
+					}
+				}
+				
+				// Phase 1: Exact match on route and date
+				let exactMatches = flights.filter(flight => {
+					const originMatch = flight.origin?.toUpperCase() === fromCode.toUpperCase();
+					const destMatch = flight.destination?.toUpperCase() === toCode.toUpperCase();
+					const dateMatch = !departureDate || (flight.departure_date === departureDate);
+					return originMatch && destMatch && dateMatch;
+				});
+				
+				// Phase 2: If no exact matches, find alternative dates (±3 days)
+				let alternativeDateFlights = [];
+				if (exactMatches.length === 0 && departureDate) {
+					const altDates = getAlternativeDates(departureDate);
+					alternativeDateFlights = flights.filter(flight => {
+						const originMatch = flight.origin?.toUpperCase() === fromCode.toUpperCase();
+						const destMatch = flight.destination?.toUpperCase() === toCode.toUpperCase();
+						const dateMatch = altDates.includes(flight.departure_date);
+						return originMatch && destMatch && dateMatch;
+					});
+				}
+				
+				// Phase 3: If still no matches, find same route (any date)
+				let sameRouteFlights = [];
+				if (exactMatches.length === 0 && alternativeDateFlights.length === 0) {
+					sameRouteFlights = flights.filter(flight => {
+						const originMatch = flight.origin?.toUpperCase() === fromCode.toUpperCase();
+						const destMatch = flight.destination?.toUpperCase() === toCode.toUpperCase();
+						return originMatch && destMatch;
+					});
+				}
+				
+				loadingState.style.display = 'none';
+				
+				// Display results
+				if (exactMatches.length > 0) {
+					// Exact matches found
+					flightsContainer.style.display = 'block';
+					flightsContainer.innerHTML = `
+						<div style="background:white;padding:16px 24px;border-radius:12px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+							<h3 style="margin:0;color:#667eea;font-size:18px;">
+								<i class="fas fa-check-circle" style="margin-right:8px;"></i>
+								${exactMatches.length} ${exactMatches.length === 1 ? 'flight' : 'flights'} found for your search
+							</h3>
+						</div>
+					` + exactMatches.map(f => createFlightCard(f, false)).join('');
+					renderFlightsTable(exactMatches);
+					
+				} else if (alternativeDateFlights.length > 0) {
+					// Alternative dates found
+					flightsContainer.style.display = 'block';
+					const searchDateFormatted = new Date(departureDate).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+					flightsContainer.innerHTML = `
+						<div style="background:#fff3cd;padding:20px 24px;border-radius:12px;margin-bottom:20px;border-left:4px solid #ffc107;">
+							<h3 style="margin:0 0 8px 0;color:#856404;font-size:18px;">
+								<i class="fas fa-info-circle" style="margin-right:8px;"></i>
+								No flights found for ${searchDateFormatted}
+							</h3>
+							<p style="margin:0;color:#856404;">Showing ${alternativeDateFlights.length} alternative ${alternativeDateFlights.length === 1 ? 'flight' : 'flights'} on nearby dates (±3 days)</p>
+						</div>
+					` + alternativeDateFlights.map(f => createFlightCard(f, true)).join('');
+					renderFlightsTable(alternativeDateFlights);
+					
+				} else if (sameRouteFlights.length > 0) {
+					// Same route, different dates
+					flightsContainer.style.display = 'block';
+					flightsContainer.innerHTML = `
+						<div style="background:#fff3cd;padding:20px 24px;border-radius:12px;margin-bottom:20px;border-left:4px solid #ffc107;">
+							<h3 style="margin:0 0 8px 0;color:#856404;font-size:18px;">
+								<i class="fas fa-calendar-alt" style="margin-right:8px;"></i>
+								No flights on your selected date
+							</h3>
+							<p style="margin:0;color:#856404;">Showing ${sameRouteFlights.length} available ${sameRouteFlights.length === 1 ? 'flight' : 'flights'} on this route. Please check different dates.</p>
+						</div>
+					` + sameRouteFlights.map(f => createFlightCard(f, true)).join('');
+					renderFlightsTable(sameRouteFlights);
+					
+				} else {
+					// No matches at all - suggest alternatives
+					emptyState.style.display = 'block';
+					emptyState.querySelector('h3').textContent = 'No Flights Available';
+					emptyState.querySelector('p').innerHTML = `
+						We don't currently operate flights from <strong>${fromCity}</strong> to <strong>${toCity}</strong>.<br><br>
+						<strong>Suggestions:</strong><br>
+						• Try nearby airports or different cities<br>
+						• Check if reverse route is available (${toCity} → ${fromCity})<br>
+						• Contact support for route requests
+					`;
+				}
+				
+			} catch (error) {
+				console.error('Error loading flights:', error);
+				loadingState.style.display = 'none';
+				emptyState.style.display = 'block';
+				emptyState.querySelector('h3').textContent = 'Error Loading Flights';
+				emptyState.querySelector('p').textContent = 'An error occurred while loading flights. Please try again or contact support.';
+			}
+		}
+
+		function renderFlightsTable(list){
+			const container = document.getElementById('resultsTableContainer');
+			const tbody = document.getElementById('flightsTableBody');
+			const note = document.getElementById('resultsTableNote');
+			if (!container || !tbody) return;
+			if (!Array.isArray(list) || list.length === 0){ container.style.display='none'; return; }
+			container.style.display = 'block';
+			tbody.innerHTML = '';
+
+			let rows = [];
+			let minEco = Infinity;
+			let minEcoIdx = -1;
+			for (let i=0;i<list.length;i++){
+				const f = list[i];
+				const seatsAvail = (f.capacity||0) - (f.booked_count||0);
+				const originAirport = window.FlightPricing && __airportsData.length ? window.FlightPricing.findAirportByCode(f.origin, __airportsData) : null;
+				const destAirport = window.FlightPricing && __airportsData.length ? window.FlightPricing.findAirportByCode(f.destination, __airportsData) : null;
+				let eco = null, bus = null;
+				if (originAirport && destAirport && window.FlightPricing){
+					const ecoP = window.FlightPricing.calculateFlightPrice(originAirport, destAirport, 'standard');
+					const busP = window.FlightPricing.calculateFlightPrice(originAirport, destAirport, 'superflex');
+					eco = ecoP && !ecoP.error ? ecoP.finalFare : null;
+					bus = busP && !busP.error ? busP.finalFare : null;
+				}
+				if (eco != null && eco < minEco){ minEco = eco; minEcoIdx = i; }
+				rows.push({ f, seatsAvail, eco, bus });
+			}
+
+			note.textContent = 'Cheapest highlighted in green';
+
+			rows.forEach((row, idx)=>{
+				const f = row.f;
+				const tr = document.createElement('tr');
+				if (idx === minEcoIdx) tr.className = 'is-cheapest';
+				const termStr = (function(){
+					if (!f.terminal) return '—';
+					const t = String(f.terminal);
+					return (/^\d+$/.test(t) ? ('T' + t) : t);
+				})();
+				tr.innerHTML = `
+					<td><strong>${f.flight_number||'—'}</strong>${idx===minEcoIdx?'<span class="badge-cheapest">Cheapest</span>':''}</td>
+					<td class="time">${f.departure_time||'—'}</td>
+					<td class="time">${f.arrival_time||'—'}</td>
+					<td>${f.duration||'—'}</td>
+					<td>${typeof f.stops === 'number' ? f.stops : 0}</td>
+					<td class="terminal">${termStr}</td>
+					<td class="price">${row.eco!=null ? fmtCurrency(row.eco,'USD') : '—'}</td>
+					<td class="price">${row.bus!=null ? fmtCurrency(row.bus,'USD') : '—'}</td>
+					<td>${row.seatsAvail<=10?'<span class="seats-low">'+row.seatsAvail+'</span>':row.seatsAvail}</td>
+				`;
+				tr.addEventListener('click', function(){
+					bookFlight(f.flight_number, f.origin, f.destination, row.eco!=null?row.eco:0);
+				});
+				tbody.appendChild(tr);
+			});
+		}
+
+		// Initialize page
+		if (!from || !to) {
+			window.location.href = '/';
+		} else {
+			loadFlights();
+		}
+	</script>
+</body>
+</html>

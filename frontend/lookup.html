@@ -61,7 +61,7 @@
               <input type="text" id="pnr" name="pnr" placeholder="e.g. ABC123" autocomplete="off">
             </div>
 
-            <div id="passportFields" style="display:none">
+            <div id="passportFields" hidden aria-hidden="true">
               <label>Passport / ID</label>
               <input type="text" id="passport" name="passport" placeholder="Passport or ID">
               <label>Last name</label>
@@ -75,7 +75,7 @@
           </form>
 
           <!-- Admin form (hidden until admin selected) -->
-          <form id="adminForm" style="display:none;margin-top:12px">
+          <form id="adminForm" style="margin-top:12px" hidden aria-hidden="true">
             <label>Admin username</label>
             <input type="text" id="adminUser" placeholder="admin username">
             <label>Password</label>
@@ -109,17 +109,17 @@
   </main>
 
   <!-- Step-by-step check-in modal / area (hidden until passenger flow starts) -->
-  <div id="checkinArea" style="max-width:980px;margin:18px auto;padding:20px;background:white;border-radius:10px;display:none">
+  <div id="checkinArea" style="max-width:980px;margin:18px auto;padding:20px;background:white;border-radius:10px;" hidden aria-hidden="true">
     <div class="card">
       <h2 id="stepTitle">Step 1 — Select flight</h2>
       <div id="stepContent">
-        <div id="flightSelect" style="display:block">
+        <div id="flightSelect">
           <label>Choose your flight</label>
           <select id="flightList"></select>
           <div style="margin-top:12px;display:flex;gap:8px"><button id="toSeat" class="primary">Continue to seat selection</button><button id="backToLookup" style="padding:10px;border-radius:8px">Back</button></div>
         </div>
 
-        <div id="seatSelect" style="display:none">
+        <div id="seatSelect" hidden aria-hidden="true">
           <label>Select a seat</label>
           <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
             <label style="margin:0">Preference</label>
@@ -135,20 +135,20 @@
           <div style="margin-top:12px;display:flex;gap:8px"><button id="toBaggage" class="primary">Continue</button><button id="seatBack" style="padding:10px;border-radius:8px">Back</button></div>
         </div>
 
-        <div id="baggageStep" style="display:none">
+        <div id="baggageStep" hidden aria-hidden="true">
           <label>Baggage</label>
           <input type="number" id="baggageCount" min="0" value="0">
           <div class="muted" id="baggageFee">Fee: $0</div>
           <div style="margin-top:12px;display:flex;gap:8px"><button id="toConfirm" class="primary">Continue to confirm</button><button id="baggageBack" style="padding:10px;border-radius:8px">Back</button></div>
         </div>
 
-        <div id="confirmStep" style="display:none">
+        <div id="confirmStep" hidden aria-hidden="true">
           <h3>Confirm check-in</h3>
           <div id="confirmSummary" class="muted"></div>
           <div style="margin-top:12px;display:flex;gap:8px"><button id="doCheckin" class="primary">Check in and get boarding pass</button><button id="confirmBack" style="padding:10px;border-radius:8px">Back</button></div>
         </div>
 
-        <div id="boardingPassStep" style="display:none">
+        <div id="boardingPassStep" hidden aria-hidden="true">
           <h3>Your boarding pass</h3>
           <div id="boardingHolder" style="margin-top:12px"></div>
           <div style="margin-top:12px"><button id="doneBtn" class="primary">Done</button></div>
@@ -179,8 +179,8 @@
       btnAdmin.classList.toggle('active', isAdmin);
       btnPassenger.setAttribute('aria-selected', String(!isAdmin));
       btnAdmin.setAttribute('aria-selected', String(isAdmin));
-      lookupForm.style.display = isAdmin ? 'none' : 'block';
-      adminForm.style.display = isAdmin ? 'block' : 'none';
+      try{ lookupForm.hidden = isAdmin; lookupForm.setAttribute('aria-hidden', String(isAdmin)); }catch(e){}
+      try{ adminForm.hidden = !isAdmin; adminForm.setAttribute('aria-hidden', String(!isAdmin)); }catch(e){}
       message.innerHTML = '';
     }
 
@@ -189,11 +189,11 @@
 
     lookupMethod.addEventListener('change', (e) => {
       if (e.target.value === 'pnr'){
-        pnrFields.style.display = 'block';
-        passportFields.style.display = 'none';
+        try{ pnrFields.hidden = false; pnrFields.setAttribute('aria-hidden','false'); }catch(e){}
+        try{ passportFields.hidden = true; passportFields.setAttribute('aria-hidden','true'); }catch(e){}
       } else {
-        pnrFields.style.display = 'none';
-        passportFields.style.display = 'block';
+        try{ pnrFields.hidden = true; pnrFields.setAttribute('aria-hidden','true'); }catch(e){}
+        try{ passportFields.hidden = false; passportFields.setAttribute('aria-hidden','false'); }catch(e){}
       }
     });
 
@@ -447,29 +447,29 @@
     }
 
     // Wire flow buttons
-    backToLookup.addEventListener('click', ()=>{ checkinArea.style.display='none'; });
+    backToLookup.addEventListener('click', ()=>{ try{ checkinArea.hidden = true; checkinArea.setAttribute('aria-hidden','true'); }catch(e){} });
     toSeat.addEventListener('click', async ()=>{
       currentFlight = flightList.value;
       if (!currentFlight){ alert('Choose a flight'); return; }
       document.getElementById('stepTitle').textContent='Step 2 — Choose seat';
-      document.getElementById('flightSelect').style.display='none';
-      document.getElementById('seatSelect').style.display='block';
+      try{ document.getElementById('flightSelect').hidden = true; document.getElementById('flightSelect').setAttribute('aria-hidden','true'); }catch(e){}
+      try{ document.getElementById('seatSelect').hidden = false; document.getElementById('seatSelect').setAttribute('aria-hidden','false'); }catch(e){}
       await showSeatMap(currentFlight);
     });
     seatBack.addEventListener('click', ()=>{
       document.getElementById('stepTitle').textContent='Step 1 — Select flight';
-      document.getElementById('seatSelect').style.display='none';
-      document.getElementById('flightSelect').style.display='block';
+      try{ document.getElementById('seatSelect').hidden = true; document.getElementById('seatSelect').setAttribute('aria-hidden','true'); }catch(e){}
+      try{ document.getElementById('flightSelect').hidden = false; document.getElementById('flightSelect').setAttribute('aria-hidden','false'); }catch(e){}
     });
     toBaggage.addEventListener('click', ()=>{
       document.getElementById('stepTitle').textContent='Step 3 — Baggage';
-      document.getElementById('seatSelect').style.display='none';
-      baggageStep.style.display='block';
+      try{ document.getElementById('seatSelect').hidden = true; document.getElementById('seatSelect').setAttribute('aria-hidden','true'); }catch(e){}
+      try{ baggageStep.hidden = false; baggageStep.setAttribute('aria-hidden','false'); }catch(e){}
     });
     baggageBack.addEventListener('click', ()=>{
       document.getElementById('stepTitle').textContent='Step 2 — Choose seat';
-      baggageStep.style.display='none';
-      document.getElementById('seatSelect').style.display='block';
+      try{ baggageStep.hidden = true; baggageStep.setAttribute('aria-hidden','true'); }catch(e){}
+      try{ document.getElementById('seatSelect').hidden = false; document.getElementById('seatSelect').setAttribute('aria-hidden','false'); }catch(e){}
     });
     baggageCount.addEventListener('input', ()=>{
       const fee = calcBaggageFee(baggageCount.value);
@@ -478,15 +478,15 @@
     toConfirm.addEventListener('click', ()=>{
       // summary
       document.getElementById('stepTitle').textContent='Step 4 — Confirm';
-      baggageStep.style.display='none';
-      confirmStep.style.display='block';
+      try{ baggageStep.hidden = true; baggageStep.setAttribute('aria-hidden','true'); }catch(e){}
+      try{ confirmStep.hidden = false; confirmStep.setAttribute('aria-hidden','false'); }catch(e){}
       confirmSummary.innerHTML = `Flight: <strong>${currentFlight}</strong><br>Seat: <strong>${selectedSeat || '(auto-assigned)'}</strong><br>Bags: <strong>${baggageCount.value}</strong> (fee: $${calcBaggageFee(baggageCount.value)})`;
       // attach face UI
       attachFaceUI();
     });
     confirmBack.addEventListener('click', ()=>{
-      confirmStep.style.display='none';
-      baggageStep.style.display='block';
+      try{ confirmStep.hidden = true; confirmStep.setAttribute('aria-hidden','true'); }catch(e){}
+      try{ baggageStep.hidden = false; baggageStep.setAttribute('aria-hidden','false'); }catch(e){}
     });
 
     // Face enroll/verify helpers
@@ -581,9 +581,9 @@
         }
 
         // show boarding pass
-        confirmStep.style.display='none';
+        try{ confirmStep.hidden = true; confirmStep.setAttribute('aria-hidden','true'); }catch(e){}
         document.getElementById('stepTitle').textContent='Step 5 — Boarding pass';
-        boardingPassStep.style.display='block';
+        try{ boardingPassStep.hidden = false; boardingPassStep.setAttribute('aria-hidden','false'); }catch(e){}
 
         // fetch boarding pass image (use token if available)
         const bres = await fetch(`/api/boardingpass?passport=${encodeURIComponent(currentPassenger.passport)}`, { headers: token ? { 'X-SESSION': token } : {} });
@@ -599,18 +599,18 @@
       doCheckin.disabled=false; doCheckin.textContent='Check in and get boarding pass';
     });
 
-    doneBtn.addEventListener('click', ()=>{ checkinArea.style.display='none'; });
+    doneBtn.addEventListener('click', ()=>{ try{ checkinArea.hidden = true; checkinArea.setAttribute('aria-hidden','true'); }catch(e){} });
 
     // When passenger logs in, prepare flow
     async function beginPassengerFlow(passenger){
       currentPassenger = passenger;
       await loadFlights();
-      checkinArea.style.display = 'block';
-      document.getElementById('flightSelect').style.display='block';
-      document.getElementById('seatSelect').style.display='none';
-      baggageStep.style.display='none';
-      confirmStep.style.display='none';
-      boardingPassStep.style.display='none';
+      try{ checkinArea.hidden = false; checkinArea.setAttribute('aria-hidden','false'); }catch(e){}
+      try{ document.getElementById('flightSelect').hidden = false; document.getElementById('flightSelect').setAttribute('aria-hidden','false'); }catch(e){}
+      try{ document.getElementById('seatSelect').hidden = true; document.getElementById('seatSelect').setAttribute('aria-hidden','true'); }catch(e){}
+      try{ baggageStep.hidden = true; baggageStep.setAttribute('aria-hidden','true'); }catch(e){}
+      try{ confirmStep.hidden = true; confirmStep.setAttribute('aria-hidden','true'); }catch(e){}
+      try{ boardingPassStep.hidden = true; boardingPassStep.setAttribute('aria-hidden','true'); }catch(e){}
       document.getElementById('stepTitle').textContent='Step 1 — Select flight';
     }
 
@@ -663,9 +663,9 @@
       const demoPassenger = { name: 'Demo Passenger', passport: 'DEMO123' };
       currentPassenger = demoPassenger;
       populateFlightsLocal(demoFlights);
-      checkinArea.style.display='block';
-      document.getElementById('flightSelect').style.display='block';
-      document.getElementById('seatSelect').style.display='none';
+      try{ checkinArea.hidden = false; checkinArea.setAttribute('aria-hidden','false'); }catch(e){}
+      try{ document.getElementById('flightSelect').hidden = false; document.getElementById('flightSelect').setAttribute('aria-hidden','false'); }catch(e){}
+      try{ document.getElementById('seatSelect').hidden = true; document.getElementById('seatSelect').setAttribute('aria-hidden','true'); }catch(e){}
       document.getElementById('stepTitle').textContent='Step 1 — Select flight (demo)';
 
       // auto-select first flight after short pause
@@ -684,7 +684,7 @@
             // continue to confirm
             setTimeout(()=>{ toConfirm.click();
               // finalize (mock) and show boarding pass
-              setTimeout(()=>{ renderDemoBoardingPass(demoPassenger, demoFlights[0].flight, selectedSeat || '3'); document.getElementById('stepTitle').textContent='Step 5 — Boarding pass (demo)'; document.getElementById('confirmStep').style.display='none'; document.getElementById('boardingPassStep').style.display='block'; }, 800);
+              setTimeout(()=>{ renderDemoBoardingPass(demoPassenger, demoFlights[0].flight, selectedSeat || '3'); document.getElementById('stepTitle').textContent='Step 5 — Boarding pass (demo)'; try{ document.getElementById('confirmStep').hidden = true; document.getElementById('confirmStep').setAttribute('aria-hidden','true'); }catch(e){} try{ document.getElementById('boardingPassStep').hidden = false; document.getElementById('boardingPassStep').setAttribute('aria-hidden','false'); }catch(e){} }, 800);
             }, 700);
           }, 800);
       }, 600);

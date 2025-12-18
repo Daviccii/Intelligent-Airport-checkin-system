@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Activity Log — SmartFly Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; color: #222; }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .navbar h1 { font-size: 28px; font-weight: 700; }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a, .logout-btn {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover, .logout-btn:hover { opacity: 0.8; }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+
+        .header { margin-bottom: 32px; }
+        .header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .header p { color: #666; }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"], select {
+            padding: 10px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: transform 0.3s;
+        }
+
+        button:hover { transform: translateY(-2px); }
+
+        .log-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .log-item {
+            padding: 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+            transition: background 0.2s;
+        }
+
+        .log-item:hover {
+            background: #f9f9f9;
+        }
+
+        .log-icon {
+            font-size: 24px;
+            min-width: 40px;
+            text-align: center;
+        }
+
+        .log-content {
+            flex: 1;
+        }
+
+        .log-title {
+            font-weight: 600;
+            color: #222;
+            margin-bottom: 4px;
+        }
+
+        .log-description {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .log-time {
+            color: #999;
+            font-size: 12px;
+        }
+
+        .log-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        .badge-checkin { background: #d1fae5; color: #047857; }
+        .badge-payment { background: #dbeafe; color: #1e40af; }
+        .badge-booking { background: #f3e8ff; color: #6d28d9; }
+        .badge-system { background: #fee2e2; color: #991b1b; }
+        .badge-access { background: #fef3c7; color: #b45309; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: #d1fae5;
+            color: #047857;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #047857;
+            border-radius: 50%;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 16px; }
+            .nav-links { flex-direction: column; gap: 8px; }
+            .controls { flex-direction: column; }
+            .log-item { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🛫 SmartFly Admin</h1>
+        <ul class="nav-links">
+            <li><a href="/admin/dashboard.html">Dashboard</a></li>
+            <li><a href="/admin/checkins.html">Check-ins</a></li>
+            <li><a href="/admin/bookings.html">Payments</a></li>
+            <li><a href="/admin/flights.html">Flights</a></li>
+            <li><a href="/admin/activity-log.html">Activity Log</a></li>
+            <li><button class="logout-btn" onclick="logout()">Logout</button></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h2>Activity Log</h2>
+            <p>Real-time system event tracking and audit trail</p>
+        </div>
+
+        <div class="controls">
+            <select id="eventTypeFilter">
+                <option value="">All Event Types</option>
+                <option value="checkin">Check-ins</option>
+                <option value="payment">Payments</option>
+                <option value="booking">Bookings</option>
+                <option value="access">Access</option>
+                <option value="system">System</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="Search events...">
+            <button onclick="loadActivityLog()">Refresh</button>
+            <button onclick="exportLog()" style="background: #10b981;">Export Log</button>
+            <div style="flex: 1; text-align: right;">
+                <span class="live-indicator">
+                    <span class="live-dot"></span>
+                    Live Updates
+                </span>
+            </div>
+        </div>
+
+        <div class="log-container">
+            <div id="activityLog">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <p>Loading activity log...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allEvents = [];
+
+        const eventIcons = {
+            'checkin': '✅',
+            'payment': '💳',
+            'booking': '🎫',
+            'access': '🔑',
+            'seat_assign': '🪑',
+            'system': '⚙️',
+            'login': '👤',
+            'logout': '👤'
+        };
+
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+            if (!token) {
+                setTimeout(() => {
+                    if (!localStorage.getItem('adminToken') && !localStorage.getItem('session')) {
+                        window.location.href = '/admin-login.html';
+                    }
+                }, 100);
+                return false;
+            }
+            return true;
+        }
+
+        async function loadActivityLog() {
+            try {
+                const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+                const res = await fetch('/api/events', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                let events = [];
+                if (res.ok) {
+                    const data = await res.json();
+                    events = Array.isArray(data) ? data : data.events || [];
+                }
+
+                // If no events from backend, create sample data
+                if (events.length === 0) {
+                    events = generateSampleEvents();
+                }
+
+                allEvents = events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                renderLog();
+            } catch (err) {
+                console.error('Failed to load activity log:', err);
+                allEvents = generateSampleEvents();
+                renderLog();
+            }
+        }
+
+        function generateSampleEvents() {
+            return [
+                { type: 'payment', title: 'Payment Received', description: 'Gabriel Kebiro paid $280 via M-Pesa', timestamp: new Date().toISOString() },
+                { type: 'checkin', title: 'Passenger Checked In', description: 'Jane Smith checked in for flight BA123', timestamp: new Date(Date.now() - 5*60000).toISOString() },
+                { type: 'booking', title: 'Booking Created', description: 'New booking BK51VW3PI for London route', timestamp: new Date(Date.now() - 10*60000).toISOString() },
+                { type: 'seat_assign', title: 'Seat Assigned', description: 'Passenger assigned seat 12A on flight AA202', timestamp: new Date(Date.now() - 15*60000).toISOString() },
+                { type: 'access', title: 'Access Code Generated', description: 'Access code generated for check-in', timestamp: new Date(Date.now() - 20*60000).toISOString() },
+                { type: 'system', title: 'System Update', description: 'Database backup completed', timestamp: new Date(Date.now() - 60*60000).toISOString() }
+            ];
+        }
+
+        function renderLog() {
+            const logContainer = document.getElementById('activityLog');
+            const typeFilter = document.getElementById('eventTypeFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+
+            let filtered = allEvents.filter(e => {
+                const matchesType = !typeFilter || e.type === typeFilter;
+                const matchesSearch = !search || 
+                    (e.title && e.title.toLowerCase().includes(search)) ||
+                    (e.description && e.description.toLowerCase().includes(search));
+                return matchesType && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                logContainer.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <p>No events found</p>
+                    </div>
+                `;
+                return;
+            }
+
+            logContainer.innerHTML = filtered.map(e => {
+                const time = new Date(e.timestamp);
+                const timeStr = time.toLocaleTimeString();
+                const dateStr = time.toLocaleDateString();
+                const icon = eventIcons[e.type] || '📋';
+                
+                return `
+                    <div class="log-item">
+                        <div class="log-icon">${icon}</div>
+                        <div class="log-content">
+                            <div class="log-title">${e.title || 'Event'}</div>
+                            <div class="log-description">${e.description || 'No description'}</div>
+                            <div class="log-time">${timeStr} • ${dateStr}</div>
+                            <span class="log-badge badge-${e.type}">${e.type}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function exportLog() {
+            const csv = [
+                ['Timestamp', 'Type', 'Title', 'Description'].join(','),
+                ...allEvents.map(e => [
+                    e.timestamp,
+                    e.type,
+                    e.title,
+                    e.description
+                ].map(v => `"${v || ''}"`).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `activity-log-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('session');
+            window.location.href = '/admin-login.html';
+        }
+
+        // Event listeners
+        document.getElementById('eventTypeFilter').addEventListener('change', renderLog);
+        document.getElementById('searchInput').addEventListener('input', renderLog);
+
+        if (checkAuth()) {
+            loadActivityLog();
+            setInterval(loadActivityLog, 10000); // Refresh every 10 seconds
+        } else {
+            document.body.innerHTML = '<p style="text-align:center;padding:50px;">Redirecting to login...</p>';
+        }
+    </script>
+</body>
+</html>

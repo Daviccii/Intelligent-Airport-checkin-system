@@ -18,8 +18,8 @@ async function handleAdminLogin(event) {
         if (response.ok) {
             const data = await response.json();
             adminToken = data.token;
-            document.getElementById('adminLogin').style.display = 'none';
-            document.getElementById('adminTools').style.display = 'block';
+            try{ const al = document.getElementById('adminLogin'); if(al){ al.hidden = true; al.setAttribute('aria-hidden','true'); } }catch(e){}
+            try{ const at = document.getElementById('adminTools'); if(at){ at.hidden = false; at.setAttribute('aria-hidden','false'); } }catch(e){}
             document.getElementById('adminUsername-display').textContent = username;
             showAdminSection('flights');
             showToast('Login successful', 'success');
@@ -33,18 +33,19 @@ async function handleAdminLogin(event) {
 
 function adminLogout() {
     adminToken = null;
-    document.getElementById('adminLogin').style.display = 'block';
-    document.getElementById('adminTools').style.display = 'none';
+    try{ const al = document.getElementById('adminLogin'); if(al){ al.hidden = false; al.setAttribute('aria-hidden','false'); } }catch(e){}
+    try{ const at = document.getElementById('adminTools'); if(at){ at.hidden = true; at.setAttribute('aria-hidden','true'); } }catch(e){}
     document.getElementById('adminForm').reset();
     showToast('Logged out successfully', 'info');
 }
 
 // Section Management
 function showAdminSection(section) {
+    // prefer global implementation if provided (panels.js provides a class-based variant)
+    try { if (typeof window.showAdminSection === 'function' && window.showAdminSection !== showAdminSection) { window.showAdminSection(section); return; } } catch(e){}
     const sections = ['flights', 'passengers', 'bookings'];
     sections.forEach(s => {
-        document.getElementById(`admin${s.charAt(0).toUpperCase() + s.slice(1)}`).style.display = 
-            s === section ? 'block' : 'none';
+        try{ const el = document.getElementById(`admin${s.charAt(0).toUpperCase() + s.slice(1)}`); if(el){ el.hidden = (s !== section); el.setAttribute('aria-hidden', s === section ? 'false' : 'true'); } }catch(e){}
     });
     if (section === 'flights') refreshFlights();
     else if (section === 'passengers') refreshPassengerList();

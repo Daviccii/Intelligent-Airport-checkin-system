@@ -55,11 +55,11 @@
 
     roleEl.addEventListener('change', () => {
       if (roleEl.value === 'admin') {
-        passengerFields.style.display = 'none';
-        adminFields.style.display = 'block';
+        try{ passengerFields.hidden = true; passengerFields.setAttribute('aria-hidden','true'); }catch(e){}
+        try{ adminFields.hidden = false; adminFields.setAttribute('aria-hidden','false'); }catch(e){}
       } else {
-        passengerFields.style.display = 'block';
-        adminFields.style.display = 'none';
+        try{ passengerFields.hidden = false; passengerFields.setAttribute('aria-hidden','false'); }catch(e){}
+        try{ adminFields.hidden = true; adminFields.setAttribute('aria-hidden','true'); }catch(e){}
       }
     });
 

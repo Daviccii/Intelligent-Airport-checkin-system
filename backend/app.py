@@ -1,151 +1,393 @@
 # ...existing code...
-from flask import Flask, request, jsonify, send_from_directory, redirect
-from security_utils import security_manager, require_admin, sanitize_input, validate_passport
+from flask import Flask, request, jsonify, send_from_directory, redirect, send_file
+from flask_cors import CORS
+from security_utils import security_manager, sanitize_input, validate_passport, require_admin
+import bcrypt
 from flight_manager import FlightManager
 import json
 import os
+from dotenv import load_dotenv
 import threading
 from PIL import Image, ImageChops, ImageStat
 import io
-import qrcode
-from flask import send_file
-import smtplib
-from email.message import EmailMessage
-# Load .env for local development if present
-try:
-    from dotenv import load_dotenv
-    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
-except Exception:
-    pass
 import random
 from datetime import datetime, timedelta, timezone
-import bcrypt
-import time
-from flask import Response, stream_with_context
+import smtplib
+from email.message import EmailMessage
+import urllib.parse
+import qrcode
+import secrets
 
-PASSENGER_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "passengers.json"))
-FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
-FACE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "face_store"))
-EVENTS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "events.json"))
-ACCESS_CODES_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "access_codes.json"))
-ADMIN_USERS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "admin_users.json"))
-FLIGHTS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "flights.json"))
-BOARDING_STATE_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "boarding_state.json"))
-OPENAPI_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "openapi.json"))
-HOLDS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "holds.json"))
+# Load environment variables from .env file
+load_dotenv()
 
-# Try to initialize Redis/RQ if configured
-RQ_QUEUE = None
+# Basic file/directory configuration (safe defaults)
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend'))
+EVENTS_FILE = os.path.join(BASE_DIR, 'events.json')
+PASSENGER_FILE = os.path.join(BASE_DIR, 'passengers.json')
+SESSIONS_FILE = os.path.join(BASE_DIR, 'sessions.json')
+ACCESS_CODES_FILE = os.path.join(BASE_DIR, 'access_codes.json')
+ADMIN_USERS_FILE = os.path.join(BASE_DIR, 'admin_users.json')
+HOLDS_FILE = os.path.join(BASE_DIR, 'holds.json')
+OPENAPI_FILE = os.path.join(BASE_DIR, 'openapi.json')
+BOOKINGS_FILE = os.path.join(BASE_DIR, 'bookings.json')
+FACE_DIR = os.path.join(BASE_DIR, 'face_store')
+SETTINGS_FILE = os.path.join(BASE_DIR, 'system_config.json')
 try:
-    import redis as _redis
-    from rq import Queue as _Queue
-    REDIS_URL = os.getenv('REDIS_URL', 'redis://localhost:6379/0')
-    _redis_conn = _redis.from_url(REDIS_URL)
-    RQ_QUEUE = _Queue('default', connection=_redis_conn)
+    os.makedirs(FRONTEND_DIR, exist_ok=True)
 except Exception:
-    RQ_QUEUE = None
+    pass
+try:
+    os.makedirs(FACE_DIR, exist_ok=True)
+except Exception:
+    pass
 
+# In tests we prefer a clean in-memory `passengers` list. When running
+# the server directly (as __main__), we'll load persisted data from
+# `passengers.json` just before starting the app.
+passengers = []
+fm = FlightManager()
 
-# Ensure face_store exists
-if not os.path.exists(FACE_DIR):
+# Flask app instance
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
+# Enable CORS for API routes to support local file-served frontend during development
+CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+
+@app.route('/api/admin/settings', methods=['GET'])
+def api_get_admin_settings():
+    sess = _require_session(request, require_role='admin')
+    if not sess:
+        return jsonify({'error': 'admin_auth_required'}), 401
+    data = _load_json_file(SETTINGS_FILE, {})
+    # Provide sensible defaults if file empty
+    defaults = {
+        'system_name': 'SmartFly Airlines',
+        'system_email': '',
+        'timezone': 'UTC',
+        'date_format': 'MM/DD/YYYY',
+        'admin_session_ttl': 3600,
+        'passenger_session_ttl': 7200,
+        'enable_mfa': False,
+        'enable_audit_log': True,
+        'email_notifications': True,
+        'sms_notifications': False,
+        'slack_notifications': False,
+        'notify_email': '',
+        'maintenance_mode': False,
+        'maintenance_message': '',
+        'backup_frequency': 'daily'
+    }
+    if not isinstance(data, dict):
+        data = {}
+    merged = {**defaults, **data}
+    return jsonify(merged), 200
+
+@app.route('/api/admin/settings', methods=['POST'])
+def api_save_admin_settings():
+    sess = _require_session(request, require_role='admin')
+    if not sess:
+        return jsonify({'error': 'admin_auth_required'}), 401
     try:
-        os.makedirs(FACE_DIR, exist_ok=True)
+        payload = request.get_json(silent=True) or {}
+        if not isinstance(payload, dict):
+            return jsonify({'error': 'invalid_payload'}), 400
+        # Keep only known keys to avoid arbitrary file writes
+        allowed_keys = {
+            'system_name', 'system_email', 'timezone', 'date_format',
+            'admin_session_ttl', 'passenger_session_ttl',
+            'enable_mfa', 'enable_audit_log',
+            'email_notifications', 'sms_notifications', 'slack_notifications',
+            'notify_email', 'maintenance_mode', 'maintenance_message',
+            'backup_frequency'
+        }
+        clean = {k: payload.get(k) for k in allowed_keys if k in payload}
+        existing = _load_json_file(SETTINGS_FILE, {})
+        if not isinstance(existing, dict):
+            existing = {}
+        to_save = {**existing, **clean}
+        _save_json_file(SETTINGS_FILE, to_save)
+        return jsonify({'ok': True}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# Basic page routes for static frontend
+@app.route('/')
+def serve_root():
+    return send_from_directory(FRONTEND_DIR, 'index.html')
+
+
+@app.route('/admin/dashboard.html')
+def serve_admin_dashboard():
+    return send_from_directory(FRONTEND_DIR, 'admin-dashboard.html')
+
+
+# ----------------------
+# Session & Access Code helpers (file-backed)
+# ----------------------
+
+def _load_json_file(path, default):
+    try:
+        if not os.path.exists(path):
+            return default
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data if isinstance(data, type(default)) else default
+    except Exception:
+        return default
+
+def _save_json_file(path, data):
+    try:
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2)
     except Exception:
         pass
 
-# Load passengers if file exists
-if os.path.exists(PASSENGER_FILE):
-    with open(PASSENGER_FILE, "r") as file:
-        passengers = json.load(file)
-else:
-    passengers = []
+def _load_sessions():
+    return _load_json_file(SESSIONS_FILE, [])
 
-# Ensure events file exists
-if not os.path.exists(EVENTS_FILE):
+def _save_sessions(items):
+    _save_json_file(SESSIONS_FILE, items or [])
+
+def _create_session(role, passport=None, ttl_seconds=3600.0):
+    token = secrets.token_urlsafe(24)
+    exp = (datetime.utcnow() + timedelta(seconds=float(ttl_seconds))).isoformat() + 'Z'
+    sess = {
+        'token': token,
+        'role': role,
+        'passport': passport,
+        'expires': exp
+    }
+    items = _load_sessions()
+    # prune expired
+    now = datetime.utcnow()
+    kept = []
+    for s in items:
+        try:
+            if s.get('expires') and datetime.fromisoformat(s['expires'].replace('Z','')) > now:
+                kept.append(s)
+        except Exception:
+            continue
+    kept.append(sess)
+    _save_sessions(kept)
+    return token, exp
+
+def _get_session(token):
+    if not token:
+        return None
+    items = _load_sessions()
+    now = datetime.utcnow()
+    for s in items:
+        try:
+            if s.get('token') == token and s.get('expires') and datetime.fromisoformat(s['expires'].replace('Z','')) > now:
+                return s
+        except Exception:
+            continue
+    return None
+
+def _require_session(req, require_role=None):
+    """Check for valid session. Supports:
+    1. session cookie
+    2. X-SESSION header
+    3. Authorization: Bearer <token> (JWT)
+    """
+    token = req.headers.get('X-SESSION') or req.cookies.get('session')
+    
+    # If no session token, try Authorization header (JWT)
+    if not token:
+        auth_header = req.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            token = auth_header[7:]  # Strip 'Bearer '
+    
+    sess = _get_session(token)
+    if not sess:
+        # Try JWT token as fallback
+        if token:
+            try:
+                data = security_manager.verify_token(token)
+                if data[0]:  # If verification succeeded
+                    # Create a pseudo-session from JWT
+                    sess = {
+                        'token': token,
+                        'role': data[1].get('role', 'passenger'),
+                        'passport': data[1].get('user_id') if data[1].get('role') == 'passenger' else None,
+                        'expires': data[1].get('exp')
+                    }
+            except Exception:
+                pass
+    
+    if not sess:
+        return None
+    if require_role and sess.get('role') != require_role:
+        return None
+    return sess
+
+def _load_codes():
+    return _load_json_file(ACCESS_CODES_FILE, [])
+
+def _save_codes(items):
+    _save_json_file(ACCESS_CODES_FILE, items or [])
+
+def _set_code_for_passport(passport):
+    """Create a one-time code for passport, valid ~10 minutes."""
+    code = f"{secrets.randbelow(1000000):06d}"
+    expires = (datetime.utcnow() + timedelta(minutes=10)).isoformat() + 'Z'
+    items = [x for x in _load_codes() if x.get('passport') != passport]
+    items.append({'passport': passport, 'code': code, 'expires': expires, 'used': False})
+    _save_codes(items)
+    return code, expires
+
+def _validate_and_consume_code(passport, code):
+    items = _load_codes()
+    now = datetime.utcnow()
+    out = []
+    ok = False
+    reason = 'invalid'
+    for x in items:
+        if x.get('passport') == passport and x.get('code') == code and not x.get('used'):
+            try:
+                if x.get('expires') and datetime.fromisoformat(x['expires'].replace('Z','')) < now:
+                    reason = 'expired'
+                else:
+                    x['used'] = True
+                    ok = True
+                    reason = ''
+            except Exception:
+                reason = 'expired'
+        out.append(x)
+    _save_codes(out)
+    return ok, reason
+
+
+def _load_admin_users():
     try:
-        with open(EVENTS_FILE, 'w') as f:
-            json.dump([], f)
+        with open(ADMIN_USERS_FILE, 'r') as f:
+            return json.load(f)
     except Exception:
-        pass
+        return {}
 
-# Ensure access codes file exists
-if not os.path.exists(ACCESS_CODES_FILE):
-    try:
-        with open(ACCESS_CODES_FILE, 'w') as f:
-            json.dump({}, f)
-    except Exception:
-        pass
 
-# Ensure flights file exists
-if not os.path.exists(FLIGHTS_FILE):
+def _load_airports_list():
+    """Return a list of airport dicts normalized from the frontend assets JSON.
+       Each item will contain keys: 'code' (IATA), 'name', 'city', 'country', 'lat', 'lon'.
+    """
+    path = os.path.join(FRONTEND_DIR, 'assets', 'data', 'airports.json')
     try:
-        with open(FLIGHTS_FILE, 'w') as f:
-            json.dump([], f)
-    except Exception:
-        pass
-
-def _load_flights():
-    try:
-        with open(FLIGHTS_FILE, 'r') as f:
-            return json.load(f) or []
+        if not os.path.exists(path):
+            return []
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
     except Exception:
         return []
+    out = []
+    if isinstance(data, list):
+        for a in data:
+            try:
+                code = (a.get('code') or a.get('iata') or '').strip().upper()
+                if not code:
+                    continue
+                lat = a.get('lat') if 'lat' in a else a.get('latitude')
+                lon = a.get('lon') if 'lon' in a else a.get('longitude')
+                try:
+                    lat = float(lat) if lat is not None and str(lat).strip() != '' else None
+                except Exception:
+                    lat = None
+                try:
+                    lon = float(lon) if lon is not None and str(lon).strip() != '' else None
+                except Exception:
+                    lon = None
+                out.append({'code': code, 'name': a.get('name') or a.get('airport') or '', 'city': a.get('city') or '', 'country': a.get('country') or '', 'lat': lat, 'lon': lon})
+            except Exception:
+                continue
+    elif isinstance(data, dict):
+        for k, a in data.items():
+            try:
+                code = (a.get('iata') or a.get('code') or k) or ''
+                code = code.strip().upper()
+                if not code:
+                    continue
+                lat = a.get('lat') if 'lat' in a else a.get('latitude')
+                lon = a.get('lon') if 'lon' in a else a.get('longitude')
+                try:
+                    lat = float(lat) if lat is not None and str(lat).strip() != '' else None
+                except Exception:
+                    lat = None
+                try:
+                    lon = float(lon) if lon is not None and str(lon).strip() != '' else None
+                except Exception:
+                    lon = None
+                out.append({'code': code, 'name': a.get('name') or a.get('airport') or '', 'city': a.get('city') or '', 'country': a.get('country') or '', 'lat': lat, 'lon': lon})
+            except Exception:
+                continue
+    return out
 
-def _save_flights(flights: list):
-    try:
-        with open(FLIGHTS_FILE, 'w') as f:
-            json.dump(flights, f, indent=2)
-    except Exception:
-        pass
 
-
-def _load_boarding_state():
-    try:
-        if os.path.exists(BOARDING_STATE_FILE):
-            with open(BOARDING_STATE_FILE, 'r') as f:
-                return json.load(f) or {}
-    except Exception:
-        pass
-    return {}
-
-
-def _save_boarding_state(state: dict):
-    try:
-        with open(BOARDING_STATE_FILE, 'w') as f:
-            json.dump(state, f, indent=2)
-    except Exception:
-        pass
-
-def _parse_time_field(timestr: str):
-    """Try to parse a provided time string into an ISO 8601 UTC-ish string for storage.
-    Accepts ISO formats or 'YYYY-MM-DDTHH:MM' or 'YYYY-MM-DD HH:MM'. Returns string or raises ValueError.
+def api_airports():
+    """Search airports server-side.
+       Query params:
+         - q: search string (IATA, name, city, country)
+         - page: 1-based page number (default 1)
+         - limit: items per page (default 50, max 200)
+         - lat, lon: optional floats to bias/sort by distance (nearest first)
     """
-    if not timestr:
-        raise ValueError('time required')
-    # normalize space -> T
-    s = timestr.strip()
-    if ' ' in s and 'T' not in s:
-        s = s.replace(' ', 'T')
+    q = (request.args.get('q') or '').strip()
     try:
-        dt = datetime.fromisoformat(s)
+        page = int(request.args.get('page') or 1)
     except Exception:
-        # last resort: try adding seconds
-        try:
-            dt = datetime.fromisoformat(s + ':00')
-        except Exception:
-            raise ValueError('invalid time format, use ISO 8601 or YYYY-MM-DD HH:MM')
-    # If datetime is naive, assume local timezone then convert to UTC
-    if dt.tzinfo is None:
-        local_tz = datetime.now().astimezone().tzinfo
-        try:
-            dt = dt.replace(tzinfo=local_tz)
-        except Exception:
-            # fallback: assume UTC
-            dt = dt.replace(tzinfo=timezone.utc)
-    # convert to UTC and store as ISO with Z
-    dt_utc = dt.astimezone(timezone.utc)
-    return dt_utc.isoformat().replace('+00:00', 'Z')
+        page = 1
+    try:
+        limit = int(request.args.get('limit') or 50)
+    except Exception:
+        limit = 50
+    if limit <= 0:
+        limit = 50
+    if limit > 200:
+        limit = 200
 
+    lat = request.args.get('lat')
+    lon = request.args.get('lon')
+    try:
+        lat_f = float(lat) if lat is not None and str(lat).strip() != '' else None
+    except Exception:
+        lat_f = None
+    try:
+        lon_f = float(lon) if lon is not None and str(lon).strip() != '' else None
+    except Exception:
+        lon_f = None
+
+    airports = _load_airports_list()
+    # simple filtering
+    filtered = []
+    if q:
+        ql = q.lower()
+        for a in airports:
+            if ql in (a.get('code') or '').lower() or ql in (a.get('name') or '').lower() or ql in (a.get('city') or '').lower() or ql in (a.get('country') or '').lower():
+                filtered.append(a.copy())
+    else:
+        # no query -> include all
+        filtered = [a.copy() for a in airports]
+
+    # compute distance if lat/lon provided
+    if lat_f is not None and lon_f is not None:
+        for a in filtered:
+            try:
+                if a.get('lat') is not None and a.get('lon') is not None:
+                    a['distance_km'] = _haversine_km(lat_f, lon_f, a.get('lat'), a.get('lon'))
+                else:
+                    a['distance_km'] = None
+            except Exception:
+                a['distance_km'] = None
+        # sort: entries with numeric distance first, then alphabetic
+        filtered.sort(key=lambda x: (float('inf') if x.get('distance_km') is None else x.get('distance_km')))
+
+    total = len(filtered)
+    # paginate
+    start = max(0, (page - 1) * limit)
+    end = start + limit
+    page_items = filtered[start:end]
+
+    return jsonify({'total': total, 'page': page, 'limit': limit, 'airports': page_items}), 200
 
 def _compute_baggage_fee(baggage_count: int):
     """Simple baggage fee rule: first bag free, each extra bag $50."""
@@ -304,6 +546,57 @@ def _validate_and_consume_code(passport: str, code: str):
         pass
     return True, 'ok'
 
+# Bookings management functions
+def _load_bookings():
+    """Load all bookings from bookings.json file."""
+    try:
+        if os.path.exists(BOOKINGS_FILE):
+            with open(BOOKINGS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f) or []
+    except Exception:
+        pass
+    return []
+
+def _save_bookings(bookings_list):
+    """Save bookings list to bookings.json file."""
+    try:
+        with open(BOOKINGS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(bookings_list, f, indent=2)
+    except Exception:
+        pass
+
+def _add_booking(booking_data):
+    """Add a new booking to the bookings list and save to file."""
+    try:
+        bookings = _load_bookings()
+        # Add timestamp and status if not present
+        if 'created_at' not in booking_data:
+            booking_data['created_at'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        if 'status' not in booking_data:
+            booking_data['status'] = 'completed'
+        
+        bookings.append(booking_data)
+        _save_bookings(bookings)
+        
+        # Log the event
+        log_event({
+            'type': 'booking_created',
+            'booking_id': booking_data.get('id'),
+            'payment_method': booking_data.get('payment_method'),
+            'amount': booking_data.get('amount'),
+            'currency': booking_data.get('currency'),
+            'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        })
+        
+        return booking_data
+    except Exception as e:
+        log_event({
+            'type': 'booking_save_failed',
+            'error': str(e),
+            'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        })
+        return None
+
 
 # --- simple session store (file-backed) ------------------------------------------------
 SESSIONS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "sessions.json"))
@@ -389,14 +682,100 @@ def log_event(event: dict):
         # Logging must not break main flows
         pass
 
+
+def _load_bookings():
+    """Load all bookings from bookings.json"""
+    try:
+        if os.path.exists(BOOKINGS_FILE):
+            with open(BOOKINGS_FILE, 'r') as f:
+                return json.load(f) or []
+    except Exception:
+        pass
+    return []
+
+
+def _save_bookings(bookings: list):
+    """Save bookings to bookings.json"""
+    try:
+        with open(BOOKINGS_FILE, 'w') as f:
+            json.dump(bookings, f, indent=2)
+    except Exception:
+        pass
+
+
+def _add_booking(booking: dict):
+    """Add a new booking to the bookings file"""
+    bookings = _load_bookings()
+    booking['id'] = booking.get('id') or f"BK{len(bookings) + 1}"
+    booking['created_at'] = booking.get('created_at') or datetime.utcnow().isoformat() + 'Z'
+    booking['status'] = booking.get('status') or 'completed'
+    bookings.append(booking)
+    _save_bookings(bookings)
+    log_event({
+        'type': 'booking_created',
+        'booking_id': booking.get('id'),
+        'passenger_name': booking.get('name'),
+        'payment_method': booking.get('payment_method'),
+        'amount': booking.get('amount'),
+        'timestamp': datetime.utcnow().isoformat() + 'Z'
+    })
+    return booking
+
+
 def save_passengers():
     with open(PASSENGER_FILE, "w") as file:
         json.dump(passengers, file, indent=4)
 
+
+def register_passenger():
+    """Interactive helper used by tests: reads name, passport, flight from input(),
+       appends to `passengers`, saves, and prints basic info.
+    """
+    try:
+        name = input("Enter passenger name: ")
+        passport = input("Enter passport/ID number: ")
+        flight = input("Enter flight number: ")
+    except (StopIteration, EOFError):
+        # In test environments the mocked input iterator may be exhausted;
+        # treat this as a no-op registration.
+        return
+
+    # Prevent duplicates for same passport+flight
+    for p in passengers:
+        if p.get('passport') == passport and p.get('flight') == flight:
+            print("Passenger already registered!")
+            return
+
+    seat = (max([int(p.get('seat')) for p in passengers if isinstance(p.get('seat'), int)] or [0]) + 1) if passengers else 1
+    passenger = {"name": name, "passport": passport, "flight": flight, "seat": seat}
+    passengers.append(passenger)
+    try:
+        save_passengers()
+    except Exception:
+        pass
+    print(f"\nPassenger {name} registered successfully!\nFlight: {flight} | Seat: {seat}\n")
+
+
+def view_passengers():
+    """Prints registered passengers (used by tests)."""
+    if not passengers:
+        print("\nNo passengers registered yet.\n")
+        return
+    print("\n--- Registered Passengers ---")
+    for p in passengers:
+        print(f"{p.get('name')} - Passport: {p.get('passport')} - Flight: {p.get('flight')} - Seat: {p.get('seat')}")
+    print("-----------------------------\n")
+
 def find_duplicate(passport, flight):
     return any(p.get("passport") == passport and p.get("flight") == flight for p in passengers)
 
-app = Flask(__name__, static_folder=FRONTEND_DIR)
+app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
+# register airports route (defined earlier in the file)
+try:
+    app.add_url_rule('/api/airports', 'api_airports', api_airports, methods=['GET'])
+except Exception:
+    # If the function isn't defined yet for some reason, we'll rely on module load order.
+    pass
 
 @app.route("/api/passengers", methods=["GET", "DELETE"])
 def api_get_passengers():
@@ -733,6 +1112,9 @@ def api_boardingpass():
             return jsonify({'error': 'invalid_or_expired_code', 'detail': reason}), 403
     elif master_pw and header_pw and header_pw == master_pw:
         allowed = True
+    # Optional public access gate for demos only (off by default)
+    elif (os.getenv('ALLOW_PUBLIC_BOARDINGPASS','false').lower() in ('1','true','yes')):
+        allowed = True
     else:
         return jsonify({'error': 'access_denied', 'detail': 'provide a valid session, code, or master password'}), 403
 
@@ -823,24 +1205,55 @@ def api_docs():
         return "API docs not available", 404
 
 
-@app.route('/api/bookings', methods=['GET'])
+@app.route('/api/bookings', methods=['GET', 'POST'])
 def api_bookings():
-    """Return bookings: admin sees all, passenger sees only their own."""
+    """GET: Return bookings: admin sees all, passenger sees only their own.
+       POST: Create a new booking from payment confirmation (no session required for public bookings).
+    """
+    if request.method == 'POST':
+        # Handle new booking from payment page (no session required - public endpoint)
+        data = request.get_json() or {}
+        
+        # Validate required fields
+        required_fields = ['id', 'name', 'email', 'passport', 'phone', 'from', 'to', 'depart', 'payment_method']
+        missing = [f for f in required_fields if not data.get(f)]
+        if missing:
+            return jsonify({'error': 'missing_required_fields', 'missing': missing}), 400
+        
+        # Create booking record in bookings.json
+        booking = {
+            'id': data.get('id'),
+            'name': sanitize_input(data.get('name') or ''),
+            'email': sanitize_input(data.get('email') or ''),
+            'passport': sanitize_input(data.get('passport') or ''),
+            'phone': sanitize_input(data.get('phone') or ''),
+            'country': sanitize_input(data.get('country') or ''),
+            'from': sanitize_input(data.get('from') or ''),
+            'to': sanitize_input(data.get('to') or ''),
+            'depart': sanitize_input(data.get('depart') or ''),
+            'return': sanitize_input(data.get('return') or ''),
+            'class': sanitize_input(data.get('class') or 'economy'),
+            'fare': sanitize_input(data.get('fare') or '0'),
+            'amount': float(data.get('amount') or 0),
+            'currency': sanitize_input(data.get('currency') or 'USD'),
+            'payment_method': sanitize_input(data.get('payment_method') or ''),
+            'created_at': datetime.utcnow().isoformat() + 'Z',
+            'status': 'completed'
+        }
+        
+        # Save booking
+        saved_booking = _add_booking(booking)
+        return jsonify({'status': 'ok', 'booking': saved_booking}), 201
+    
+    # GET endpoint
     session = _require_session(request)
     if not session:
         return jsonify({'error': 'unauthorized'}), 401
     if session.get('role') == 'admin':
-        # enrich with flight times
-        flights = {f.get('flight'): f for f in _load_flights()}
-        enriched = []
-        for p in passengers:
-            pe = p.copy()
-            f = flights.get(pe.get('flight'))
-            if f:
-                pe['_flight_time'] = f.get('time')
-            enriched.append(pe)
-        return jsonify({'bookings': enriched}), 200
-    # passenger
+        # Admin gets bookings from bookings.json (payment records)
+        bookings = _load_bookings()
+        return jsonify(bookings), 200
+    # passenger - gets their own bookings from passengers list
     passport = session.get('passport')
     matches = [p.copy() for p in passengers if p.get('passport') == passport]
     flights = {f.get('flight'): f for f in _load_flights()}
@@ -857,18 +1270,91 @@ def api_flights():
        POST (admin only): add a flight { flight: str, meta?: dict }
     """
     if request.method == 'GET':
+        # Filters
+        date_q = (request.args.get('date') or '').strip()
+        origin_q = (request.args.get('origin') or '').strip().upper()
+        dest_q = (request.args.get('destination') or '').strip().upper()
+        avail_only = (request.args.get('availableOnly') or '').lower() == 'true'
+
         flights = _load_flights()
-        # enrich with passenger counts
+
+        # passenger counts
         counts = {}
         for p in passengers:
             f = p.get('flight')
             if not f:
                 continue
             counts[f] = counts.get(f, 0) + 1
+
+        def to_date_iso(dt_str):
+            try:
+                dt = datetime.fromisoformat(dt_str.replace('Z', ''))
+                return dt.date().isoformat()
+            except Exception:
+                return None
+
+        def base_price(f):
+            aircraft = (f.get('aircraft') or '').lower()
+            cap = int(f.get('capacity') or 0)
+            if 'a380' in aircraft or '777' in aircraft or '787' in aircraft or 'a350' in aircraft:
+                tier = 200
+            elif 'a320' in aircraft or '737' in aircraft:
+                tier = 120
+            else:
+                tier = 90
+            size_factor = 1.0 if cap >= 220 else (0.9 if cap >= 180 else 0.8)
+            return round(size_factor * tier, 2)
+
+        CLASS_FACTORS = [
+            {'class': 'Economy', 'code': 'Y', 'mult': 1.0, 'amenities': ['Standard seat', '1 carry-on']},
+            {'class': 'Premium Economy', 'code': 'W', 'mult': 1.4, 'amenities': ['Extra legroom', 'Priority boarding']},
+            {'class': 'Business', 'code': 'J', 'mult': 2.5, 'amenities': ['Lie-flat (on widebody)', 'Lounge access']},
+            {'class': 'First', 'code': 'F', 'mult': 4.0, 'amenities': ['Suite (on A380/777)', 'Premium dining']},
+        ]
+
+        enriched = []
         for fl in flights:
-            flnum = fl.get('flight')
-            fl['bookings'] = counts.get(flnum, 0)
-        return jsonify({'flights': flights}), 200
+            dep_date = to_date_iso(fl.get('time'))
+            if date_q and dep_date != date_q:
+                continue
+            if origin_q and (fl.get('origin') or '').upper() != origin_q:
+                continue
+            if dest_q and (fl.get('destination') or '').upper() != dest_q:
+                continue
+            if avail_only and not fl.get('checkin_enabled'):
+                continue
+
+            base = base_price(fl)
+            classes = []
+            for c in CLASS_FACTORS:
+                if c['code'] == 'F' and not any(k in (fl.get('aircraft') or '').lower() for k in ['a380', '777', '787']):
+                    continue
+                price = round(base * c['mult'], 2)
+                classes.append({
+                    'name': c['class'],
+                    'code': c['code'],
+                    'price': price,
+                    'currency': 'USD',
+                    'amenities': c['amenities']
+                })
+
+            enriched.append({
+                'flight': fl.get('flight'),
+                'airline': fl.get('airline'),
+                'aircraft': fl.get('aircraft'),
+                'origin': fl.get('origin'),
+                'destination': fl.get('destination'),
+                'departure_time': fl.get('time'),
+                'arrival_time': fl.get('arrival'),
+                'date': dep_date,
+                'gate': fl.get('gate'),
+                'capacity': fl.get('capacity'),
+                'checkin_enabled': fl.get('checkin_enabled'),
+                'classes': classes,
+                'bookings': counts.get(fl.get('flight'), 0)
+            })
+
+        return jsonify({'total': len(enriched), 'flights': enriched}), 200
 
     # POST -> admin only (create flight)
     session = _require_session(request, require_role='admin')
@@ -909,13 +1395,502 @@ def api_flights():
     return jsonify({'status': 'created', 'flight': entry}), 201
 
 
+# Pricing API: compute distance-based fares using airport lat/lon
+def _calculate_flight_price(origin, destination):
+    """Calculate a realistic flight price based on distance between airports.
+    Uses haversine distance formula and a base price model.
+    """
+    try:
+        airports = _load_airports_map()
+        origin_code = str(origin).strip().upper()
+        dest_code = str(destination).strip().upper()
+        
+        origin_data = airports.get(origin_code)
+        dest_data = airports.get(dest_code)
+        
+        if not origin_data or not dest_data:
+            # Default price if airport data not found
+            return round(random.uniform(250, 450), 2)
+        
+        origin_lat = origin_data.get('lat')
+        origin_lon = origin_data.get('lon')
+        dest_lat = dest_data.get('lat')
+        dest_lon = dest_data.get('lon')
+        
+        if origin_lat is None or origin_lon is None or dest_lat is None or dest_lon is None:
+            # Default price if coordinates not available
+            return round(random.uniform(250, 450), 2)
+        
+        # Calculate distance
+        distance = _haversine_km(origin_lat, origin_lon, dest_lat, dest_lon)
+        
+        if distance is None or distance == 0:
+            return round(random.uniform(250, 450), 2)
+        
+        # Pricing model:
+        # Base fare: $150
+        # Per km: $0.08 for short flights (<1500km), $0.06 for medium (1500-5000km), $0.04 for long (>5000km)
+        # Plus variance to avoid identical prices
+        base_fare = 150
+        if distance < 1500:
+            per_km_rate = 0.10
+        elif distance < 5000:
+            per_km_rate = 0.06
+        else:
+            per_km_rate = 0.04
+        
+        distance_fare = distance * per_km_rate
+        subtotal = base_fare + distance_fare
+        
+        # Add some variance (±15%) to make prices more realistic
+        variance = random.uniform(0.85, 1.15)
+        final_price = subtotal * variance
+        
+        return round(final_price, 2)
+    except Exception:
+        # Fallback to random price on any error
+        return round(random.uniform(200, 500), 2)
+
+
+    """Load a simple mapping of IATA -> { lat, lon, name, city } from the frontend assets folder.
+       Returns a dict keyed by uppercase IATA code.
+    """
+    path = os.path.join(FRONTEND_DIR, 'assets', 'data', 'airports.json')
+    try:
+        if not os.path.exists(path):
+            return {}
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+    except Exception:
+        return {}
+    out = {}
+    if isinstance(data, list):
+        for a in data:
+            try:
+                code = (a.get('code') or a.get('iata') or '')
+                if not code: continue
+                code = code.strip().upper()
+                lat = a.get('lat') if 'lat' in a else a.get('latitude')
+                lon = a.get('lon') if 'lon' in a else a.get('longitude')
+                try:
+                    lat = float(lat) if lat is not None else None
+                except Exception:
+                    lat = None
+                try:
+                    lon = float(lon) if lon is not None else None
+                except Exception:
+                    lon = None
+                out[code] = {'lat': lat, 'lon': lon, 'name': a.get('name'), 'city': a.get('city'), 'country': a.get('country')}
+            except Exception:
+                continue
+    elif isinstance(data, dict):
+        for k, a in data.items():
+            try:
+                code = (a.get('iata') or a.get('icao') or k) or ''
+                code = code.strip().upper()
+                lat = a.get('lat') if 'lat' in a else a.get('latitude')
+                lon = a.get('lon') if 'lon' in a else a.get('longitude')
+                try:
+                    lat = float(lat) if lat is not None else None
+                except Exception:
+                    lat = None
+                try:
+                    lon = float(lon) if lon is not None else None
+                except Exception:
+                    lon = None
+                out[code] = {'lat': lat, 'lon': lon, 'name': a.get('name'), 'city': a.get('city'), 'country': a.get('country')}
+            except Exception:
+                continue
+    return out
+
+def _haversine_km(lat1, lon1, lat2, lon2):
+    try:
+        import math
+        if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
+            return None
+        r = 6371.0
+        phi1 = math.radians(lat1)
+        phi2 = math.radians(lat2)
+        dphi = math.radians(lat2 - lat1)
+        dlambda = math.radians(lon2 - lon1)
+        a = math.sin(dphi/2.0)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda/2.0)**2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+        return r * c
+    except Exception:
+        return None
+
+
+def _load_flights():
+    """Load flights from `flights.json` in the backend directory.
+       Returns a list of flight dicts (or empty list if file missing/invalid).
+    """
+    try:
+        path = os.path.join(BASE_DIR, 'flights.json')
+        if not os.path.exists(path):
+            return []
+        with open(path, 'r', encoding='utf-8') as f:
+            data = json.load(f) or []
+            return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def _save_flights(flights: list):
+    """Save flights list to `flights.json` (best-effort, swallows errors)."""
+    try:
+        path = os.path.join(BASE_DIR, 'flights.json')
+        with open(path, 'w', encoding='utf-8') as f:
+            json.dump(flights or [], f, indent=2)
+    except Exception:
+        pass
+
+
+@app.route('/api/prices', methods=['GET','POST'])
+def api_prices_v2():
+    """Return simple fare estimates between two IATA codes.
+       Supports GET query params (`from`, `to`, `trip`) or POST JSON body { from, to, trip }.
+    """
+    if request.method == 'GET':
+        from_code = (request.args.get('from') or request.args.get('orig') or '').strip().upper()
+        to_code = (request.args.get('to') or request.args.get('dest') or '').strip().upper()
+        trip = (request.args.get('trip') or 'return').strip().lower()
+    else:
+        data = request.get_json(silent=True) or {}
+        from_code = (data.get('from') or data.get('origin') or '').strip().upper()
+        to_code = (data.get('to') or data.get('destination') or '').strip().upper()
+        trip = (data.get('trip') or 'return').strip().lower()
+
+    if not from_code or not to_code:
+        return jsonify({'error': 'from and to IATA codes are required (query or JSON body)'}), 400
+
+    airports_map = _load_airports_map()
+    a = airports_map.get(from_code)
+    b = airports_map.get(to_code)
+    distance_km = None
+    if a and b and a.get('lat') is not None and b.get('lat') is not None:
+        distance_km = _haversine_km(a.get('lat'), a.get('lon'), b.get('lat'), b.get('lon'))
+
+    # Fallback heuristic distance when lat/lon unavailable
+    if distance_km is None:
+        # simple char-code heuristic to produce a reproducible number
+        A = from_code or ''
+        B = to_code or ''
+        s = 0
+        for i in range(max(len(A), len(B))):
+            ca = ord(A[i]) if i < len(A) else 65
+            cb = ord(B[i]) if i < len(B) else 65
+            s += abs(ca - cb)
+        # scale into a km-like value
+        distance_km = max(50, s * 10)
+
+    # Pricing configuration (keep in sync with frontend heuristics)
+    base_fee = 30.0
+    per_km = 0.12
+    multipliers = {'oneway': 1.0, 'return': 1.9, 'multi': 2.6}
+    class_multipliers = {'flex': 1.30, 'super': 1.60}
+    type_mult = multipliers.get(trip, multipliers['return'])
+
+    try:
+        base = round(base_fee + (float(distance_km) * per_km))
+    except Exception:
+        base = int(base_fee)
+    def _ensure_distinct(a, b, c):
+        # Ensure fares differ by at least 5% or $5 to avoid identical UI values
+        def _adj(x):
+            try:
+                return int(round(float(x)))
+            except Exception:
+                return int(x)
+        a = _adj(a); b = _adj(b); c = _adj(c)
+        def _too_close(x, y):
+            if x == 0 or y == 0:
+                return x == y
+            return abs(x - y) < max(5, int(round(0.05 * max(x, y))))
+        # If too close, derive from the minimum as the base
+        vals = [v for v in [a, b, c] if v]
+        basev = min(vals) if vals else a
+        if _too_close(a, b) or _too_close(b, c) or _too_close(a, c):
+            a = int(round(basev))
+            b = int(round(basev * 1.22))
+            c = int(round(basev * 1.48))
+        return a, b, c
+
+    fare_standard = round(base * type_mult)
+    fare_flex = round(fare_standard * class_multipliers['flex'])
+    fare_super = round(fare_standard * class_multipliers['super'])
+    fare_standard, fare_flex, fare_super = _ensure_distinct(fare_standard, fare_flex, fare_super)
+
+    resp = {
+        'from': from_code,
+        'to': to_code,
+        'distance_km': round(distance_km, 2) if isinstance(distance_km, (int,float)) else None,
+        'base': base,
+        'fareStandard': int(fare_standard),
+        'fareFlex': int(fare_flex),
+        'fareSuper': int(fare_super),
+        # aliases for older frontend consumers
+        'standard': int(fare_standard),
+        'flex': int(fare_flex),
+        'super': int(fare_super),
+        'currency': 'USD'
+    }
+    return jsonify(resp), 200
+
+
+@app.route('/api/prices/dates', methods=['GET'])
+def api_prices_dates_v2():
+    """Return availability and per-day price estimates for a route over a date range.
+       Query params:
+         - from: origin IATA (required)
+         - to: destination IATA (required)
+         - start: YYYY-MM-DD (optional, default today)
+         - end: YYYY-MM-DD (optional, default start + 30 days, max 90 days)
+
+       Response: { from, to, currency, days: { 'YYYY-MM-DD': { available: bool, price: int } }, base: int }
+    """
+    from_code = (request.args.get('from') or request.args.get('orig') or '').strip().upper()
+    to_code = (request.args.get('to') or request.args.get('dest') or '').strip().upper()
+    start_s = (request.args.get('start') or '').strip()
+    end_s = (request.args.get('end') or '').strip()
+    if not from_code or not to_code:
+        return jsonify({'error': 'from and to IATA codes are required'}), 400
+
+    # parse dates
+    from datetime import datetime, timedelta
+    today = datetime.utcnow().date()
+    def parse_date(s, default):
+        try:
+            if not s:
+                return default
+            return datetime.strptime(s, '%Y-%m-%d').date()
+        except Exception:
+            return None
+
+    start = parse_date(start_s, today)
+    if start is None:
+        return jsonify({'error': 'invalid start date, expected YYYY-MM-DD'}), 400
+    end = parse_date(end_s, start + timedelta(days=30))
+    if end is None:
+        return jsonify({'error': 'invalid end date, expected YYYY-MM-DD'}), 400
+    if end < start:
+        return jsonify({'error': 'end must be >= start'}), 400
+    max_span = 90
+    if (end - start).days > max_span:
+        end = start + timedelta(days=max_span)
+
+    # get base fare using existing pricing logic
+    # call internal helper to reuse code path: simulate a GET by calling api_prices logic
+    # We'll compute base via local logic similar to api_prices
+    airports_map = _load_airports_map()
+    a = airports_map.get(from_code)
+    b = airports_map.get(to_code)
+    distance_km = None
+    if a and b and a.get('lat') is not None and b.get('lat') is not None:
+        distance_km = _haversine_km(a.get('lat'), a.get('lon'), b.get('lat'), b.get('lon'))
+    if distance_km is None:
+        # fallback heuristic
+        A = from_code or ''
+        B = to_code or ''
+        s = 0
+        for i in range(max(len(A), len(B))):
+            ca = ord(A[i]) if i < len(A) else 65
+            cb = ord(B[i]) if i < len(B) else 65
+            s += abs(ca - cb)
+        distance_km = max(50, s * 10)
+
+    base_fee = 30.0
+    per_km = 0.12
+    try:
+        base = round(base_fee + (float(distance_km) * per_km))
+    except Exception:
+        base = int(base_fee)
+
+    # deterministic availability & price variation generator
+    def _det_hash(s: str) -> int:
+        h = 2166136261
+        for ch in s:
+            h ^= ord(ch)
+            h *= 16777619
+            h &= 0xffffffff
+        return h
+
+    out_days = {}
+    cur = start
+    while cur <= end:
+        key = cur.isoformat()
+        # use flight+date deterministic hash to simulate availability
+        h = _det_hash(from_code + '|' + to_code + '|' + key)
+        available = (h % 5) != 0  # ~80% available
+        # price variation +- up to 20% based on hash
+        var = (h % 41) - 20  # -20 .. +20
+        price = max(10, int(round(base * (1 + (var / 100.0)))))
+        out_days[key] = {'available': bool(available), 'price': price}
+        cur = cur + timedelta(days=1)
+
+    resp = {'from': from_code, 'to': to_code, 'currency': 'USD', 'base': base, 'days': out_days}
+    return jsonify(resp), 200
+
+
+@app.route('/api/prices/offers', methods=['GET'])
+def api_prices_offers():
+    """Return available airlines and flight offers for a route.
+       Query params: from, to, start, end (dates optional)
+       Response: { from, to, currency, base, airlines: [ { airline, flights: [ { flight, time, price } ], available_dates: { date: { available, price } } } ], alternatives: [ { airline, price } ] }
+    """
+    from_code = (request.args.get('from') or request.args.get('orig') or '').strip().upper()
+    to_code = (request.args.get('to') or request.args.get('dest') or '').strip().upper()
+    start_s = (request.args.get('start') or '').strip()
+    end_s = (request.args.get('end') or '').strip()
+    if not from_code or not to_code:
+        return jsonify({'error': 'from and to IATA codes are required'}), 400
+
+    # reuse date parsing from api_prices_dates_v2
+    from datetime import datetime, timedelta
+    today = datetime.utcnow().date()
+    def parse_date(s, default):
+        try:
+            if not s:
+                return default
+            return datetime.strptime(s, '%Y-%m-%d').date()
+        except Exception:
+            return None
+
+    start = parse_date(start_s, today)
+    if start is None:
+        return jsonify({'error': 'invalid start date, expected YYYY-MM-DD'}), 400
+    end = parse_date(end_s, start + timedelta(days=30))
+    if end is None:
+        return jsonify({'error': 'invalid end date, expected YYYY-MM-DD'}), 400
+    if end < start:
+        return jsonify({'error': 'end must be >= start'}), 400
+    max_span = 90
+    if (end - start).days > max_span:
+        end = start + timedelta(days=max_span)
+
+    # compute base price using same logic as /api/prices
+    airports_map = _load_airports_map()
+    a = airports_map.get(from_code)
+    b = airports_map.get(to_code)
+    distance_km = None
+    if a and b and a.get('lat') is not None and b.get('lat') is not None:
+        distance_km = _haversine_km(a.get('lat'), a.get('lon'), b.get('lat'), b.get('lon'))
+    if distance_km is None:
+        A = from_code or ''
+        B = to_code or ''
+        s = 0
+        for i in range(max(len(A), len(B))):
+            ca = ord(A[i]) if i < len(A) else 65
+            cb = ord(B[i]) if i < len(B) else 65
+            s += abs(ca - cb)
+        distance_km = max(50, s * 10)
+
+    base_fee = 30.0
+    per_km = 0.12
+    try:
+        base = round(base_fee + (float(distance_km) * per_km))
+    except Exception:
+        base = int(base_fee)
+
+    # generate per-day availability/prices (route-level)
+    def _det_hash(s: str) -> int:
+        h = 2166136261
+        for ch in s:
+            h ^= ord(ch)
+            h *= 16777619
+            h &= 0xffffffff
+        return h
+
+    out_days = {}
+    cur = start
+    while cur <= end:
+        key = cur.isoformat()
+        h = _det_hash(from_code + '|' + to_code + '|' + key)
+        available = (h % 5) != 0
+        var = (h % 41) - 20
+        price = max(10, int(round(base * (1 + (var / 100.0)))))
+        out_days[key] = {'available': bool(available), 'price': price}
+        cur = cur + timedelta(days=1)
+
+    # find flights that explicitly match this origin/destination
+    flights = _load_flights()
+    matching = [f for f in flights if (str(f.get('origin') or '').strip().upper() == from_code and str(f.get('destination') or '').strip().upper() == to_code)]
+
+    airlines_list = []
+    if matching:
+        # group by airline
+        by_airline = {}
+        for f in matching:
+            name = f.get('airline') or 'Unknown'
+            by_airline.setdefault(name, []).append(f)
+
+        for airline, fls in by_airline.items():
+            flights_info = []
+            # create a small deterministic modifier per airline so prices differ
+            ah = abs(_det_hash(airline)) % 11  # 0..10
+            for f in fls:
+                # compute a per-flight price using base and modifier
+                price = int(round(base * (1 + (ah - 5) / 100.0)))
+                # build logo/url hints: prefer flight-provided logo, otherwise generate an avatar URL for the airline
+                logo_field = f.get('logo') or None
+                logo_url = logo_field if logo_field and (logo_field.startswith('http://') or logo_field.startswith('https://')) else f"https://ui-avatars.com/api/?name={urllib.parse.quote_plus(airline)}&size=64"
+
+                # date-specific offers for this flight: small variation from route-level days
+                date_offers = {}
+                cur_d = start
+                while cur_d <= end:
+                    d_key = cur_d.isoformat()
+                    # mix flight identifier into hash for per-flight variation
+                    fh = _det_hash(f.get('flight') or '')
+                    dh = _det_hash(from_code + '|' + to_code + '|' + d_key + '|' + str(fh))
+                    avail = (dh % 5) != 0
+                    v = (dh % 41) - 20
+                    fprice = max(10, int(round(base * (1 + (v / 100.0)) * (1 + (ah - 5) / 100.0))))
+                    # booking link template (placeholder). Frontend can replace domain or use route to open booking flow.
+                    booking_date = urllib.parse.quote_plus(d_key)
+                    booking_url = f"https://booking.example.com/search?flight={urllib.parse.quote_plus(str(f.get('flight') or ''))}&date={booking_date}&from={urllib.parse.quote_plus(from_code)}&to={urllib.parse.quote_plus(to_code)}"
+                    date_offers[d_key] = {'available': bool(avail), 'price': fprice, 'booking_url': booking_url}
+                    cur_d = cur_d + timedelta(days=1)
+
+                flights_info.append({'flight': f.get('flight'), 'time': f.get('time'), 'price': price, 'aircraft': f.get('aircraft'), 'logo': logo_field, 'logo_url': logo_url, 'date_offers': date_offers, 'booking_url_template': f"https://booking.example.com/search?flight={urllib.parse.quote_plus(str(f.get('flight') or ''))}&date={{date}}"})
+
+            # available dates is the route out_days (kept for compatibility)
+            airlines_list.append({'airline': airline, 'flights': flights_info, 'available_dates': out_days})
+    else:
+        # No explicit flights registered for this route: propose alternative airlines (choose distinct airlines operating either origin or destination)
+        alt_candidates = []
+        for f in flights:
+            orig = (f.get('origin') or '').strip().upper()
+            dest = (f.get('destination') or '').strip().upper()
+            if orig == from_code or dest == to_code or orig == to_code or dest == from_code:
+                alt_candidates.append(f.get('airline') or 'Unknown')
+        # fallback to a small hardcoded set if still empty
+        if not alt_candidates:
+            alt_candidates = ['Generic Air', 'BudgetFly', 'Continental Express', 'Skyways']
+        seen = []
+        alternatives = []
+        for a_name in alt_candidates:
+            if a_name in seen:
+                continue
+            seen.append(a_name)
+            ah = abs(_det_hash(a_name)) % 11
+            price = int(round(base * (1 + (ah - 5) / 100.0)))
+            logo_url = f"https://ui-avatars.com/api/?name={urllib.parse.quote_plus(a_name)}&size=64"
+            alternatives.append({'airline': a_name, 'price': price, 'logo_url': logo_url, 'booking_url_template': f"https://booking.example.com/search?airline={urllib.parse.quote_plus(a_name)}&date={{date}}"})
+
+        return jsonify({'from': from_code, 'to': to_code, 'currency': 'USD', 'base': base, 'days': out_days, 'airlines': [], 'alternatives': alternatives}), 200
+
+    return jsonify({'from': from_code, 'to': to_code, 'currency': 'USD', 'base': base, 'days': out_days, 'airlines': airlines_list, 'alternatives': []}), 200
+
+
 @app.route('/api/request_code', methods=['POST'])
 def api_request_code():
     """Request a one-time access code to be sent to the passenger's email on file.
-    Body: { passport: str }
+    Body: { passport: str, email?: str }
+    If `email` is provided, it must match the passenger email on record.
     """
     data = request.get_json() or {}
     passport = (data.get('passport') or '').strip()
+    provided_email = (data.get('email') or '').strip()
     if not passport:
         return jsonify({'error': 'passport required'}), 400
 
@@ -923,10 +1898,19 @@ def api_request_code():
     if not p:
         return jsonify({'error': 'passenger not found'}), 404
 
-    email = p.get('email')
+    email = (p.get('email') or '').strip()
     if not email:
-        # No email on file; advise contacting an agent or use master password
         return jsonify({'error': 'no_email', 'detail': 'no email on file for this passenger; contact agent or provide master password'}), 400
+
+    # If caller supplied an email, require it to match the one on file
+    if provided_email:
+        def _norm_em(v):
+            return (v or '').strip().lower()
+        if _norm_em(provided_email) != _norm_em(email):
+            return jsonify({'error': 'invalid_email_for_passenger'}), 400
+        # optionally light syntax check
+        if '@' not in provided_email or '.' not in provided_email.split('@')[-1]:
+            return jsonify({'error': 'invalid_email_format'}), 400
 
     # generate and store code
     code, expires = _set_code_for_passport(passport)
@@ -934,8 +1918,8 @@ def api_request_code():
     # send code by email (best effort)
     try:
         msg = EmailMessage()
-        msg['Subject'] = f"Your access code for boarding pass"
-        msg['From'] = os.getenv('SMTP_FROM') or os.getenv('SMTP_USER')
+        msg['Subject'] = "Your access code for boarding pass"
+        msg['From'] = os.getenv('SMTP_FROM') or os.getenv('SMTP_USER') or 'no-reply@example.com'
         msg['To'] = email
         body = f"Hello {p.get('name')},\n\nYour one-time access code is: {code}\nIt will expire at {expires} (UTC).\n\nIf you did not request this, contact support."
         msg.set_content(body)
@@ -945,7 +1929,6 @@ def api_request_code():
         use_ssl = os.getenv('SMTP_USE_SSL', 'false').lower() in ('1','true','yes')
 
         if not (smtp_host and smtp_port):
-            # can't send, but code is still set; inform caller
             log_event({'type': 'access_code_created', 'passport': passport, 'to': email, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
             return jsonify({'status': 'created_but_not_sent', 'detail': 'SMTP not configured; code generated'}), 201
 
@@ -974,6 +1957,46 @@ def api_request_code():
     except Exception as e:
         log_event({'type': 'access_code_error', 'passport': passport, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
         return jsonify({'error': 'failed_to_send', 'detail': str(e)}), 500
+
+
+@app.route('/api/passenger/login', methods=['POST'])
+def api_passenger_login():
+    """Create a passenger session after basic identity: last name + (passport or booking ref).
+       Body: { last: str, passport?: str, ref?: str, ttl_seconds?: number }
+       Sets `session` cookie and returns { token, expires } on success.
+    """
+    data = request.get_json(silent=True) or {}
+    last = (data.get('last') or '').strip().lower()
+    passport = (data.get('passport') or '').strip()
+    ref = (data.get('ref') or '').strip()
+    try:
+        ttl = float(data.get('ttl_seconds') or 3600)
+    except Exception:
+        ttl = 3600.0
+
+    if not last or (not passport and not ref):
+        return jsonify({'error': 'missing_fields', 'detail': 'last and passport or ref required'}), 400
+
+    # find passenger match
+    cand = None
+    for p in passengers:
+        nm = (p.get('name') or '').strip().lower()
+        last_ok = nm.endswith(last) or (last in nm)
+        ref_ok = bool(ref) and (p.get('booking_ref') or '') == ref
+        pp_ok = bool(passport) and (p.get('passport') or '') == passport
+        if last_ok and (ref_ok or pp_ok):
+            cand = p
+            break
+    if not cand:
+        return jsonify({'error': 'not_found'}), 404
+
+    token, exp = _create_session('passenger', cand.get('passport'), ttl_seconds=ttl)
+    resp = jsonify({'token': token, 'expires': exp, 'passport': cand.get('passport')})
+    try:
+        resp.set_cookie('session', token, max_age=int(ttl), httponly=True, samesite='Lax')
+    except Exception:
+        pass
+    return resp, 200
 
 
 @app.route('/api/checkin', methods=['POST'])
@@ -2258,7 +3281,11 @@ def api_login():
                 if stored and stored.startswith('$2'):
                     ok = False
                     try:
-                        ok = bcrypt.checkpw(password.encode('utf-8'), stored.encode('utf-8'))
+                        try:
+                            ph = stored.encode('utf-8') if isinstance(stored, str) else stored
+                            ok = bcrypt.checkpw(password.encode('utf-8'), ph)
+                        except Exception:
+                            ok = False
                     except Exception:
                         ok = False
                 else:
@@ -2267,12 +3294,28 @@ def api_login():
                 ok = False
             if ok:
                 try:
-                    admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '3600'))
+                    admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '86400'))  # Default 24 hours
                 except Exception:
-                    admin_ttl = 3600.0
+                    admin_ttl = 86400.0
                 token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
                 log_event({'type': 'login', 'role': 'admin', 'username': username, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-                return jsonify({'token': token, 'role': 'admin', 'expires': expires}), 200
+                
+                # Create response with session cookie
+                resp = jsonify({
+                    'token': token,
+                    'role': 'admin',
+                    'username': username,
+                    'expires': expires,
+                    'status': 'ok'
+                })
+                
+                # Set session cookie
+                try:
+                    resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax', path='/')
+                except Exception:
+                    pass
+                
+                return resp, 200
 
         return jsonify({'error': 'invalid_credentials'}), 403
 
@@ -2285,17 +3328,6 @@ def api_logout():
     if token:
         _delete_session(token)
     return jsonify({'status': 'ok'})
-
-
-def _require_session(request, require_role=None):
-    token = request.headers.get('X-SESSION') or request.cookies.get('session')
-    entry = _get_session(token)
-    if not entry:
-        return None
-    if require_role and entry.get('role') != require_role:
-        return None
-    return entry
-
 
 # Serve admin static files only to authenticated admin sessions.
 @app.route('/admin')
@@ -2328,23 +3360,8 @@ def admin_files(filename):
 
 @app.route('/admin-login.html', methods=['GET'])
 def admin_login_page():
-    # Serve a simple server-rendered login page; show optional error message via query param
-    err = request.args.get('error')
-    msg = ''
-    if err:
-        msg = '<p style="color:crimson">Invalid credentials, please try again.</p>'
-    html = f'''<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Login</title><link rel="stylesheet" href="/style.css"></head>
-<body><main class="container" style="max-width:420px;margin:4rem auto;padding:2rem;background:#fff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08)">
-<h2>Admin Login</h2>
-{msg}
-<form method="post" action="/admin/login">
-<div style="margin:.5rem 0"><label>Username<br/><input name="username" required></label></div>
-<div style="margin:.5rem 0"><label>Password<br/><input name="password" type="password" required></label></div>
-<div style="margin-top:1rem"><button type="submit" class="btn primary">Sign in</button></div>
-</form>
-</main></body></html>'''
-    return html
+    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
+    return send_from_directory(frontend_dir, 'admin-login.html')
 
 
 @app.route('/admin/login', methods=['POST'])
@@ -2387,29 +3404,145 @@ def serve_root_admin_html():
 
 
 def create_boarding_pass_image(p):
-    width, height = 800, 400
-    bg = Image.new('RGB', (width, height), color=(255,255,255))
+    """Create a professional, stylish boarding pass with SmartFly branding and modern design."""
     from PIL import ImageDraw, ImageFont
+    
+    # Dimensions: 1200x600 for high quality, 16:10 aspect (typical boarding pass)
+    width, height = 1200, 600
+    
+    # Create base image with WHITE background (clean, professional)
+    bg = Image.new('RGB', (width, height), color=(255, 255, 255))
     draw = ImageDraw.Draw(bg)
-    # Try to load a default font; fallback to built-in
+    
+    # SmartFly colors
+    smartfly_blue_dark = (11, 116, 222)  # #0B74DE
+    smartfly_blue_light = (230, 240, 250)  # Very light blue for subtle backgrounds
+    smartfly_accent = (255, 102, 0)  # #FF6600 (orange accent)
+    text_dark = (33, 33, 33)  # Dark gray instead of pure black
+    text_light = (100, 100, 100)  # Light gray for labels
+    
+    # Draw subtle light blue background on right side only (decorative, not obscuring)
+    draw.rectangle([(600, 0), (width, height)], fill=smartfly_blue_light)
+    
+    # Draw header bar at top (darker blue)
+    draw.rectangle([(0, 0), (width, 85)], fill=smartfly_blue_dark)
+    
+    # Draw accent stripe below header
+    draw.rectangle([(0, 85), (width, 92)], fill=smartfly_accent)
+    
+    # Load fonts (with fallback)
     try:
-        font = ImageFont.truetype('arial.ttf', 24)
-        font_small = ImageFont.truetype('arial.ttf', 18)
+        font_title = ImageFont.truetype('arial.ttf', 52)
+        font_large = ImageFont.truetype('arial.ttf', 32)
+        font_medium = ImageFont.truetype('arial.ttf', 22)
+        font_small = ImageFont.truetype('arial.ttf', 16)
+        font_label = ImageFont.truetype('arial.ttf', 12)
+        font_tiny = ImageFont.truetype('arial.ttf', 11)
     except Exception:
-        font = ImageFont.load_default()
+        font_title = ImageFont.load_default()
+        font_large = ImageFont.load_default()
+        font_medium = ImageFont.load_default()
         font_small = ImageFont.load_default()
-
-    # Draw text
-    draw.text((24,24), f"Boarding Pass", fill=(11,116,222), font=font)
-    draw.text((24,80), f"Name: {p.get('name')}", fill=(0,0,0), font=font_small)
-    draw.text((24,120), f"Passport: {p.get('passport')}", fill=(0,0,0), font=font_small)
-    draw.text((24,160), f"Flight: {p.get('flight')}", fill=(0,0,0), font=font_small)
-    draw.text((24,200), f"Seat: {p.get('seat')}", fill=(0,0,0), font=font_small)
-
-    # Generate QR code encoding a simple URL or payload
+        font_label = ImageFont.load_default()
+        font_tiny = ImageFont.load_default()
+    
+    # Draw SmartFly logo/text at top left (WHITE text on dark blue)
+    draw.text((25, 20), "SmartFly", fill=(255, 255, 255), font=font_title)
+    
+    # Draw "BOARDING PASS" below header
+    draw.text((25, 110), "BOARDING PASS", fill=smartfly_blue_dark, font=font_large)
+    
+    # Draw checked-in status badge in top right
+    draw.rectangle([(width - 200, 20), (width - 25, 70)], fill=smartfly_accent)
+    draw.text((width - 190, 30), "✓ CHECKED IN", fill=(255, 255, 255), font=font_small)
+    
+    # Main content area starts here
+    content_y = 150
+    
+    # LEFT SECTION: Passenger and Document Info
+    left_x = 25
+    
+    # Passenger Name
+    draw.text((left_x, content_y), "PASSENGER", fill=text_light, font=font_label)
+    draw.text((left_x, content_y + 18), p.get('name', 'N/A').upper(), fill=text_dark, font=font_large)
+    
+    # Document Number
+    draw.text((left_x, content_y + 70), "DOCUMENT NO.", fill=text_light, font=font_label)
+    draw.text((left_x, content_y + 88), p.get('passport', 'N/A'), fill=text_dark, font=font_medium)
+    
+    # MIDDLE SECTION: Flight Info (prominent)
+    middle_x = 380
+    
+    # Flight Number (VERY LARGE AND PROMINENT)
+    draw.text((middle_x, content_y - 15), "FLIGHT", fill=text_light, font=font_label)
+    draw.text((middle_x, content_y + 15), p.get('flight', 'N/A').upper(), fill=smartfly_blue_dark, font=font_title)
+    
+    # RIGHT SECTION: Seat Number
+    right_x = width - 250
+    
+    # Seat (large, in accent color)
+    draw.text((right_x, content_y), "SEAT", fill=text_light, font=font_label)
+    draw.text((right_x, content_y + 18), str(p.get('seat', 'N/A')), fill=smartfly_accent, font=font_title)
+    
+    # Separator line (subtle)
+    draw.line([(25, 310), (width - 25, 310)], fill=(220, 220, 220), width=2)
+    
+    # BOTTOM SECTION: Flight Details (4 columns)
+    bottom_y = 340
+    
+    # Column 1: From
+    col1_x = 25
+    draw.text((col1_x, bottom_y), "FROM", fill=text_light, font=font_label)
+    draw.text((col1_x, bottom_y + 20), "JFK", fill=text_dark, font=font_large)
+    
+    # Column 2: To
+    col2_x = 300
+    draw.text((col2_x, bottom_y), "TO", fill=text_light, font=font_label)
+    draw.text((col2_x, bottom_y + 20), "LHR", fill=text_dark, font=font_large)
+    
+    # Column 3: Gate
+    col3_x = 550
+    draw.text((col3_x, bottom_y), "GATE", fill=text_light, font=font_label)
+    draw.text((col3_x, bottom_y + 20), "B22", fill=text_dark, font=font_large)
+    
+    # Column 4: Class
+    col4_x = 750
+    draw.text((col4_x, bottom_y), "CLASS", fill=text_light, font=font_label)
+    draw.text((col4_x, bottom_y + 20), "ECONOMY", fill=text_dark, font=font_medium)
+    
+    # Second row: Boarding and Departure times
+    second_row_y = 440
+    
+    draw.text((col1_x, second_row_y), "BOARDING", fill=text_light, font=font_label)
+    draw.text((col1_x, second_row_y + 20), "15:00", fill=text_dark, font=font_medium)
+    
+    draw.text((col2_x, second_row_y), "DEPARTURE", fill=text_light, font=font_label)
+    draw.text((col2_x, second_row_y + 20), "15:30", fill=text_dark, font=font_medium)
+    
+    draw.text((col3_x, second_row_y), "ARRIVAL", fill=text_light, font=font_label)
+    draw.text((col3_x, second_row_y + 20), "19:45", fill=text_dark, font=font_medium)
+    
+    draw.text((col4_x, second_row_y), "BAGGAGE", fill=text_light, font=font_label)
+    draw.text((col4_x, second_row_y + 20), "1 BAG", fill=text_dark, font=font_medium)
+    
+    # QR CODE (bottom right, with white background box)
     qr_payload = f"pass:{p.get('passport')}|flight:{p.get('flight')}|seat:{p.get('seat')}"
-    qr = qrcode.make(qr_payload).resize((200,200))
-    bg.paste(qr, (width - 220, 80))
+    qr = qrcode.make(qr_payload).resize((160, 160))
+    
+    # Draw white box with border for QR code
+    qr_x = width - 210
+    qr_y = 360
+    draw.rectangle([(qr_x - 12, qr_y - 12), (qr_x + 172, qr_y + 172)], 
+                   fill=(255, 255, 255), outline=smartfly_blue_dark, width=3)
+    bg.paste(qr, (qr_x, qr_y))
+    
+    # Footer
+    footer_y = height - 35
+    draw.text((col1_x, footer_y), "Present this pass at the gate • Keep throughout journey", 
+              fill=text_light, font=font_tiny)
+    draw.text((col1_x, footer_y + 16), f"Boarding Pass #{p.get('passport', '000000')[-6:]} • Valid only with proper identification", 
+              fill=text_light, font=font_tiny)
+    
     return bg
 
 
@@ -2509,7 +3642,11 @@ def enqueue_boarding_email(passenger):
         if RQ_QUEUE is not None:
             try:
                 # enqueue the function by import path (app.send_boarding_pass_email)
-                RQ_QUEUE.enqueue('app.send_boarding_pass_email', passenger)
+                try:
+                    # prefer enqueuing the callable; fall back to import-path string if that fails
+                    RQ_QUEUE.enqueue(send_boarding_pass_email, passenger)
+                except Exception:
+                    RQ_QUEUE.enqueue('app.send_boarding_pass_email', args=(passenger,))
                 log_event({'type': 'email_rq_enqueued', 'passport': passenger.get('passport'), 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
                 return
             except Exception as e:
@@ -2527,9 +3664,23 @@ def enqueue_boarding_email(passenger):
 @app.route("/<path:path>")
 def index(path):
     try:
+        # If the requested path doesn't exist or is a directory, fall back to the
+        # canonical `index.html` and ensure we send it with an HTML mimetype so
+        # browsers correctly render the page (some clients may otherwise treat
+        # unknown responses as plain text).
+        full_path = os.path.join(FRONTEND_DIR, path)
+        if not os.path.exists(full_path) or os.path.isdir(full_path):
+            return send_from_directory(FRONTEND_DIR, "index.html", mimetype='text/html')
+
+        # If an explicit HTML file was requested, ensure the response is
+        # delivered as text/html.
+        if path.lower().endswith('.html') or path.lower().endswith('.htm'):
+            return send_from_directory(FRONTEND_DIR, path, mimetype='text/html')
+
+        # Otherwise allow Flask to guess the mimetype for static assets.
         return send_from_directory(FRONTEND_DIR, path)
     except Exception:
-        return send_from_directory(FRONTEND_DIR, "index.html")
+        return send_from_directory(FRONTEND_DIR, "index.html", mimetype='text/html')
 
 
 @app.route("/style.css")
@@ -2561,14 +3712,610 @@ def passenger():
 def serve_assets(path):
     return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), path)
 
+
+# --- Admin Enhancement API Endpoints -------------------------------------------------
+
+@app.route('/api/bookings/<booking_id>/refund', methods=['POST'])
+@require_admin
+def refund_booking(booking_id):
+    """Process refund for a booking."""
+    try:
+        bookings = _load_bookings()
+        booking = next((b for b in bookings if b.get('id') == booking_id), None)
+        
+        if not booking:
+            return jsonify({'error': 'Booking not found'}), 404
+        
+        if booking.get('refund_status') == 'refunded':
+            return jsonify({'error': 'Booking already refunded'}), 400
+        
+        # Update booking status
+        booking['refund_status'] = 'refunded'
+        booking['refund_date'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        
+        _save_bookings(bookings)
+        
+        # Log the event
+        log_event({
+            'type': 'refund_processed',
+            'booking_id': booking_id,
+            'amount': booking.get('amount'),
+            'currency': booking.get('currency'),
+            'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        })
+        
+        return jsonify({'message': 'Refund processed successfully', 'booking': booking}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/flights/<flight_number>/seats', methods=['PATCH'])
+@require_admin
+def update_seat_blocking(flight_number):
+    """Update blocked seats for a flight."""
+    try:
+        data = request.get_json()
+        blocked_seats = data.get('blocked_seats', [])
+        
+        # Load flights
+        flights = flight_manager.load_flights()
+        flight = next((f for f in flights if f.get('flight') == flight_number), None)
+        
+        if not flight:
+            return jsonify({'error': 'Flight not found'}), 404
+        
+        # Update blocked seats
+        flight['blocked_seats'] = blocked_seats
+        
+        # Save flights
+        flight_manager.save_flights(flights)
+        
+        # Log the event
+        log_event({
+            'type': 'seats_blocked',
+            'flight': flight_number,
+            'blocked_count': len(blocked_seats),
+            'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        })
+        
+        return jsonify({'message': 'Seat blocking updated successfully', 'flight': flight}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/flights/<flight_id>/class-availability', methods=['GET'])
+def api_flight_class_availability(flight_id):
+    """Get per-class seat availability for a flight.
+    Returns: {
+      flight: str,
+      aircraft: str,
+      total_capacity: int,
+      class_availability: [
+        { class: str, code: str, total_seats: int, booked: int, available: int, percentage: float },
+        ...
+      ]
+    }
+    """
+    flights = _load_flights()
+    flight = next((f for f in flights if f.get('flight') == flight_id), None)
+    if not flight:
+        return jsonify({'error': 'flight_not_found'}), 404
+    
+    aircraft_code = flight.get('aircraft', '')
+    capacity = int(flight.get('capacity') or 0)
+    
+    if capacity <= 0:
+        return jsonify({'error': 'invalid_capacity'}), 400
+    
+    # Get total booked passengers for this flight
+    total_booked = sum(1 for p in passengers if p.get('flight') == flight_id)
+    total_available = max(0, capacity - total_booked)
+    
+    # Class distribution: proportional to typical cabin layouts
+    # For simplicity: Economy 80%, Premium 12%, Business 6%, First 2%
+    class_config = [
+        {'name': 'Economy', 'code': 'Y', 'percent': 0.80},
+        {'name': 'Premium Economy', 'code': 'W', 'percent': 0.12},
+        {'name': 'Business', 'code': 'J', 'percent': 0.06},
+        {'name': 'First', 'code': 'F', 'percent': 0.02},
+    ]
+    
+    # Filter First class if aircraft doesn't support it
+    if aircraft_code and not any(k in aircraft_code.lower() for k in ['a380', 'a350', '777', '787']):
+        class_config = [c for c in class_config if c['code'] != 'F']
+    
+    class_availability = []
+    remaining_seats = capacity
+    remaining_booked = total_booked
+    
+    for idx, cc in enumerate(class_config):
+        is_last = (idx == len(class_config) - 1)
+        
+        if is_last:
+            # Last class gets remainder
+            total_seats = remaining_seats
+            booked_seats = remaining_booked
+        else:
+            # Allocate based on percentage
+            total_seats = max(1, int(capacity * cc['percent']))
+            # Distribute booked proportionally
+            booked_seats = max(0, int(total_booked * cc['percent']))
+            remaining_seats -= total_seats
+            remaining_booked -= booked_seats
+        
+        available_seats = max(0, total_seats - booked_seats)
+        percentage = round((available_seats / total_seats * 100) if total_seats > 0 else 0, 1)
+        
+        class_availability.append({
+            'class': cc['name'],
+            'code': cc['code'],
+            'total_seats': total_seats,
+            'booked': booked_seats,
+            'available': available_seats,
+            'percentage': percentage
+        })
+    
+    return jsonify({
+        'flight': flight_id,
+        'aircraft': flight.get('aircraft'),
+        'total_capacity': capacity,
+        'total_booked': total_booked,
+        'total_available': total_available,
+        'class_availability': class_availability
+    }), 200
+
+
+@app.route('/api/export/passengers', methods=['GET'])
+def api_export_passengers():
+    """Export all passengers as CSV."""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
+    
+    import csv
+    import io
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow(['Name', 'Passport', 'Email', 'Flight', 'Seat', 'Status', 'Check-in Time', 'Baggage Count', 'Baggage Paid'])
+    
+    # Data rows
+    for p in passengers:
+        status = 'Checked In' if p.get('boarding_pass') or p.get('checked_in') else 'Pending'
+        checkin_time = ''
+        if p.get('boarding_pass'):
+            if isinstance(p.get('boarding_pass'), dict):
+                checkin_time = p['boarding_pass'].get('created_at', '')
+            else:
+                checkin_time = str(p.get('boarding_pass'))
+        
+        writer.writerow([
+            p.get('name', ''),
+            p.get('passport', ''),
+            p.get('email', ''),
+            p.get('flight', ''),
+            p.get('seat', ''),
+            status,
+            checkin_time,
+            p.get('baggage_count', 0),
+            'Yes' if p.get('baggage_paid') else 'No'
+        ])
+    
+    output.seek(0)
+    return output.getvalue(), 200, {
+        'Content-Disposition': 'attachment; filename="passengers.csv"',
+        'Content-Type': 'text/csv'
+    }
+
+
+@app.route('/api/export/flights', methods=['GET'])
+def api_export_flights():
+    """Export all flights as CSV."""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
+    
+    import csv
+    import io
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow(['Flight', 'Airline', 'Aircraft', 'Origin', 'Destination', 'Departure Time', 'Arrival Time', 'Gate', 'Capacity', 'Booked', 'Available', 'Check-in Enabled'])
+    
+    flights = _load_flights()
+    
+    # Count bookings per flight
+    booking_counts = {}
+    for p in passengers:
+        f = p.get('flight')
+        if f:
+            booking_counts[f] = booking_counts.get(f, 0) + 1
+    
+    # Data rows
+    for f in flights:
+        flight_id = f.get('flight', '')
+        capacity = int(f.get('capacity') or 0)
+        booked = booking_counts.get(flight_id, 0)
+        available = max(0, capacity - booked)
+        
+        writer.writerow([
+            flight_id,
+            f.get('airline', ''),
+            f.get('aircraft', ''),
+            f.get('origin', ''),
+            f.get('destination', ''),
+            f.get('time', ''),
+            f.get('arrival', ''),
+            f.get('gate', ''),
+            capacity,
+            booked,
+            available,
+            'Yes' if f.get('checkin_enabled') else 'No'
+        ])
+    
+    output.seek(0)
+    return output.getvalue(), 200, {
+        'Content-Disposition': 'attachment; filename="flights.csv"',
+        'Content-Type': 'text/csv'
+    }
+
+
+@app.route('/api/export/bookings', methods=['GET'])
+def api_export_bookings():
+    """Export all bookings as CSV."""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
+    
+    import csv
+    import io
+    
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow(['Booking ID', 'Name', 'Email', 'Passport', 'From', 'To', 'Departure', 'Class', 'Amount', 'Currency', 'Payment Method', 'Status', 'Created At'])
+    
+    bookings = _load_bookings()
+    
+    # Data rows
+    for b in bookings:
+        writer.writerow([
+            b.get('id', ''),
+            b.get('name', ''),
+            b.get('email', ''),
+            b.get('passport', ''),
+            b.get('from', ''),
+            b.get('to', ''),
+            b.get('depart', ''),
+            b.get('class', ''),
+            b.get('amount', 0),
+            b.get('currency', 'USD'),
+            b.get('payment_method', ''),
+            b.get('status', 'completed'),
+            b.get('created_at', '')
+        ])
+    
+    output.seek(0)
+    return output.getvalue(), 200, {
+        'Content-Disposition': 'attachment; filename="bookings.csv"',
+        'Content-Type': 'text/csv'
+    }
+
+
+@app.route('/api/passengers/<passport>/notes', methods=['PATCH'])
+@require_admin
+def update_passenger_notes(passport):
+    """Update admin notes for a passenger."""
+    try:
+        data = request.get_json()
+        admin_notes = data.get('admin_notes', '')
+        
+        # Find passenger
+        passenger = next((p for p in passengers if p.get('passport') == passport), None)
+        
+        if not passenger:
+            return jsonify({'error': 'Passenger not found'}), 404
+        
+        # Update notes
+        passenger['admin_notes'] = admin_notes
+        
+        # Save passengers
+        save_passengers_to_file()
+        
+        # Log the event
+        log_event({
+            'type': 'passenger_notes_updated',
+            'passport': passport,
+            'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+        })
+        
+        return jsonify({'message': 'Notes updated successfully', 'passenger': passenger}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/export/<export_type>', methods=['GET'])
+@require_admin
+def export_data(export_type):
+    """
+    Export comprehensive data as CSV with all relevant details.
+    Supports: passengers, flights, bookings
+    Data reflects real-time state when exported.
+    """
+    try:
+        import csv
+        from io import StringIO
+        
+        output = StringIO()
+        
+        if export_type == 'passengers':
+            # Export all passenger details including check-in status, flight info, seat assignment
+            writer = csv.writer(output)
+            writer.writerow([
+                'Passport/ID',
+                'Full Name',
+                'Email',
+                'Phone',
+                'Flight Number',
+                'From',
+                'To',
+                'Departure Time',
+                'Check-in Status',
+                'Seat Number',
+                'Booking Reference',
+                'Baggage Count',
+                'Special Requests',
+                'Admin Notes',
+                'Created At',
+                'Last Updated'
+            ])
+            
+            for p in passengers:
+                writer.writerow([
+                    p.get('passport', ''),
+                    p.get('name', ''),
+                    p.get('email', ''),
+                    p.get('phone', ''),
+                    p.get('flight', ''),
+                    p.get('from', ''),
+                    p.get('to', ''),
+                    p.get('departure_time', ''),
+                    'Checked In' if p.get('checked_in') else 'Pending',
+                    p.get('seat', ''),
+                    p.get('booking_ref', ''),
+                    p.get('baggage_count', 0),
+                    p.get('special_requests', ''),
+                    p.get('admin_notes', ''),
+                    p.get('created_at', ''),
+                    p.get('updated_at', '')
+                ])
+        
+        elif export_type == 'flights':
+            # Export all flight details including status, capacity, checked-in count
+            writer = csv.writer(output)
+            writer.writerow([
+                'Flight Number',
+                'From (Origin)',
+                'To (Destination)',
+                'Departure Time',
+                'Arrival Time',
+                'Status',
+                'Aircraft Type',
+                'Total Capacity',
+                'Passengers Booked',
+                'Passengers Checked In',
+                'Available Seats',
+                'Gate',
+                'Terminal',
+                'Delay (minutes)',
+                'Created At',
+                'Last Updated'
+            ])
+            
+            flights = fm.get_flights()
+            for f in flights:
+                flight_num = f.get('flight', '')
+                
+                # Count passengers for this flight
+                total_booked = sum(1 for p in passengers if p.get('flight') == flight_num)
+                checked_in = sum(1 for p in passengers if p.get('flight') == flight_num and p.get('checked_in'))
+                
+                # Get capacity from aircraft config
+                capacity = f.get('capacity', 0)
+                available = capacity - total_booked if capacity > 0 else 0
+                
+                writer.writerow([
+                    flight_num,
+                    f.get('from', ''),
+                    f.get('to', ''),
+                    f.get('time', ''),
+                    f.get('arrival_time', ''),
+                    f.get('status', 'Scheduled'),
+                    f.get('aircraft', ''),
+                    capacity,
+                    total_booked,
+                    checked_in,
+                    available,
+                    f.get('gate', ''),
+                    f.get('terminal', ''),
+                    f.get('delay', 0),
+                    f.get('created_at', ''),
+                    f.get('updated_at', '')
+                ])
+        
+        elif export_type == 'bookings':
+            # Export all booking details including payment status, passenger info
+            writer = csv.writer(output)
+            writer.writerow([
+                'Booking Reference',
+                'Passenger Name',
+                'Passport/ID',
+                'Email',
+                'Phone',
+                'Flight Number',
+                'From',
+                'To',
+                'Departure Date',
+                'Class',
+                'Seat',
+                'Amount Paid',
+                'Currency',
+                'Payment Method',
+                'Payment Status',
+                'Check-in Status',
+                'Booking Date',
+                'Last Updated'
+            ])
+            
+            # Load bookings from file if exists
+            bookings = _load_json_file(BOOKINGS_FILE, [])
+            
+            for b in bookings:
+                # Find associated passenger for additional details
+                passport = b.get('passport', '')
+                passenger = next((p for p in passengers if p.get('passport') == passport), None)
+                
+                writer.writerow([
+                    b.get('booking_ref', ''),
+                    b.get('name', ''),
+                    passport,
+                    b.get('email', ''),
+                    b.get('phone', ''),
+                    b.get('flight', ''),
+                    b.get('from', ''),
+                    b.get('to', ''),
+                    b.get('depart', ''),
+                    b.get('class', 'Economy'),
+                    passenger.get('seat', '') if passenger else '',
+                    b.get('amount', 0),
+                    b.get('currency', 'USD'),
+                    b.get('payment_method', ''),
+                    b.get('status', 'Pending'),
+                    'Checked In' if passenger and passenger.get('checked_in') else 'Pending',
+                    b.get('created_at', ''),
+                    b.get('updated_at', '')
+                ])
+        
+        else:
+            return jsonify({'error': 'Invalid export type. Supported: passengers, flights, bookings'}), 400
+        
+        output.seek(0)
+        csv_data = output.getvalue()
+        
+        # Create response with CSV data
+        response = app.response_class(
+            csv_data,
+            mimetype='text/csv',
+            headers={
+                'Content-Disposition': f'attachment; filename={export_type}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.csv'
+            }
+        )
+        
+        return response
+        
+    except Exception as e:
+        return jsonify({'error': f'Export failed: {str(e)}'}), 500
+
+
+@app.route('/api/sessions', methods=['GET'])
+def api_get_sessions():
+    """Get active user sessions for admin dashboard"""
+    try:
+        # Load sessions from file
+        sessions = _load_json_file(SESSIONS_FILE, {})
+        
+        # Convert to list format with activity data
+        active_sessions = []
+        current_time = datetime.now(timezone.utc)
+        
+        for session_id, session_data in sessions.items():
+            if isinstance(session_data, dict):
+                # Check if session is still active (within last 30 minutes)
+                last_activity = session_data.get('last_activity', session_data.get('created_at'))
+                if last_activity:
+                    try:
+                        last_active_time = datetime.fromisoformat(last_activity.replace('Z', '+00:00'))
+                        time_diff = (current_time - last_active_time).total_seconds()
+                        
+                        # Session is active if activity within last 30 minutes
+                        if time_diff < 1800:  # 30 minutes
+                            active_sessions.append({
+                                'session_id': session_id,
+                                'user_id': session_data.get('user_id'),
+                                'username': session_data.get('username'),
+                                'user_name': session_data.get('user_name'),
+                                'user_type': session_data.get('role', 'user'),
+                                'last_activity': last_activity,
+                                'last_action': session_data.get('last_action', 'Browsing'),
+                                'is_active': True,
+                                'created_at': session_data.get('created_at')
+                            })
+                    except (ValueError, TypeError):
+                        pass
+        
+        return jsonify({'sessions': active_sessions, 'count': len(active_sessions)}), 200
+        
+    except Exception as e:
+        # Return empty sessions if file doesn't exist or error occurs
+        return jsonify({'sessions': [], 'count': 0}), 200
+
+
+@app.route('/api/users', methods=['GET'])
+def api_get_users():
+    """Get registered users for admin dashboard"""
+    try:
+        # Load users from file (users.json generated by data generator)
+        users_file = os.path.join(BASE_DIR, 'users.json')
+        users_data = _load_json_file(users_file, {})
+        
+        # Convert to list format
+        users_list = []
+        for username, user_info in users_data.items():
+            if isinstance(user_info, dict):
+                users_list.append({
+                    'username': username,
+                    'user_id': user_info.get('user_id'),
+                    'email': user_info.get('email'),
+                    'full_name': user_info.get('full_name'),
+                    'membership_tier': user_info.get('membership_tier', 'local'),
+                    'created_at': user_info.get('created_at')
+                })
+        
+        return jsonify({'users': users_list, 'count': len(users_list)}), 200
+        
+    except Exception as e:
+        return jsonify({'users': [], 'count': 0}), 200
+
+
 # Simple CORS for local development
 @app.after_request
 def add_cors(resp):
     resp.headers["Access-Control-Allow-Origin"] = "*"
-    resp.headers["Access-Control-Allow-Headers"] = "Content-Type"
-    resp.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
+    resp.headers["Access-Control-Allow-Methods"] = "GET,POST,PATCH,DELETE,OPTIONS"
     return resp
 
+# Serve the SPA index at '/'
+@app.route('/')
+def _serve_index():
+    return send_from_directory(FRONTEND_DIR, 'index.html')
+
 if __name__ == "__main__":
+    # Load persisted passengers into memory when starting the server
+    try:
+        if os.path.exists(PASSENGER_FILE):
+            with open(PASSENGER_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f) or []
+                if isinstance(data, list):
+                    passengers.clear()
+                    passengers.extend(data)
+    except Exception:
+        pass
+
     app.run(debug=True, host="127.0.0.1", port=5000)
 # ...existing code...

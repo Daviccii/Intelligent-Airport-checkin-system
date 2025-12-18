@@ -105,11 +105,11 @@
 
     function setStep(name) {
       document.querySelectorAll('#steps .step').forEach(s => s.classList.remove('active'));
-      const el = document.querySelector(`#steps .step[data-step="${name}"]`);
-      if (el) el.classList.add('active');
-      document.querySelectorAll('#stepContent .pane').forEach(p => p.style.display='none');
-      const pane = document.getElementById(name);
-      if (pane) pane.style.display = 'block';
+        const el = document.querySelector(`#steps .step[data-step="${name}"]`);
+        if (el) el.classList.add('active');
+        document.querySelectorAll('#stepContent .pane').forEach(p => { try { p.hidden = true; p.setAttribute('aria-hidden','true'); } catch(e){} });
+        const pane = document.getElementById(name);
+        if (pane) { try { pane.hidden = false; pane.setAttribute('aria-hidden','false'); } catch(e){} }
     }
 
     document.getElementById('toAuth').addEventListener('click', () => setStep('auth'));

@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Check-ins Manager — SmartFly Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; color: #222; }
+        
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .navbar h1 { font-size: 28px; font-weight: 700; }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+            list-style: none;
+        }
+
+        .nav-links a, .logout-btn {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: opacity 0.3s;
+        }
+
+        .nav-links a:hover, .logout-btn:hover {
+            opacity: 0.8;
+        }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+
+        .header { margin-bottom: 32px; }
+        .header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
+        .header p { color: #666; }
+
+        .controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"], select {
+            padding: 10px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            transition: transform 0.3s;
+        }
+
+        button:hover { transform: translateY(-2px); }
+
+        .table-wrapper {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            position: relative;
+            z-index: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f9f9f9;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody tr:hover {
+            background: #f9f9f9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-checked { background: #d1fae5; color: #047857; }
+        .status-pending { background: #fef3c7; color: #b45309; }
+
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            margin-right: 6px;
+            background: #667eea;
+            color: white;
+        }
+
+        .action-btn:hover { background: #5568d3; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show { display: flex; }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #222;
+            font-size: 14px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar { flex-direction: column; gap: 16px; }
+            .nav-links { flex-direction: column; gap: 8px; }
+            .controls { flex-direction: column; }
+            table { font-size: 12px; }
+            th, td { padding: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🛫 SmartFly Admin</h1>
+        <ul class="nav-links">
+            <li><a href="/admin/dashboard.html">Dashboard</a></li>
+            <li><a href="/admin/checkins.html">Check-ins</a></li>
+            <li><a href="/admin/bookings.html">Payments</a></li>
+            <li><a href="/admin/flights.html">Flights</a></li>
+            <li><a href="/admin/activity-log.html">Activity Log</a></li>
+            <li><button class="logout-btn" onclick="logout()">Logout</button></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="header">
+            <h2>Check-ins Manager</h2>
+            <p>Monitor and manage all passenger check-ins in real-time</p>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search by name, passport, or flight...">
+            <select id="statusFilter">
+                <option value="">All Status</option>
+                <option value="checked">Checked In</option>
+                <option value="pending">Pending</option>
+            </select>
+            <select id="flightFilter">
+                <option value="">All Flights</option>
+            </select>
+            <button onclick="applyFilters()">Filter</button>
+            <button onclick="location.reload()">Refresh</button>
+            <button onclick="exportPassengersCSV()" style="background: #10b981; margin-left: auto;">📥 Export CSV</button>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Passenger Name</th>
+                        <th>Passport</th>
+                        <th>Email</th>
+                        <th>Flight</th>
+                        <th>Seat</th>
+                        <th>Status</th>
+                        <th>Check-in Time</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="checkinsTable">
+                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Check-in Detail Modal -->
+    <div id="checkinModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Passenger Check-in</span>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        let allPassengers = [];
+        let filteredPassengers = [];
+
+        function checkAuth() {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+            if (!token) {
+                setTimeout(() => {
+                    if (!localStorage.getItem('adminToken') && !localStorage.getItem('session')) {
+                        window.location.href = '/admin-login.html';
+                    }
+                }, 100);
+            }
+        }
+
+        async function loadPassengers() {
+            try {
+                const res = await fetch('/api/passengers');
+                const passengers = await res.json() || [];
+                allPassengers = passengers;
+                
+                // Load flights to populate filter
+                const flightRes = await fetch('/api/flights');
+                const flightData = await flightRes.json();
+                const flights = flightData.flights || [];
+                
+                const flightFilter = document.getElementById('flightFilter');
+                flights.forEach(f => {
+                    const option = document.createElement('option');
+                    option.value = f.flight;
+                    option.textContent = f.flight;
+                    flightFilter.appendChild(option);
+                });
+
+                // Parse URL query parameters for drill-down filtering
+                const params = new URLSearchParams(location.search);
+                const statusParam = params.get('status');
+                
+                // Auto-apply status filter if present in URL
+                if (statusParam) {
+                    const statusFilter = document.getElementById('statusFilter');
+                    if (statusParam === 'all') {
+                        statusFilter.value = '';
+                    } else if (statusParam === 'checked_in') {
+                        statusFilter.value = 'checked';
+                    } else if (statusParam === 'pending') {
+                        statusFilter.value = 'pending';
+                    }
+                }
+
+                // Apply filters before rendering (this will use the URL param if set)
+                applyFilters();
+            } catch (err) {
+                console.error('Failed to load passengers:', err);
+            }
+        }
+
+        function renderTable() {
+            const table = document.getElementById('checkinsTable');
+            if (filteredPassengers.length === 0) {
+                table.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No passengers found</td></tr>';
+                return;
+            }
+
+            table.innerHTML = filteredPassengers.map(p => {
+                const hasNotes = p.admin_notes && p.admin_notes.trim().length > 0;
+                return `
+                    <tr>
+                        <td><strong>${p.name || 'N/A'}</strong> ${hasNotes ? '<span style="color: #f59e0b; font-size: 16px;" title="Has admin notes">📝</span>' : ''}</td>
+                        <td>${p.passport || 'N/A'}</td>
+                        <td>${p.email || 'N/A'}</td>
+                        <td>${p.flight || 'N/A'}</td>
+                        <td>${p.seat || '—'}</td>
+                        <td><span class="status-badge ${p.boarding_pass ? 'status-checked' : 'status-pending'}">${p.boarding_pass ? '✅ Checked In' : '⏳ Pending'}</span></td>
+                        <td>${p.boarding_pass ? new Date(p.boarding_pass.created_at || Date.now()).toLocaleString() : '—'}</td>
+                        <td>
+                            <button class="action-btn" onclick="viewDetails('${p.passport}')">View</button>
+                            ${!p.boarding_pass ? `<button class="action-btn" style="background: #10b981;" onclick="completeCheckin('${p.passport}')">Check In</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const status = document.getElementById('statusFilter').value;
+            const flight = document.getElementById('flightFilter').value;
+
+            filteredPassengers = allPassengers.filter(p => {
+                const matchesSearch = !search || 
+                    (p.name || '').toLowerCase().includes(search) ||
+                    (p.passport || '').toLowerCase().includes(search) ||
+                    (p.flight || '').toLowerCase().includes(search);
+                
+                const matchesStatus = !status || 
+                    (status === 'checked' && p.boarding_pass) ||
+                    (status === 'pending' && !p.boarding_pass);
+                
+                const matchesFlight = !flight || p.flight === flight;
+
+                return matchesSearch && matchesStatus && matchesFlight;
+            });
+
+            renderTable();
+        }
+
+        function viewDetails(passport) {
+            const passenger = allPassengers.find(p => p.passport === passport);
+            if (!passenger) return;
+
+            const modal = document.getElementById('checkinModal');
+            const body = document.getElementById('modalBody');
+
+            body.innerHTML = `
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" value="${passenger.name || ''}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Passport</label>
+                    <input type="text" value="${passenger.passport || ''}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" value="${passenger.email || ''}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Flight</label>
+                    <input type="text" value="${passenger.flight || ''}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Current Seat</label>
+                    <input type="text" value="${passenger.seat || 'Not assigned'}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <input type="text" value="${passenger.boarding_pass ? 'Checked In' : 'Pending Check-in'}" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Admin Notes</label>
+                    <textarea id="passengerNotes" rows="4" placeholder="Add notes about this passenger...">${passenger.admin_notes || ''}</textarea>
+                </div>
+                <div style="display: flex; gap: 12px;">
+                    ${!passenger.boarding_pass ? `<button onclick="completeCheckin('${passenger.passport}')">Complete Check-in</button>` : ''}
+                    <button onclick="savePassengerNotes('${passenger.passport}')">Save Notes</button>
+                    <button onclick="closeModal()" style="background: #999;">Close</button>
+                </div>
+            `;
+
+            modal.classList.add('show');
+        }
+
+        function completeCheckin(passport) {
+            // Simulate check-in completion
+            const passenger = allPassengers.find(p => p.passport === passport);
+            if (passenger) {
+                passenger.boarding_pass = {
+                    number: 'BP' + Math.random().toString(36).slice(2, 9).toUpperCase(),
+                    created_at: new Date().toISOString()
+                };
+                closeModal();
+                renderTable();
+                alert('Check-in completed for ' + passenger.name);
+            }
+        }
+
+        async function savePassengerNotes(passport) {
+            const notes = document.getElementById('passengerNotes').value;
+            
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`/api/passengers/${passport}/notes`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ admin_notes: notes })
+                });
+
+                if (response.ok) {
+                    const passenger = allPassengers.find(p => p.passport === passport);
+                    if (passenger) passenger.admin_notes = notes;
+                    alert('✅ Notes saved successfully');
+                    closeModal();
+                    renderTable();
+                } else {
+                    alert('❌ Failed to save notes');
+                }
+            } catch (error) {
+                console.error('Error saving notes:', error);
+                alert('❌ Error saving notes. Please try again.');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('checkinModal').classList.remove('show');
+        }
+
+        function exportPassengersCSV() {
+            const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+            fetch('/api/export/passengers', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).then(res => {
+                if (!res.ok) throw new Error('Export failed');
+                return res.blob();
+            }).then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'passengers.csv';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            }).catch(err => {
+                console.error('Export error:', err);
+                alert('Failed to export passengers');
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('session');
+            window.location.href = '/admin-login.html';
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('flightFilter').addEventListener('change', applyFilters);
+
+        checkAuth();
+        loadPassengers();
+    </script>
+</body>
+</html>

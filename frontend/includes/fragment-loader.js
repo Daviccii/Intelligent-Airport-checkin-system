@@ -15,17 +15,17 @@ document.addEventListener('DOMContentLoaded', async ()=>{
     const lf = document.createElement('link'); lf.rel='stylesheet'; lf.href='https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap'; document.head.appendChild(lf);
   }
   if (!document.querySelector('link[rel="icon"][href$="favicon.svg"]')){
-    const f = document.createElement('link'); f.rel='icon'; f.href='/frontend/favicon.svg'; f.type='image/svg+xml'; document.head.appendChild(f);
+    const f = document.createElement('link'); f.rel='icon'; f.href='/favicon.svg'; f.type='image/svg+xml'; document.head.appendChild(f);
   }
 
   // header
   if (!document.querySelector('.main-nav')){
-    const headerHTML = await loadFragment('/frontend/includes/header.html');
+    const headerHTML = await loadFragment('/includes/header.html');
     if (headerHTML) document.body.insertAdjacentHTML('afterbegin', headerHTML);
   }
   // footer
   if (!document.querySelector('footer')){
-    const footerHTML = await loadFragment('/frontend/includes/footer.html');
+    const footerHTML = await loadFragment('/includes/footer.html');
     if (footerHTML) document.body.insertAdjacentHTML('beforeend', footerHTML);
   }
 

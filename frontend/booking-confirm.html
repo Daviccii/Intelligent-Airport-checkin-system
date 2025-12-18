@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Booking confirmation - SmartFly</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: 'Poppins', system-ui, sans-serif; background:#f6f8fb; color:#122 }
+    .container { max-width:820px; margin:28px auto; padding:18px }
+    .card { background:white; padding:16px; border-radius:10px; border:1px solid #eef4fb; box-shadow:0 6px 18px rgba(3,10,25,0.04) }
+    .row { display:flex; gap:12px; align-items:center }
+    .summary { display:flex; gap:16px; align-items:center }
+    .summary img { border-radius:8px }
+    .price { font-size:20px; font-weight:700 }
+    .form-group { display:flex; flex-direction:column; gap:8px; margin-top:12px }
+    .btn-row { display:flex; gap:8px; justify-content:flex-end; margin-top:12px }
+    .message { margin-top:12px }
+    /* Passenger list */
+    .pass-list { display:flex; flex-direction:column; gap:10px; margin-top:12px }
+    .pass-item { display:flex; gap:8px; align-items:flex-start; padding:10px; border:1px solid #eef6ff; border-radius:8px; background:#fff }
+    .pass-item .meta { min-width:110px; font-size:13px; color:#445 }
+    .pass-item .fields { display:flex; gap:8px; flex:1; flex-wrap:wrap }
+    .pass-item input { padding:8px; border:1px solid #e6eef8; border-radius:6px }
+    .small { font-size:13px; color:#556 }
+    .spinner-overlay { position:fixed; left:0; right:0; top:0; bottom:0; display:none; align-items:center; justify-content:center; background:rgba(255,255,255,0.6); z-index:9999 }
+    .spinner { width:64px; height:64px; border-radius:50%; border:8px solid #e6eef8; border-top-color:#007bff; animation:spin 1s linear infinite }
+    @keyframes spin { to { transform:rotate(360deg) } }
+    .success-card { text-align:center; padding:18px }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Confirm Booking</h2>
+      <div id="summary" style="margin-top:8px"></div>
+
+      <form id="bookingForm" style="margin-top:12px">
+        <div id="passengerControls" style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+          <div class="small">Passengers: <span id="passCounts">-</span></div>
+          <div>
+            <button id="addPassenger" type="button" class="btn">Add passenger</button>
+            <button id="removePassenger" type="button" class="btn">Remove</button>
+          </div>
+        </div>
+
+        <div id="passengerList" class="pass-list"></div>
+
+        <div class="btn-row">
+          <a href="/" class="btn">Cancel</a>
+          <button type="submit" class="btn primary">Confirm & Book</button>
+        </div>
+      </form>
+
+      <div id="result" class="message"></div>
+      <div id="spinner" class="spinner-overlay"><div class="spinner" role="status" aria-label="Loading"></div></div>
+      <div id="successView" style="display:none;margin-top:12px"></div>
+    </div>
+  </div>
+
+  <script>
+    function qs() { const s = location.search.replace(/^\?/,''); const o={}; s.split('&').filter(Boolean).forEach(p=>{ const [k,v]=p.split('='); o[decodeURIComponent(k)]=decodeURIComponent(v||''); }); return o; }
+    const p = qs();
+    const flight = p.flight || '';
+    const airline = p.airline || '';
+    const date = p.date || '';
+    const price = parseFloat(p.price || '0');
+    const from = p.from || '';
+    const to = p.to || '';
+    const adt = parseInt(p.adt || '1');
+    const chd = parseInt(p.chd || '0');
+    const inf = parseInt(p.inf || '0');
+    const currency = p.currency || 'USD';
+
+    const summary = document.getElementById('summary');
+    // simple price calc: adults full, children 75%, infants 10%
+    function calcTotal(adults, children, infants, unitPrice){
+      return (adults*unitPrice) + (children*(unitPrice*0.75)) + (infants*(unitPrice*0.1));
+    }
+    const total = calcTotal(adt, chd, inf, price);
+    summary.innerHTML = `<div class='summary'><div><strong>${airline} ${flight}</strong><div class='small'>${from} → ${to}</div><div class='small'>Date: ${date}</div></div><div style='margin-left:auto;text-align:right'><div class='price'>${currency} ${total.toFixed(2)}</div><div class='small'>${adt} adult(s) ${chd} child(ren) ${inf} infant(s)</div></div></div>`;
+
+    // Passenger list management
+    const passengerListEl = document.getElementById('passengerList');
+    const passCountsEl = document.getElementById('passCounts');
+    const addBtn = document.getElementById('addPassenger');
+    const removeBtn = document.getElementById('removePassenger');
+    const spinner = document.getElementById('spinner');
+    const successView = document.getElementById('successView');
+
+    let passengers = [];
+
+    function updateCounts(){ passCountsEl.innerText = `${passengers.length} passenger(s)`; }
+
+    function makePassengerItem(type='Adult', idx=0, data={}){
+      const wrapper = document.createElement('div'); wrapper.className='pass-item';
+      const meta = document.createElement('div'); meta.className='meta'; meta.innerText = `${type} #${idx+1}`;
+      const fields = document.createElement('div'); fields.className='fields';
+      const name = document.createElement('input'); name.placeholder='Full name'; name.value = data.name||''; name.required = true;
+      const passport = document.createElement('input'); passport.placeholder='Passport / ID'; passport.value = data.passport||''; passport.required = true;
+      const email = document.createElement('input'); email.placeholder='Email (optional)'; email.type='email'; email.value = data.email||'';
+      fields.appendChild(name); fields.appendChild(passport); fields.appendChild(email);
+      const remove = document.createElement('button'); remove.type='button'; remove.className='btn'; remove.innerText='Remove'; remove.addEventListener('click', ()=>{
+        const i = Array.from(passengerListEl.children).indexOf(wrapper);
+        if (i>=0){ passengers.splice(i,1); wrapper.remove(); refreshPassengerIndexes(); updateCounts(); }
+      });
+      const rightCol = document.createElement('div'); rightCol.style.marginLeft='8px'; rightCol.appendChild(remove);
+      wrapper.appendChild(meta); wrapper.appendChild(fields); wrapper.appendChild(rightCol);
+      return wrapper;
+    }
+
+    function refreshPassengerIndexes(){ Array.from(passengerListEl.children).forEach((el,i)=>{ const m = el.querySelector('.meta'); if (m) m.innerText = `Passenger #${i+1}`; }); }
+
+    function addPassenger(data, typeLabel='Passenger'){
+      const idx = passengerListEl.children.length;
+      const item = makePassengerItem(typeLabel, idx, data || {});
+      passengerListEl.appendChild(item);
+      passengers.push({}); updateCounts();
+    }
+
+    // initialize passenger forms based on counts
+    const totalRequested = Math.max(1, adt + chd + inf);
+    for (let i=0;i<totalRequested;i++){ addPassenger({}, i < adt ? 'Adult' : (i < adt+chd ? 'Child' : 'Infant')); }
+
+    addBtn.addEventListener('click', ()=>{ addPassenger({}, 'Passenger'); });
+    removeBtn.addEventListener('click', ()=>{
+      const last = passengerListEl.lastElementChild; if (!last) return; last.remove(); passengers.pop(); updateCounts();
+    });
+
+    function collectPassengers(){
+      const rows = passengerListEl.querySelectorAll('.pass-item');
+      const out = [];
+      for (const r of rows){
+        const inputs = r.querySelectorAll('input');
+        const name = inputs[0].value.trim();
+        const passport = inputs[1].value.trim();
+        const email = inputs[2].value.trim();
+        out.push({ name, passport, email });
+      }
+      return out;
+    }
+
+    function validatePassengers(list){
+      if (!list.length) return { ok:false, message: 'Add at least one passenger' };
+      for (let i=0;i<list.length;i++){
+        const p = list[i];
+        if (!p.name) return { ok:false, message: `Passenger #${i+1} missing name` };
+        if (!p.passport) return { ok:false, message: `Passenger #${i+1} missing passport/ID` };
+      }
+      return { ok:true };
+    }
+
+    const form = document.getElementById('bookingForm');
+    form.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const list = collectPassengers();
+      const v = validatePassengers(list);
+      if (!v.ok) { document.getElementById('result').innerText = v.message; return; }
+
+      const payload = { flight, airline, date, from, to, currency, price: price, passengers: list, counts: { adults: adt, children: chd, infants: inf } };
+
+      // show spinner
+      spinner.style.display = 'flex';
+      document.getElementById('result').innerText = '';
+
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        const sessionToken = localStorage.getItem('session');
+        if (sessionToken) headers['X-SESSION'] = sessionToken;
+        const res = await fetch('/api/register', { method:'POST', headers, body: JSON.stringify(payload) });
+        const data = await res.json().catch(()=>({}));
+        spinner.style.display = 'none';
+        if (res.ok) {
+          // show success view with booking details
+          const ref = data.ref || ('BK-' + Math.random().toString(36).slice(2,9).toUpperCase());
+          successView.style.display = 'block';
+          successView.innerHTML = `<div class='card success-card'><h3>Booking Confirmed</h3><p>Your booking reference: <strong>${ref}</strong></p><p>Flight <strong>${airline} ${flight}</strong> on <strong>${date}</strong></p><p class='small'>Passengers: ${list.length}</p><div style='margin-top:12px'><a class='btn primary' href='/booking.html?ref=${encodeURIComponent(ref)}'>View Booking</a> <a class='btn' href='/'>Home</a></div></div>`;
+          // hide form
+          form.style.display = 'none';
+        } else {
+          document.getElementById('result').innerHTML = `<div class='message error'>Booking failed: ${data.error || 'Unknown error'}</div>`;
+        }
+      } catch (err) {
+        spinner.style.display = 'none';
+        document.getElementById('result').innerHTML = `<div class='message error'>Network error while booking</div>`;
+      }
+    });
+  </script>
+</body>
+</html>

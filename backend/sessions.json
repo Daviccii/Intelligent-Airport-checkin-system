@@ -1,112 +1,207 @@
 {
-  "ec3aea4c0f8d416383a8c9645c5ef97f": {
+  "sess_0001": {
+    "user_id": "USR0107",
+    "username": "xmoody",
+    "user_name": "Wanda Merritt",
+    "email": "julia10@example.org",
+    "role": "admin",
+    "membership_tier": "silver",
+    "last_activity": "2025-12-18T15:35:53.729180Z",
+    "last_action": "Adding baggage",
+    "created_at": "2025-12-18T15:19:53.729180Z",
+    "ip_address": "192.168.61.36",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0002": {
+    "user_id": "USR0082",
+    "username": "cbailey",
+    "user_name": "Amanda Rosales DVM",
+    "email": "pughalyssa@example.com",
+    "role": "admin",
+    "membership_tier": "gold",
+    "last_activity": "2025-12-18T15:40:53.729180Z",
+    "last_action": "Viewing dashboard",
+    "created_at": "2025-12-18T15:22:53.729180Z",
+    "ip_address": "192.168.47.145",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0003": {
+    "user_id": "USR0027",
+    "username": "sarahmitchell",
+    "user_name": "Leon Patel",
+    "email": "claudia41@example.org",
+    "role": "user",
+    "membership_tier": "local",
+    "last_activity": "2025-12-18T15:39:53.729180Z",
+    "last_action": "Logged in",
+    "created_at": "2025-12-18T15:32:53.729180Z",
+    "ip_address": "192.168.141.155",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0004": {
+    "user_id": "USR0001",
+    "username": "coopercheryl",
+    "user_name": "Andrew Johnson",
+    "email": "walter16@example.com",
+    "role": "user",
+    "membership_tier": "local",
+    "last_activity": "2025-12-18T15:34:53.729180Z",
+    "last_action": "Processing payment",
+    "created_at": "2025-12-18T15:20:53.729180Z",
+    "ip_address": "192.168.227.2",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0005": {
+    "user_id": "USR0042",
+    "username": "smarks",
+    "user_name": "John Murray",
+    "email": "griffithkevin@example.org",
+    "role": "user",
+    "membership_tier": "local",
+    "last_activity": "2025-12-18T15:41:53.729180Z",
+    "last_action": "Adding baggage",
+    "created_at": "2025-12-18T15:24:53.729180Z",
+    "ip_address": "192.168.90.55",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0006": {
+    "user_id": "USR0102",
+    "username": "susanmoore",
+    "user_name": "Crystal Waller",
+    "email": "donaldmora@example.com",
+    "role": "user",
+    "membership_tier": "silver",
+    "last_activity": "2025-12-18T15:40:53.729180Z",
+    "last_action": "Searching flights",
+    "created_at": "2025-12-18T15:15:53.729180Z",
+    "ip_address": "192.168.146.41",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0007": {
+    "user_id": "USR0112",
+    "username": "mendozatyler",
+    "user_name": "Todd Johnson",
+    "email": "jacobhuffman@example.net",
+    "role": "user",
+    "membership_tier": "silver",
+    "last_activity": "2025-12-18T15:41:53.729180Z",
+    "last_action": "Adding baggage",
+    "created_at": "2025-12-18T15:17:53.729180Z",
+    "ip_address": "192.168.243.58",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0008": {
+    "user_id": "USR0022",
+    "username": "garciajustin",
+    "user_name": "Julie Lewis",
+    "email": "rodrigueznancy@example.org",
+    "role": "user",
+    "membership_tier": "local",
+    "last_activity": "2025-12-18T15:34:53.729180Z",
+    "last_action": "Managing account",
+    "created_at": "2025-12-18T15:20:53.729180Z",
+    "ip_address": "192.168.227.186",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0009": {
+    "user_id": "USR0064",
+    "username": "woodjeffrey",
+    "user_name": "Richard Gibbs",
+    "email": "benjaminrich@example.com",
+    "role": "premium",
+    "membership_tier": "gold",
+    "last_activity": "2025-12-18T15:44:53.729180Z",
+    "last_action": "Searching flights",
+    "created_at": "2025-12-18T15:15:53.729180Z",
+    "ip_address": "192.168.154.157",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0010": {
+    "user_id": "USR0140",
+    "username": "steven39",
+    "user_name": "Wendy White",
+    "email": "jonathan02@example.net",
+    "role": "premium",
+    "membership_tier": "platinum",
+    "last_activity": "2025-12-18T15:42:53.729180Z",
+    "last_action": "Managing account",
+    "created_at": "2025-12-18T15:13:53.729180Z",
+    "ip_address": "192.168.215.152",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0011": {
+    "user_id": "USR0111",
+    "username": "yhernandez",
+    "user_name": "Jonathan Christian",
+    "email": "hbrooks@example.com",
+    "role": "user",
+    "membership_tier": "silver",
+    "last_activity": "2025-12-18T15:41:53.729180Z",
+    "last_action": "Logged in",
+    "created_at": "2025-12-18T15:13:53.729180Z",
+    "ip_address": "192.168.236.139",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0012": {
+    "user_id": "USR0071",
+    "username": "garcialawrence",
+    "user_name": "Melissa Williams",
+    "email": "millerthomas@example.net",
+    "role": "premium",
+    "membership_tier": "gold",
+    "last_activity": "2025-12-18T15:40:53.729180Z",
+    "last_action": "Searching flights",
+    "created_at": "2025-12-18T15:33:53.729180Z",
+    "ip_address": "192.168.43.129",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0013": {
+    "user_id": "USR0025",
+    "username": "lindsay95",
+    "user_name": "Brian Brown",
+    "email": "zachary60@example.com",
+    "role": "user",
+    "membership_tier": "local",
+    "last_activity": "2025-12-18T15:41:53.729180Z",
+    "last_action": "Viewing bookings",
+    "created_at": "2025-12-18T15:22:53.729180Z",
+    "ip_address": "192.168.77.157",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0014": {
+    "user_id": "USR0061",
+    "username": "judyellis",
+    "user_name": "James Mcclain",
+    "email": "josephwright@example.org",
+    "role": "premium",
+    "membership_tier": "gold",
+    "last_activity": "2025-12-18T15:40:53.729180Z",
+    "last_action": "Checking in",
+    "created_at": "2025-12-18T15:25:53.729180Z",
+    "ip_address": "192.168.19.166",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "sess_0015": {
+    "user_id": "USR0126",
+    "username": "carol66",
+    "user_name": "Erik Miller",
+    "email": "tcastaneda@example.org",
+    "role": "user",
+    "membership_tier": "silver",
+    "last_activity": "2025-12-18T15:36:53.729180Z",
+    "last_action": "Managing account",
+    "created_at": "2025-12-18T15:12:53.729180Z",
+    "ip_address": "192.168.12.216",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  },
+  "085bd40d452249b9aa2c9c6387da526d": {
     "role": "admin",
     "passport": null,
-    "expires": "2025-11-04T08:50:01.916763Z"
+    "expires": "2025-12-18T13:52:49.330964Z"
   },
-  "efedd8ecfed54a38a614ba5d50406333": {
+  "eae7319eab1f44cdbd287567c9ea5ac0": {
     "role": "admin",
     "passport": null,
-    "expires": "2025-11-05T10:21:03.989423Z"
-  },
-  "83b126446b034b8c92a5c24f1f539713": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-05T10:21:04.554285Z"
-  },
-  "28d1ff58bd81433eb3f678de4ec36881": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-05T10:22:14.561082Z"
-  },
-  "0d9b74e62c7046f5b93c12c7663dce38": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-05T12:59:12.054356Z"
-  },
-  "814934f6ff9b4d309f5939f02d85e46d": {
-    "role": "passenger",
-    "passport": "SMOKE999",
-    "expires": "2025-11-05T13:22:53.389640Z"
-  },
-  "d5cf705a1b4143b3969515bf4883fc14": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T09:23:16.765940Z"
-  },
-  "0cad669c7cda44139b5c2f42db648032": {
-    "role": "passenger",
-    "passport": "TP12345",
-    "expires": "2025-11-10T09:23:16.778414Z"
-  },
-  "89e380f9552449ac85ddb51b4d58c8c7": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T09:27:05.526262Z"
-  },
-  "8770bce9ed614febb36920a87581f540": {
-    "role": "passenger",
-    "passport": "TP12345",
-    "expires": "2025-11-10T09:27:05.536095Z"
-  },
-  "595655a187e74f24a3497953ef0d6ad2": {
-    "role": "passenger",
-    "passport": "54321",
-    "expires": "2025-11-10T09:47:32.118599Z"
-  },
-  "e3c7ed5e002a4ea38c225e0a162104ce": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T09:55:39.127335Z"
-  },
-  "9726a5320b5d4884ba823db46ede81e6": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T09:55:39.138280Z"
-  },
-  "323c660b1aa54b40a62c5b6eefba0e4b": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T10:00:53.310849Z"
-  },
-  "1adbe44368ca4a31830fd1f931b6762b": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T10:56:56.465993Z"
-  },
-  "e93371fb36a044e9ad863da0fde845d5": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T11:13:19.461836Z"
-  },
-  "a3fe2c8764c249f0a3cae0b6ada602d4": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T12:22:42.268526Z"
-  },
-  "27994a5268414e77bee206d0a7d62a54": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T13:23:36.747155Z"
-  },
-  "5686b8a69eb0410ca0c55fa5e5bb5195": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-10T12:35:29.302846Z"
-  },
-  "4971e1a3327b48019a0903d59bec2537": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-11T06:52:42.660281Z"
-  },
-  "a917e34664464939bb0f64c034931557": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-11T07:08:48.802788Z"
-  },
-  "31b0dd261c4243bd959a0bbadbd1cbac": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-11-11T11:19:51.615896Z"
+    "expires": "2025-12-18T14:11:30.178338Z"
   }
 }

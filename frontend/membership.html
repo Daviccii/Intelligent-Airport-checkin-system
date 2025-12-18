@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Membership | SmartFly</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="main-nav"><div class="container nav-container">
+    <div class="logo-container">
+      <div class="logo"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>
+      <div class="brand"><h2 class="logo-text">SmartFly</h2><p class="site-vision">your journey starts here</p></div>
+    </div>
+    <div class="header-right">
+      <nav class="header-tabs">
+        <a class="tab-link" href="flight-results.html">Explore</a>
+        <a class="tab-link" href="plan.html">Plan</a>
+        <a class="tab-link" href="book-manage.html">Book &amp; Manage</a>
+        <a class="tab-link" href="experience.html">Experience</a>
+        <a class="tab-link" href="loyalty.html">Loyalty</a>
+        <a class="tab-link active" href="membership.html">Membership</a>
+        <a class="tab-link" href="help.html">Help</a>
+      </nav>
+    </div></div></nav>
+
+  <main class="page-container" style="margin-top:90px">
+    <section class="hero-section" style="padding:36px 20px;margin-bottom:16px;background:linear-gradient(135deg,#0f5fff 0%,#4da6ff 80%);color:#fff;border-radius:18px">
+      <div class="hero-content" style="text-align:left;max-width:940px;margin:0 auto">
+        <p id="membershipBadge" style="display:inline-block;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,0.12);margin:0 0 12px 0;font-weight:600;">Premium perks + lounge access</p>
+        <h2 style="margin:0 0 10px">Choose your membership</h2>
+        <p class="lead" style="margin:0 0 14px;max-width:720px">Join as a Premium Member to enjoy offers, lounge access, and travel credit — or start as a Local Member and upgrade later.</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a class="btn primary" href="#membershipForm">Join now</a>
+          <a class="btn" href="loyalty.html">View loyalty program</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="offers-grid" style="margin-top:10px">
+      <div class="offer-card" data-plan="premium">
+        <span class="offer-tag">Premium</span>
+        <h4>Premium Member</h4>
+        <p>Best for frequent flyers who want lounge access, fast-track, and travel credits.</p>
+        <ul>
+          <li>Unlimited lounge access for member + guest</li>
+          <li>Priority check-in and boarding lanes</li>
+          <li>$120 annual travel credit applied to flights and bags</li>
+          <li>Dedicated premium support line</li>
+        </ul>
+        <a class="btn primary" href="membership-premium.html?offer=early-bird">View Premium benefits</a>
+      </div>
+      <div class="offer-card" data-plan="local">
+        <span class="offer-tag">Local</span>
+        <h4>Local Member</h4>
+        <p>For occasional travelers who still want savings and the option to upgrade anytime.</p>
+        <ul>
+          <li>Earn points on every booking</li>
+          <li>1 free checked bag per year</li>
+          <li>Member-only fare alerts</li>
+          <li>Upgrade to Premium in one click</li>
+        </ul>
+        <a class="btn" href="membership-local.html">View Local benefits</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      const params = new URLSearchParams(window.location.search || '');
+      const offer = params.get('offer');
+      const badge = document.getElementById('membershipBadge');
+      if (offer && badge) { badge.textContent = 'Offer applied: ' + offer.replace(/-/g,' '); }
+    })();
+  </script>
+</body>
+</html>

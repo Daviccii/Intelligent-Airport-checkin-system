@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="90" viewBox="0 0 160 90">
+  <rect width="160" height="90" rx="12" fill="#f3f6fb" />
+  <g transform="translate(12,12)">
+    <rect width="136" height="66" rx="8" fill="#ffffff" stroke="#e6eef8" />
+    <g transform="translate(12,10)" fill="#1f5fb8">
+      <path d="M0 36 L18 24 L36 26 L54 18 L72 18 L60 30 L72 42 L54 36 L36 44 L18 36 Z"/>
+    </g>
+    <text x="12" y="58" font-family="Poppins, Arial, sans-serif" font-size="12" fill="#0b4ea2">SmartFly</text>
+  </g>
+</svg>

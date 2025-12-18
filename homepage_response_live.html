@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <!-- Viewport: ensure responsive layout on mobile devices and safe-area support -->
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, shrink-to-fit=no" />
+        <title>SmartFly — Intelligent Airport System</title>
+        <link rel="icon" href="favicon.svg" type="image/svg+xml">
+        <script>
+            // Bootstrap stub: queue early `showPanel()` calls until the real implementation
+            // in `assets/js/panels.js` loads. This prevents callers from falling back
+            // to direct DOM manipulation (eg. `classList.add('active')`) when the
+            // centralized API isn't available yet, which was creating panel races.
+            (function(){
+                if (!window.__smf_boot_showPanel) {
+                    window.__smf_boot_showPanel = [];
+                    window.showPanel = function(name){
+                        try{ window.__smf_boot_showPanel.push(String(name)); }catch(e){}
+                    };
+                }
+            })();
+
+            // Flights panel: fetch, show prices, and filter tabs (Price / Non-stop / Top Airline)
+            // Defer initialization until DOMContentLoaded to avoid early DOM access
+            document.addEventListener('DOMContentLoaded', function(){
+                var currentList = [];
+                var activeFilter = 'none'; // 'none' | 'price' | 'stops' | 'airlines'
+
+                function $id(id){ return document.getElementById(id); }
+                var searchForm = $id('searchForm');
+                var searchResults = $id('searchResults');
+                var btnPrice = $id('filterPrice');
+                var btnStops = $id('filterStops');
+                var btnAir = $id('filterAirlines');
+                var activeFilterName = $id('activeFilterName');
+
+                function formatPrice(p){
+                    if(!p) return 'N/A';
+                    if(typeof p === 'object'){
+                        try{ return new Intl.NumberFormat(undefined,{style:'currency',currency:p.currency||'USD'}).format(Number(p.amount)); }catch(e){ return (p.currency||'')+' '+p.amount; }
+                    }
+                    return String(p);
+                }
+
+                function normalizeFlight(f){
+                    var copy = Object.assign({}, f);
+                    // Ensure price object {currency, amount}
+                    if(!copy.price){
+                        if(copy.prices && copy.prices.standard){ copy.price = { currency: copy.currency || 'USD', amount: copy.prices.standard }; }
+                        else if(copy.price_amount){ copy.price = { currency: copy.currency || 'USD', amount: copy.price_amount }; }
+                        else { copy.price = { currency: copy.currency || 'USD', amount: ((Math.random()*300)+50).toFixed(2) }; }
+                    } else if(typeof copy.price === 'number' || typeof copy.price === 'string'){
+                        copy.price = { currency: copy.currency || 'USD', amount: String(copy.price) };
+                    }
+                    // stops normalization
+                    if(typeof copy.stops === 'undefined'){
+                        if(typeof copy.numberOfStops !== 'undefined') copy.stops = copy.numberOfStops;
+                        else copy.stops = (copy.stopsCount || 0);
+                    }
+                    // airline fallback
+                    copy.airline = copy.airline || copy.operatingCarrier || copy.carrier || copy.operator || 'Unknown';
+                    return copy;
+                }
+
+                function renderList(list){
+                    searchResults.innerHTML = '';
+                    if(!list || !list.length){ searchResults.innerHTML = '<p>No flights found.</p>'; return; }
+                    var container = document.createElement('div'); container.className = 'flights-list';
+                    list.forEach(function(f){
+                        var card = document.createElement('div'); card.className = 'flight-row card';
+                        card.style.display = 'flex'; card.style.justifyContent = 'space-between'; card.style.alignItems = 'center'; card.style.padding = '12px'; card.style.marginBottom = '8px';
+
+                        var left = document.createElement('div'); left.style.flex = '1';
+                        left.innerHTML = '<div style="font-weight:600">' + (f.flightNumber || f.flight || '—') + ' &nbsp; ' + (f.origin||'') + ' → ' + (f.destination||'') + '</div>' +
+                                         '<div style="font-size:0.9rem;color:#666">' + (f.departure||'') + ' — ' + (f.arrival||'') + '</div>' +
+                                         '<div style="font-size:0.85rem;color:#444;margin-top:6px">Airline: ' + (f.airline || 'Unknown') + ' • Stops: ' + (f.stops||0) + '</div>';
+
+                        var mid = document.createElement('div'); mid.style.minWidth = '160px'; mid.style.textAlign = 'right';
+                        mid.innerHTML = '<div style="font-weight:800">' + formatPrice(f.price) + '</div>' +
+                                        '<div style="font-size:0.85rem;color:#666">' + (f.fareClass || f.cabin || '') + '</div>';
+
+                        var right = document.createElement('div'); right.style.marginLeft = '12px';
+                        var btn = document.createElement('button'); btn.className = 'btn primary'; btn.textContent = 'Book';
+                        btn.addEventListener('click', function(){ location.href = 'book.html?from='+encodeURIComponent(f.origin||'')+'&to='+encodeURIComponent(f.destination||'')+'&flight='+encodeURIComponent(f.flightNumber||f.flight||''); });
+                        right.appendChild(btn);
+
+                        card.appendChild(left); card.appendChild(mid); card.appendChild(right);
+                        container.appendChild(card);
+                    });
+                    searchResults.appendChild(container);
+                }
+
+                function applyFilter(){
+                    var list = currentList.slice();
+                    if(activeFilter === 'price'){
+                        // sort by price ascending and show flights within 15% of cheapest
+                        list.sort(function(a,b){ return Number(a.price.amount) - Number(b.price.amount); });
+                        var min = Number(list[0] && list[0].price && list[0].price.amount || 0);
+                        var threshold = min * 1.15;
+                        list = list.filter(function(x){ return Number(x.price.amount) <= threshold; });
+                        activeFilterName.textContent = 'Best prices';
+                    } else if(activeFilter === 'stops'){
+                        // show only non-stop
+                        list = list.filter(function(x){ return Number(x.stops || 0) === 0; });
+                        list.sort(function(a,b){ return Number(a.stops || 0) - Number(b.stops || 0); });
+                        activeFilterName.textContent = 'Non-stop only';
+                    } else if(activeFilter === 'airlines'){
+                        // pick the most common airline and show only those flights
+                        var counts = {};
+                        list.forEach(function(x){ var a = x.airline || 'Unknown'; counts[a] = (counts[a]||0)+1; });
+                        var sorted = Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
+                        var top = sorted.length ? sorted[0] : null;
+                        if(top) list = list.filter(function(x){ return (x.airline||'Unknown') === top; });
+                        activeFilterName.textContent = top ? (top + ' — top airline') : 'Top airline';
+                    } else {
+                        activeFilterName.textContent = 'All';
+                    }
+                    renderList(list);
+                }
+
+                function setActiveFilter(mode){
+                    // toggle: clicking active clears filter
+                    if(activeFilter === mode) activeFilter = 'none'; else activeFilter = mode;
+                    // visual state
+                    [btnPrice, btnStops, btnAir].forEach(function(b){ if(!b) return; b.classList.remove('active'); });
+                    if(activeFilter === 'price' && btnPrice) btnPrice.classList.add('active');
+                    if(activeFilter === 'stops' && btnStops) btnStops.classList.add('active');
+                    if(activeFilter === 'airlines' && btnAir) btnAir.classList.add('active');
+                    applyFilter();
+                }
+
+                // attach handlers
+                try{
+                    if(searchForm){
+                        searchForm.addEventListener('submit', function(ev){
+                            ev.preventDefault();
+                            var q = (document.getElementById('searchFlight')||{value:''}).value.trim();
+                            var url = '/api/flights' + (q?('?flight='+encodeURIComponent(q)):'');
+                            searchResults.innerHTML = '<p>Loading flights…</p>';
+                            fetch(url).then(function(r){ return r.json(); }).then(function(data){
+                                var list = Array.isArray(data) ? data : (data.flights || data.results || []);
+                                list = list.map(normalizeFlight);
+                                currentList = list;
+                                activeFilter = 'none';
+                                // clear visual states
+                                try{ [btnPrice, btnStops, btnAir].forEach(function(b){ if(b) b.classList.remove('active'); }); }catch(e){}
+                                applyFilter();
+                                try{ showPanel('flights'); }catch(e){ console.error('[flightsPanel] showPanel failed', e); }
+                            }).catch(function(err){ console.error('Failed to load flights', err); searchResults.innerHTML = '<p class="error">Failed to load flights.</p>'; });
+                        });
+                    }
+                    if(btnPrice) btnPrice.addEventListener('click', function(){ setActiveFilter('price'); });
+                    if(btnStops) btnStops.addEventListener('click', function(){ setActiveFilter('stops'); });
+                    if(btnAir) btnAir.addEventListener('click', function(){ setActiveFilter('airlines'); });
+                }catch(e){ console.error('[flightsPanel] init failed', e); }
+            });
+        </script>
+                        </div>
+                    </div>
+
+                    <div id="mega-experience" class="mega-menu" role="menu" aria-label="Experience menu">
+                        <div class="mega-grid">
+                            <div class="mega-section">
+                                <h4>Onboard</h4>
+                                <a href="flight-results.html?info=amenities" role="menuitem">In-flight Amenities</a>
+                                <a href="checkin.html?assistance=1" role="menuitem">Special Assistance</a>
+                            </div>
+                            <div class="mega-section">
+                                <h4>Lounges</h4>
+                                <a href="flight-results.html?lounges=1" role="menuitem">Lounge Access</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mega-loyalty" class="mega-menu" role="menu" aria-label="Loyalty menu">
+                        <div class="mega-grid">
+                            <div class="mega-section">
+                                <h4>SmartFly Rewards</h4>
+                                <a href="index.html#loyaltyPanel" role="menuitem">Join Rewards</a>
+                                <a href="login.html?return=account" role="menuitem">Member Benefits</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="mega-help" class="mega-menu" role="menu" aria-label="Help menu">
+                        <div class="mega-grid">
+                            <div class="mega-section">
+                                <h4>Support</h4>
+                                <a href="help-center.html" role="menuitem">FAQ</a>
+                                <a href="contact.html" role="menuitem">Contact Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script src="assets/js/mega-menu.js"></script>
+                <script>
+                    // Ensure header tab links are clickable when the mega menu is hidden.
+                    // The site uses a mega menu that may overlap the header; when hidden
+                    // we disable pointer-events so clicks pass through to the tab links.
+                    (function(){
+                        try{
+                            document.addEventListener('DOMContentLoaded', function(){
+                                var headerMega = document.querySelector('.header-mega');
+                                if (!headerMega) return;
+
+                                // Initialise pointer-events according to aria-hidden
+                                function updatePointer(){
+                                    var hidden = headerMega.getAttribute('aria-hidden');
+                                    if (hidden === 'true' || hidden === null) {
+                                        headerMega.style.pointerEvents = 'none';
+                                    } else {
+                                        headerMega.style.pointerEvents = 'auto';
+                                    }
+                                }
+
+                                updatePointer();
+
+                                // Observe changes so when the mega opens we allow interactions
+                                try{
+                                    var mo = new MutationObserver(function(){ updatePointer(); });
+                                    mo.observe(headerMega, { attributes: true, attributeFilter: ['aria-hidden', 'class'] });
+                                }catch(e){ /* MutationObserver may not be available in very old browsers */ }
+
+                                // Defensive: ensure tab links always navigate even if other handlers interfere
+                                var tabs = document.querySelectorAll('.header-tabs .tab-link');
+                                tabs.forEach(function(a){
+                                    a.addEventListener('click', function(ev){
+                                        try{
+                                            var href = a.getAttribute('href');
+                                            if (!href || href === '#') return;
+                                            // If default was prevented earlier, force navigation
+                                            if (ev.defaultPrevented) {
+                                                window.location.href = href;
+                                            }
+                                            // otherwise allow normal navigation
+                                        }catch(err){ console.error('[tab-link] navigation error', err); }
+                                    });
+                                });
+                            });
+                        }catch(e){ console.error('[header-tabs] init failed', e); }
+                    })();
+                </script>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+    <!-- Styles are in `assets/css/style.css` — the inline style block was migrated. -->
+<script src="includes/fragment-loader.js"></script>
+    <div class="container">
+        <!-- Page-level navigation removed — header contains the primary tabs -->
+
+        <!-- Toast Container -->
+        <div id="toastContainer"></div>
+        <!-- ARIA live region for panel change announcements -->
+        <div id="panelAnnouncer" aria-live="polite" aria-atomic="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">&nbsp;</div>
+
+        
+
+            <!-- Home Panel -->
+            <div id="homePanel" class="action-panel active">
+                <!-- Hero Section -->
+                <section class="hero-section">
+                    <div class="hero-content">
+                        <h2>Welcome to SmartFly</h2>
+                        <div class="hero-decor" aria-hidden="true">
+                            <!-- Decorative SVG: abstract plane + waves -->
+                            <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="200" height="200" preserveAspectRatio="xMidYMid meet">
+                                <defs>
+                                    <linearGradient id="g1" x1="0" x2="1">
+                                        <stop offset="0%" stop-color="#6dd5ed" stop-opacity="0.9"/>
+                                        <stop offset="100%" stop-color="#2193b0" stop-opacity="0.9"/>
+                                    </linearGradient>
+                                </defs>
+                                <g fill="none" stroke="url(#g1)" stroke-width="3" stroke-linecap="round">
+                                    <path d="M10 150 C40 90, 120 90, 180 60" opacity="0.9"/>
+                                    <path d="M20 160 C60 120, 140 120, 190 90" opacity="0.65"/>
+                                </g>
+                                <g transform="translate(30,30) scale(0.6)" fill="url(#g1)">
+                                    <path d="M80 10 L95 40 L120 45 L100 60 L105 85 L80 72 L55 85 L60 60 L40 45 L65 40 Z" opacity="0.95"/>
+                                </g>
+                            </svg>
+                        </div>
+                        <p class="lead">Fly Smart. Check-In Smarter. Simplifying Air Travel — your journey starts here.</p>
+                        <div class="actions hero-actions" aria-hidden="true">
+                            <!-- Primary hero CTAs removed. 'Check Flight Status' and 'Start Check-in' moved to their dedicated panels (use the Check-in panel under the SmartFly tabs). -->
+                        </div>
+
+                        <!-- Booking widget moved into hero for quick access -->
+                        <div class="card card--hero">
+                            <div class="booking-widget booking-widget--hero" role="region" aria-label="Quick flight search">
+                                <div class="booking-widget__fields">
+                                    <div class="airport-pair">
+                                            <div class="airport-input" style="min-width:0">
+                                                <label for="airportFromInput" style="display:block;font-weight:600;margin-bottom:6px">Where from?</label>
+                                                <input id="airportFromInput" type="text" name="airportFrom" placeholder="Where from?" aria-label="Where from" autocomplete="off" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef6;background:#fff" />
+                                            </div>
+                                            <div class="swap-inline">
+                                                <button id="swapAirports" class="swap-button" aria-label="Swap origin and destination" title="Swap origin and destination" type="button">
+                                                    <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true"><path d="M21 7l-4-4v3H3v2h14v3zM3 17l4 4v-3h14v-2H7v-3z"/></svg>
+                                                </button>
+                                            </div>
+                                            <div class="airport-input" style="min-width:0">
+                                                <label for="airportToInput" style="display:block;font-weight:600;margin-bottom:6px">Where to?</label>
+                                                <input id="airportToInput" type="text" name="airportTo" placeholder="Where to?" aria-label="Where to" autocomplete="off" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef6;background:#fff" />
+                                            </div>
+                                        </div>
+                                        <div style="min-width:160px">
+                                            <label for="tripTypeSelect" style="display:block;font-weight:600;margin-bottom:6px">Trip type</label>
+                                            <select id="tripTypeSelect" name="tripType" aria-label="Trip type" style="padding:10px;border-radius:8px;border:1px solid #e6eef6;background:#fff;width:100%;">
+                                                <option value="return" selected>Return</option>
+                                                <option value="oneway">One way</option>
+                                                <option value="multi">Multi-city</option>
+                                            </select>
+                                        </div>
+                                        <div style="min-width:220px;position:relative">
+                                            <label style="display:block;font-weight:600;margin-bottom:6px">Passengers</label>
+                                            <button id="passengerDropdownToggle" class="btn" type="button" aria-haspopup="true" aria-expanded="false" style="width:100%;text-align:left;padding:10px;border-radius:8px;border:1px solid #e6eef6;background:#fff;display:flex;justify-content:space-between;align-items:center">
+                                                <span>Passengers</span>
+                                                <span id="passengerSummary">1</span>
+                                            </button>
+                                            <div id="passengerDropdown" hidden aria-hidden="true" style="position:absolute;z-index:20;top:100%;left:0;background:#fff;border:1px solid #e6eef6;padding:10px;border-radius:8px;box-shadow:0 8px 24px rgba(8,20,40,0.08);min-width:220px;margin-top:8px">
+                                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                                                    <div>
+                                                        <div style="font-weight:600">Adults</div>
+                                                        <div style="font-size:12px;color:#666">(>15 years)</div>
+                                                    </div>
+                                                    <input id="passengerAdults" type="number" min="1" value="1" aria-label="Adults" style="padding:6px;border-radius:6px;border:1px solid #e6eef6;width:72px;text-align:center" />
+                                                </div>
+                                                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                                                    <div>
+                                                        <div style="font-weight:600">Children</div>
+                                                        <div style="font-size:12px;color:#666">(2–15 years)</div>
+                                                    </div>
+                                                    <input id="passengerChildren" type="number" min="0" value="0" aria-label="Children" style="padding:6px;border-radius:6px;border:1px solid #e6eef6;width:72px;text-align:center" />
+                                                </div>
+                                                <div style="display:flex;justify-content:space-between;align-items:center">
+                                                    <div>
+                                                        <div style="font-weight:600">Infant</div>
+                                                        <div style="font-size:12px;color:#666">(&lt;2 years)</div>
+                                                    </div>
+                                                    <input id="passengerInfants" type="number" min="0" value="0" aria-label="Infants" style="padding:6px;border-radius:6px;border:1px solid #e6eef6;width:72px;text-align:center" />
+                                                </div>
+                                                <div style="text-align:right;margin-top:10px">
+                                                    <button id="passengerDone" class="btn small" type="button">Done</button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style="min-width:140px">
+                                            <label for="currencySelect" style="display:block;font-weight:600;margin-bottom:6px">Currency</label>
+                                            <select id="currencySelect" aria-label="Currency" style="padding:10px;border-radius:8px;border:1px solid #e6eef6;background:#fff;width:100%;">
+                                                <option value="USD" selected>USD</option>
+                                                <option value="KES">KES</option>
+                                                <option value="EUR">EUR</option>
+                                                <option value="GBP">GBP</option>
+                                            </select>
+                                        </div>
+                                    <!-- Removed inline 'Search' button; keep only the final 'Search flights' action below -->
+                                </div>
+                                <!-- When Search is clicked we reveal date selection then the final Search Flights action -->
+                                <div id="dateSelection" hidden aria-hidden="true" style="margin-top:12px;gap:8px;align-items:end;display:flex;flex-wrap:wrap">
+                                    <div style="min-width:160px">
+                                        <label for="departureDate" style="display:block;font-weight:600;margin-bottom:6px">Departure</label>
+                                        <input id="departureDate" type="date" name="departureDate" placeholder="Departure date" style="padding:8px;border-radius:6px;border:1px solid #e6eef6;background:#fff;width:100%" />
+                                    </div>
+                                    <div style="min-width:160px">
+                                        <label for="returnDate" style="display:block;font-weight:600;margin-bottom:6px">Return</label>
+                                        <input id="returnDate" type="date" name="returnDate" placeholder="Return date" style="padding:8px;border-radius:6px;border:1px solid #e6eef6;background:#fff;width:100%" />
+                                    </div>
+                                    <div style="min-width:160px;display:flex;align-items:flex-end;gap:8px">
+                                        <button id="searchFlightsBtn" class="btn primary" type="button">Search flights</button>
+                                    </div>
+                                </div>
+
+                                <!-- Hidden IATA code fields populated from autocomplete selections -->
+                                <input type="hidden" id="airportFromCode" name="airportFromCode" />
+                                <input type="hidden" id="airportToCode" name="airportToCode" />
+                                <!-- Fare recommendations appear here after performing a search -->
+                                <div id="fareRecommendations" class="fare-recommendations" aria-live="polite" style="margin-top:12px"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Utility links (moved from header): Check-in / My Bookings / Flights -->
+                <div class="utility-links">
+                    <button class="btn" type="button" aria-controls="checkinPanel" data-panel-show="checkin">Online Check-in</button>
+                    <a class="btn" href="lookup.html">My Bookings</a>
+                    <a class="btn" href="flight-results.html">Flights</a>
+                </div>
+
+                
+
+                <!-- Page-level tabs removed (header contains primary tabs) -->
+
+                <!-- Quick Actions -->
+                <section class="quick-actions">
+                    <div class="action-box" data-panel-show="flights">
+                        <div class="action-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                            </svg>
+                        </div>
+                        <h4>Flight Status</h4>
+                        <p>Check real-time flight information</p>
+                    </div>
+                    <div class="action-box" data-panel-show="checkin">
+                        <div class="action-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                            </svg>
+                        </div>
+                        <h4>Online Check-in</h4>
+                        <p>Fast and convenient check-in process</p>
+                    </div>
+                    <div class="action-box" data-panel-show="admin">
+                        <div class="action-icon">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                        </div>
+                        <h4>Admin Portal</h4>
+                        <p>Manage flights and passengers</p>
+                    </div>
+                </section>
+
+                <!-- Header tab panels removed from the homepage and migrated to dedicated pages
+                     (explore.html, plan.html, book.html, experience.html, loyalty.html, help.html)
+                     This keeps the homepage lean and uses the header links to navigate users to full pages.
+                -->
+
+                <script src="assets/js/home-widgets.js"></script>
+
+                <!-- Features Section -->
+                <section class="features-section">
+                    <h3>Why Choose SmartFly?</h3>
+                    <div class="features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                                </svg>
+                            </div>
+                            <h4>Fast Check-in</h4>
+                            <p>Complete your check-in in minutes with our intelligent system. Save time and avoid long queues.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                </svg>
+                            </div>
+                            <h4>Real-time Updates</h4>
+                            <p>Get instant notifications about your flight status, gate changes, and boarding times.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                                </svg>
+                            </div>
+                            <h4>Secure System</h4>
+                            <p>Your data is protected with state-of-the-art security measures and encryption.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">
+                                <svg viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-14h2v7h-2zm0 8h2v2h-2z"/>
+                                </svg>
+                            </div>
+                            <h4>24/7 Support</h4>
+                            <p>Our dedicated support team is available around the clock to assist you.</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Latest Offers -->
+                <section class="offers-section">
+                    <h3>Special Offers</h3>
+                    <div class="offers-grid">
+                        <div class="offer-card">
+                            <span class="offer-tag">Limited Time</span>
+                            <h4>Early Bird Special</h4>
+                            <p>Book 60 days in advance and save up to 30% on your flight.</p>
+                            <button class="btn primary">Learn More</button>
+                        </div>
+                        <div class="offer-card">
+                            <span class="offer-tag">Family</span>
+                            <h4>Family Package</h4>
+                            <p>Travel with family? Kids under 12 fly at 50% off!</p>
+                            <button class="btn primary">Learn More</button>
+                        </div>
+                        <div class="offer-card">
+                            <span class="offer-tag">Business</span>
+                            <h4>Business Class Upgrade</h4>
+                            <p>Upgrade to business class and get lounge access free.</p>
+                            <button class="btn primary">Learn More</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Flight Lookup Panel -->
+            <div id="flightsPanel" class="action-panel">
+                <h2>Flight Information</h2>
+                <form id="searchForm" class="form-group">
+                    <div class="input-group">
+                        <label for="searchFlight">Flight Number</label>
+                        <input type="text" id="searchFlight" name="searchFlight" required placeholder="e.g. SF123" autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn primary">Search</button>
+                </form>
+                <div id="flightsControls" style="margin-top:12px;display:flex;gap:8px;align-items:center">
+                    <div role="tablist" aria-label="Flight filters" style="display:flex;gap:6px">
+                        <button role="tab" aria-selected="false" tabindex="-1" class="btn small" id="filterPrice" data-filter="price" type="button">Price</button>
+                        <button role="tab" aria-selected="false" tabindex="-1" class="btn small" id="filterStops" data-filter="stops" type="button">Non-stop</button>
+                        <button role="tab" aria-selected="false" tabindex="-1" class="btn small" id="filterAirlines" data-filter="airlines" type="button">Top Airline</button>
+                    </div>
+                    <div id="activeFilterLabel" style="font-size:0.95rem;color:#444;margin-left:8px">Showing: <strong id="activeFilterName">All</strong></div>
+                </div>
+                <div id="searchResults" style="margin-top:12px"></div>
+            </div>
+
+            <!-- Check-in Panel -->
+            <div id="checkinPanel" class="action-panel">
+                <h2>Flight Check-in</h2>
+                <form id="checkinForm" class="form-group">
+                    <div class="input-group">
+                        <label for="name">Full Name</label>
+                        <input type="text" id="name" name="name" required autocomplete="name">
+                    </div>
+                    <div class="input-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required autocomplete="email">
+                    </div>
+                    <div class="input-group">
+                        <label for="passport">Passport Number</label>
+                        <input type="text" id="passport" name="passport" required autocomplete="off">
+                    </div>
+                    <div class="input-group">
+                        <label for="flight">Flight Number</label>
+                        <input type="text" id="flight" name="flight" required autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn primary">Start Check-in</button>
+                </form>
+                <div id="checkinResult"></div>
+            </div>
+
+                        <!-- Passenger Panel (merged inline) -->
+                        <div id="passengerPanel" class="action-panel" hidden aria-hidden="true">
+                                <h2>Passenger check-in</h2>
+                                <div id="passengerWrapper">
+                                        <div id="wizard">
+                                            <ol id="steps">
+                                                <li class="step active" data-step="start">Start</li>
+                                                <li class="step" data-step="auth">Login / Register</li>
+                                                <li class="step" data-step="lookup">Flight Lookup</li>
+                                                <li class="step" data-step="select">Select Flight</li>
+                                                <li class="step" data-step="confirm">Confirm Details</li>
+                                                <li class="step" data-step="seat">Seat Selection</li>
+                                                <li class="step" data-step="baggage">Baggage & Pay</li>
+                                                <li class="step" data-step="boarding">Generate Boarding Pass</li>
+                                                <li class="step" data-step="done">Done</li>
+                                            </ol>
+
+                                            <section id="stepContent">
+                                                <div id="start" class="pane">
+                                                    <p>Welcome — proceed to Login or Register to begin.</p>
+                                                    <button id="toAuth" class="btn">Login / Register</button>
+                                                </div>
+
+                                                <div id="auth" class="pane" hidden aria-hidden="true">
+                                                    <h3>Login or Register</h3>
+                                                    <form id="authForm" class="form-group">
+                                                        <label>Full name <input id="authName" name="authName" placeholder="Full name" autocomplete="name"></label>
+                                                        <label>Passport/ID <input id="authPassport" name="authPassport" placeholder="Passport or ID" autocomplete="off"></label>
+                                                        <label>Email <input id="authEmail" name="authEmail" type="email" placeholder="email (optional)" autocomplete="email"></label>
+                                                        <label>Phone <input id="authPhone" name="authPhone" placeholder="phone (optional)" autocomplete="tel"></label>
+                                                        <button type="submit" class="btn primary">Continue</button>
+                                                    </form>
+                                                    <div id="authMsg" class="message"></div>
+                                                </div>
+
+                                                <div id="lookup" class="pane" hidden aria-hidden="true">
+                                                    <h3>Find your booking (optional)</h3>
+                                                    <form id="lookupForm" class="form-group">
+                                                        <label>Booking ref or ticket#<input id="lookupRef" name="lookupRef" autocomplete="off"></label>
+                                                        <label>Passport/ID<input id="lookupPassport" name="lookupPassport" autocomplete="off"></label>
+                                                        <label>Name<input id="lookupName" name="lookupName" autocomplete="name"></label>
+                                                        <button id="doLookup" class="btn">Search</button>
+                                                    </form>
+                                                    <div id="lookupResults"></div>
+                                                </div>
+
+                                                <div id="select" class="pane" hidden aria-hidden="true">
+                                                    <h3>Select flight</h3>
+                                                    <div id="flightList">Loading flights...</div>
+                                                </div>
+
+                                                <div id="confirm" class="pane" hidden aria-hidden="true">
+                                                    <h3>Confirm passenger details</h3>
+                                                    <div id="confirmDetails"></div>
+                                                    <div style="display:flex;gap:8px;margin-top:8px">
+                                                        <button id="editDetails" class="btn">Edit</button>
+                                                        <button id="toSeat" class="btn primary">Next: Seat Selection</button>
+                                                    </div>
+                                                </div>
+
+                                                <div id="seat" class="pane" hidden aria-hidden="true">
+                                                    <h3>Seat selection</h3>
+                                                    <label>Seat preference <input id="seatPref" name="seatPref" placeholder="e.g. 12" autocomplete="off"></label>
+                                                    <div id="seatMsg" class="message"></div>
+                                                    <div id="seatMap" style="margin-top:12px"></div>
+                                                    <button id="assignSeatBtn" class="btn">Assign seat</button>
+                                                </div>
+
+                                                <div id="baggage" class="pane" hidden aria-hidden="true">
+                                                    <h3>Baggage & Payment</h3>
+                                                    <label>Number of bags <input id="bagCount" type="number" name="bagCount" min="0" value="0" autocomplete="off"></label>
+                                                    <p>Fee: <span id="bagFee">$0</span></p>
+                                                    <button id="payBags" class="btn primary">Pay baggage fees</button>
+                                                </div>
+
+                                                <div id="boarding" class="pane" hidden aria-hidden="true">
+                                                    <h3>Boarding pass</h3>
+                                                    <p>Generate and download your boarding pass below.</p>
+                                                    <button id="generateBP" class="btn primary">Generate Boarding Pass</button>
+                                                    <div id="bpResult"></div>
+                                                </div>
+
+                                                <div id="done" class="pane" hidden aria-hidden="true">
+                                                    <h3>Ready to board</h3>
+                                                    <p id="doneMsg">You're all set. Notifications will be sent for updates.</p>
+                                                    <p><a href="#" data-panel-show="home">Home</a> | <a id="p_logout" href="#">Logout</a></p>
+                                                </div>
+                                            </section>
+                                        </div>
+                                </div>
+                        </div>
+
+            <!-- Admin Panel -->
+            <div id="adminPanel" class="action-panel">
+                <!-- Admin Login Form -->
+                <div id="adminLogin" class="admin-login-container">
+                    <div class="admin-login-box">
+                        <h2>Admin Access Required</h2>
+                        <p>Please login to access the admin dashboard</p>
+                        <form id="adminForm" class="form-group">
+                            <div class="input-group">
+                                <label for="adminUsername">Username</label>
+                                <input type="text" id="adminUsername" name="adminUsername" required autocomplete="username">
+                            </div>
+                            <div class="input-group">
+                                <label for="adminPassword">Password</label>
+                                <input type="password" id="adminPassword" name="adminPassword" required autocomplete="current-password">
+                            </div>
+                            <button type="submit" class="btn primary">Login</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Admin Dashboard (hidden until login) -->
+                        <div id="adminTools" aria-hidden="true" hidden>
+                    <div class="admin-header">
+                        <h2>Admin Dashboard</h2>
+                        <div class="admin-actions">
+                            <span id="adminUsername-display"></span>
+                            <button onclick="adminLogout()" class="btn danger">Logout</button>
+                        </div>
+                    </div>
+
+                    <div class="admin-nav">
+                        <button onclick="showAdminSection('flights')" class="btn">
+                            <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+                            Flights
+                        </button>
+                        <button onclick="showAdminSection('passengers')" class="btn">
+                            <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+                            Passengers
+                        </button>
+                        <button onclick="showAdminSection('bookings')" class="btn">
+                            <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                            Bookings
+                        </button>
+                    </div>
+
+                    <!-- Flights Management -->
+                        <div id="adminFlights" class="admin-section">
+                        <div class="header-actions">
+                            <h3>Manage Flights</h3>
+                        </div>
+                        <div class="filter-group">
+                            <input type="text" id="flightSearch" name="flightSearch" placeholder="Search flights..." autocomplete="off" aria-label="Search flights">
+                            <select id="flightStatusFilter" name="flightStatusFilter" aria-label="Filter flights by status">
+                                <option value="all">All Statuses</option>
+                                <option value="active">Active</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button onclick="refreshFlights()" class="btn small">Refresh</button>
+                        </div>
+                        <div id="flightsList" class="data-grid"></div>
+                    </div>
+
+                    <!-- Passengers Management -->
+                        <div id="adminPassengers" class="admin-section" hidden aria-hidden="true">
+                        <div class="header-actions">
+                            <h3>Manage Passengers</h3>
+                            <button onclick="exportPassengerList()" class="btn secondary small">
+                                <svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+                                Export List
+                            </button>
+                        </div>
+                        <div class="filter-group">
+                            <input type="text" id="passengerSearch" placeholder="Search passengers..." aria-label="Search passengers">
+                            <input type="text" id="filterFlight" placeholder="Filter by flight" aria-label="Filter by flight">
+                            <button onclick="refreshPassengerList()" class="btn small">Refresh</button>
+                        </div>
+                        <div id="passengersList" class="data-grid"></div>
+                    </div>
+
+                    <!-- Bookings Management -->
+                        <div id="adminBookings" class="admin-section" hidden aria-hidden="true">
+                        <div class="header-actions">
+                            <h3>Manage Bookings</h3>
+                            <button onclick="showAddBookingForm()" class="btn primary small">
+                                <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+                                Add Booking
+                            </button>
+                        </div>
+                        <div class="filter-group">
+                            <input type="text" id="bookingSearch" placeholder="Search bookings..." aria-label="Search bookings">
+                            <select id="bookingStatusFilter" name="bookingStatusFilter" aria-label="Filter bookings by status">
+                                <option value="all">All Statuses</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="pending">Pending</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                            <button onclick="refreshBookings()" class="btn small">Refresh</button>
+                        </div>
+                        <div id="bookingsList" class="data-grid"></div>
+                    </div>
+                </div>
+            </div>
+                
+
+        
+        <script src="assets/js/panels.js"></script>
+
+        <script>
+            // Attach centralized click handlers for elements with `data-panel-show`
+            document.addEventListener('DOMContentLoaded', function(){
+                try{
+                    document.querySelectorAll('[data-panel-show]').forEach(function(el){
+                        el.addEventListener('click', function(ev){
+                            try{
+                                // prevent anchors from jumping
+                                if (el.tagName && el.tagName.toLowerCase() === 'a') ev.preventDefault();
+                                var target = el.getAttribute('data-panel-show');
+                                if (!target) return;
+                                try{ showPanel(target); }catch(e){ console.error('[panel-bind] showPanel failed', e); }
+                            }catch(e){ console.error('[panel-bind] error', e); }
+                        });
+                    });
+                }catch(e){ console.error('[panel-bind] init failed', e); }
+            });
+        </script>
+
+        <!-- Post-load cleanup: retry removal a few times to handle async script loading -->
+        <script>
+            (function(){
+                try{
+                    var attempts = 0;
+                    var maxAttempts = 8;
+                    var delayMs = 120;
+                    function tryRemove(){
+                        try{
+                            var ph = document.querySelector('style[data-panel-hydrate]');
+                            if (!ph) { console.info('[pre-hydrate] no injected style found'); return; }
+                            if (ph.parentNode) { ph.parentNode.removeChild(ph); console.info('[pre-hydrate] removed by post-load cleanup'); return; }
+                        }catch(err){ /* fall through to retry */ }
+                        attempts++;
+                        if (attempts < maxAttempts) {
+                            setTimeout(tryRemove, delayMs);
+                        } else {
+                            console.warn('[pre-hydrate] removal attempts exhausted after', attempts, 'tries');
+                        }
+                    }
+                    tryRemove();
+                }catch(e){ /* noop */ }
+            })();
+        </script>
+
+    <script>
+        // Initialize modular widgets if present.
+        document.addEventListener('DOMContentLoaded', ()=>{
+            try { if (window.SMFPassengerWizard && typeof window.SMFPassengerWizard.showStep === 'function') window.SMFPassengerWizard.showStep('start'); } catch(e){}
+            try { if (typeof window.loadFlights === 'function') window.loadFlights(); } catch(e){}
+        });
+    </script>
+
+        <!-- Safety fallback: ensure a visible panel after other scripts run
+             If no panels are visible, show a one-time debug overlay (per session)
+             that allows manual restore or printing of stored panel traces. -->
+        <script>
+            (function(){
+                function isPanelVisible(el){
+                    if(!el) return false;
+                    if (el.classList && el.classList.contains('active')) return true;
+                    try { const cs = window.getComputedStyle(el); return cs.display !== 'none' && cs.visibility !== 'hidden' && parseFloat(cs.opacity || '1') > 0; } catch(e){ return false; }
+                }
+
+                function showDebugOverlay(){
+                    try{
+                        // Persist dismissal across reloads with TTL (default 7 days)
+                        var OVERLAY_PERSIST_MS = window.SMF_DEBUG_OVERLAY_PERSIST_MS || (7 * 24 * 60 * 60 * 1000); // 7 days
+                        var OVERLAY_AUTO_RESTORE_MS = window.SMF_DEBUG_OVERLAY_AUTO_RESTORE_MS || 10000; // 10s fallback
+
+                        var dismissedUntil = parseInt(localStorage.getItem('smartfly.debugOverlayDismissedUntil') || '0', 10) || 0;
+                        if (Date.now() < dismissedUntil) return false; // still within TTL, do not show
+
+                        // create overlay DOM
+                        var overlay = document.createElement('div'); overlay.id = 'debugPanelOverlay'; overlay.className = 'debug-overlay'; overlay.setAttribute('role','dialog'); overlay.setAttribute('aria-modal','true');
+                        overlay.innerHTML = '\n                            <div class="debug-overlay__inner">\n                                <h3>No visible panels</h3>\n                                <p>All panels appear hidden. Use these controls to restore the UI or inspect stored panel traces.</p>\n                                <div class="debug-overlay__actions">\n                                    <button id="debugShowHome" class="btn primary">Show Home Panel</button>\n                                    <button id="debugPrintTraces" class="btn">Print Traces</button>\n                                    <button id="debugDismissOverlay" class="btn secondary">Dismiss (hide for 7 days)</button>\n                                </div>\n                            </div>\n                        ';
+                        document.body.appendChild(overlay);
+
+                        // helper to persist dismissal for TTL
+                        function persistDismissal(){ try{ var until = Date.now() + (OVERLAY_PERSIST_MS || 0); localStorage.setItem('smartfly.debugOverlayDismissedUntil', String(until)); } catch(e){} }
+
+                        // hook up buttons
+                        var bHome = document.getElementById('debugShowHome');
+                        var bPrint = document.getElementById('debugPrintTraces');
+                        var bDismiss = document.getElementById('debugDismissOverlay');
+
+                        if (bHome) bHome.addEventListener('click', function(){ try{ if (typeof showPanel === 'function') showPanel('home'); } catch(e){} finally { overlay.remove(); persistDismissal(); } });
+                        if (bPrint) bPrint.addEventListener('click', function(){ try{ if (typeof printPanelTraces === 'function') printPanelTraces(); else console.log('No printPanelTraces available'); } catch(e){ console.error(e); } });
+                        if (bDismiss) bDismiss.addEventListener('click', function(){ try{ overlay.remove(); persistDismissal(); } catch(e){} });
+
+                        // Auto-dismiss / fallback: force the home panel after configured ms if user doesn't act
+                        var fallback = setTimeout(function(){ try{ if (typeof showPanel === 'function') showPanel('home'); } catch(e){} try{ overlay.remove(); persistDismissal(); } catch(e){} }, OVERLAY_AUTO_RESTORE_MS || 10000);
+
+                        return true;
+                    }catch(err){ console.error('[debug-overlay] failed to create', err); return false; }
+                }
+
+                // Run after load to allow other handlers and timeouts to complete
+                window.addEventListener('load', ()=>{
+                    setTimeout(()=>{
+                        const panels = Array.from(document.querySelectorAll('.action-panel'));
+                        const visible = panels.filter(isPanelVisible);
+                        if (visible.length === 0) {
+                            console.warn('[safety-fallback] No visible panels detected. savedTab=', localStorage.getItem('smartfly.activeTab'));
+                            // If overlay hasn't been shown this session, show it and give the user a chance.
+                            var shown = showDebugOverlay();
+                            if (!shown) {
+                                // overlay creation failed or was already shown — fallback to forcing home
+                                try { localStorage.removeItem('smartfly.activeTab'); } catch(e) {}
+                                if (typeof showPanel === 'function') { try { showPanel('home'); return; } catch(e){ console.error('[safety-fallback] showPanel error', e); } }
+                                const hp = document.getElementById('homePanel'); if (hp) { try { hp.classList.add('active'); hp.setAttribute('aria-hidden','false'); } catch(e){} }
+                            }
+                        } else {
+                            console.debug('[safety-fallback] Visible panel(s):', visible.map(p=>p.id));
+                        }
+                    }, 500);
+                });
+            })();
+        </script>
+
+        <!-- Modular scripts: load admin, booking widget and passenger wizard -->
+        <script src="assets/js/admin-functions.js"></script>
+        <script src="assets/js/booking-widget.js"></script>
+        <script src="assets/js/passenger-wizard.js"></script>
+
+        <script>
+            // Wire booking-widget search to the Flights panel.
+            // When the user completes the quick search we will open the flights panel
+            // and fetch matching flights from the backend `/api/flights` endpoint.
+            (function(){
+                function renderFlights(list, container){
+                    if(!container) return;
+                    container.innerHTML = '';
+                    if(!list || !list.length){ container.innerHTML = '<p>No flights found.</p>'; return; }
+                    var ul = document.createElement('div'); ul.className = 'flights-list';
+                    list.forEach(function(f){
+                        var card = document.createElement('div'); card.className = 'flight-row card';
+                        card.style.display = 'flex'; card.style.justifyContent='space-between'; card.style.alignItems='center'; card.style.padding='12px'; card.style.marginBottom='8px';
+                        var left = document.createElement('div'); left.style.flex='1';
+                        left.innerHTML = '<div style="font-weight:600">'+(f.flightNumber || '—')+' &nbsp; '+(f.origin||'')+' → '+(f.destination||'')+'</div><div style="font-size:0.9rem;color:#666">'+(f.departure||'')+' — '+(f.arrival||'')+'</div>';
+                        var mid = document.createElement('div'); mid.style.minWidth='160px'; mid.innerHTML = '<div style="font-weight:700">'+(f.price? (f.price.currency+' '+f.price.amount): 'Price N/A')+'</div><div style="font-size:0.85rem;color:#666">'+(f.fareClass || '')+'</div>';
+                        var right = document.createElement('div');
+                        var btn = document.createElement('button'); btn.className='btn primary'; btn.textContent = 'Book';
+                        btn.addEventListener('click', function(){
+                            // Prefill booking page with this route
+                            location.href = 'book.html?from='+encodeURIComponent(f.origin)+'&to='+encodeURIComponent(f.destination)+'&flight='+encodeURIComponent(f.flightNumber||'');
+                        });
+                        right.appendChild(btn);
+                        card.appendChild(left); card.appendChild(mid); card.appendChild(right);
+                        // show offer badges
+                        if(f.offer){
+                            var badge = document.createElement('div'); badge.textContent = f.offer.label || 'Offer'; badge.style.background='#ffefc2'; badge.style.padding='4px 8px'; badge.style.borderRadius='6px'; badge.style.marginLeft='8px'; badge.style.fontSize='0.8rem'; card.appendChild(badge);
+                        }
+                        ul.appendChild(card);
+                    });
+                    container.appendChild(ul);
+                }
+
+                function fetchFlightsAndShow(params){
+                    var q = new URLSearchParams(params||{}).toString();
+                    var url = '/api/flights' + (q?('?'+q):'');
+                    var flightsContainer = document.getElementById('flightsList');
+                    if(!flightsContainer){ console.warn('No flightsList container available'); return; }
+                    flightsContainer.innerHTML = '<p>Loading flights…</p>';
+                    fetch(url).then(function(r){ return r.json(); }).then(function(data){
+                        // backend may return {flights: [...] } or an array; normalise
+                        var list = Array.isArray(data) ? data : (data.flights || data.results || []);
+                        // Map in prices/offers if present; if not, derive fake price for display
+                        list = list.map(function(f){
+                            if(!f.price){ f.price = { currency: 'USD', amount: ((Math.random()*300)+50).toFixed(2) }; }
+                            // Attach demo offers from flags if present
+                            if(f.special && !f.offer){ f.offer = { label: f.special }; }
+                            return f;
+                        });
+                        renderFlights(list, flightsContainer);
+                        // switch panel visibility through the centralized API
+                        try{ showPanel('flights'); }catch(e){ console.error('[booking-widget] showPanel failed', e); }
+                    }).catch(function(err){ console.error('Failed to load flights', err); flightsContainer.innerHTML = '<p class="error">Failed to load flights.</p>'; });
+                }
+
+                document.addEventListener('DOMContentLoaded', function(){
+                    var searchBtn = document.getElementById('searchFlightsBtn');
+                    if(!searchBtn) return;
+                    searchBtn.addEventListener('click', function(){
+                        try{
+                            var from = (document.getElementById('airportFromCode') || {value:''}).value || (document.getElementById('airportFromInput') || {value:''}).value;
+                            var to = (document.getElementById('airportToCode') || {value:''}).value || (document.getElementById('airportToInput') || {value:''}).value;
+                            var dep = (document.getElementById('departureDate') || {value:''}).value;
+                            var ret = (document.getElementById('returnDate') || {value:''}).value;
+                            var params = {};
+                            if(from) params.origin = from;
+                            if(to) params.destination = to;
+                            if(dep) params.departure = dep;
+                            if(ret) params.return = ret;
+                            fetchFlightsAndShow(params);
+                        }catch(e){ console.error(e); }
+                    });
+                });
+            })();
+        </script>
+
+        <script>
+            // Swap handler: swap origin/destination values, animate, and focus destination
+            document.addEventListener('DOMContentLoaded', ()=>{
+                try {
+                    const swapBtn = document.getElementById('swapAirports');
+                    const from = document.getElementById('airportFromInput');
+                    const to = document.getElementById('airportToInput');
+                    if (!swapBtn || !from || !to) return;
+
+                    swapBtn.addEventListener('click', (e)=>{
+                        try {
+                            // rotate button briefly
+                            swapBtn.classList.add('is-rotating');
+                            setTimeout(()=> swapBtn.classList.remove('is-rotating'), 380);
+
+                            // swap values
+                            const vFrom = from.value;
+                            const vTo = to.value;
+                            from.value = vTo;
+                            to.value = vFrom;
+
+                            // flash inputs for clarity
+                            [from, to].forEach(i=>{ i.classList.add('swap-flash'); setTimeout(()=>i.classList.remove('swap-flash'), 520); });
+
+                            // focus destination input after swap
+                            setTimeout(()=>{ try{ to.focus(); } catch(e){} }, 180);
+                        } catch (err) { console.error('[swapAirports] error', err); }
+                    });
+                } catch(e){ console.error('[swapAirports] init failed', e); }
+            });
+        </script>
+
+        <script>
+            (function(){
+                function $id(id){ return document.getElementById(id); }
+                document.addEventListener('DOMContentLoaded', function(){
+                    var toggle = $id('passengerDropdownToggle');
+                    var dd = $id('passengerDropdown');
+                    var done = $id('passengerDone');
+                    var summary = $id('passengerSummary');
+                    var adults = $id('passengerAdults');
+                    var children = $id('passengerChildren');
+                    var infants = $id('passengerInfants');
+                    if(!toggle || !dd) return;
+                    function updateSummary(){
+                        var a = parseInt((adults && adults.value) || 0, 10) || 0;
+                        var c = parseInt((children && children.value) || 0, 10) || 0;
+                        var i = parseInt((infants && infants.value) || 0, 10) || 0;
+                        if(a < 1) a = 1;
+                        var total = a + c + i;
+                        if(summary) summary.textContent = total;
+                        try{
+                            localStorage.setItem('smartfly.passengers.adults', String(a));
+                            localStorage.setItem('smartfly.passengers.children', String(c));
+                            localStorage.setItem('smartfly.passengers.infants', String(i));
+                        }catch(e){}
+                    }
+                    toggle.addEventListener('click', function(e){
+                        var expanded = toggle.getAttribute('aria-expanded') === 'true';
+                        toggle.setAttribute('aria-expanded', String(!expanded));
+                        if(dd.hidden){ dd.hidden = false; dd.removeAttribute('aria-hidden'); } else { dd.hidden = true; dd.setAttribute('aria-hidden','true'); }
+                    });
+                    [adults, children, infants].forEach(function(el){ if(!el) return; el.addEventListener('input', updateSummary); el.addEventListener('change', updateSummary); });
+                    if(done) done.addEventListener('click', function(){ if(dd){ dd.hidden = true; dd.setAttribute('aria-hidden','true'); } toggle.setAttribute('aria-expanded','false'); });
+                    document.addEventListener('click', function(ev){ if(dd.hidden) return; if(toggle.contains(ev.target) || dd.contains(ev.target)) return; dd.hidden = true; dd.setAttribute('aria-hidden','true'); toggle.setAttribute('aria-expanded','false'); }, true);
+                    try{
+                        var la = parseInt(localStorage.getItem('smartfly.passengers.adults'),10);
+                        var lc = parseInt(localStorage.getItem('smartfly.passengers.children'),10);
+                        var li = parseInt(localStorage.getItem('smartfly.passengers.infants'),10);
+                        if(!isNaN(la) && adults) adults.value = la;
+                        if(!isNaN(lc) && children) children.value = lc;
+                        if(!isNaN(li) && infants) infants.value = li;
+                    }catch(e){}
+                    updateSummary();
+                });
+            })();
+        </script>
+
+        <!-- Debug: Observe mutations to panels so we can trace who hides the hero -->
+        <script>
+            (function(){
+                try {
+                    const panels = new Set();
+                    document.querySelectorAll('.action-panel').forEach(p=>panels.add(p));
+                    const obs = new MutationObserver((mutations)=>{
+                        mutations.forEach(m=>{
+                            if (m.type === 'attributes' && m.target && m.target.classList && m.target.classList.contains('action-panel')){
+                                console.debug('[mut-observer] attr change on', m.target.id, 'class=', m.target.className, 'style.display=', m.target.style.display);
+                            }
+                            if (m.type === 'childList'){
+                                m.removedNodes && m.removedNodes.forEach(n=>{ if (n.nodeType===1 && n.classList && n.classList.contains('action-panel')) console.warn('[mut-observer] panel removed', n.id); });
+                                m.addedNodes && m.addedNodes.forEach(n=>{ if (n.nodeType===1 && n.classList && n.classList.contains('action-panel')) console.debug('[mut-observer] panel added', n.id); });
+                            }
+                        });
+                    });
+                    obs.observe(document.body, { attributes: true, subtree: true, attributeFilter: ['class','style'], childList: true });
+                    console.debug('[mut-observer] attached for .action-panel');
+                } catch (e) { console.error('[mut-observer] failed', e); }
+            })();
+        </script>
+
+        <!-- Homepage: open booking widget when `localStorage.openBooking` is set -->
+        <script>
+            document.addEventListener('DOMContentLoaded', ()=>{
+                try{
+                    if (localStorage.getItem('openBooking')){
+                        try{ showPanel('book'); document.getElementById('airportFromInput') && document.getElementById('airportFromInput').focus(); }catch(e){}
+                        localStorage.removeItem('openBooking');
+                    }
+                }catch(e){ /* noop */ }
+            });
+        </script>
+
+    </body>
+    </html>

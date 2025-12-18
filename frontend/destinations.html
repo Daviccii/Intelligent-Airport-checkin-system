@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script>
+    (function(){
+      const params = new URLSearchParams(location.search || '');
+      const interest = (params.get('interest')||'').toLowerCase();
+      const deal = (params.get('deal')||'').toLowerCase();
+      const titleEl = document.getElementById('ds-title');
+      const descEl = document.getElementById('ds-desc');
+      const badge = document.getElementById('ds-badge');
+      const grid = document.getElementById('grid');
+      const gtitle = document.getElementById('grid-title');
+      const gsub = document.getElementById('grid-sub');
+
+      function cardHTML(item){
+        return `<a class="deal-card" href="${item.to}">\
+                  <img alt="${item.name}" src="${item.img}">\
+                  <div class="deal-info"><span class="badge">Explore</span><h4>${item.name}</h4><p>${item.blurb}</p></div>\
+                </a>`;
+      }
+
+      async function loadCatalog(){
+        try{
+          const res = await fetch('assets/data/destinations.json', { cache: 'no-store' });
+          if (!res.ok) throw new Error('Failed to load destinations');
+          return await res.json();
+        }catch(e){ console.warn(e); return { interests:{}, deals:{} }; }
+      }
+
+      (async function init(){
+        const catalog = await loadCatalog();
+        let items = [];
+        if (interest && catalog.interests && catalog.interests[interest]) {
+          badge.textContent = 'Interest';
+          titleEl.textContent = interest.charAt(0).toUpperCase()+interest.slice(1);
+          descEl.textContent = 'Top picks for ' + interest + ' lovers.';
+          gtitle.textContent = 'Popular ' + interest + ' spots';
+          gsub.textContent = 'Tap a card to see flights and availability.';
+          items = catalog.interests[interest];
+        } else if (deal && catalog.deals && catalog.deals[deal]) {
+          badge.textContent = 'Deal';
+          titleEl.textContent = deal.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+          descEl.textContent = 'Limited-time offers and packages.';
+          gtitle.textContent = 'Deal highlights';
+          gsub.textContent = 'Hurry—availability may be limited.';
+          items = catalog.deals[deal];
+        } else {
+          badge.textContent = 'Discover';
+          titleEl.textContent = 'Destinations';
+          descEl.textContent = 'Pick a region or filter from the homepage.';
+          gtitle.textContent = 'Regions';
+          items = [
+            { name:'Europe', img:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60', blurb:'History and modernity', to:'flight-results.html?region=europe' },
+            { name:'Africa', img:'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=60', blurb:'Vast landscapes and culture', to:'flight-results.html?region=africa' },
+            { name:'Asia', img:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60', blurb:'Traditions and tech hubs', to:'flight-results.html?region=asia' },
+            { name:'Americas', img:'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=60', blurb:'Cities and natural wonders', to:'flight-results.html?region=americas' }
+          ];
+        }
+        grid.innerHTML = items.map(cardHTML).join('');
+      })();
+    })();
+  </script>
+                  <img alt="${item.name}" src="${item.img}">\
+                  <div class="deal-info"><span class="badge">Explore</span><h4>${item.name}</h4><p>${item.blurb}</p></div>\
+                </a>`;
+      }
+
+      let items = [];
+      if (interest && catalog.interests[interest]) {
+        badge.textContent = 'Interest';
+        titleEl.textContent = interest.charAt(0).toUpperCase()+interest.slice(1);
+        descEl.textContent = 'Top picks for ' + interest + ' lovers.';
+        gtitle.textContent = 'Popular ' + interest + ' spots';
+        gsub.textContent = 'Tap a card to see flights and availability.';
+        items = catalog.interests[interest];
+      } else if (deal && catalog.deals[deal]) {
+        badge.textContent = 'Deal';
+        titleEl.textContent = deal.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
+        descEl.textContent = 'Limited-time offers and packages.';
+        gtitle.textContent = 'Deal highlights';
+        gsub.textContent = 'Hurry—availability may be limited.';
+        items = catalog.deals[deal];
+      } else {
+        badge.textContent = 'Discover';
+        titleEl.textContent = 'Destinations';
+        descEl.textContent = 'Pick a region or filter from the homepage.';
+        gtitle.textContent = 'Regions';
+        items = [
+          { name:'Europe', img:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60', blurb:'History and modernity', to:'flight-results.html?region=europe' },
+          { name:'Africa', img:'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=60', blurb:'Vast landscapes and culture', to:'flight-results.html?region=africa' },
+          { name:'Asia', img:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60', blurb:'Traditions and tech hubs', to:'flight-results.html?region=asia' },
+          { name:'Americas', img:'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=60', blurb:'Cities and natural wonders', to:'flight-results.html?region=americas' }
+        ];
+      }
+      grid.innerHTML = items.map(cardHTML).join('');
+    })();
+  </script>
+</body>
+</html>

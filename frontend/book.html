@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Book a Flight — SmartFly</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/brand.css">
+</head>
+<body>
+  <header style="padding:18px;display:flex;align-items:center;gap:12px;background:#fff;border-bottom:1px solid #eee">
+    <a href="index.html" style="text-decoration:none;color:inherit;font-weight:700">← Home</a>
+    <h1 style="margin:0;font-size:1.1rem">Book a Flight</h1>
+  </header>
+  <main style="padding:20px;max-width:900px;margin:18px auto">
+    <p>Redirecting back to the homepage and opening the booking widget...</p>
+    <p>If you are not redirected automatically, <a class="btn primary" href="index.html" onclick="localStorage.setItem('openBooking','1')">Click to open the booking widget</a></p>
+    <script>
+      // Immediately request the homepage to open the booking widget.
+      try {
+        localStorage.setItem('openBooking','1');
+      } catch (e) { /* ignore */ }
+      // Use replace so browser history doesn't keep this redirect page
+      window.location.replace('index.html');
+    </script>
+  </main>
+  <footer style="padding:20px;text-align:center;color:#666">SmartFly</footer>
+</body>
+</html>

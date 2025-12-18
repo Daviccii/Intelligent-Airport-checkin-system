@@ -7,12 +7,56 @@
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-  <div class="container" style="padding-top:40px;">
-    <h1>Check-in</h1>
-    <div id="selectedFlightBanner" style="margin-top:8px;padding:10px;border-radius:8px;background:#f8fafc;display:none"></div>
-    <p>Quick check-in page. Use this when scanning or entering passport to find passengers.</p>
+  <div class="container" style="padding-top:40px;max-width:960px;">
+    <h1 style="margin-bottom:4px;">Check-in</h1>
+    <p style="color:#4b5563;margin:0 0 16px;">Fast lane for passengers: confirm identity, fetch booking, and jump to boarding pass.</p>
+    <div id="selectedFlightBanner" style="margin-top:8px;padding:10px;border-radius:10px;background:#f0f5ff;display:none;border:1px solid #dbeafe;"></div>
 
-    <div class="panel">
+    <!-- Express Check-in card -->
+    <div class="panel" style="border-radius:14px;border:1px solid #e6e9ef;box-shadow:0 10px 30px rgba(0,0,0,0.05);">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+          <label style="flex:1 1 220px;min-width:200px;">
+            <small style="display:block;color:#111827;font-weight:600;margin-bottom:6px;">Last name</small>
+            <input id="qcLast" placeholder="e.g. Doe" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;" />
+          </label>
+          <label style="flex:1 1 220px;min-width:200px;">
+            <small style="display:block;color:#111827;font-weight:600;margin-bottom:6px;">Passport / Booking ref</small>
+            <input id="qcPassport" placeholder="e.g. GA54321 or BK123456" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;" />
+          </label>
+          <button id="quickCheckinBtn" class="btn primary" style="flex:0 0 160px;height:46px;align-self:flex-end;border-radius:10px;font-weight:700;">Find my booking</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;color:#6b7280;font-size:13px;">
+          <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;"></span> Match by last name + passport/reference.</div>
+          <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:#6366f1;display:inline-block;"></span> Opens boarding pass immediately when a single match is found.</div>
+        </div>
+        <div id="quickCheckinResult" style="margin-top:6px;"></div>
+      </div>
+    </div>
+
+    <!-- One-time code (OTP) panel -->
+    <div class="panel" style="margin-top:16px;">
+      <h3 style="margin-top:0;">Email a one-time code (OTP)</h3>
+      <p style="color:#4b5563;margin:4px 0 10px;">We’ll email a 6‑digit code to the email on file for your booking. Use the same Passport / Booking ref you entered above. Optionally confirm your email.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+        <label style="flex:1 1 260px;min-width:240px;">
+          <small style="display:block;color:#111827;font-weight:600;margin-bottom:6px;">Email (optional, must match on file)</small>
+          <input id="otpEmail" placeholder="name@example.com" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;" />
+        </label>
+        <button id="sendCodeBtn" class="btn" style="flex:0 0 180px;height:46px;align-self:flex-end;border-radius:10px;font-weight:700;">Email me a code</button>
+      </div>
+      <div id="otpStatus" style="margin-top:10px;color:#1f2937;font-size:14px;"></div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;align-items:flex-end;">
+        <label style="flex:0 0 180px;">
+          <small style="display:block;color:#111827;font-weight:600;margin-bottom:6px;">Enter code</small>
+          <input id="otpCode" inputmode="numeric" pattern="[0-9]*" placeholder="6-digit code" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;letter-spacing:2px;" />
+        </label>
+        <button id="openWithCodeBtn" class="btn primary" style="flex:0 0 220px;height:46px;align-self:flex-end;border-radius:10px;font-weight:700;">Open boarding pass with code</button>
+      </div>
+    </div>
+
+    <!-- Fallback search -->
+    <div class="panel" style="margin-top:16px;">
       <label for="q">Search by passport or name</label>
       <input id="q" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #e6e9ef;" />
       <div id="results" style="margin-top:12px"></div>
@@ -63,7 +107,7 @@
   </div>
 
   <!-- Consent Modal -->
-  <div id="consentModal" class="consent-modal" aria-hidden="true">
+  <div id="consentModal" class="consent-modal" aria-hidden="true" inert>
     <div class="consent-modal__backdrop"></div>
     <div class="consent-modal__box" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
       <h2 id="consentTitle">Biometric Data Consent</h2>
@@ -93,7 +137,7 @@ async function showSelectedFlight(){
   const stored = sessionStorage.getItem('selectedFlight');
   const flightCode = qFlight || stored;
   const banner = document.getElementById('selectedFlightBanner');
-  if(!flightCode){ banner.style.display='none'; return; }
+  if(!flightCode){ try{ banner.hidden = true; banner.setAttribute('aria-hidden','true'); }catch(e){} return; }
   // keep the selection in sessionStorage for later steps
   try{ sessionStorage.setItem('selectedFlight', flightCode); }catch(e){}
   // attempt to fetch flight details from the API
@@ -108,17 +152,187 @@ async function showSelectedFlight(){
     } else {
       banner.innerHTML = `<strong>Selected Flight:</strong> ${flightCode}`;
     }
-    banner.style.display = 'block';
+    try{ banner.hidden = false; banner.setAttribute('aria-hidden','false'); }catch(e){}
     // focus the quick search field so user can continue
     const q = document.getElementById('q'); if(q) q.focus();
-  }catch(err){
+    }catch(err){
     banner.innerHTML = `<strong>Selected Flight:</strong> ${flightCode}`;
-    banner.style.display = 'block';
+    try{ banner.hidden = false; banner.setAttribute('aria-hidden','false'); }catch(e){}
   }
 }
 
 // Run on load
 document.addEventListener('DOMContentLoaded', ()=>{ showSelectedFlight(); });
+
+// Parse booking params (from flight-results) and prefill booking/check-in context
+function parseBookingParams(){
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const from = params.get('from') || params.get('origin');
+    const to = params.get('to') || params.get('destination');
+    const depart = params.get('depart') || params.get('departure');
+    const ret = params.get('return');
+    const cls = params.get('class') || params.get('fareClass');
+    const fare = params.get('fare') || params.get('fareStandard');
+
+    // store in session for other pages/components
+    if(from) try{ sessionStorage.setItem('booking_from', from); }catch(e){}
+    if(to) try{ sessionStorage.setItem('booking_to', to); }catch(e){}
+    if(depart) try{ sessionStorage.setItem('booking_depart', depart); }catch(e){}
+    if(ret) try{ sessionStorage.setItem('booking_return', ret); }catch(e){}
+    if(cls) try{ sessionStorage.setItem('booking_class', cls); }catch(e){}
+    if(fare) try{ sessionStorage.setItem('booking_fare', fare); }catch(e){}
+
+    // show a simple booking summary in the selectedFlightBanner if any booking info present
+    const banner = document.getElementById('selectedFlightBanner');
+    const pieces = [];
+    if(from) pieces.push(`<strong>From:</strong> ${from}`);
+    if(to) pieces.push(`<strong>To:</strong> ${to}`);
+    if(depart) pieces.push(`<strong>Depart:</strong> ${new Date(depart).toLocaleDateString()}`);
+    if(ret) pieces.push(`<strong>Return:</strong> ${new Date(ret).toLocaleDateString()}`);
+    if(cls) pieces.push(`<strong>Class:</strong> ${cls}`);
+    if(fare) pieces.push(`<strong>Fare:</strong> ${fare}`);
+
+    if(pieces.length){
+      // If a flight selection banner already visible, append booking info; otherwise show it
+      if(banner && !banner.hidden){
+        banner.innerHTML = banner.innerHTML + '<div style="margin-top:8px">' + pieces.join(' • ') + '</div>';
+      } else if (banner) {
+        banner.innerHTML = pieces.join(' • ');
+        try{ banner.hidden = false; banner.setAttribute('aria-hidden','false'); }catch(e){}
+      }
+    }
+  }catch(e){ console.debug('[checkin] parseBookingParams failed', e); }
+}
+
+// run parseBookingParams after initial selected flight processing
+document.addEventListener('DOMContentLoaded', ()=>{ parseBookingParams(); });
+
+// Express check-in: match last name + passport/ref, auto-open boarding pass when unique
+function renderQuickCheckinResult(html, tone){
+  const el = document.getElementById('quickCheckinResult');
+  if(!el) return;
+  const colors = { success:'#065f46', info:'#1f2937', error:'#991b1b' };
+  const bg = { success:'#ecfdf3', info:'#f3f4f6', error:'#fef2f2' };
+  const c = tone && colors[tone] ? colors[tone] : colors.info;
+  const b = tone && bg[tone] ? bg[tone] : bg.info;
+  el.innerHTML = `<div style="padding:10px 12px;border-radius:10px;background:${b};color:${c};border:1px solid rgba(0,0,0,0.05);">${html}</div>`;
+}
+
+async function runQuickCheckin(){
+  const last = (document.getElementById('qcLast')?.value || '').trim().toLowerCase();
+  const ref = (document.getElementById('qcPassport')?.value || '').trim().toLowerCase();
+  if(!last){ renderQuickCheckinResult('Enter your last name to search.', 'error'); return; }
+  try{
+    const res = await fetch('/api/passengers');
+    const list = await res.json();
+    const matches = (list||[]).filter(p=>{
+      const nameOk = (p.name||'').toLowerCase().includes(last);
+      const refOk = !ref || (p.passport||'').toLowerCase().includes(ref) || (p.bookingRef||'').toLowerCase().includes(ref);
+      return nameOk && refOk;
+    });
+    if(!matches.length){ renderQuickCheckinResult('No matching passenger. Check spelling or try the search below.', 'error'); return; }
+    if(matches.length === 1 && matches[0].passport){
+      const p = matches[0];
+      // Auto-fill OTP email if passenger has one
+      if(p.email){ try{ document.getElementById('otpEmail').value = p.email; }catch(e){} }
+      renderQuickCheckinResult(`Found <strong>${p.name}</strong> on flight <strong>${p.flight||'n/a'}</strong>. Opening boarding pass...`, 'success');
+      try{ sessionStorage.setItem('checkin_intent','1'); }catch(e){}
+      setTimeout(()=>{ window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(p.passport); }, 700);
+      return;
+    }
+    const cards = matches.slice(0,5).map(p=>{
+      return `<div style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:700;color:#111827;">${p.name||'Unknown'}</div>
+          <div style="color:#4b5563;font-size:13px;">Passport: ${p.passport||'—'} • Flight: ${p.flight||'—'}${p.seat?(' • Seat '+p.seat):''}</div>
+        </div>
+        ${p.passport ? `<button class="btn primary" data-passport="${p.passport}" data-email="${p.email||''}">Open boarding pass</button>` : ''}
+      </div>`;
+    }).join('');
+    renderQuickCheckinResult(`<div>Found ${matches.length} matches. Pick one to continue:</div>${cards}`,'info');
+    // wire buttons
+    const el = document.getElementById('quickCheckinResult');
+    el.querySelectorAll('button[data-passport]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const pp = btn.dataset.passport;
+        const em = btn.dataset.email;
+        if(!pp) return;
+        // Prefill OTP email for this passenger
+        if(em){ try{ document.getElementById('otpEmail').value = em; }catch(e){} }
+        try{ sessionStorage.setItem('checkin_intent','1'); }catch(e){}
+        window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(pp);
+      });
+    });
+  }catch(err){
+    console.error(err);
+    renderQuickCheckinResult('Search failed. Please try again.', 'error');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', ()=>{
+  const btn = document.getElementById('quickCheckinBtn');
+  if(btn) btn.addEventListener('click', async ()=>{
+    // Try to establish passenger session before redirecting
+    try{
+      const last = (document.getElementById('qcLast')?.value || '').trim();
+      const refOrPass = (document.getElementById('qcPassport')?.value || '').trim();
+      let body = { last };
+      if (/^BK/i.test(refOrPass)) body.ref = refOrPass; else body.passport = refOrPass;
+      const res = await fetch('/api/passenger/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      // Ignore errors here; quick flow below still tries redirect
+      await res.json().catch(()=>({}));
+    }catch(e){}
+    runQuickCheckin();
+  });
+  ['qcLast','qcPassport'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el){ el.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); runQuickCheckin(); } }); }
+  });
+});
+
+// OTP email + code handlers
+document.addEventListener('DOMContentLoaded', ()=>{
+  const sendBtn = document.getElementById('sendCodeBtn');
+  const codeBtn = document.getElementById('openWithCodeBtn');
+  const statusEl = document.getElementById('otpStatus');
+  const emailEl = document.getElementById('otpEmail');
+  const codeEl = document.getElementById('otpCode');
+  const passEl = document.getElementById('qcPassport');
+
+  function showOtpStatus(html, tone){
+    const colors = { success:'#065f46', info:'#1f2937', error:'#991b1b' };
+    const bg = { success:'#ecfdf3', info:'#f3f4f6', error:'#fef2f2' };
+    const c = colors[tone||'info'] || colors.info;
+    const b = bg[tone||'info'] || bg.info;
+    statusEl.innerHTML = `<div style="padding:10px 12px;border-radius:10px;background:${b};color:${c};border:1px solid rgba(0,0,0,0.05);">${html}</div>`;
+  }
+
+  if (sendBtn) sendBtn.addEventListener('click', async ()=>{
+    const passport = (passEl?.value || '').trim();
+    const email = (emailEl?.value || '').trim();
+    if(!passport){ showOtpStatus('Enter your Passport / Booking ref above first.', 'error'); return; }
+    try{
+      const body = email ? { passport, email } : { passport };
+      const res = await fetch('/api/request_code', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+      const out = await res.json().catch(()=>({}));
+      if(res.ok){
+        if(out.status === 'sent') showOtpStatus('Code sent. Check your inbox (and spam).', 'success');
+        else showOtpStatus('Code generated. Email not configured on server.', 'info');
+      } else {
+        const msg = out.error || 'Request failed';
+        showOtpStatus('Unable to send code: ' + msg, 'error');
+      }
+    }catch(e){ showOtpStatus('Network error. Please try again.', 'error'); }
+  });
+
+  if (codeBtn) codeBtn.addEventListener('click', ()=>{
+    const passport = (passEl?.value || '').trim();
+    const code = (codeEl?.value || '').trim();
+    if(!passport || !code){ showOtpStatus('Enter your passport and the 6-digit code.', 'error'); return; }
+    window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(passport) + '&code=' + encodeURIComponent(code);
+  });
+});
 
 async function search(q){
   try{
@@ -176,7 +390,7 @@ document.getElementById('verifyBtn').addEventListener('click', async ()=>{
 
 // Camera support
 let stream = null;
-const camPanel = document.getElementById('cameraPanel');
+  const camPanel = document.getElementById('cameraPanel');
 const camPreview = document.getElementById('camPreview');
 const camCanvas = document.getElementById('camCanvas');
 const camStatus = document.getElementById('camStatus');
@@ -186,7 +400,7 @@ async function startCamera(){
   try{
     stream = await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}, audio:false});
     camPreview.srcObject = stream;
-    camPanel.style.display = 'block';
+    try{ camPanel.hidden = false; camPanel.setAttribute('aria-hidden','false'); }catch(e){}
     camStatus.textContent = 'Camera started';
   }catch(err){
     camStatus.textContent = 'Camera error: ' + (err.message||err);
@@ -198,7 +412,7 @@ function stopCamera(){
   stream.getTracks().forEach(t=>t.stop());
   stream = null;
   camPreview.srcObject = null;
-  camPanel.style.display = 'none';
+  try{ camPanel.hidden = true; camPanel.setAttribute('aria-hidden','true'); }catch(e){}
   camStatus.textContent = 'Camera stopped';
 }
 
@@ -277,6 +491,8 @@ const consentCheckbox = document.getElementById('consentCheckbox');
 const consentAccept = document.getElementById('consentAccept');
 const consentCancel = document.getElementById('consentCancel');
 const openConsent = document.getElementById('openConsent');
+// ensure initial inert state matches aria-hidden
+try { if (consentModal) consentModal.inert = consentModal.getAttribute('aria-hidden') === 'true'; } catch(e) {}
 
 function hasConsent(){
   return localStorage.getItem('biometricConsent') === 'true';
@@ -284,12 +500,15 @@ function hasConsent(){
 
 function showConsent(){
   consentModal.setAttribute('aria-hidden','false');
+  try { consentModal.inert = false; } catch(e) {}
   consentCheckbox.checked = false;
   consentAccept.disabled = true;
+  trapFocusConsent(consentModal);
 }
 
 function hideConsent(){
   consentModal.setAttribute('aria-hidden','true');
+  try { consentModal.inert = true; } catch(e) {}
 }
 
 openConsent.addEventListener('click', (e)=>{ showConsent(); });
@@ -301,6 +520,42 @@ consentAccept.addEventListener('click', ()=>{
   // optionally auto-start camera when accepted
   startCamera();
 });
+
+// ensure showConsent toggles inert appropriately
+function showConsent(){
+  consentModal.setAttribute('aria-hidden','false');
+  try { consentModal.inert = false; } catch(e) {}
+  consentCheckbox.checked = false;
+  consentAccept.disabled = true;
+  trapFocusConsent(consentModal);
+}
+
+// lightweight focus trap for consent modal
+function trapFocusConsent(modal){
+  if(!modal) return;
+  modal._previouslyFocused = document.activeElement;
+  const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(n=>!n.disabled);
+  const first = focusable[0] || modal;
+  const last = focusable[focusable.length-1] || first;
+  function handler(e){
+    if (e.key === 'Tab'){
+      if (focusable.length === 0){ e.preventDefault(); return; }
+      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+    }
+    if (e.key === 'Escape'){ hideConsent(); }
+  }
+  modal._handler = handler;
+  document.addEventListener('keydown', handler);
+  try{ first.focus(); }catch(e){}
+}
+
+function releaseFocusConsent(modal){
+  if(!modal) return;
+  if (modal._handler) document.removeEventListener('keydown', modal._handler);
+  if (modal._previouslyFocused && modal._previouslyFocused.focus) try{ modal._previouslyFocused.focus(); }catch(e){}
+  delete modal._handler; delete modal._previouslyFocused;
+}
 
 // enforce consent when attempting camera or enroll/verify actions
 function requireConsentOrShow(){
@@ -320,8 +575,8 @@ enrollCamBtn.addEventListener('click', async (e)=>{ if(!hasConsent()){ showConse
 verifyCamBtn.addEventListener('click', async (e)=>{ if(!hasConsent()){ showConsent(); return; } /* original handler remains attached above */ });
 
 // If consent already given, hide banner
-if(hasConsent()){
-  const banner = document.getElementById('consentBanner'); if(banner) banner.style.display='none';
+  if(hasConsent()){
+  const banner = document.getElementById('consentBanner'); if(banner) try{ banner.hidden = true; banner.setAttribute('aria-hidden','true'); }catch(e){}
 }
 </script>
 <script src="/frontend/includes/fragment-loader.js"></script>

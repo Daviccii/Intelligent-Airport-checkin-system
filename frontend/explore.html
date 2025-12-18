@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Explore — SmartFly</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* Animated card image fade */
+    .animated-card-img{transition:opacity .6s ease;display:block}
+    .card-price{color:var(--accent,#0366a6)}
+    .animated-card{position:relative}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a class="brand" href="/">SmartFly</a>
+      <nav class="primary-nav">
+        <a href="/">Home</a>
+        <a href="explore.html" aria-current="page">Explore</a>
+        <a href="plan.html">Plan</a>
+        <a href="book.html">Book</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container explore-page">
+    <header class="explore-hero" style="background-image:url('assets/img/explore-hero-1.jpg');background-size:cover;background-position:center;border-radius:8px;padding:48px;color:#fff;margin:18px 0;">
+      <div style="background:linear-gradient(180deg,rgba(0,0,0,0.35),rgba(0,0,0,0.6));padding:28px;border-radius:6px">
+        <h1 style="margin:0 0 6px;font-size:2.2rem;line-height:1.05">Explore destinations and curated routes</h1>
+        <p style="margin:0 0 12px;opacity:0.95">Find inspiration, seasonal offers and quick searches prefilled for popular routes.</p>
+        <p style="margin:0"><a class="btn primary" href="#offers">View Offers</a> <a class="btn" href="flight-results.html?category=destinations">Browse Destinations</a></p>
+      </div>
+    </header>
+
+    <!-- Inline offers: show available offers directly on the Explore page -->
+    <section id="offers" style="margin-top:18px">
+      <h2>Current Offers</h2>
+      <div id="offersContainer" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:12px"></div>
+    </section>
+
+    <section class="featured-grid" aria-label="Featured routes" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:18px">
+      <article class="card animated-card" style="overflow:hidden;border-radius:8px">
+        <img loading="lazy" alt="Plane taking off at sunset" class="animated-card-img" data-images="assets/img/explore-plane-1.jpg,assets/img/explore-plane-2.jpg,assets/img/explore-plane-3.jpg,assets/img/explore-plane-4.jpg,assets/img/explore-extra-2.jpg" src="assets/img/explore-plane-1.jpg" style="width:100%;height:140px;object-fit:cover;display:block;opacity:1" />
+        <div style="padding:12px">
+          <h3 style="margin:0 0 6px">London → New York</h3>
+          <div class="card-price" style="margin:4px 0 8px;font-weight:700">From $499</div>
+          <p style="margin:0 0 8px;font-size:0.95rem;color:#555">Direct daily service, premium lounges and flexible fares.</p>
+          <div style="display:flex;gap:8px;margin-top:8px"><a class="btn" href="flight-results.html?route=LHR-JFK">Search flights</a><a class="btn" href="#" onclick="location.href='book.html?from=LHR&to=JFK'">Prefill</a></div>
+        </div>
+      </article>
+
+      <article class="card animated-card" style="overflow:hidden;border-radius:8px">
+        <img loading="lazy" alt="People at an airport departure lounge" class="animated-card-img" data-images="assets/img/explore-lounge-1.jpg,assets/img/explore-lounge-2.jpg,assets/img/explore-lounge-3.jpg,assets/img/explore-lounge-4.jpg,assets/img/explore-extra-1.jpg" src="assets/img/explore-lounge-1.jpg" style="width:100%;height:140px;object-fit:cover;display:block;opacity:1" />
+        <div style="padding:12px">
+          <h3 style="margin:0 0 6px">Nairobi → Johannesburg</h3>
+          <div class="card-price" style="margin:4px 0 8px;font-weight:700">From KES 12,000</div>
+          <p style="margin:0 0 8px;font-size:0.95rem;color:#555">Regional connections and great value fares across Africa.</p>
+          <div style="display:flex;gap:8px;margin-top:8px"><a class="btn" href="flight-results.html?route=NBO-JNB">Search flights</a></div>
+        </div>
+      </article>
+
+      <article class="card animated-card" style="overflow:hidden;border-radius:8px">
+        <img loading="lazy" alt="Aerial view of an airport terminal" class="animated-card-img" data-images="assets/img/explore-terminal-1.jpg,assets/img/explore-terminal-2.jpg,assets/img/explore-terminal-3.jpg,assets/img/explore-terminal-4.jpg,assets/img/explore-extra-4.jpg" src="assets/img/explore-terminal-1.jpg" style="width:100%;height:140px;object-fit:cover;display:block;opacity:1" />
+        <div style="padding:12px">
+          <h3 style="margin:0 0 6px">JKIA — Nairobi</h3>
+          <div class="card-price" style="margin:4px 0 8px;font-weight:700">From KES 8,000</div>
+          <p style="margin:0 0 8px;font-size:0.95rem;color:#555">Explore flights to and from Jomo Kenyatta International Airport.</p>
+          <div style="display:flex;gap:8px;margin-top:8px"><a class="btn" href="flight-results.html?airport=JKIA">Discover</a></div>
+        </div>
+      </article>
+
+      <article class="card animated-card" style="overflow:hidden;border-radius:8px">
+        <img loading="lazy" alt="City skyline with an airplane in the sky" class="animated-card-img" data-images="assets/img/explore-city-1.jpg,assets/img/explore-city-2.jpg,assets/img/explore-city-3.jpg,assets/img/explore-city-4.jpg,assets/img/explore-extra-1.jpg" src="assets/img/explore-city-1.jpg" style="width:100%;height:140px;object-fit:cover;display:block;opacity:1" />
+        <div style="padding:12px">
+          <h3 style="margin:0 0 6px">Paris → Dubai</h3>
+          <div class="card-price" style="margin:4px 0 8px;font-weight:700">From $349</div>
+          <p style="margin:0 0 8px;font-size:0.95rem;color:#555">Holiday packages and connecting flights to popular destinations.</p>
+          <div style="display:flex;gap:8px;margin-top:8px"><a class="btn" href="flight-results.html?route=CDG-DXB">Search flights</a></div>
+        </div>
+      </article>
+    </section>
+
+    <section style="margin-top:22px">
+      <h2>Inspiration & Tips</h2>
+      <div style="display:grid;grid-template-columns:1fr 320px;gap:16px;align-items:start">
+        <div>
+          <p style="color:#333">Whether you're planning a short city break or a longer escape, we've curated tips to help you pick the best times to travel, find seat upgrades, and manage baggage smarter. Check our seasonal guides and recommended itineraries below.</p>
+          <ul style="margin-top:8px;color:#444">
+            <li><strong>Top picks:</strong> City breaks, family packages, business routes.</li>
+            <li><strong>Booking tips:</strong> Best time to buy, flexible fares and seat selection.</li>
+            <li><strong>Packing:</strong> Carry-on essentials and baggage hacks for smooth transfers.</li>
+          </ul>
+        </div>
+        <aside style="background:#f8fafc;border:1px solid #eef6fb;padding:12px;border-radius:8px">
+          <h4 style="margin-top:0">Quick Shortcuts</h4>
+          <p style="margin:0 0 8px">Jump straight to prefilled searches:</p>
+          <ul style="margin:0;padding-left:18px">
+            <li><a href="book.html?from=LHR&to=JFK">Search LHR → JFK</a></li>
+            <li><a href="book.html?from=NBO&to=JNB">Search NBO → JNB</a></li>
+            <li><a href="flight-results.html?offers=family">Family Packages</a></li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer container">
+    <a href="/">Back to Home</a>
+  </footer>
+  <script>
+    // Fetch flights and surface any offers on the Explore page
+    (function(){
+      async function loadOffers(){
+        try{
+          const res = await fetch('/api/flights');
+          const j = await res.json();
+          const flights = j.flights || [];
+          const offers = flights.filter(f => f.offer || f.special || f.tags && f.tags.indexOf('offer')!==-1).slice(0,6);
+          const container = document.getElementById('offersContainer');
+          if(!container) return;
+          if(!offers || offers.length===0){
+            container.innerHTML = `
+              <div class="card">
+                <h4>Seasonal Savings</h4>
+                <p>Save up to 30% on select routes — check flight results for details.</p>
+                <a class="btn" href="flight-results.html?offers=1">See Offers</a>
+              </div>`;
+            return;
+          }
+
+          container.innerHTML = offers.map(function(o){
+            const title = o.routeName || (o.from && o.to ? `${o.from} → ${o.to}` : (o.airline||o.flight||'Special Offer'));
+            const short = o.summary || o.offerText || o.description || 'Limited time offer — terms apply.';
+            const price = (o.prices && o.prices.standard) ? o.prices.standard : (o.price || '');
+            const priceLabel = price ? (`<div style="font-weight:700;margin-top:6px">From ${new Intl.NumberFormat(undefined,{style:'currency',currency:o.currency||'USD'}).format(Number(price))}</div>`) : '';
+            const badge = o.offer ? `<span style="display:inline-block;background:#ffecf0;color:#b00020;padding:4px 8px;border-radius:6px;font-weight:700;margin-bottom:6px">${o.offer}</span>` : '';
+            return `
+              <article class="card">
+                ${badge}
+                <h4 style="margin:0 0 6px">${title}</h4>
+                <p style="margin:0;color:#555">${short}</p>
+                ${priceLabel}
+                <div style="margin-top:8px"><a class="btn" href="flight-results.html?route=${encodeURIComponent(o.route||'')}&offers=1">View rates</a></div>
+              </article>`;
+          }).join('');
+
+        }catch(e){ console.debug('[explore] loadOffers failed', e); }
+      }
+      document.addEventListener('DOMContentLoaded', loadOffers);
+    })();
+  </script>
+  <script>
+    // Cycle images for cards that have multiple images listed in data-images
+    (function(){
+      function preload(src){ var i=new Image(); i.src=src; }
+      function startCycle(img){
+        try{
+          var list = (img.getAttribute('data-images')||'').split(',').map(s=>s.trim()).filter(Boolean);
+          if (!list.length) return;
+          // ensure the current src is in the list
+          var idx = list.indexOf(img.getAttribute('src'));
+          if (idx === -1) idx = 0;
+          // preload images
+          list.forEach(preload);
+          setInterval(function(){
+            try{
+              img.style.opacity = 0;
+              idx = (idx + 1) % list.length;
+              setTimeout(function(){ img.setAttribute('src', list[idx]); img.style.opacity = 1; }, 300);
+            }catch(e){console.debug('[card-cycle] tick error', e);}  
+          }, 3500 + Math.floor(Math.random()*2000));
+        }catch(e){ console.debug('[card-cycle] start error', e); }
+      }
+
+      document.addEventListener('DOMContentLoaded', function(){
+        var imgs = Array.from(document.querySelectorAll('.animated-card-img'));
+        imgs.forEach(function(img){ startCycle(img); });
+      });
+    })();
+  </script>
+</body>
+</html>

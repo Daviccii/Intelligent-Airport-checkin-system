@@ -1,0 +1,387 @@
+Attached HTML and CSS Context
+
+<a class="tab-link" id="homeTab" href="/" role="tab" tabindex="-1" aria-selected="false">Home</a>
+
+
+/* Matched Rule from user-agent */
+a:-webkit-any-link {
+  color: -webkit-link;
+  text-decoration-line: underline;
+  text-decoration-thickness: initial;
+  text-decoration-style: initial;
+  text-decoration-color: initial;
+  cursor: pointer;
+}
+
+/* Matched Rule from regular */
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins',Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  box-sizing: border-box;
+  font-family: Poppins, Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Matched Rule from regular */
+.tab-link {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: rgba(51,51,51,0.9);
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  border-top-left-radius: 999px;
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+  border-bottom-left-radius: 999px;
+  color: rgba(51, 51, 51, 0.9);
+  text-decoration-line: none;
+  text-decoration-thickness: initial;
+  text-decoration-style: initial;
+  text-decoration-color: initial;
+  transition-behavior: normal, normal, normal;
+  transition-duration: 0.15s, 0.15s, 0.1s;
+  transition-timing-function: ease, ease, ease;
+  transition-delay: 0s, 0s, 0s;
+  transition-property: background, color, transform;
+  display: inline-flex;
+  align-items: center;
+  row-gap: 6px;
+  column-gap: 6px;
+}
+
+/* Matched Rule from regular */
+.nav-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  color: var(--muted);
+  text-decoration-line: none;
+  text-decoration-thickness: initial;
+  text-decoration-style: initial;
+  text-decoration-color: initial;
+  font-weight: 500;
+  transition-behavior: normal;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
+  transition-delay: 0s;
+  transition-property: color;
+}
+
+/* Matched Rule from regular */
+.header-tabs .tab-link {
+  background: transparent;
+  border: 1px solid transparent;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+  background-image: initial;
+  background-position-x: initial;
+  background-position-y: initial;
+  background-size: initial;
+  background-repeat: initial;
+  background-attachment: initial;
+  background-origin: initial;
+  background-clip: initial;
+  background-color: transparent;
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+  border-top-style: solid;
+  border-right-style: solid;
+  border-bottom-style: solid;
+  border-left-style: solid;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  border-left-color: transparent;
+  border-image-source: initial;
+  border-image-slice: initial;
+  border-image-width: initial;
+  border-image-outset: initial;
+  border-image-repeat: initial;
+  padding-top: 8px;
+  padding-right: 12px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: 8px;
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Matched Rule from regular */
+.main-nav .header-tabs .tab-link {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(0,0,0,0.04);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background-image: initial;
+  background-position-x: initial;
+  background-position-y: initial;
+  background-size: initial;
+  background-repeat: initial;
+  background-attachment: initial;
+  background-origin: initial;
+  background-clip: initial;
+  background-color: transparent;
+  color: var(--muted);
+  border-top-width: 1px;
+  border-right-width: 1px;
+  border-bottom-width: 1px;
+  border-left-width: 1px;
+  border-top-style: solid;
+  border-right-style: solid;
+  border-bottom-style: solid;
+  border-left-style: solid;
+  border-top-color: rgba(0, 0, 0, 0.04);
+  border-right-color: rgba(0, 0, 0, 0.04);
+  border-bottom-color: rgba(0, 0, 0, 0.04);
+  border-left-color: rgba(0, 0, 0, 0.04);
+  border-image-source: initial;
+  border-image-slice: initial;
+  border-image-width: initial;
+  border-image-outset: initial;
+  border-image-repeat: initial;
+  padding-top: 6px;
+  padding-right: 10px;
+  padding-bottom: 6px;
+  padding-left: 10px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+/* Inherited from ancestor level 1 (user-agent) */
+div {
+  display: block;
+}
+
+/* Inherited from ancestor level 1 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 1 (regular) */
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins',Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  box-sizing: border-box;
+  font-family: Poppins, Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Inherited from ancestor level 1 (regular) */
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  display: flex;
+  align-items: center;
+  row-gap: 30px;
+  column-gap: 30px;
+}
+
+/* Inherited from ancestor level 1 (regular) */
+.header-tabs {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  display: flex;
+  row-gap: 10px;
+  column-gap: 10px;
+  align-items: center;
+}
+
+/* Inherited from ancestor level 2 (user-agent) */
+div {
+  display: block;
+}
+
+/* Inherited from ancestor level 2 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 2 (regular) */
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins',Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  box-sizing: border-box;
+  font-family: Poppins, Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Inherited from ancestor level 2 (regular) */
+.container {
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+  max-width: var(--maxw);
+  margin-top: 0px;
+  margin-right: auto;
+  margin-bottom: 0px;
+  margin-left: auto;
+  padding-top: 0px;
+  padding-right: 24px;
+  padding-bottom: 0px;
+  padding-left: 24px;
+}
+
+/* Inherited from ancestor level 2 (regular) */
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Inherited from ancestor level 3 (user-agent) */
+article, aside, footer, header, hgroup, main, nav, search, section {
+  display: block;
+}
+
+/* Inherited from ancestor level 3 (user-agent) */
+address, blockquote, center, div, figure, figcaption, footer, form, header, hr, legend, listing, main, p, plaintext, pre, summary, xmp, article, aside, h1, h2, h3, h4, h5, h6, hgroup, nav, section, search, table, caption, colgroup, col, thead, tbody, tfoot, tr, td, th, dir, dd, dl, dt, menu, ol, ul, li, bdi, output, [dir="ltr" i], [dir="rtl" i], [dir="auto" i] {
+  unicode-bidi: isolate;
+}
+
+/* Inherited from ancestor level 3 (regular) */
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins',Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  box-sizing: border-box;
+  font-family: Poppins, Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Inherited from ancestor level 3 (regular) */
+.main-nav {
+  background: white;
+  padding: 15px 0;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+  background-image: initial;
+  background-position-x: initial;
+  background-position-y: initial;
+  background-size: initial;
+  background-repeat: initial;
+  background-attachment: initial;
+  background-origin: initial;
+  background-clip: initial;
+  background-color: white;
+  padding-top: 15px;
+  padding-right: 0px;
+  padding-bottom: 15px;
+  padding-left: 0px;
+  position: fixed;
+  width: 100%;
+  top: 0px;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Inherited from ancestor level 4 (user-agent) */
+body {
+  display: block;
+  margin-top: 8px;
+  margin-right: 8px;
+  margin-bottom: 8px;
+  margin-left: 8px;
+}
+
+/* Inherited from ancestor level 4 (regular) */
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins',Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  box-sizing: border-box;
+  font-family: Poppins, Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Inherited from ancestor level 4 (regular) */
+body {
+  margin: 0;
+  background: linear-gradient(180deg,#eaf2ff 0%,var(--bg) 100%);
+  color: #0f1724;
+  min-height: 100vh;
+  margin-top: 0px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  margin-left: 0px;
+  color: rgb(15, 23, 36);
+  min-height: 100vh;
+}
+
+/* Inherited from ancestor level 5 (user-agent) */
+html {
+  display: block;
+}
+
+/* Inherited from ancestor level 5 (user-agent) */
+:root {
+  view-transition-name: root;
+}
+
+/* Inherited from ancestor level 5 (regular) */
+* {
+  box-sizing: border-box;
+  font-family: 'Poppins',Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  box-sizing: border-box;
+  font-family: Poppins, Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Inherited from ancestor level 5 (regular) */
+:root {
+  --primary-color: #1A73E8;
+  --accent: #FFD700;
+  --bg: #F4F6F8;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --success: #1f9d55;
+  --danger: #d03d3d;
+  --radius: 10px;
+  --maxw: 1200px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, #00a6ff 100%);
+  --logo-gradient: linear-gradient(135deg, var(--primary-color), #0084ff);
+  --primary-color: #1A73E8;
+  --accent: #FFD700;
+  --bg: #F4F6F8;
+  --card: #ffffff;
+  --muted: #6b7280;
+  --success: #1f9d55;
+  --danger: #d03d3d;
+  --radius: 10px;
+  --maxw: 1200px;
+  --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
+  --gradient-primary: linear-gradient(135deg, var(--primary-color) 0%, #00a6ff 100%);
+  --logo-gradient: linear-gradient(135deg, var(--primary-color), #0084ff);
+}
+
+/* Inherited from ancestor level 5 (regular) */
+:root {
+  --smf-brand: #ff6a00;
+  --smf-brand-dark: #d35400;
+  --smf-brand: #ff6a00;
+  --smf-brand-dark: #d35400;
+}

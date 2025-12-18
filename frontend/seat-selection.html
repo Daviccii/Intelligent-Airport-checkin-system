@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Seat — SmartFly</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: #f8f9fa; color: #333; }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .header h1 { font-size: 1.5em; margin-bottom: 5px; }
+        .progress-bar {
+            height: 4px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+            margin-top: 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: white;
+            width: 40%;
+            transition: width 0.3s ease;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 15px;
+        }
+        
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+        
+        .main-content {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+        }
+        
+        .main-content h2 { margin-bottom: 30px; font-size: 1.4em; }
+        
+        .seat-map {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 30px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            grid-template-columns: repeat(6, 1fr);
+        }
+        
+        .seat {
+            aspect-ratio: 1;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .seat:hover:not(.occupied):not(.selected) {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .seat.selected {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: #667eea;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+        
+        .seat.occupied {
+            background: #f0f0f0;
+            color: #999;
+            cursor: not-allowed;
+            border-color: #ddd;
+        }
+        
+        .seat:disabled { pointer-events: none; }
+        
+        .seat-legend {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+        
+        .legend-box {
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            border: 2px solid;
+        }
+        
+        .legend-box.available { background: white; border-color: #e0e0e0; }
+        .legend-box.selected { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-color: #667eea; }
+        .legend-box.occupied { background: #f0f0f0; border-color: #ddd; }
+        
+        .sidebar {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        
+        .summary-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+        
+        .summary-card h3 { margin-bottom: 15px; font-size: 1em; }
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 14px;
+        }
+        
+        .summary-item:last-child { border-bottom: none; }
+        .summary-item strong { font-weight: 600; }
+        
+        .price-total {
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            text-align: center;
+        }
+        
+        .price-total .label { font-size: 12px; color: #666; }
+        .price-total .amount { font-size: 1.8em; font-weight: 700; color: #667eea; }
+        
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .btn.primary:hover { box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3); transform: translateY(-2px); }
+        .btn.primary:disabled { opacity: 0.6; cursor: not-allowed; }
+        
+        .btn.secondary { background: white; color: #667eea; border: 2px solid #667eea; margin-right: 10px; }
+        .btn.secondary:hover { background: #f8f9fa; }
+        
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .class-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #e8f4ff;
+            color: #0066cc;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .info-box {
+            background: #f0f7ff;
+            border: 1px solid #e0ecf8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .content-wrapper { grid-template-columns: 1fr; }
+            .sidebar { position: static; }
+            .seat-map { grid-template-columns: repeat(4, 1fr); }
+            .main-content { padding: 20px; }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #333;
+            color: white;
+            border-radius: 6px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            animation: slideIn 0.3s ease;
+            z-index: 9999;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Select Your Seat</h1>
+        <p id="flightInfo" style="opacity: 0.9;">Flight: — | Class: —</p>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="content-wrapper">
+            <div class="main-content">
+                <div class="info-box">
+                    💡 Select your preferred seat. Window seats (A, F) offer views. Aisle seats (C, D) offer easy access.
+                </div>
+
+                <div class="seat-legend">
+                    <div class="legend-item">
+                        <div class="legend-box available"></div>
+                        <span>Available</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box selected"></div>
+                        <span>Selected</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-box occupied"></div>
+                        <span>Occupied</span>
+                    </div>
+                </div>
+
+                <h2>Seat Map</h2>
+                <div class="seat-map" id="seatMap"></div>
+
+                <div class="actions">
+                    <button class="btn secondary" onclick="skipSeat()">Skip Seat Selection</button>
+                    <button class="btn primary" id="continueBtn" disabled onclick="continueToBaggage()">Continue to Baggage</button>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="summary-card">
+                    <h3>Booking Summary</h3>
+                    <div class="summary-item">
+                        <span>Flight</span>
+                        <strong id="summaryFlight">—</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Class</span>
+                        <strong id="summaryClass">—</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Base Fare</span>
+                        <strong id="summaryPrice">$0.00</strong>
+                    </div>
+                    <div class="summary-item">
+                        <span>Seat</span>
+                        <strong id="summarySeats">—</strong>
+                    </div>
+                    
+                    <div class="price-total">
+                        <div class="label">Total Price</div>
+                        <div class="amount" id="totalPrice">$0.00</div>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <strong>Free Baggage Allowance:</strong>
+                    <ul style="margin: 8px 0 0 20px;">
+                        <li>1 carry-on (8kg)</li>
+                        <li>1 personal item</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedSeats = [];
+        let passengers = 1;
+
+        function getFlightParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                flight: params.get('flight') || sessionStorage.getItem('selected_flight') || '',
+                class: params.get('class') || sessionStorage.getItem('selected_class') || 'Y',
+                price: parseFloat(params.get('price') || sessionStorage.getItem('selected_price') || 0)
+            };
+        }
+
+        function generateSeats() {
+            const flightParams = getFlightParams();
+            const seatMap = document.getElementById('seatMap');
+            seatMap.innerHTML = '';
+
+            // Generate seats: 6 columns (A-F), 20 rows
+            const cols = ['A', 'B', 'C', 'D', 'E', 'F'];
+            const rows = 20;
+            const occupied = Math.floor(Math.random() * 40); // Random occupied seats
+
+            let seatCount = 0;
+            for (let row = 1; row <= rows; row++) {
+                for (let col of cols) {
+                    const seatNum = seatCount++;
+                    const seatCode = col + row;
+                    const isOccupied = Math.random() < 0.15; // 15% occupied rate
+
+                    const seat = document.createElement('button');
+                    seat.type = 'button';
+                    seat.className = 'seat' + (isOccupied ? ' occupied' : '');
+                    seat.textContent = seatCode;
+                    seat.disabled = isOccupied;
+                    
+                    if (!isOccupied) {
+                        seat.addEventListener('click', (e) => toggleSeat(e, seatCode));
+                    }
+
+                    seatMap.appendChild(seat);
+                }
+            }
+        }
+
+        function toggleSeat(event, seatCode) {
+            const seat = event.target;
+            
+            // Get number of passengers from session
+            try {
+                const passengerSelect = document.getElementById('passengerSelect');
+                if (passengerSelect) {
+                    const inputs = passengerSelect.querySelectorAll('.passenger-type input');
+                    passengers = parseInt(inputs[0]?.value || 1) + 
+                                parseInt(inputs[1]?.value || 0) + 
+                                parseInt(inputs[2]?.value || 0);
+                }
+            } catch (e) {
+                passengers = 1;
+            }
+
+            if (seat.classList.contains('selected')) {
+                seat.classList.remove('selected');
+                selectedSeats = selectedSeats.filter(s => s !== seatCode);
+            } else {
+                if (selectedSeats.length < passengers) {
+                    seat.classList.add('selected');
+                    selectedSeats.push(seatCode);
+                } else {
+                    showToast(`You can only select ${passengers} seat(s)`, 'error');
+                }
+            }
+
+            updateSummary();
+        }
+
+        function updateSummary() {
+            const flightParams = getFlightParams();
+            const seat = document.getElementById('summarySeats');
+            const continueBtn = document.getElementById('continueBtn');
+
+            seat.textContent = selectedSeats.length > 0 ? selectedSeats.join(', ') : '—';
+            continueBtn.disabled = selectedSeats.length === 0;
+
+            document.getElementById('summaryFlight').textContent = flightParams.flight;
+            document.getElementById('summaryClass').textContent = flightParams.class === 'Y' ? 'Economy' : 
+                                                                 flightParams.class === 'W' ? 'Premium Economy' :
+                                                                 flightParams.class === 'J' ? 'Business' : 'First';
+            document.getElementById('summaryPrice').textContent = '$' + flightParams.price.toFixed(2);
+            document.getElementById('totalPrice').textContent = '$' + (flightParams.price * selectedSeats.length).toFixed(2);
+
+            document.getElementById('flightInfo').textContent = `Flight: ${flightParams.flight} | Class: ${flightParams.class}`;
+        }
+
+        function skipSeat() {
+            sessionStorage.setItem('selected_seats', JSON.stringify([]));
+            window.location.href = '/baggage.html';
+        }
+
+        function continueToBaggage() {
+            sessionStorage.setItem('selected_seats', JSON.stringify(selectedSeats));
+            window.location.href = '/baggage.html';
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        // Initialize
+        generateSeats();
+        updateSummary();
+    </script>
+</body>
+</html>

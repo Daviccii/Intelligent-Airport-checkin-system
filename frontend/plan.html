@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Plan — SmartFly</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/assets/libs/flatpickr/flatpickr.min.css">
+</head>
+<body>
+  <nav class="main-nav">
+    <div class="container nav-container">
+      <div class="logo-container">
+        <div class="logo">
+          <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+        </div>
+        <div class="brand">
+          <h2 class="logo-text">SmartFly</h2>
+          <p class="site-vision">your journey starts here</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <nav class="header-tabs">
+          <a class="tab-link" href="flight-results.html">Explore</a>
+          <a class="tab-link active" href="plan.html">Plan</a>
+          <a class="tab-link" href="book-manage.html">Book &amp; Manage</a>
+          <a class="tab-link" href="experience.html">Experience</a>
+          <a class="tab-link" href="loyalty.html">Loyalty Program</a>
+          <a class="tab-link" href="help.html">Help</a>
+        </nav>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-container">
+    <section class="hero-section" style="padding:36px 20px;margin-bottom:12px">
+      <div class="hero-content"><h2>Plan Your Trip</h2><p class="lead">Build an itinerary, compare fares, and prepare travel documents.</p></div>
+    </section>
+
+    <!-- Utility links: Check-In / My Bookings / Flights -->
+    <div class="utility-links" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn" href="checkin.html">Check-In</a>
+      <a class="btn" href="lookup.html">My Bookings</a>
+      <a class="btn" href="flight-results.html">Flights</a>
+    </div>
+
+    <section class="card">
+      <h3>Itinerary Planner</h3>
+      <form class="form-group">
+        <label>Origin <input id="plan_from"></label>
+        <label>Destination <input id="plan_to"></label>
+        <label>Departure <input id="plan_depart" placeholder="YYYY-MM-DD"></label>
+        <label>Return <input id="plan_return" placeholder="YYYY-MM-DD"></label>
+        <button class="btn primary" id="plan_search">Compare fares</button>
+      </form>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <h3>Saved Trips</h3>
+      <p>No saved trips yet — use the planner to create one.</p>
+    </section>
+  </main>
+  <script src="/assets/libs/flatpickr/flatpickr.min.js"></script>
+  <script src="/assets/js/pricing.js"></script>
+  <script src="/assets/js/airport-autocomplete.js"></script>
+  <script>
+    (function(){
+      const USD_TO_KES = 150; // simple display conversion; adjust when needed
+      const DATE_FMT = 'Y-m-d';
+      let airports = null;
+      let departPicker = null;
+
+      function isWeekend(d){ const day = d.getDay(); return day === 0 || day === 6; }
+      function toYmd(d){ const pad=n=>n.toString().padStart(2,'0'); return d.getFullYear()+ '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate()); }
+
+      async function loadAirports(){
+        if (airports) return airports;
+        try { const res = await fetch('/assets/data/airports.json'); airports = await res.json(); } catch(e){ airports = []; }
+        return airports;
+      }
+
+      function getRouteAirports(){
+        const from = (document.getElementById('plan_from')?.value||'').trim().toUpperCase();
+        const to = (document.getElementById('plan_to')?.value||'').trim().toUpperCase();
+        if (!from || !to || !airports) return { fromAirport:null, toAirport:null };
+        const fromAirport = window.FlightPricing?.findAirportByCode(from, airports) || null;
+        const toAirport = window.FlightPricing?.findAirportByCode(to, airports) || null;
+        return { fromAirport, toAirport };
+      }
+
+      function priceKesForDate(date){
+        const { fromAirport, toAirport } = getRouteAirports();
+        if (!fromAirport || !toAirport) return null;
+        const pricing = window.FlightPricing.calculateFlightPrice(fromAirport, toAirport, 'standard', {
+          weekend: isWeekend(date)
+        });
+        const usd = pricing && pricing.finalFare ? pricing.finalFare : null;
+        if (usd == null) return null;
+        return Math.round(usd * USD_TO_KES);
+      }
+
+      function attachPriceBadge(dayElem){
+        try{
+          if (!dayElem || !dayElem.dateObj) return;
+          const d = dayElem.dateObj;
+          const price = priceKesForDate(d);
+          if (!price) return;
+          const badge = document.createElement('div');
+          badge.className = 'price-badge';
+          badge.textContent = price.toLocaleString('en-KE') + ' KES';
+          dayElem.appendChild(badge);
+        }catch(e){}
+      }
+
+      function syncInputs(selectedDates, dateStr, instance){
+        const depInput = document.getElementById('plan_depart');
+        const retInput = document.getElementById('plan_return');
+        if (!depInput || !retInput) return;
+        if (selectedDates && selectedDates.length){ depInput.value = toYmd(selectedDates[0]); }
+        if (selectedDates && selectedDates.length > 1){ retInput.value = toYmd(selectedDates[1]); }
+        if (selectedDates && selectedDates.length === 1){ retInput.value = ''; }
+      }
+
+      function openCalendar(){ try { departPicker && departPicker.open(); }catch(e){} }
+
+      async function init(){
+        await loadAirports();
+        const dep = document.getElementById('plan_depart');
+        const ret = document.getElementById('plan_return');
+        if (!dep || !ret || !window.flatpickr) return;
+
+        // clicking return opens same calendar (range)
+        ret.addEventListener('focus', openCalendar);
+        ret.addEventListener('click', openCalendar);
+
+        departPicker = flatpickr(dep, {
+          mode: 'range',
+          minDate: 'today',
+          showMonths: 2,
+          dateFormat: DATE_FMT,
+          onOpen: function(){ /* prices render via onDayCreate */ },
+          onChange: syncInputs,
+          onMonthChange: function(){ /* allow onDayCreate to re-run for new month */ },
+          onYearChange: function(){},
+          onDayCreate: function(dObj, dStr, instance, dayElem){ attachPriceBadge(dayElem); }
+        });
+
+        // If user edits from/to, refresh current calendar view for price badges
+        ['plan_from','plan_to'].forEach(id=>{
+          const el = document.getElementById(id);
+          if (!el) return;
+          el.addEventListener('change', function(){ if (!departPicker) return; departPicker.redraw(); });
+          el.addEventListener('input', function(){ if (!departPicker) return; departPicker.redraw(); });
+        });
+
+        // Attach Kenya-Airways style airport autocomplete
+        if (window.AirportAutocomplete){
+          AirportAutocomplete.attach('#plan_from');
+          AirportAutocomplete.attach('#plan_to');
+        }
+      }
+
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    })();
+  </script>
+</body>
+</html>

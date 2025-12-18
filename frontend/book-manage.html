@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Book & Manage — SmartFly</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <nav class="main-nav">
+    <div class="container nav-container">
+      <div class="logo-container">
+        <div class="logo">
+          <svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>
+        </div>
+        <div class="brand">
+          <h2 class="logo-text">SmartFly</h2>
+          <p class="site-vision">your journey starts here</p>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="/">Home</a>
+      </div>
+      <div class="header-right">
+        <nav class="header-tabs">
+          <a class="tab-link" href="flight-results.html">Explore</a>
+          <a class="tab-link" href="plan.html">Plan</a>
+          <a class="tab-link active" href="book-manage.html">Book &amp; Manage</a>
+          <a class="tab-link" href="experience.html">Experience</a>
+          <a class="tab-link" href="loyalty.html">Loyalty Program</a>
+          <a class="tab-link" href="help.html">Help</a>
+        </nav>
+      </div>
+    </div>
+  </nav>
+
+  <main class="page-container">
+    <section class="hero-section" style="padding:36px 20px;margin-bottom:12px">
+      <div class="hero-content"><h2>Book & Manage</h2><p class="lead">Search flights, manage your bookings and check-in.</p></div>
+    </section>
+
+    <!-- Utility links: Check-In / My Bookings / Flights -->
+    <div class="utility-links" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn" href="checkin.html">Check-In</a>
+      <a class="btn" href="lookup.html">My Bookings</a>
+      <a class="btn" href="flight-results.html">Flights</a>
+    </div>
+
+    <section class="card">
+      <h3>Search Flights</h3>
+      <!-- Booking widget (simplified copy) -->
+      <div class="booking-widget booking-widget--medium" role="region" aria-label="Flight booking widget">
+        <div class="booking-widget__fields">
+          <div class="itinerary-fields itinerary-fields--medium">
+            <div class="itinerary-fields__trip-type">
+              <div class="select">
+                <button id="bm_tripTypeToggle" type="button" class="button select__trigger" aria-expanded="false" aria-controls="bm_tripTypeOptions" aria-haspopup="listbox">
+                  <div class="select__labels"><p class="title fs-12">Trip type</p><p id="bm_tripTypeLabel">Return</p></div>
+                </button>
+                <div id="bm_tripTypeOptions" class="select__dropdown" role="listbox" aria-hidden="true" tabindex="-1" inert>
+                  <button role="option" class="select__dropdown-option" data-value="return" aria-selected="true">Return</button>
+                  <button role="option" class="select__dropdown-option" data-value="oneway" aria-selected="false">One way</button>
+                  <button role="option" class="select__dropdown-option" data-value="multi" aria-selected="false">Multi-city</button>
+                </div>
+              </div>
+            </div>
+            <div class="itinerary-fields__airport-lookup">
+              <div class="airport-lookup__fields">
+                <div class="airport-lookup__field">
+                  <label for="bm_airportFromInput">Where from?</label>
+                  <input id="bm_airportFromInput" placeholder="Origin airport">
+                </div>
+                <div class="airport-lookup__field">
+                  <label for="bm_airportToInput">Where to?</label>
+                  <input id="bm_airportToInput" placeholder="Destination airport">
+                </div>
+                <div class="airport-lookup__separator">
+                  <button id="bm_swapAirports" aria-label="Swap">Swap</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="booking-widget__controls" style="margin-top:12px">
+            <form id="bm_bookingForm" method="POST" aria-label="Search flights">
+              <button id="bm_bookingSearchBtn" class="btn primary" disabled>Search</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <a class="btn" href="checkin.html">Start Check-in</a>
+        <a class="btn" href="lookup.html">My Bookings / Manage</a>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <h3>Recent Bookings</h3>
+      <p>Sign in or use Booking reference to look up and manage reservations.</p>
+    </section>
+  </main>
+
+    <script>
+    // small booking widget behavior for the dedicated Book & Manage page
+    (function(){
+      const from = document.getElementById('bm_airportFromInput');
+      const to = document.getElementById('bm_airportToInput');
+      const swap = document.getElementById('bm_swapAirports');
+      const search = document.getElementById('bm_bookingSearchBtn');
+      const tripLabel = document.getElementById('bm_tripTypeLabel');
+      const tripOptions = document.getElementById('bm_tripTypeOptions');
+      const tripToggle = document.getElementById('bm_tripTypeToggle');
+      const tripButtons = tripOptions ? Array.from(tripOptions.querySelectorAll('.select__dropdown-option')) : [];
+
+      function check(){ search.disabled = !(from.value.trim() && to.value.trim()); }
+      [from,to].forEach(i=>i.addEventListener('input', check));
+      swap.addEventListener('click', ()=>{ const a=from.value; from.value=to.value; to.value=a; check(); from.focus(); });
+
+      // initialize trip label to selected option (default Return)
+      (function initTripLabelAndKeyboard(){
+        if (!tripButtons || tripButtons.length===0) return;
+        let sel = tripButtons.find(b => b.getAttribute('aria-selected') === 'true') || tripButtons[0];
+        tripButtons.forEach(b => b.setAttribute('aria-selected', b===sel ? 'true' : 'false'));
+        if (tripLabel && sel) tripLabel.textContent = sel.textContent.trim();
+
+        // Helper: open/close listbox
+        function openListbox(){
+          tripOptions.setAttribute('aria-hidden','false');
+          try { tripOptions.inert = false; } catch(e) {}
+          tripToggle.setAttribute('aria-expanded','true');
+          // focus selected or first
+          const focused = tripOptions.querySelector('.select__dropdown-option[aria-selected="true"]') || tripOptions.querySelector('.select__dropdown-option');
+          focused?.focus();
+        }
+        function closeListbox(){
+          tripOptions.setAttribute('aria-hidden','true');
+          try { tripOptions.inert = true; } catch(e) {}
+          tripToggle.setAttribute('aria-expanded','false');
+          tripToggle.focus();
+        }
+
+        // Click behavior: update label and close
+        tripButtons.forEach(btn => {
+          btn.addEventListener('click', ()=>{
+            tripButtons.forEach(b=>b.setAttribute('aria-selected','false'));
+            btn.setAttribute('aria-selected','true');
+            if (tripLabel) tripLabel.textContent = btn.textContent.trim();
+            closeListbox();
+          });
+        });
+
+        // Toggle click to open/close
+        tripToggle.addEventListener('click', (e)=>{
+          const opened = tripToggle.getAttribute('aria-expanded') === 'true';
+          if (opened) closeListbox(); else openListbox();
+        });
+
+        // Keyboard support on trigger
+        tripToggle.addEventListener('keydown', (e)=>{
+          if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+            e.preventDefault(); openListbox();
+            // move focus to first or last depending
+            const items = tripButtons;
+            const target = e.key === 'ArrowDown' ? items[0] : items[items.length-1];
+            target?.focus();
+          }
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openListbox(); }
+        });
+
+        // Keyboard nav inside listbox
+        tripOptions.addEventListener('keydown', (e)=>{
+          const items = tripButtons;
+          const idx = items.indexOf(document.activeElement);
+          if (e.key === 'ArrowDown') { e.preventDefault(); const next = items[(idx+1)%items.length]; next.focus(); }
+          if (e.key === 'ArrowUp') { e.preventDefault(); const prev = items[(idx-1+items.length)%items.length]; prev.focus(); }
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); document.activeElement.click(); }
+          if (e.key === 'Escape') { e.preventDefault(); closeListbox(); }
+        });
+
+        // Close listbox when clicking outside
+        document.addEventListener('click', (ev)=>{
+          if (!tripOptions.contains(ev.target) && !tripToggle.contains(ev.target)) {
+            if (tripOptions.getAttribute('aria-hidden') === 'false') closeListbox();
+          }
+        });
+      })();
+
+      check();
+    })();
+  </script>
+</body>
+</html>

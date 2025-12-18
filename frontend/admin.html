@@ -3,30 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Admin Dashboard</title>
+  <title>Redirecting to Admin Dashboard</title>
   <link rel="stylesheet" href="/style.css">
+  <script>
+    // Redirect to new admin dashboard
+    window.location.href = '/admin/dashboard.html';
+  </script>
 </head>
 <body>
-  <main class="container">
-    <h1>Admin Dashboard</h1>
-    <nav>
-      <button id="tabDashboard" class="active">Dashboard</button>
-      <button id="tabFlights">Flights</button>
-      <button id="tabPassengers">Passengers</button>
-      <button id="tabBoarding">Boarding</button>
-      <button id="tabAnalytics">Analytics</button>
-      <button id="tabUsers">Admin Users</button>
-      <button id="logout">Logout</button>
-    </nav>
-    
-    <!-- Auto-refresh indicator -->
-    <div style="margin:8px 0;font-size:13px;color:var(--muted)">
-      Auto-refresh: <span id="refreshStatus">active</span>
-      (<span id="refreshCountdown">30</span>s)
-      <button onclick="toggleAutoRefresh()" style="margin-left:4px;padding:2px 8px;font-size:12px" id="refreshToggle">Pause</button>
-    </div>
-
-    <section id="content">Loading...</section>
+  <main class="container" style="text-align: center; padding-top: 100px;">
+    <h1>Redirecting to Admin Dashboard...</h1>
+    <p>If you are not redirected automatically, <a href="/admin/dashboard.html">click here</a>.</p>
+  </main>
+</body>
+</html>
 
     <!-- Edit Flight Modal (hidden) -->
     <div id="editFlightModal" style="display:none;position:fixed;left:0;top:0;right:0;bottom:0;background:rgba(0,0,0,0.5);align-items:center;justify-content:center;">
@@ -275,11 +265,11 @@
           document.getElementById('modalCapacity').value = (capacity && capacity !== 'N/A') ? capacity : '';
           document.getElementById('modalCheckin').checked = !!checkin;
           document.getElementById('modalMsg').innerText = '';
-          document.getElementById('editFlightModal').style.display = 'flex';
+          const __efm = document.getElementById('editFlightModal'); if (__efm) __efm.style.display = 'flex';
         }
         if (cancelBtn) {
           const card = cancelBtn.closest('.card');
-          card.querySelector('.edit-area').style.display = 'none';
+          const __ea = card && card.querySelector('.edit-area'); if (__ea) __ea.style.display = 'none';
         }
         if (delBtn) {
           if (!confirm('Delete this flight?')) return;
@@ -340,7 +330,7 @@
         // modal save/cancel handlers
         const modalCancel = ev.target.closest && ev.target.closest('#modalCancel');
         if (modalCancel) {
-          document.getElementById('editFlightModal').style.display = 'none';
+          const __efm2 = document.getElementById('editFlightModal'); if (__efm2) __efm2.style.display = 'none';
         }
         const modalSave = ev.target.closest && ev.target.closest('#modalSave');
         if (modalSave) {
@@ -430,7 +420,7 @@
           document.getElementById('editPassengerSeat').value = p.seat || '';
           document.getElementById('editPassengerBags').value = p.baggage_count || '';
           document.getElementById('editPassengerCheckedIn').checked = !!p.checked_in;
-          document.getElementById('editPassengerModal').style.display = 'flex';
+          const __epm = document.getElementById('editPassengerModal'); if (__epm) __epm.style.display = 'flex';
           return;
         }
         const deleteBtn = ev.target.closest && ev.target.closest('.delete-passenger');

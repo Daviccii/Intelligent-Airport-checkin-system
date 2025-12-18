@@ -21,5 +21,577 @@
     "type": "admin_login",
     "username": "Riley Gabi",
     "timestamp": "2025-11-11T10:19:51.616864Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-25T07:08:45.165692Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-26T06:39:18.922913Z"
+  },
+  {
+    "type": "admin_login",
+    "username": "Riley Gabi",
+    "timestamp": "2025-11-28T09:10:29.322675Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "GA54321",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2025-12-03T06:35:18.533235Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "admin",
+    "timestamp": "2025-12-03T07:31:11.906403Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-03T07:41:49.712329Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-03T11:24:26.423796Z"
+  },
+  {
+    "type": "admin_update_passenger",
+    "passport": "123456",
+    "flight": "AA101",
+    "changed": {
+      "name": "John Doe",
+      "seat": "1"
+    },
+    "by": "admin",
+    "timestamp": "2025-12-03T11:24:45.181652Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-04T07:36:34.439199Z"
+  },
+  {
+    "type": "admin_delete_passenger",
+    "passport": "123456",
+    "flight": "AA101",
+    "removed": 1,
+    "by": "admin",
+    "timestamp": "2025-12-04T07:37:03.290690Z"
+  },
+  {
+    "type": "admin_delete_passenger",
+    "passport": "GA54321",
+    "flight": "AF44",
+    "removed": 1,
+    "by": "admin",
+    "timestamp": "2025-12-04T07:37:06.255248Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-05T11:19:19.956269Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-15T06:49:37.870858Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-15T06:49:53.736712Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-15T06:55:53.554402Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "BK51VW3PI",
+    "passenger_name": "Gabriel Kebiro",
+    "payment_method": "mpesa",
+    "amount": 280.0,
+    "timestamp": "2025-12-15T07:02:56.684400Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-15T07:13:51.885321Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-15T07:14:13.632070Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T04:59:22.286140Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T05:29:51.027798Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T05:30:02.829129Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T05:30:32.514957Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T05:38:07.234880Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T05:38:44.566406Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T06:04:10.456640Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T06:04:36.518535Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T06:04:55.243771Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T06:05:26.762439Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T06:08:38.393540Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T06:09:01.114134Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T06:10:13.425155Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T08:42:04.996979Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T08:45:30.972530Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T09:03:50.827505Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "BKHUV8UKC",
+    "passenger_name": "Edward Sila",
+    "payment_method": "bank",
+    "amount": 230.0,
+    "timestamp": "2025-12-16T09:55:41.273055Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "BK1HJE3PQ",
+    "passenger_name": "Sylvia Kerubo",
+    "payment_method": "card",
+    "amount": 280.0,
+    "timestamp": "2025-12-16T09:59:54.398770Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "BKDF8SKXG",
+    "passenger_name": "Example example",
+    "payment_method": "mpesa",
+    "amount": 280.0,
+    "timestamp": "2025-12-16T11:13:19.216651Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T11:13:38.935101Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T12:15:30.864737Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "GA54321",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2025-12-16T12:34:07.313332Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T13:15:41.931150Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-16T13:52:52.060527Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:02:47.834117Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:17:52.134474Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:18:03.955082Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:24:55.862241Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:26:10.318214Z"
+  },
+  {
+    "type": "access_code_created",
+    "passport": "GA54321",
+    "to": "kebirogabriel@gmail.com",
+    "timestamp": "2025-12-17T05:26:35.624536Z"
+  },
+  {
+    "type": "access_code_created",
+    "passport": "GA54321",
+    "to": "kebirogabriel@gmail.com",
+    "timestamp": "2025-12-17T05:26:49.589839Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:34:38.945521Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:34:54.202881Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:38:54.587662Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:39:35.897338Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "admin",
+    "timestamp": "2025-12-17T05:39:44.479944Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:40:30.999419Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:40:50.666458Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T05:54:20.129574Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T06:00:29.805617Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T06:24:00.293114Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T06:24:11.165682Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T06:35:10.507879Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T06:35:30.083462Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T06:35:57.518284Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T06:44:24.599724Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T06:48:38.032120Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T07:00:31.193942Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T07:01:06.364970Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T07:01:25.993062Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T07:06:26.244128Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T07:32:41.724792Z"
+  },
+  {
+    "type": "access_code_created",
+    "passport": "GA54321",
+    "to": "kebirogabriel@gmail.com",
+    "timestamp": "2025-12-17T08:56:03.272157Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T09:16:44.454302Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T09:18:26.855845Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T11:58:15.192861Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T12:45:22.021815Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-17T13:03:26.829626Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T04:55:47.594507Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T05:48:46.231330Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T05:57:34.910391Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T07:54:48.785331Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T09:05:18.159747Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T09:25:47.309267Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T09:26:00.699397Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T09:43:54.131649Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T10:05:52.534247Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T10:08:51.670963Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T10:15:34.386608Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T10:15:53.965671Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T10:31:11.771745Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T11:17:45.086847Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T11:47:06.267449Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T12:52:49.361503Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2025-12-18T13:11:30.207041Z"
   }
 ]
