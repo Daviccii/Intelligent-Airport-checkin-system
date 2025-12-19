@@ -1,62 +1,505 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Admin — Settings</title>
-  <link rel="stylesheet" href="/style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Settings — SmartFly Airlines Admin</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="dashboard.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --light: #f8fafc;
+      --border: #e5e7eb;
+      --card: #ffffff;
+      --text-strong: #0f172a;
+      --text-muted: #6b7280;
+    }
+
+    body {
+      background: #f7f9fc;
+      color: var(--text-strong);
+    }
+
+    .dashboard-header {
+      background: #ffffff;
+      color: var(--text-strong);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      border: 1px solid var(--border);
+      margin-bottom: 32px;
+    }
+
+    .dashboard-header h1 {
+      color: var(--text-strong);
+      margin-bottom: 8px;
+    }
+
+    .dashboard-header .text-muted {
+      color: var(--text-muted) !important;
+    }
+
+    .settings-card {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+      margin-bottom: 24px;
+    }
+
+    .settings-card h5 {
+      font-weight: 700;
+      color: #1f2937;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-card h5 i {
+      color: var(--primary);
+      font-size: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-group .form-help {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+
+    .form-group.form-check {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .form-group.form-check input {
+      width: auto;
+      margin: 0;
+    }
+
+    .form-group.form-check label {
+      margin-bottom: 0;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+      border: none;
+      color: white;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-save:hover {
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-reset {
+      background: white;
+      border: 1px solid var(--border);
+      color: #1f2937;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-reset:hover {
+      background: var(--light);
+      border-color: var(--primary);
+    }
+
+    .alert {
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 24px;
+    }
+
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 32px 0;
+    }
+
+    .setting-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+  </style>
 </head>
 <body>
   <div class="admin-layout">
-    <aside class="admin-sidebar">
-      <div class="admin-logo"><h2>SmartFly</h2></div>
-      <nav>
-        <ul class="admin-menu">
-          <li><a href="dashboard.html">Dashboard</a></li>
-          <li><a href="flights.html">Flights</a></li>
-          <li><a href="bookings.html">Bookings</a></li>
-          <li><a href="users.html">Users</a></li>
-          <li><a href="reports.html">Reports</a></li>
-          <li><a href="settings.html" class="active">Settings</a></li>
-        </ul>
-      </nav>
-    </aside>
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+      <div class="navbar-container">
+        <!-- Brand Logo -->
+        <div class="navbar-brand">
+          <div class="brand-icon">
+            <i class="fas fa-plane-departure"></i>
+          </div>
+          <div class="brand-text">
+            <div class="brand-name">SmartFly</div>
+            <div class="brand-subtitle">Admin Panel</div>
+          </div>
+        </div>
 
-    <main class="admin-content">
-      <div class="dashboard-header">
-        <h1>Settings</h1>
-        <div class="header-actions">
-          <button class="btn" id="btnSave">Save</button>
+        <!-- Navigation Bubbles -->
+        <div class="nav-bubbles">
+          <a href="dashboard.html" class="nav-bubble" title="Dashboard">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="flights.html" class="nav-bubble" title="Flights Management">
+            <i class="fas fa-plane"></i>
+            <span>Flights</span>
+          </a>
+          <a href="bookings.html" class="nav-bubble" title="Bookings">
+            <i class="fas fa-calendar-check"></i>
+            <span>Bookings</span>
+          </a>
+          <a href="checkins.html" class="nav-bubble" title="Check-Ins">
+            <i class="fas fa-passport"></i>
+            <span>Check-Ins</span>
+          </a>
+          <a href="payments.html" class="nav-bubble" title="Payments">
+            <i class="fas fa-credit-card"></i>
+            <span>Payments</span>
+          </a>
+          <a href="reports.html" class="nav-bubble" title="Reports">
+            <i class="fas fa-chart-bar"></i>
+            <span>Reports</span>
+          </a>
+          <a href="settings.html" class="nav-bubble active" title="Settings">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </div>
+
+        <!-- User Profile & Actions -->
+        <div class="navbar-actions">
+          <div class="admin-profile-compact">
+            <div class="profile-avatar-small">RG</div>
+            <div class="profile-info-compact">
+              <div class="profile-name">Riley Gabi</div>
+              <div class="profile-role">Administrator</div>
+            </div>
+          </div>
+          <button class="btn-logout" title="Log out" onclick="window.location.href='../admin-login.html'">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content flex-grow-1 p-4">
+      <!-- Header -->
+      <div class="dashboard-header mb-4">
+        <div class="row align-items-center">
+          <div class="col">
+            <h1 class="display-5 fw-bold mb-2">
+              <i class="fas fa-cog"></i> Settings
+            </h1>
+            <p class="text-muted mb-0">Configure system settings and preferences</p>
+          </div>
         </div>
       </div>
 
-      <div style="background:white;padding:16px;border-radius:8px;box-shadow:var(--shadow-sm)">
-        <h3>Admin session TTL (seconds)</h3>
-        <input id="adminTtl" type="number" min="60" />
-        <p style="color:var(--muted);font-size:13px">Change how long admin sessions remain valid (for the cookie / session token).</p>
+      <!-- Alert Section -->
+      <div id="alertContainer"></div>
+
+      <!-- General Settings -->
+      <div class="settings-card">
+        <h5><i class="fas fa-gear"></i> General Settings</h5>
+        <div class="setting-row">
+          <div class="form-group">
+            <label for="systemName">System Name</label>
+            <input type="text" id="systemName" placeholder="e.g., SmartFly Airlines">
+            <div class="form-help">The name displayed throughout the system</div>
+          </div>
+          <div class="form-group">
+            <label for="systemEmail">System Email</label>
+            <input type="email" id="systemEmail" placeholder="admin@example.com">
+            <div class="form-help">Email for system notifications</div>
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="form-group">
+            <label for="timezone">Timezone</label>
+            <select id="timezone">
+              <option value="UTC">UTC (UTC+0)</option>
+              <option value="EST">Eastern (UTC-5)</option>
+              <option value="CST">Central (UTC-6)</option>
+              <option value="MST">Mountain (UTC-7)</option>
+              <option value="PST">Pacific (UTC-8)</option>
+            </select>
+            <div class="form-help">Server timezone for scheduling and logs</div>
+          </div>
+          <div class="form-group">
+            <label for="dateFormat">Date Format</label>
+            <select id="dateFormat">
+              <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+              <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+              <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+            </select>
+            <div class="form-help">How dates are displayed throughout the system</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Session Settings -->
+      <div class="settings-card">
+        <h5><i class="fas fa-lock"></i> Session & Security</h5>
+        <div class="setting-row">
+          <div class="form-group">
+            <label for="adminSessionTTL">Admin Session TTL (seconds)</label>
+            <input type="number" id="adminSessionTTL" min="60" value="3600">
+            <div class="form-help">How long admin sessions remain valid (default: 1 hour)</div>
+          </div>
+          <div class="form-group">
+            <label for="passengerSessionTTL">Passenger Session TTL (seconds)</label>
+            <input type="number" id="passengerSessionTTL" min="60" value="7200">
+            <div class="form-help">How long passenger sessions remain valid (default: 2 hours)</div>
+          </div>
+        </div>
+        <div class="form-group form-check">
+          <input type="checkbox" id="enableMFA" class="form-check-input">
+          <label for="enableMFA" class="form-check-label">Require Multi-Factor Authentication (MFA) for Admin Accounts</label>
+        </div>
+        <div class="form-group form-check">
+          <input type="checkbox" id="enableAuditLog" class="form-check-input" checked>
+          <label for="enableAuditLog" class="form-check-label">Enable Comprehensive Audit Logging</label>
+        </div>
+      </div>
+
+      <!-- Notification Settings -->
+      <div class="settings-card">
+        <h5><i class="fas fa-bell"></i> Notifications</h5>
+        <div class="form-group form-check">
+          <input type="checkbox" id="emailNotifications" class="form-check-input" checked>
+          <label for="emailNotifications" class="form-check-label">Enable Email Notifications</label>
+        </div>
+        <div class="form-group form-check">
+          <input type="checkbox" id="smsNotifications" class="form-check-input">
+          <label for="smsNotifications" class="form-check-label">Enable SMS Notifications</label>
+        </div>
+        <div class="form-group form-check">
+          <input type="checkbox" id="slackNotifications" class="form-check-input">
+          <label for="slackNotifications" class="form-check-label">Enable Slack Integration</label>
+        </div>
+        <div class="form-group">
+          <label for="notifyEmail">Notification Email Address</label>
+          <input type="email" id="notifyEmail" placeholder="notify@example.com">
+          <div class="form-help">Primary email for system notifications</div>
+        </div>
+      </div>
+
+      <!-- Maintenance Settings -->
+      <div class="settings-card">
+        <h5><i class="fas fa-tools"></i> Maintenance</h5>
+        <div class="form-group form-check">
+          <input type="checkbox" id="maintenanceMode" class="form-check-input">
+          <label for="maintenanceMode" class="form-check-label">Enable Maintenance Mode</label>
+        </div>
+        <div class="form-group">
+          <label for="maintenanceMessage">Maintenance Message</label>
+          <textarea id="maintenanceMessage" rows="3" placeholder="Message to display when maintenance mode is enabled..."></textarea>
+          <div class="form-help">This message will be shown to users when maintenance mode is active</div>
+        </div>
+        <div class="form-group">
+          <label for="backupFrequency">Backup Frequency</label>
+          <select id="backupFrequency">
+            <option value="hourly">Every Hour</option>
+            <option value="daily" selected>Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+          </select>
+          <div class="form-help">How often automatic backups are created</div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="d-flex gap-3 mt-4">
+        <button class="btn btn-save" onclick="saveSettings()">
+          <i class="fas fa-save"></i> Save Changes
+        </button>
+        <button class="btn btn-reset" onclick="resetSettings()">
+          <i class="fas fa-undo"></i> Reset to Defaults
+        </button>
       </div>
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/api-client.js"></script>
   <script>
-    const token = (document.cookie.split(';').find(c=>c.trim().startsWith('session='))||'').split('=')[1] || localStorage.getItem('session');
-    async function loadSettings(){
-      try{
-        const res = await fetch('/api/admin/system/config', { headers: { 'X-SESSION': token }});
-        if (!res.ok){ document.getElementById('adminTtl').value=''; return; }
-        const j = await res.json();
-        // try several possible keys
-        document.getElementById('adminTtl').value = j.ADMIN_SESSION_TTL_SECONDS || j.admin_session_ttl_seconds || 3600;
-      }catch(e){ }
+    function logout() {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('session');
+      window.location.href = '/admin-login.html';
     }
-    document.getElementById('btnSave').addEventListener('click', async ()=>{
-      const ttl = parseInt(document.getElementById('adminTtl').value) || 3600;
-      try{
-        const res = await fetch('/api/admin/system/config', { method: 'PUT', headers: {'Content-Type':'application/json','X-SESSION': token}, body: JSON.stringify(Object.assign({}, { ADMIN_SESSION_TTL_SECONDS: ttl })) });
-        if (!res.ok){ alert('Save failed'); return; }
-        alert('Saved');
-      }catch(e){ alert('Save failed'); }
+
+    function showAlert(message, type = 'success') {
+      const alertContainer = document.getElementById('alertContainer');
+      const alertHtml = `
+        <div class="alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show" role="alert">
+          <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `;
+      alertContainer.innerHTML = alertHtml;
+      setTimeout(() => {
+        alertContainer.innerHTML = '';
+      }, 4000);
+    }
+
+    async function saveSettings() {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+      
+      const settings = {
+        system_name: document.getElementById('systemName').value,
+        system_email: document.getElementById('systemEmail').value,
+        timezone: document.getElementById('timezone').value,
+        date_format: document.getElementById('dateFormat').value,
+        admin_session_ttl: parseInt(document.getElementById('adminSessionTTL').value),
+        passenger_session_ttl: parseInt(document.getElementById('passengerSessionTTL').value),
+        enable_mfa: document.getElementById('enableMFA').checked,
+        enable_audit_log: document.getElementById('enableAuditLog').checked,
+        email_notifications: document.getElementById('emailNotifications').checked,
+        sms_notifications: document.getElementById('smsNotifications').checked,
+        slack_notifications: document.getElementById('slackNotifications').checked,
+        notify_email: document.getElementById('notifyEmail').value,
+        maintenance_mode: document.getElementById('maintenanceMode').checked,
+        maintenance_message: document.getElementById('maintenanceMessage').value,
+        backup_frequency: document.getElementById('backupFrequency').value
+      };
+
+      try {
+        const response = await (window.apiFetch ? apiFetch('/api/admin/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(settings)
+        }) : fetch('/api/admin/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(settings)
+        }));
+
+        if (!response.ok) throw new Error('Failed to save settings');
+        showAlert('Settings saved successfully!', 'success');
+      } catch (error) {
+        console.error('Save error:', error);
+        showAlert('Failed to save settings. Please try again.', 'error');
+      }
+    }
+
+    function resetSettings() {
+      if (confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
+        loadSettings();
+        showAlert('Settings reset to defaults', 'success');
+      }
+    }
+
+    async function loadSettings() {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+      try {
+        const response = await (window.apiFetch ? apiFetch('/api/admin/settings', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }) : fetch('/api/admin/settings', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }));
+        
+        if (!response.ok) throw new Error('Failed to load settings');
+        const data = await response.json();
+
+        // Populate form with loaded values
+        document.getElementById('systemName').value = data.system_name || 'SmartFly Airlines';
+        document.getElementById('systemEmail').value = data.system_email || '';
+        document.getElementById('timezone').value = data.timezone || 'UTC';
+        document.getElementById('dateFormat').value = data.date_format || 'MM/DD/YYYY';
+        document.getElementById('adminSessionTTL').value = data.admin_session_ttl || 3600;
+        document.getElementById('passengerSessionTTL').value = data.passenger_session_ttl || 7200;
+        document.getElementById('enableMFA').checked = data.enable_mfa || false;
+        document.getElementById('enableAuditLog').checked = data.enable_audit_log !== false;
+        document.getElementById('emailNotifications').checked = data.email_notifications !== false;
+        document.getElementById('smsNotifications').checked = data.sms_notifications || false;
+        document.getElementById('slackNotifications').checked = data.slack_notifications || false;
+        document.getElementById('notifyEmail').value = data.notify_email || '';
+        document.getElementById('maintenanceMode').checked = data.maintenance_mode || false;
+        document.getElementById('maintenanceMessage').value = data.maintenance_message || '';
+        document.getElementById('backupFrequency').value = data.backup_frequency || 'daily';
+      } catch (error) {
+        console.error('Load error:', error);
+        showAlert('Could not load saved settings, using defaults.', 'error');
+      }
+    }
+
+    // Set active nav link
+    document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+      if (href === currentPage) {
+        link.classList.add('active');
+      }
     });
+
+    // Load settings on page load
     loadSettings();
   </script>
 </body>

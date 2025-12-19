@@ -1,7 +1,7 @@
 (function(global){
   'use strict';
 
-  const SUGG_MAX = 80;
+  const SUGG_MAX = 50;
   let __airports = null;
   let __geo = null; // { lat, lon }
 
@@ -53,50 +53,78 @@
 
   function buildPanel(){
     const el = document.createElement('div');
-    el.className = 'airport-sugg';
+    el.className = 'airport-suggestions';
     el.setAttribute('role', 'listbox');
-    el.style.display = 'none';
+    el.setAttribute('aria-label', 'Airport suggestions');
     return el;
   }
 
   function renderItems(panel, items, nearest){
     panel.innerHTML = '';
-    const list = items.slice(0, SUGG_MAX);
     const frag = document.createDocumentFragment();
 
-    // If nearest present, put it first with highlight and then all airports filtered
+    // If nearest present and not already in filtered list, put it first with highlight
     if (nearest){
       const n = renderItem(nearest, true);
       frag.appendChild(n);
     }
+    
+    // Add filtered airports (max SUGG_MAX)
+    const list = items.slice(0, SUGG_MAX);
     list.forEach(a => {
       if (nearest && a.code === nearest.code) return; // avoid duplicate
       frag.appendChild(renderItem(a, false));
     });
 
     panel.appendChild(frag);
-    panel.style.display = list.length || nearest ? 'block' : 'none';
+    
+    // Show panel if there are items
+    if (list.length > 0 || nearest) {
+      panel.classList.add('active');
+    } else {
+      panel.classList.remove('active');
+    }
   }
 
   function renderItem(a, isNearest){
     const div = document.createElement('div');
-    div.className = 'item' + (isNearest ? ' nearest' : '');
+    div.className = 'airport-suggestion-item' + (isNearest ? ' nearest-airport' : '');
     div.setAttribute('role','option');
+    div.setAttribute('data-iata', a.code);
     div.dataset.code = a.code;
     div.dataset.city = a.city || '';
     div.dataset.name = a.name || '';
 
-    const code = document.createElement('div'); code.className = 'code'; code.textContent = a.code;
-    const meta = document.createElement('div'); meta.className = 'meta';
-    const city = document.createElement('div'); city.className = 'city'; city.textContent = a.city || a.country || '';
-    const name = document.createElement('div'); name.className = 'name'; name.textContent = a.name || '';
-    meta.appendChild(city); meta.appendChild(name);
+    // Airport code (highlighted)
+    const code = document.createElement('div'); 
+    code.className = 'airport-suggestion-code'; 
+    code.textContent = a.code;
+
+    // Airport info container
+    const info = document.createElement('div');
+    info.className = 'airport-suggestion-info';
+    
+    // City/country line
+    const main = document.createElement('div'); 
+    main.className = 'airport-suggestion-main'; 
+    main.textContent = a.city ? `${a.city}, ${a.country || ''}`.trim() : a.country || 'Airport';
+    
+    // Airport name line
+    const sub = document.createElement('div'); 
+    sub.className = 'airport-suggestion-sub'; 
+    sub.textContent = a.name || '';
+    
+    info.appendChild(main);
+    info.appendChild(sub);
 
     div.appendChild(code);
-    div.appendChild(meta);
+    div.appendChild(info);
 
+    // Add "Nearest" badge if applicable
     if (isNearest){
-      const badge = document.createElement('div'); badge.className = 'badge'; badge.textContent = 'Nearest';
+      const badge = document.createElement('div'); 
+      badge.className = 'airport-badge'; 
+      badge.textContent = '📍 Nearest';
       div.appendChild(badge);
     }
     return div;
@@ -105,9 +133,11 @@
   function buildFilter(query){
     const q = (query||'').trim().toLowerCase();
     if (!q) return (a) => true;
+    // Match by code (exact prefix), city name, airport name, or country
     return (a) => a.code.toLowerCase().startsWith(q) ||
                   (a.city||'').toLowerCase().includes(q) ||
-                  (a.name||'').toLowerCase().includes(q);
+                  (a.name||'').toLowerCase().includes(q) ||
+                  (a.country||'').toLowerCase().includes(q);
   }
 
   async function attach(selector){
@@ -144,41 +174,79 @@
 
     function commitFromNode(node){
       if (!node) return;
-      const code = node.dataset.code || '';
+      const code = node.dataset.code || node.getAttribute('data-iata') || '';
       input.value = code;
       input.dataset.iata = code;
+      input.dataset.selected = 'true';
       input.dataset.city = node.dataset.city||'';
       input.dataset.name = node.dataset.name||'';
-      panel.style.display = 'none';
+      panel.classList.remove('active');
       input.dispatchEvent(new Event('input', { bubbles:true }));
       input.dispatchEvent(new Event('change', { bubbles:true }));
       input.focus();
     }
 
-    input.addEventListener('focus', refresh);
+    input.addEventListener('focus', function(){
+      refresh();
+      if (!input.value.trim()){
+        const filter = buildFilter('');
+        current = __airports.slice(0, SUGG_MAX);
+        nearest = null;
+        if (__geo){ nearest = findNearestAirport(__geo.lat, __geo.lon); }
+        renderItems(panel, current, nearest);
+        selectedIndex = -1;
+      }
+    });
+    
     input.addEventListener('input', refresh);
-    input.addEventListener('blur', function(){ setTimeout(()=>{ panel.style.display='none'; }, 180); });
+    
+    // Hide only when clicking outside, not on blur (prevents flicker)
+    function onDocumentHide(ev){
+      try{
+        if (!wrap.contains(ev.target)) {
+          panel.classList.remove('active');
+        }
+      }catch(e){ panel.classList.remove('active'); }
+    }
+    document.addEventListener('mousedown', onDocumentHide);
+    document.addEventListener('touchstart', onDocumentHide, { passive: true });
 
     input.addEventListener('keydown', function(ev){
-      if (panel.style.display === 'none') return;
-      const nodes = Array.from(panel.querySelectorAll('.item'));
+      if (!panel.classList.contains('active')) return;
+      const nodes = Array.from(panel.querySelectorAll('.airport-suggestion-item'));
       if (ev.key === 'ArrowDown'){
-        ev.preventDefault(); selectedIndex = Math.min(nodes.length-1, selectedIndex+1);
-        nodes.forEach(n=>n.classList.remove('active')); if (nodes[selectedIndex]) nodes[selectedIndex].classList.add('active');
+        ev.preventDefault(); 
+        selectedIndex = Math.min(nodes.length-1, selectedIndex+1);
+        nodes.forEach(n=>n.classList.remove('active')); 
+        if (nodes[selectedIndex]) nodes[selectedIndex].classList.add('active');
+        nodes[selectedIndex]?.scrollIntoView({ block: 'nearest' });
       } else if (ev.key === 'ArrowUp'){
-        ev.preventDefault(); selectedIndex = Math.max(0, selectedIndex-1);
-        nodes.forEach(n=>n.classList.remove('active')); if (nodes[selectedIndex]) nodes[selectedIndex].classList.add('active');
+        ev.preventDefault(); 
+        selectedIndex = Math.max(-1, selectedIndex-1);
+        nodes.forEach(n=>n.classList.remove('active')); 
+        if (selectedIndex >= 0 && nodes[selectedIndex]) nodes[selectedIndex].classList.add('active');
+        nodes[selectedIndex]?.scrollIntoView({ block: 'nearest' });
       } else if (ev.key === 'Enter'){
-        if (selectedIndex >= 0){ ev.preventDefault(); commitFromNode(nodes[selectedIndex]); }
+        if (selectedIndex >= 0){ 
+          ev.preventDefault(); 
+          commitFromNode(nodes[selectedIndex]); 
+        }
       } else if (ev.key === 'Escape'){
-        panel.style.display = 'none';
+        panel.classList.remove('active');
+        input.blur();
       }
     });
 
     panel.addEventListener('mousedown', function(ev){
-      const it = ev.target.closest('.item'); if (!it) return;
+      const it = ev.target.closest('.airport-suggestion-item'); 
+      if (!it) return;
       ev.preventDefault();
       commitFromNode(it);
+    });
+    
+    // Prevent blur when clicking inside panel
+    panel.addEventListener('mousedown', function(ev){
+      ev.preventDefault();
     });
   }
 

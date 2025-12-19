@@ -14,20 +14,37 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --bg: #f5f7fb;
+            --panel: #f8fafc;
+            --card: #ffffff;
+            --text-strong: #0f172a;
+            --text-muted: #6b7280;
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --border: #e5e7eb;
+        }
+
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f5f7fa;
-            color: #222;
+            background: radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.14), transparent 32%),
+                        radial-gradient(circle at 80% 10%, rgba(34, 197, 235, 0.12), transparent 28%),
+                        linear-gradient(180deg, #f7f9fc 0%, #eef2fb 45%, #f7f9fc 100%);
+            color: var(--text-strong);
+            display: flex;
+            margin: 0;
+            padding: 0;
         }
 
         .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(124, 58, 237, 0.2));
             color: white;
             padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 14px 30px rgba(59, 130, 246, 0.2);
+            border-bottom: 1px solid rgba(59, 130, 246, 0.18);
         }
 
         .navbar h1 {
@@ -71,8 +88,24 @@
         .header h2 {
             font-size: 28px;
             font-weight: 700;
-            color: #222;
+            color: var(--text-strong);
         }
+
+        /* Light glass overrides */
+        .card, .filters, .table-wrapper, .booking-card, .booking-details {
+            background: var(--card);
+            border: 1px solid var(--border);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            color: var(--text-strong);
+        }
+
+        table { color: var(--text-strong); }
+        thead { background: #f8fafc; }
+        th { color: var(--text-strong); }
+        td { border-color: var(--border); }
+        .text-muted { color: var(--text-muted) !important; }
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); border: none; }
+        .btn-outline-primary { border-color: rgba(59,130,246,0.5); color: var(--text-strong); }
 
         .header-stats {
             display: flex;
@@ -544,20 +577,51 @@
     </style>
 </head>
 <body>
-    <!-- Navbar -->
-    <div class="navbar">
-        <h1>✈️ SmartFly Admin</h1>
-        <ul class="nav-links">
-            <li><a href="/admin/dashboard.html">Dashboard</a></li>
-            <li><a href="/admin/checkins.html">Check-ins</a></li>
-            <li><a href="/admin/bookings.html" style="opacity: 1; font-weight: 700;">Payments</a></li>
-            <li><a href="/admin/flights.html">Flights</a></li>
-            <li><a href="/admin/activity-log.html">Activity Log</a></li>
-            <li><a href="/admin-login.html" onclick="logout()">Logout</a></li>
-        </ul>
-    </div>
+    <!-- Sidebar -->
+    <aside class="sidebar" style="width: 280px; background: #1a1a2e; color: white; padding: 20px; display: flex; flex-direction: column; min-height: 100vh;">
+      <div style="margin-bottom: 32px;">
+        <h2 style="font-size: 24px; margin-bottom: 8px;">SmartFly</h2>
+        <p style="color: #aaa; font-size: 12px;">Admin Panel</p>
+      </div>
+      
+      <nav style="flex: 1;">
+        <a href="dashboard.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; color: #aaa; text-decoration: none; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s;">
+          <i class="fas fa-chart-line"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="flights.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; color: #aaa; text-decoration: none; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s;">
+          <i class="fas fa-plane"></i>
+          <span>Flights</span>
+        </a>
+        <a href="bookings.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; color: white; background: #667eea; text-decoration: none; border-radius: 8px; margin-bottom: 8px;">
+          <i class="fas fa-calendar-check"></i>
+          <span>Bookings</span>
+        </a>
+        <a href="checkins.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; color: #aaa; text-decoration: none; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s;">
+          <i class="fas fa-passport"></i>
+          <span>Check-Ins</span>
+        </a>
+        <a href="payments.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; color: #aaa; text-decoration: none; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s;">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+        <a href="reports.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; color: #aaa; text-decoration: none; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s;">
+          <i class="fas fa-chart-bar"></i>
+          <span>Reports</span>
+        </a>
+        <a href="settings.html" style="display: flex; align-items: center; gap: 12px; padding: 12px; color: #aaa; text-decoration: none; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s;">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+
+      <button onclick="logout()" style="padding: 12px; background: none; border: 1px solid #667eea; color: white; border-radius: 8px; cursor: pointer; width: 100%; font-weight: 600;">
+        <i class="fas fa-sign-out-alt"></i> Logout
+      </button>
+    </aside>
 
     <!-- Main Content -->
+    <div style="flex: 1;">
     <div class="container">
         <!-- Header -->
         <div class="header">
@@ -1136,5 +1200,7 @@
         // Load bookings on page load
         window.addEventListener('load', loadBookings);
     </script>
+    </div>
+    </div>
 </body>
 </html>

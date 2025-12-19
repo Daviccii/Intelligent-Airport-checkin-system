@@ -6,281 +6,188 @@
     <title>Check-ins Manager — SmartFly Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="admin-dashboard.css" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; color: #222; }
-        
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
-
-        .navbar h1 { font-size: 28px; font-weight: 700; }
-
-        .nav-links {
-            display: flex;
-            gap: 24px;
-            list-style: none;
-        }
-
-        .nav-links a, .logout-btn {
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            border: none;
-            background: none;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
-
-        .nav-links a:hover, .logout-btn:hover {
-            opacity: 0.8;
-        }
-
-        .container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
-
-        .header { margin-bottom: 32px; }
-        .header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
-        .header p { color: #666; }
-
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-
-        input[type="text"], select {
-            padding: 10px 16px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-        }
-
-        button {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            transition: transform 0.3s;
-        }
-
-        button:hover { transform: translateY(-2px); }
-
-        .table-wrapper {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            position: relative;
-            z-index: 0;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        thead {
-            background: #f9f9f9;
-            border-bottom: 2px solid #e0e0e0;
-        }
-
-        th {
-            padding: 16px;
-            text-align: left;
-            font-weight: 600;
-            color: #666;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
-
-        td {
-            padding: 16px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        tbody tr:hover {
-            background: #f9f9f9;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-
-        .status-checked { background: #d1fae5; color: #047857; }
-        .status-pending { background: #fef3c7; color: #b45309; }
-
-        .action-btn {
-            padding: 6px 12px;
-            font-size: 12px;
-            margin-right: 6px;
-            background: #667eea;
-            color: white;
-        }
-
-        .action-btn:hover { background: #5568d3; }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
+        .chip { padding: 6px 10px; border-radius: 999px; background: rgba(255,255,255,0.08); color: #dbeafe; font-weight: 600; font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.1); display: inline-flex; align-items: center; gap: 8px; }
+        .controls-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+        .controls-grid input, .controls-grid select { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); color: #e5e7eb; border-radius: 10px; padding: 10px 12px; }
+        .controls-grid input::placeholder { color: #9ba9c5; }
+        .table-wrapper { background: var(--card-bg); border-radius: 14px; overflow: hidden; border: 1px solid var(--border); box-shadow: 0 16px 40px rgba(0,0,0,0.35); }
+        table { width: 100%; border-collapse: collapse; color: #e5e7eb; }
+        thead { background: rgba(255,255,255,0.04); }
+        th { padding: 14px; font-size: 0.8rem; letter-spacing: 0.3px; text-transform: uppercase; color: #c7d2fe; border-bottom: 1px solid var(--border); }
+        td { padding: 14px; border-bottom: 1px solid var(--border); }
+        tbody tr:hover { background: rgba(255,255,255,0.02); }
+        .status-badge { padding: 6px 12px; border-radius: 999px; font-weight: 700; font-size: 0.8rem; }
+        .status-checked { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+        .status-pending { background: rgba(251, 191, 36, 0.18); color: #fbbf24; }
+        .action-btn { padding: 6px 12px; font-size: 0.8rem; border-radius: 10px; background: linear-gradient(135deg, #4f9cf9, #7c3aed); border: none; color: #fff; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .action-btn + .action-btn { margin-left: 6px; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.65); z-index: 2000; align-items: center; justify-content: center; }
         .modal.show { display: flex; }
-
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #222;
-            font-size: 14px;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #999;
-        }
-
-        .empty-state-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-
-        @media (max-width: 768px) {
-            .navbar { flex-direction: column; gap: 16px; }
-            .nav-links { flex-direction: column; gap: 8px; }
-            .controls { flex-direction: column; }
-            table { font-size: 12px; }
-            th, td { padding: 12px; }
-        }
+        .modal-content { background: #0f172a; color: #e5e7eb; border-radius: 14px; padding: 26px; width: 520px; max-width: 92%; border: 1px solid var(--border); box-shadow: 0 24px 60px rgba(0,0,0,0.45); }
+        .modal-header { font-size: 1.2rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+        .modal-close { background: none; border: none; color: #9ca3af; font-size: 1.5rem; cursor: pointer; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { font-weight: 600; color: #cbd5e1; margin-bottom: 6px; display: block; }
+        .form-group input, .form-group textarea { width: 100%; border-radius: 10px; border: 1px solid var(--border); background: rgba(255,255,255,0.03); color: #e5e7eb; padding: 10px; }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <h1>🛫 SmartFly Admin</h1>
-        <ul class="nav-links">
-            <li><a href="/admin/dashboard.html">Dashboard</a></li>
-            <li><a href="/admin/checkins.html">Check-ins</a></li>
-            <li><a href="/admin/bookings.html">Payments</a></li>
-            <li><a href="/admin/flights.html">Flights</a></li>
-            <li><a href="/admin/activity-log.html">Activity Log</a></li>
-            <li><button class="logout-btn" onclick="logout()">Logout</button></li>
-        </ul>
-    </nav>
-
-    <div class="container">
-        <div class="header">
-            <h2>Check-ins Manager</h2>
-            <p>Monitor and manage all passenger check-ins in real-time</p>
-        </div>
-
-        <div class="controls">
-            <input type="text" id="searchInput" placeholder="Search by name, passport, or flight...">
-            <select id="statusFilter">
-                <option value="">All Status</option>
-                <option value="checked">Checked In</option>
-                <option value="pending">Pending</option>
-            </select>
-            <select id="flightFilter">
-                <option value="">All Flights</option>
-            </select>
-            <button onclick="applyFilters()">Filter</button>
-            <button onclick="location.reload()">Refresh</button>
-            <button onclick="exportPassengersCSV()" style="background: #10b981; margin-left: auto;">📥 Export CSV</button>
-        </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Passenger Name</th>
-                        <th>Passport</th>
-                        <th>Email</th>
-                        <th>Flight</th>
-                        <th>Seat</th>
-                        <th>Status</th>
-                        <th>Check-in Time</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="checkinsTable">
-                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Check-in Detail Modal -->
-    <div id="checkinModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span>Passenger Check-in</span>
-                <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="admin-layout">
+        <!-- Top Navigation Bar -->
+        <nav class="top-navbar">
+          <div class="navbar-container">
+            <!-- Brand Logo -->
+            <div class="navbar-brand">
+              <div class="brand-icon">
+                <i class="fas fa-plane-departure"></i>
+              </div>
+              <div class="brand-text">
+                <div class="brand-name">SmartFly</div>
+                <div class="brand-subtitle">Admin Panel</div>
+              </div>
             </div>
-            <div id="modalBody"></div>
-        </div>
+
+            <!-- Navigation Bubbles -->
+            <div class="nav-bubbles">
+              <a href="dashboard.html" class="nav-bubble" title="Dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+              </a>
+              <a href="flights.html" class="nav-bubble" title="Flights Management">
+                <i class="fas fa-plane"></i>
+                <span>Flights</span>
+              </a>
+              <a href="bookings.html" class="nav-bubble" title="Bookings">
+                <i class="fas fa-calendar-check"></i>
+                <span>Bookings</span>
+              </a>
+              <a href="checkins.html" class="nav-bubble active" title="Check-Ins">
+                <i class="fas fa-passport"></i>
+                <span>Check-Ins</span>
+              </a>
+              <a href="payments.html" class="nav-bubble" title="Payments">
+                <i class="fas fa-credit-card"></i>
+                <span>Payments</span>
+              </a>
+              <a href="reports.html" class="nav-bubble" title="Reports">
+                <i class="fas fa-chart-bar"></i>
+                <span>Reports</span>
+              </a>
+              <a href="settings.html" class="nav-bubble" title="Settings">
+                <i class="fas fa-cog"></i>
+                <span>Settings</span>
+              </a>
+            </div>
+
+            <!-- User Profile & Actions -->
+            <div class="navbar-actions">
+              <div class="admin-profile-compact">
+                <div class="profile-avatar-small">RG</div>
+                <div class="profile-info-compact">
+                  <div class="profile-name">Riley Gabi</div>
+                  <div class="profile-role">Administrator</div>
+                </div>
+              </div>
+              <button class="btn-logout" title="Log out" onclick="window.location.href='../admin-login.html'">
+                <i class="fas fa-sign-out-alt"></i>
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        <main class="main-content flex-grow-1 p-4">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                    <h1 class="fw-bold text-white mb-1">Check-ins Command Center</h1>
+                    <p class="text-muted mb-0">Monitor, filter, and action check-ins in real time.</p>
+                </div>
+                <div class="chip"><i class="fas fa-circle text-success"></i> Live sync enabled</div>
+            </div>
+
+            <div class="hero-slab mb-4">
+                <div class="floating-dots"></div>
+                <div class="content">
+                    <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
+                        <div>
+                            <div class="d-inline-flex align-items-center gap-2 pill mb-2"><i class="fas fa-shield-check"></i> Verified ID + Biometrics</div>
+                            <h3 class="fw-bold">Faster lanes for cleared passengers.</h3>
+                            <p class="mb-0" style="color:#e5e7eb; max-width:640px;">Smart rules route passengers to the right lane while surfacing missing data, so agents can finish check-in in seconds.</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-light btn-sm text-dark"><i class="fas fa-download"></i> Export snapshot</button>
+                            <button class="btn btn-outline-light btn-sm"><i class="fas fa-bell"></i> Alerts</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="chip"><i class="fas fa-users"></i> <span id="activeCount">—</span> active</span>
+                            <span class="chip"><i class="fas fa-check-circle"></i> <span id="checkedCount">—</span> checked-in</span>
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button class="btn btn-primary btn-sm" onclick="applyFilters()"><i class="fas fa-filter"></i> Apply</button>
+                            <button class="btn btn-outline-light btn-sm" onclick="location.reload()"><i class="fas fa-rotate"></i></button>
+                            <button class="btn btn-success btn-sm" onclick="exportPassengersCSV()"><i class="fas fa-file-arrow-down"></i> Export CSV</button>
+                        </div>
+                    </div>
+
+                    <div class="controls-grid mb-3">
+                        <input type="text" id="searchInput" placeholder="Search by name, passport, or flight...">
+                        <select id="statusFilter">
+                            <option value="">All Status</option>
+                            <option value="checked">Checked In</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        <select id="flightFilter">
+                            <option value="">All Flights</option>
+                        </select>
+                    </div>
+
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Passenger Name</th>
+                                    <th>Passport</th>
+                                    <th>Email</th>
+                                    <th>Flight</th>
+                                    <th>Seat</th>
+                                    <th>Status</th>
+                                    <th>Check-in Time</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="checkinsTable">
+                                <tr><td colspan="8" class="text-center py-4">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal -->
+            <div id="checkinModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <span>Passenger Check-in</span>
+                        <button class="modal-close" onclick="closeModal()">×</button>
+                    </div>
+                    <div id="modalBody"></div>
+                </div>
+            </div>
+        </main>
     </div>
 
+    <script src="../js/api-client.js"></script>
     <script>
         let allPassengers = [];
         let filteredPassengers = [];
@@ -298,12 +205,12 @@
 
         async function loadPassengers() {
             try {
-                const res = await fetch('/api/passengers');
+                const res = await (window.apiFetch ? apiFetch('/api/passengers') : fetch('/api/passengers'));
                 const passengers = await res.json() || [];
                 allPassengers = passengers;
                 
                 // Load flights to populate filter
-                const flightRes = await fetch('/api/flights');
+                const flightRes = await (window.apiFetch ? apiFetch('/api/flights') : fetch('/api/flights'));
                 const flightData = await flightRes.json();
                 const flights = flightData.flights || [];
                 
@@ -340,25 +247,32 @@
 
         function renderTable() {
             const table = document.getElementById('checkinsTable');
+            const activeCount = document.getElementById('activeCount');
+            const checkedCount = document.getElementById('checkedCount');
+
+            if (activeCount) activeCount.textContent = filteredPassengers.length;
+            if (checkedCount) checkedCount.textContent = filteredPassengers.filter(p => p.boarding_pass).length;
+
             if (filteredPassengers.length === 0) {
-                table.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No passengers found</td></tr>';
+                table.innerHTML = '<tr><td colspan="8" class="text-center py-4">No passengers found</td></tr>';
                 return;
             }
 
             table.innerHTML = filteredPassengers.map(p => {
                 const hasNotes = p.admin_notes && p.admin_notes.trim().length > 0;
+                const checkinTime = p.boarding_pass ? new Date(p.boarding_pass.created_at || Date.now()).toLocaleString() : '—';
                 return `
                     <tr>
-                        <td><strong>${p.name || 'N/A'}</strong> ${hasNotes ? '<span style="color: #f59e0b; font-size: 16px;" title="Has admin notes">📝</span>' : ''}</td>
+                        <td><strong>${p.name || 'N/A'}</strong> ${hasNotes ? '<span style="color: #fbbf24; font-size: 16px;" title="Has admin notes">📝</span>' : ''}</td>
                         <td>${p.passport || 'N/A'}</td>
                         <td>${p.email || 'N/A'}</td>
                         <td>${p.flight || 'N/A'}</td>
                         <td>${p.seat || '—'}</td>
-                        <td><span class="status-badge ${p.boarding_pass ? 'status-checked' : 'status-pending'}">${p.boarding_pass ? '✅ Checked In' : '⏳ Pending'}</span></td>
-                        <td>${p.boarding_pass ? new Date(p.boarding_pass.created_at || Date.now()).toLocaleString() : '—'}</td>
-                        <td>
+                        <td><span class="status-badge ${p.boarding_pass ? 'status-checked' : 'status-pending'}">${p.boarding_pass ? 'Checked In' : 'Pending'}</span></td>
+                        <td>${checkinTime}</td>
+                        <td class="text-end">
                             <button class="action-btn" onclick="viewDetails('${p.passport}')">View</button>
-                            ${!p.boarding_pass ? `<button class="action-btn" style="background: #10b981;" onclick="completeCheckin('${p.passport}')">Check In</button>` : ''}
+                            ${!p.boarding_pass ? `<button class="action-btn" style="background: linear-gradient(135deg, #22c55e, #16a34a);" onclick="completeCheckin('${p.passport}')">Check In</button>` : ''}
                         </td>
                     </tr>
                 `;
@@ -453,14 +367,21 @@
             
             try {
                 const token = localStorage.getItem('adminToken');
-                const response = await fetch(`/api/passengers/${passport}/notes`, {
+                const response = await (window.apiFetch ? apiFetch(`/api/passengers/${passport}/notes`, {
                     method: 'PATCH',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ admin_notes: notes })
-                });
+                }) : fetch(`/api/passengers/${passport}/notes`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ admin_notes: notes })
+                }));
 
                 if (response.ok) {
                     const passenger = allPassengers.find(p => p.passport === passport);
@@ -483,9 +404,11 @@
 
         function exportPassengersCSV() {
             const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
-            fetch('/api/export/passengers', {
+            (window.apiFetch ? apiFetch('/api/export/passengers', {
                 headers: { 'Authorization': `Bearer ${token}` }
-            }).then(res => {
+            }) : fetch('/api/export/passengers', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })).then(res => {
                 if (!res.ok) throw new Error('Export failed');
                 return res.blob();
             }).then(blob => {
@@ -514,8 +437,8 @@
         document.getElementById('statusFilter').addEventListener('change', applyFilters);
         document.getElementById('flightFilter').addEventListener('change', applyFilters);
 
-        checkAuth();
-        loadPassengers();
+                checkAuth();
+                loadPassengers();
     </script>
 </body>
 </html>

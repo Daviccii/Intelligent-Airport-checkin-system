@@ -413,6 +413,17 @@
         const id = input.id + '-list';
         list.id = id;
         input.setAttribute('aria-controls', id);
+        // Ensure wrapper is positioned and allows overflow so dropdown isn't clipped
+        try {
+            const parent = input.parentNode;
+            if (parent) {
+                if (!parent.classList.contains('airport-field')) parent.classList.add('airport-field');
+                const pos = window.getComputedStyle(parent).position;
+                if (pos === 'static') parent.style.position = 'relative';
+                parent.style.overflow = 'visible';
+            }
+        } catch(e){}
+        console.log('[autocomplete] createSuggestionBox for', input.id, '→', id);
         input.parentNode.appendChild(list);
         return list;
     }
@@ -496,6 +507,7 @@
         function selectIndex(i){
             const a = items[i];
             if (!a) return;
+            console.log('[autocomplete] selected', a.code, 'for', inp.id);
             inp.value = `${a.city} — ${a.code}`;
             // populate hidden IATA code field for the input that was acted on
             try {
@@ -512,9 +524,20 @@
         }
 
         inp.addEventListener('input', (e)=>{
+            console.log('[autocomplete] input on', inp.id);
             const q = inp.value || '';
             const results = matchAirports(q);
             render(results);
+        });
+
+        // Also show suggestions on focus: nearest if empty, filtered if typed
+        inp.addEventListener('focus', ()=>{
+            try {
+                const q = (inp.value || '').trim();
+                console.log('[autocomplete] focus on', inp.id, 'query=', q);
+                const results = q ? matchAirports(q) : nearestAirports(8);
+                render(results);
+            } catch(err) { console.debug('[autocomplete] focus error', err); }
         });
 
         // Show nearby airports only after a deliberate user click (nearest → furthest).
@@ -528,6 +551,7 @@
                 const q = (inp.value || '').trim();
                 if (q) return; // user has typed — regular input handler will run
                 const results = nearestAirports(8);
+                console.log('[autocomplete] pointer show-nearby on', inp.id, 'count=', results.length);
                 render(results);
             }catch(err){ /* non-fatal */ }
         }

@@ -133,6 +133,11 @@ html, body { height: 100%; font-family: Inter, system-ui, -apple-system, 'Segoe 
 }
 
 /* Autocomplete suggestions for airport inputs */
+.airport-field {
+    position: relative;
+    overflow: visible;
+}
+
 .airport-suggestions {
     position: absolute;
     top: calc(100% + 8px);
@@ -147,12 +152,38 @@ html, body { height: 100%; font-family: Inter, system-ui, -apple-system, 'Segoe 
     overflow: auto;
     padding: 6px;
     text-align: left;
+    display: none; /* default hidden; shown when not [hidden] or with .active */
+}
+.airport-suggestions:not([hidden]),
+.airport-suggestions.active { display: block; }
+
+.airport-suggestion,
+.airport-suggestion-item {
+    padding: 10px 12px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
 }
 .airport-suggestion:hover,
-.airport-suggestion.highlight { background: linear-gradient(90deg, rgba(10,110,255,0.06), rgba(10,110,255,0.03)); }
+.airport-suggestion.highlight,
+.airport-suggestion-item:hover { background: linear-gradient(90deg, rgba(10,110,255,0.06), rgba(10,110,255,0.03)); }
+
+/* Optional inner layout used by booking-widget suggestions */
+.airport-suggestion .as-left { display:flex; align-items:center; gap:10px; }
+.airport-suggestion .as-code { font-weight:700; color:#0a6eff; min-width:48px; text-align:center; }
+.airport-suggestion .as-info { display:flex; flex-direction:column; gap:2px; }
+.airport-suggestion .as-name { color:#1f2937; font-weight:600; font-size:14px; }
+.airport-suggestion .as-city { color:#6b7280; font-size:12px; }
+.airport-suggestion .as-right { margin-left:auto; color:#374151; font-size:12px; opacity:0.8; }
 
 /* Make sure suggestion boxes don't overflow the bounds of the parent input container */
-.booking-widget--hero .airport-input { position: relative; }
+.booking-widget--hero .airport-input { position: relative; overflow: visible; }
 
 /* Date row and accessibility improvements */
 .date-row { display:flex; gap:12px; align-items:end; flex-wrap:wrap; }

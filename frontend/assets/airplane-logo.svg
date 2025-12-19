@@ -1,0 +1,40 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradient definitions -->
+  <defs>
+    <linearGradient id="planeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#60a5fa;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:1" />
+    </linearGradient>
+    <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Main fuselage -->
+  <ellipse cx="100" cy="100" rx="45" ry="70" fill="url(#planeGradient)" filter="url(#shadow)"/>
+  
+  <!-- Cockpit -->
+  <circle cx="100" cy="55" r="15" fill="#93c5fd" filter="url(#shadow)"/>
+  
+  <!-- Windshield -->
+  <ellipse cx="100" cy="52" rx="8" ry="10" fill="#e0f2fe" opacity="0.9"/>
+  
+  <!-- Right wing -->
+  <path d="M 145 100 Q 180 95 185 100 Q 180 105 145 105 Z" fill="url(#planeGradient)" filter="url(#shadow)"/>
+  
+  <!-- Left wing -->
+  <path d="M 55 100 Q 20 95 15 100 Q 20 105 55 105 Z" fill="url(#planeGradient)" filter="url(#shadow)"/>
+  
+  <!-- Right stabilizer (rear wing) -->
+  <path d="M 140 130 Q 165 128 168 132 Q 165 135 140 135 Z" fill="#7dd3fc" filter="url(#shadow)"/>
+  
+  <!-- Left stabilizer (rear wing) -->
+  <path d="M 60 130 Q 35 128 32 132 Q 35 135 60 135 Z" fill="#7dd3fc" filter="url(#shadow)"/>
+  
+  <!-- Vertical tail -->
+  <polygon points="100,140 94,165 106,165" fill="#60a5fa" filter="url(#shadow)"/>
+  
+  <!-- Engines (optional accent) -->
+  <circle cx="85" cy="115" r="5" fill="#1e40af" opacity="0.7"/>
+  <circle cx="115" cy="115" r="5" fill="#1e40af" opacity="0.7"/>
+</svg>

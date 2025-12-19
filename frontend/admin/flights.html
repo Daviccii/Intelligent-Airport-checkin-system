@@ -1,583 +1,1616 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Flights Control — SmartFly Admin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; color: #222; }
-        
-        .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flights &mdash; SmartFly Airlines Admin</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="../admin-dashboard.css?v=2" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
+  <style>
+    :root {
+      --primary: #0d6efd;
+      --primary-dark: #0c5de7;
+      --primary-light: #0dcaf0;
+      --success: #198754;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --light: #f8f9fa;
+      --border: #dee2e6;
+      --card: #ffffff;
+      --text-strong: #0a0e27;
+      --text-muted: #6c757d;
+      --dark-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
 
-        .navbar h1 { font-size: 28px; font-weight: 700; }
+    body {
+      background: linear-gradient(135deg, #f5f7fb 0%, #eff6ff 100%);
+      color: var(--text-strong);
+      font-family: 'Inter', 'Poppins', sans-serif;
+      letter-spacing: -0.3px;
+    }
 
-        .nav-links {
-            display: flex;
-            gap: 24px;
-            list-style: none;
-        }
+    /* Dashboard Header */
+    .dashboard-header {
+      background: #ffffff;
+      color: var(--text-strong);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: var(--dark-shadow);
+      border: 1px solid var(--border);
+      animation: fadeInDown 0.6s ease;
+    }
 
-        .nav-links a, .logout-btn {
-            color: white;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            border: none;
-            background: none;
-            cursor: pointer;
-            transition: opacity 0.3s;
-        }
+    .dashboard-header h1 {
+      color: var(--text-strong);
+      margin-bottom: 8px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
 
-        .nav-links a:hover, .logout-btn:hover { opacity: 0.8; }
+    .dashboard-header .text-muted {
+      color: var(--text-muted) !important;
+      font-weight: 500;
+    }
 
-        .container { max-width: 1400px; margin: 0 auto; padding: 40px 20px; }
+    .greeting-text {
+      background: linear-gradient(135deg, var(--primary) 0%, #0dcaf0 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
 
-        .header { margin-bottom: 32px; }
-        .header h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; }
-        .header p { color: #666; }
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        .controls {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 24px;
-        }
+    .btn-group .btn {
+      border-radius: 12px;
+      padding: 11px 18px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
 
-        button {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 500;
-            transition: transform 0.3s;
-        }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary) 0%, #0dcaf0 100%);
+      border: none;
+      box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25);
+      color: white;
+    }
 
-        button:hover { transform: translateY(-2px); }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(13, 110, 253, 0.35);
+    }
 
-        .table-wrapper {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
+    .btn-outline-secondary {
+      border: 2px solid var(--border);
+      color: var(--text-strong);
+      background: #fff;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+    .btn-outline-secondary:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #f0f7ff;
+    }
 
-        thead {
-            background: #f9f9f9;
-            border-bottom: 2px solid #e0e0e0;
-        }
+    .btn-info {
+      background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%);
+      border: none;
+      color: white;
+      box-shadow: 0 8px 20px rgba(13, 202, 240, 0.25);
+    }
 
-        th {
-            padding: 16px;
-            text-align: left;
-            font-weight: 600;
-            color: #666;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
+    .btn-info:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(13, 202, 240, 0.35);
+    }
 
-        td {
-            padding: 16px;
-            border-bottom: 1px solid #f0f0f0;
-        }
+    /* Stats Cards */
+    .stat-card {
+      background: var(--card);
+      border-radius: 18px;
+      padding: 24px;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--dark-shadow);
+      color: var(--text-strong);
+    }
 
-        tbody tr:hover { background: #f9f9f9; }
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(13, 110, 253, 0.15);
+      border-color: var(--primary);
+    }
 
-        .status-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            background: #d1fae5;
-            color: #047857;
-        }
+    .stat-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary) 0%, #0dcaf0 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 8px 20px rgba(13, 110, 253, 0.25);
+      flex-shrink: 0;
+    }
 
-        .action-btn {
-            padding: 6px 12px;
-            font-size: 12px;
-            margin-right: 6px;
-            background: #667eea;
-            color: white;
-        }
+    .stat-label {
+      display: block;
+      font-size: 13px;
+      color: #6b7280;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
 
-        .action-btn:hover { background: #5568d3; }
+    .stat-value {
+      display: block;
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+    }
 
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
+    /* Card Header Gradient */
+    .card-header.bg-gradient {
+      background: linear-gradient(135deg, var(--primary) 0%, #0dcaf0 100%) !important;
+      border: none !important;
+    }
 
-        .modal.show { display: flex; }
+    .card-header h5 {
+      color: white !important;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 700;
+    }
 
-        .modal-content {
-            background: white;
-            border-radius: 12px;
-            padding: 32px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
+    /* Flights Grid */
+    .flights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
 
-        .modal-header {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    @media (max-width: 1200px) {
+      .flights-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      }
+    }
 
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #999;
-        }
+    /* Flight Card */
+    .flight-card {
+      background: white;
+      border-radius: 18px;
+      border: 1.5px solid var(--border);
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: var(--dark-shadow);
+      display: flex;
+      flex-direction: column;
+      cursor: pointer;
+      position: relative;
+      animation: fadeInUp 0.6s ease backwards;
+    }
 
-        .form-group {
-            margin-bottom: 16px;
-        }
+    .flight-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary) 0%, #0dcaf0 100%);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s ease;
+      z-index: 1;
+    }
 
-        .form-group label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 500;
-            color: #222;
-            font-size: 14px;
-        }
+    .flight-card:hover::before {
+      transform: scaleX(1);
+    }
 
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-        }
+    .flight-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(13, 110, 253, 0.2);
+      border-color: var(--primary);
+    }
 
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: #e0e0e0;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 8px;
-        }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-            transition: width 0.3s;
-        }
+    .flight-card-header {
+      padding: 16px 18px;
+      background: linear-gradient(135deg, #f8f9fa 0%, #f0f7ff 100%);
+      border-bottom: 1.5px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-        @media (max-width: 768px) {
-            .navbar { flex-direction: column; gap: 16px; }
-            .nav-links { flex-direction: column; gap: 8px; }
-            .controls { flex-direction: column; }
-            table { font-size: 12px; }
-            th, td { padding: 12px; }
-        }
-    </style>
+    .airline-logo {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--primary), #0dcaf0);
+      border: 2px solid rgba(13, 110, 253, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(13, 110, 253, 0.15);
+    }
+
+    .airline-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 6px;
+      filter: brightness(0) invert(1);
+    }
+
+    .flight-info-header {
+      flex: 1;
+    }
+
+    .flight-info-header h6 {
+      margin: 0;
+      font-weight: 700;
+      color: #1f2937;
+      font-size: 14px;
+    }
+
+    .flight-info-header .text-muted {
+      margin: 2px 0 0;
+      font-size: 12px;
+      color: #4b5563 !important;
+    }
+
+    .flight-status {
+      display: flex;
+      gap: 8px;
+    }
+
+    .badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    /* Flight Card Body */
+    .flight-card-body {
+      padding: 16px;
+      flex: 1;
+    }
+
+    .route-display {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .airport {
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .airport-code {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+
+    .airport-time {
+      font-size: 11px;
+      color: #4b5563;
+      font-weight: 500;
+    }
+
+    .route-line {
+      flex: 1;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      position: relative;
+      margin: 0 12px;
+    }
+
+    .route-duration {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 0 6px;
+      font-size: 10px;
+      color: #4b5563;
+      font-weight: 600;
+    }
+
+    .flight-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 12px;
+      background: var(--light);
+      border-radius: 8px;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 10px;
+      color: #4b5563;
+      font-weight: 600;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.2px;
+    }
+
+    .stat-value {
+      display: block;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    /* Occupancy Bar */
+    .occupancy-bar {
+      height: 8px;
+      background: var(--light);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .occupancy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.6s ease;
+      border-radius: 4px;
+    }
+
+    .occupancy-text {
+      position: absolute;
+      top: 50%;
+      right: 8px;
+      transform: translateY(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      color: #4b5563;
+      background: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .empty-icon {
+      font-size: 64px;
+      color: #d1d5db;
+      margin-bottom: 16px;
+    }
+
+    .empty-state h4 {
+      color: #1f2937;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .empty-state p {
+      color: #6b7280;
+      margin-bottom: 24px;
+    }
+
+    /* Modal Overlay */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-dialog {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+      max-width: 550px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      padding: 22px 24px;
+      border-bottom: 2px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, #f8f9fa 0%, #f0f7ff 100%);
+      border-radius: 18px 18px 0 0;
+    }
+
+    .modal-header h5 {
+      margin: 0;
+      font-weight: 700;
+      color: var(--text-strong);
+      font-size: 18px;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      color: #667eea;
+    }
+
+    .modal-content-actions {
+      padding: 24px;
+    }
+
+    .flight-details {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: var(--light);
+      border-radius: 8px;
+    }
+
+    .flight-details p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: #1f2937;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .action-btn {
+      padding: 13px 18px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      color: white;
+    }
+
+    .edit-btn {
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+      box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+    }
+
+    .edit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(13, 110, 253, 0.4);
+    }
+
+    .seats-btn {
+      background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+      box-shadow: 0 8px 20px rgba(40, 167, 69, 0.3);
+    }
+
+    .seats-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(40, 167, 69, 0.4);
+    }
+
+    .delete-btn {
+      background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+      box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3);
+    }
+
+    .delete-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(220, 53, 69, 0.4);
+    }
+
+    .close-btn {
+      background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+      box-shadow: 0 8px 20px rgba(108, 117, 125, 0.3);
+    }
+
+    .close-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(108, 117, 125, 0.4);
+    }
+
+    /* Seats Grid */
+    .seats-info {
+      margin-bottom: 20px;
+      padding: 16px;
+      background: var(--light);
+      border-radius: 8px;
+    }
+
+    .seats-info p {
+      margin: 8px 0;
+      font-size: 14px;
+      color: #1f2937;
+      font-weight: 500;
+    }
+
+    .seats-grid {
+      margin-top: 16px;
+    }
+
+    .seat-box {
+      padding: 8px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 12px;
+      border: 2px solid var(--border);
+      cursor: default;
+    }
+
+    .seat-available {
+      background: #f0fdf4;
+      color: #10b981;
+      border-color: #10b981;
+    }
+
+    .seat-booked {
+      background: #fef2f2;
+      color: #ef4444;
+      border-color: #ef4444;
+    }
+  </style>
 </head>
 <body>
-    <nav class="navbar">
-        <h1>🛫 SmartFly Admin</h1>
-        <ul class="nav-links">
-            <li><a href="/admin/dashboard.html">Dashboard</a></li>
-            <li><a href="/admin/checkins.html">Check-ins</a></li>
-            <li><a href="/admin/bookings.html">Payments</a></li>
-            <li><a href="/admin/flights.html">Flights</a></li>
-            <li><a href="/admin/activity-log.html">Activity Log</a></li>
-            <li><button class="logout-btn" onclick="logout()">Logout</button></li>
-        </ul>
+  <div class="admin-layout">
+    <!-- Top Navigation Bar -->
+    <nav class="top-navbar">
+      <div class="navbar-container">
+        <!-- Brand Logo -->
+        <div class="navbar-brand">
+          <div class="brand-icon">
+            <img src="../assets/airplane-logo.svg" alt="SmartFly" style="width: 28px; height: 28px;">
+          </div>
+          <div class="brand-text">
+            <div class="brand-name">SmartFly</div>
+            <div class="brand-subtitle">Admin Panel</div>
+          </div>
+        </div>
+
+        <!-- Navigation Bubbles -->
+        <div class="nav-bubbles">
+          <a href="dashboard.html" class="nav-bubble" title="Dashboard">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="flights.html" class="nav-bubble active" title="Flights Management">
+            <i class="fas fa-plane"></i>
+            <span>Flights</span>
+          </a>
+          <a href="bookings.html" class="nav-bubble" title="Bookings">
+            <i class="fas fa-calendar-check"></i>
+            <span>Bookings</span>
+          </a>
+          <a href="checkins.html" class="nav-bubble" title="Check-Ins">
+            <i class="fas fa-passport"></i>
+            <span>Check-Ins</span>
+          </a>
+          <a href="payments.html" class="nav-bubble" title="Payments">
+            <i class="fas fa-credit-card"></i>
+            <span>Payments</span>
+          </a>
+          <a href="reports.html" class="nav-bubble" title="Reports">
+            <i class="fas fa-chart-bar"></i>
+            <span>Reports</span>
+          </a>
+          <a href="settings.html" class="nav-bubble" title="Settings">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </div>
+
+        <!-- User Profile & Actions -->
+        <div class="navbar-actions">
+          <div class="admin-profile-compact">
+            <div class="profile-avatar-small">RG</div>
+            <div class="profile-info-compact">
+              <div class="profile-name">Riley Gabi</div>
+              <div class="profile-role">Administrator</div>
+            </div>
+          </div>
+          <button class="btn-logout" title="Log out" onclick="window.location.href='../admin-login.html'">
+            <i class="fas fa-sign-out-alt"></i>
+          </button>
+        </div>
+      </div>
     </nav>
 
-    <div class="container">
-        <div class="header">
-            <h2>Flights Control</h2>
-            <p>Manage flights, capacity, and seat assignments</p>
-        </div>
-
-        <div class="controls">
-            <button onclick="openAddFlightModal()">➕ Add New Flight</button>
-            <button onclick="location.reload()">Refresh</button>
-            <button onclick="exportFlightsCSV()" style="background: #10b981; margin-left: auto;">📥 Export CSV</button>
-        </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Flight Number</th>
-                        <th>Airline</th>
-                        <th>Route</th>
-                        <th>Departure</th>
-                        <th>Capacity</th>
-                        <th>Occupancy</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="flightsTable">
-                    <tr><td colspan="8" style="text-align: center; padding: 40px;">Loading...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Add/Edit Flight Modal -->
-    <div id="flightModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <span id="modalTitle">Add New Flight</span>
-                <button class="modal-close" onclick="closeModal()">×</button>
+    <!-- Main Content -->
+    <main class="main-content flex-grow-1">
+      <div class="p-4">
+        <!-- Enhanced Header with Controls -->
+        <div class="dashboard-header mb-4">
+          <div class="row align-items-center">
+            <div class="col">
+              <h1 class="display-5 fw-bold mb-2">
+                <span class="greeting-text">✈️ SmartFly Flights Management</span>
+              </h1>
+              <p class="text-muted mb-0">Manage and monitor all active flights in the system</p>
             </div>
-            <form onsubmit="saveFlight(event)">
-                <div class="form-group">
-                    <label>Flight Number *</label>
-                    <input type="text" id="flightNumber" required>
-                </div>
-                <div class="form-group">
-                    <label>Airline</label>
-                    <input type="text" id="airline">
-                </div>
-                <div class="form-group">
-                    <label>Origin Airport</label>
-                    <input type="text" id="origin" placeholder="e.g., JFK">
-                </div>
-                <div class="form-group">
-                    <label>Destination Airport</label>
-                    <input type="text" id="destination" placeholder="e.g., LHR">
-                </div>
-                <div class="form-group">
-                    <label>Departure Date & Time</label>
-                    <input type="datetime-local" id="departTime">
-                </div>
-                <div class="form-group">
-                    <label>Arrival Date & Time</label>
-                    <input type="datetime-local" id="arrivalTime">
-                </div>
-                <div class="form-group">
-                    <label>Aircraft Type</label>
-                    <input type="text" id="aircraft" placeholder="e.g., Boeing 737">
-                </div>
-                <div class="form-group">
-                    <label>Capacity</label>
-                    <input type="number" id="capacity" min="1">
-                </div>
-                <div class="form-group">
-                    <label>Gate</label>
-                    <input type="text" id="gate" placeholder="e.g., A12">
-                </div>
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="checkinEnabled" checked>
-                        Check-in Enabled
-                    </label>
-                </div>
-                <div style="display: flex; gap: 12px;">
-                    <button type="submit">Save Flight</button>
-                    <button type="button" onclick="closeModal()" style="background: #999;">Cancel</button>
-                </div>
-            </form>
+            <div class="col-auto">
+              <div class="btn-group gap-2" role="group">
+                <button class="btn btn-primary btn-lg" onclick="openAddFlightModal()">
+                  <i class="fas fa-plus-circle"></i> Add Flight
+                </button>
+                <button class="btn btn-outline-secondary btn-lg" onclick="exportFlightsCSV()">
+                  <i class="fas fa-download"></i> Export
+                </button>
+                <a href="/flights-booking.html" class="btn btn-info btn-lg">
+                  <i class="fas fa-ticket-alt"></i> View Booking Interface
+                </a>
+                <button class="btn btn-outline-secondary btn-lg" onclick="location.reload()">
+                  <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
 
-    <script>
-        let allFlights = [];
+        <!-- Stats Cards -->
+        <div class="row mb-4">
+          <div class="col-md-3 mb-3">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-plane"></i></div>
+              <div class="stat-content">
+                <div class="stat-label">Total Flights</div>
+                <div class="stat-value" id="totalFlights">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-users"></i></div>
+              <div class="stat-content">
+                <div class="stat-label">Total Passengers</div>
+                <div class="stat-value" id="totalPassengers">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+              <div class="stat-content">
+                <div class="stat-label">Active Flights</div>
+                <div class="stat-value" id="activeFlights">0</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-fill-drip"></i></div>
+              <div class="stat-content">
+                <div class="stat-label">Occupancy Rate</div>
+                <div class="stat-value" id="occupancyRate">0%</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        function checkAuth() {
-            const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
-            if (!token) {
-                setTimeout(() => {
-                    if (!localStorage.getItem('adminToken') && !localStorage.getItem('session')) {
-                        window.location.href = '/admin-login.html';
-                    }
-                }, 100);
-                return false;
-            }
-            return true;
-        }
+        <!-- Live Flight Monitoring Section -->
+        <div class="row mb-4">
+          <!-- Flight Distribution Chart -->
+          <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-gradient border-0 py-3">
+                <h5 class="mb-0 fw-bold text-white">
+                  <i class="fas fa-chart-pie"></i> Flight Status Distribution
+                </h5>
+              </div>
+              <div class="card-body p-4">
+                <canvas id="flightStatusChart" style="height: 250px;"></canvas>
+              </div>
+            </div>
+          </div>
 
-        async function loadFlights() {
-            try {
-                const res = await fetch('/api/flights');
-                const data = await res.json();
-                allFlights = data.flights || [];
-                renderTable();
-            } catch (err) {
-                console.error('Failed to load flights:', err);
-            }
-        }
+          <!-- On-Time Performance Chart -->
+          <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-gradient border-0 py-3">
+                <h5 class="mb-0 fw-bold text-white">
+                  <i class="fas fa-chart-bar"></i> On-Time Performance
+                </h5>
+              </div>
+              <div class="card-body p-4">
+                <canvas id="onTimeChart" style="height: 250px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        function renderTable() {
-            const table = document.getElementById('flightsTable');
-            if (allFlights.length === 0) {
-                table.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No flights found</td></tr>';
-                return;
-            }
-
-            table.innerHTML = allFlights.map(f => {
-                const capacity = f.capacity || 0;
-                const deptIso = f.departure_time || f.time || '';
-                const dept = deptIso ? new Date(deptIso.replace('Z','')).toLocaleString() : 'TBD';
-                const classes = (f.classes || []).map(c => `${c.name} $${(c.price||0).toFixed ? c.price.toFixed(2) : c.price}`).join('<br>');
-                const checkBadge = f.checkin_enabled ? '🟢 Open' : '🔴 Closed';
-
-                return `
-                    <tr>
-                        <td><strong>${f.flight}</strong><br><small>${f.aircraft || ''}</small></td>
-                        <td>${f.airline || '—'}</td>
-                        <td>${f.origin || '—'} → ${f.destination || '—'}</td>
-                        <td>${f.date || ''}<br><small>${dept}</small></td>
-                        <td>${capacity}</td>
-                        <td class="classes">${classes || '—'}</td>
-                        <td><span class="status-badge">${checkBadge}</span></td>
-                        <td>
-                            <button class="action-btn" onclick="manageSeatBlocking('${f.flight}')">Seats</button>
-                            <button class="action-btn" onclick="editFlight('${f.flight}')">Edit</button>
-                            <button class="action-btn" style="background: #ef4444;" onclick="deleteFlight('${f.flight}')">Delete</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        function openAddFlightModal() {
-            document.getElementById('modalTitle').textContent = 'Add New Flight';
-            document.getElementById('flightNumber').value = '';
-            document.getElementById('airline').value = '';
-            document.getElementById('origin').value = '';
-            document.getElementById('destination').value = '';
-            document.getElementById('departTime').value = '';
-            document.getElementById('arrivalTime').value = '';
-            document.getElementById('aircraft').value = '';
-            document.getElementById('capacity').value = '';
-            document.getElementById('gate').value = '';
-            document.getElementById('flightModal').classList.add('show');
-        }
-
-        function editFlight(flightNum) {
-            alert('Edit flight: ' + flightNum);
-        }
-
-        function deleteFlight(flightNum) {
-            if (confirm('Delete flight ' + flightNum + '?')) {
-                allFlights = allFlights.filter(f => f.flight !== flightNum);
-                renderTable();
-            }
-        }
-
-        function saveFlight(event) {
-            event.preventDefault();
-            
-            const newFlight = {
-                flight: document.getElementById('flightNumber').value,
-                airline: document.getElementById('airline').value,
-                origin: document.getElementById('origin').value,
-                destination: document.getElementById('destination').value,
-                time: document.getElementById('departTime').value,
-                arrival: document.getElementById('arrivalTime').value,
-                aircraft: document.getElementById('aircraft').value,
-                capacity: parseInt(document.getElementById('capacity').value),
-                gate: document.getElementById('gate').value,
-                checkin_enabled: document.getElementById('checkinEnabled').checked,
-                blocked_seats: []
-            };
-
-            allFlights.push(newFlight);
-            renderTable();
-            closeModal();
-            alert('Flight added successfully!');
-        }
-
-        function closeModal() {
-            document.getElementById('flightModal').classList.remove('show');
-            closeSeatModal();
-        }
-
-        // Seat blocking management
-        function manageSeatBlocking(flightNumber) {
-            const flight = allFlights.find(f => f.flight === flightNumber);
-            if (!flight) return;
-
-            const capacity = flight.capacity || 0;
-            const blockedSeats = flight.blocked_seats || [];
-
-            let seatsHtml = '<div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-height: 400px; overflow-y: auto;">';
-            
-            for (let i = 1; i <= capacity; i++) {
-                const isBlocked = blockedSeats.includes(i);
-                const seatClass = isBlocked ? 'seat-blocked' : 'seat-available';
-                seatsHtml += `
-                    <div class="seat-item ${seatClass}" onclick="toggleSeat('${flightNumber}', ${i})">
-                        <div style="font-size: 10px; font-weight: 600;">${i}</div>
-                        <div style="font-size: 18px;">${isBlocked ? '🔒' : '💺'}</div>
-                    </div>
-                `;
-            }
-            seatsHtml += '</div>';
-
-            const modal = document.createElement('div');
-            modal.id = 'seatModal';
-            modal.className = 'modal show';
-            modal.innerHTML = `
-                <div class="modal-content" style="max-width: 600px;">
-                    <div class="modal-header">
-                        <span>Seat Blocking — ${flightNumber}</span>
-                        <button class="modal-close" onclick="closeSeatModal()">×</button>
-                    </div>
-                    <div style="padding: 20px;">
-                        <p style="margin-bottom: 16px; color: #666;">Click seats to block/unblock</p>
-                        ${seatsHtml}
-                        <div style="margin-top: 20px; display: flex; gap: 16px; font-size: 13px;">
-                            <div><span style="color: #10b981;">💺</span> Available</div>
-                            <div><span style="color: #ef4444;">🔒</span> Blocked</div>
-                        </div>
-                        <button onclick="saveSeatBlocking('${flightNumber}')" style="margin-top: 20px; width: 100%;">Save Changes</button>
-                    </div>
+        <!-- Flight Activity Monitoring -->
+        <div class="row mb-4">
+          <!-- Upcoming Flights -->
+          <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-gradient border-0 py-3" style="background: linear-gradient(135deg, #0dcaf0 0%, #0d6efd 100%) !important;">
+                <h5 class="mb-0 fw-bold text-white">
+                  <i class="fas fa-calendar-plus"></i> Upcoming Flights (24h)
+                </h5>
+              </div>
+              <div class="card-body p-4">
+                <div id="upcomingFlightsList" style="max-height: 300px; overflow-y: auto;">
+                  <div class="text-center text-muted py-3">
+                    <i class="fas fa-spinner fa-spin"></i> Loading...
+                  </div>
                 </div>
-            `;
-            document.body.appendChild(modal);
+              </div>
+            </div>
+          </div>
+
+          <!-- Departed Flights -->
+          <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-gradient border-0 py-3" style="background: linear-gradient(135deg, #198754 0%, #0dcaf0 100%) !important;">
+                <h5 class="mb-0 fw-bold text-white">
+                  <i class="fas fa-plane-departure"></i> Departed Today
+                </h5>
+              </div>
+              <div class="card-body p-4">
+                <div id="departedFlightsList" style="max-height: 300px; overflow-y: auto;">
+                  <div class="text-center text-muted py-3">
+                    <i class="fas fa-spinner fa-spin"></i> Loading...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Incoming Flights -->
+          <div class="col-lg-4 mb-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-gradient border-0 py-3" style="background: linear-gradient(135deg, #fd7e14 0%, #0dcaf0 100%) !important;">
+                <h5 class="mb-0 fw-bold text-white">
+                  <i class="fas fa-plane-arrival"></i> Incoming Flights
+                </h5>
+              </div>
+              <div class="card-body p-4">
+                <div id="incomingFlightsList" style="max-height: 300px; overflow-y: auto;">
+                  <div class="text-center text-muted py-3">
+                    <i class="fas fa-spinner fa-spin"></i> Loading...
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Passenger Load Chart -->
+        <div class="row mb-4">
+          <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm border-0">
+              <div class="card-header bg-gradient border-0 py-3">
+                <h5 class="mb-0 fw-bold text-white">
+                  <i class="fas fa-users-cog"></i> Passenger Load by Route
+                </h5>
+              </div>
+              <div class="card-body p-4">
+                <canvas id="passengerLoadChart" style="height: 200px;"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Flights Cards Grid -->
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-gradient border-0 py-4">
+            <h5 class="mb-0 fw-bold text-white">
+              <i class="fas fa-list"></i> Active Flights
+            </h5>
+          </div>
+          <div class="card-body p-4">
+            <div id="dataSourceBadge" class="mb-3 small text-muted"></div>
+            <div id="flightsContainer" class="flights-grid">
+              <div class="text-center text-muted py-5">
+                <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                <p>Loading flights...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+    // Airline logo mapping
+    const airlineLogos = {
+      'Kenya Airways': 'https://upload.wikimedia.org/wikipedia/en/thumb/5/5f/Kenya_Airways_logo.svg/200px-Kenya_Airways_logo.svg.png',
+      'Ethiopian Airlines': 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Ethiopian_Airlines_logo.svg/200px-Ethiopian_Airlines_logo.svg.png',
+      'South African Airways': 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d6/South_African_Airways_logo.svg/150px-South_African_Airways_logo.svg.png',
+      'RwandAir': 'https://upload.wikimedia.org/wikipedia/en/thumb/c/ce/RwandAir_logo.png/150px-RwandAir_logo.png',
+      'Turkish Airlines': 'https://upload.wikimedia.org/wikipedia/en/thumb/4/4e/Turkish_Airlines_logo.svg/200px-Turkish_Airlines_logo.svg.png',
+      'Emirates': 'https://upload.wikimedia.org/wikipedia/en/thumb/d/d0/Emirates_logo.svg/200px-Emirates_logo.svg.png',
+      'Lufthansa': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/eb/Lufthansa_logo.svg/200px-Lufthansa_logo.svg.png',
+      'British Airways': 'https://upload.wikimedia.org/wikipedia/en/thumb/8/82/British_Airways_Logo.svg/200px-British_Airways_Logo.svg.png',
+      'Qatar Airways': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e7/Qatar_Airways_Logo.svg/200px-Qatar_Airways_Logo.svg.png',
+      'Singapore Airlines': 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3c/Singapore_Airlines_Logo.svg/200px-Singapore_Airlines_Logo.svg.png',
+      'Delta Airlines': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/Delta_Air_Lines_logo.svg/200px-Delta_Air_Lines_logo.svg.png',
+      'American Airlines': 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/American_Airlines_logo.svg/200px-American_Airlines_logo.svg.png',
+      'Delta Force': 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e8/Delta_Air_Lines_logo.svg/200px-Delta_Air_Lines_logo.svg.png',
+      'United Airlines': 'https://upload.wikimedia.org/wikipedia/en/thumb/3/3a/United_Airlines_Logo.svg/200px-United_Airlines_Logo.svg.png',
+      'Air France': 'https://upload.wikimedia.org/wikipedia/en/thumb/f/ff/Air_France_Logo.svg/200px-Air_France_Logo.svg.png',
+      'KLM': 'https://upload.wikimedia.org/wikipedia/en/thumb/1/1a/KLM_Royal_Dutch_Airlines_Logo.svg/200px-KLM_Royal_Dutch_Airlines_Logo.svg.png'
+    };
+
+    function getAirlineLogo(airline) {
+      return airlineLogos[airline] || 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="50" fill="%23667eea"/%3E%3Cpath d="M50 20 L60 50 L50 80 L40 50 Z" fill="white"/%3E%3C/svg%3E';
+    }
+
+    // Mock data fallback (used when API fails or is slow)
+    const mockFlights = [
+      {
+        flight: 'DL401',
+        airline: 'Delta Airlines',
+        origin: 'JFK',
+        destination: 'LHR',
+        departure_time: '2025-11-03T14:30:00Z',
+        capacity: 180,
+        bookings: 120,
+        checkin_enabled: true,
+        aircraft: 'Boeing 737'
+      },
+      {
+        flight: 'AA202',
+        airline: 'American Airlines',
+        origin: 'DFW',
+        destination: 'LAX',
+        departure_time: '2025-11-04T07:15:00Z',
+        capacity: 200,
+        bookings: 150,
+        checkin_enabled: true,
+        aircraft: 'Airbus A320'
+      },
+      {
+        flight: 'UA700',
+        airline: 'United Airlines',
+        origin: 'SFO',
+        destination: 'SEA',
+        departure_time: '2025-11-06T10:00:00Z',
+        capacity: 220,
+        bookings: 180,
+        checkin_enabled: true,
+        aircraft: 'Boeing 777'
+      },
+      {
+        flight: 'BA180',
+        airline: 'British Airways',
+        origin: 'LHR',
+        destination: 'JFK',
+        departure_time: '2025-11-08T16:30:00Z',
+        capacity: 250,
+        bookings: 200,
+        checkin_enabled: true,
+        aircraft: 'Boeing 787'
+      }
+    ];
+
+    async function loadFlights() {
+      const container = document.getElementById('flightsContainer');
+      const badge = document.getElementById('dataSourceBadge');
+      // show quick spinner while loading
+      container.innerHTML = `
+        <div class="text-center text-muted py-5">
+          <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+          <p>Loading flights...</p>
+        </div>
+      `;
+      if (badge) badge.textContent = 'Connecting to API...';
+
+      let finished = false;
+      const finishWith = (flights, sourceLabel) => {
+        if (finished) return;
+        finished = true;
+        if (badge && sourceLabel) badge.textContent = sourceLabel;
+        renderFlights(flights);
+      };
+
+      // Hard fallback in case fetch or render hangs
+      const hardFallback = setTimeout(() => {
+        finishWith(mockFlights, 'Data source: Mock data (timeout)');
+      }, 1800);
+
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 1500);
+        const response = await (window.apiFetch ? apiFetch('/api/flights', { signal: controller.signal }) : fetch('/api/flights', { signal: controller.signal }));
+        clearTimeout(timeout);
+
+        if (!response.ok) throw new Error('API error');
+        const data = await response.json();
+        const flights = data.flights || [];
+
+        if (!flights.length) throw new Error('No flights from API');
+        clearTimeout(hardFallback);
+        finishWith(flights, 'Data source: Live API');
+      } catch (error) {
+        console.error('Error loading flights, using mock data:', error);
+        clearTimeout(hardFallback);
+        finishWith(mockFlights, 'Data source: Mock data (API unavailable)');
+      }
+    }
+
+    function renderFlights(flights) {
+      const container = document.getElementById('flightsContainer');
+
+      try {
+        document.getElementById('totalFlights').textContent = flights.length;
+        let totalPassengers = 0;
+        let activeCount = 0;
+        let totalCapacity = 0;
+        let totalBookings = 0;
+
+        if (!flights || flights.length === 0) {
+          document.getElementById('activeFlights').textContent = '0';
+          document.getElementById('totalPassengers').textContent = '0';
+          document.getElementById('occupancyRate').textContent = '0%';
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">
+                <i class="fas fa-inbox"></i>
+              </div>
+              <h4>No flights found</h4>
+              <p>Add your first flight to get started</p>
+              <button class="btn btn-primary" onclick="openAddFlightModal()">
+                <i class="fas fa-plus"></i> Add Flight
+              </button>
+            </div>
+          `;
+          return;
         }
 
-        function toggleSeat(flightNumber, seatNumber) {
-            const flight = allFlights.find(f => f.flight === flightNumber);
-            if (!flight) return;
+        flights.forEach(flight => {
+          const cap = Number.isFinite(flight.capacity) ? flight.capacity : 0;
+          const book = Number.isFinite(flight.bookings) ? flight.bookings : 0;
+          totalPassengers += book;
+          if (flight.checkin_enabled) activeCount++;
+          totalCapacity += cap;
+          totalBookings += book;
+        });
 
-            if (!flight.blocked_seats) flight.blocked_seats = [];
-            
-            const index = flight.blocked_seats.indexOf(seatNumber);
-            if (index > -1) {
-                flight.blocked_seats.splice(index, 1);
-            } else {
-                flight.blocked_seats.push(seatNumber);
+        document.getElementById('activeFlights').textContent = activeCount;
+        document.getElementById('totalPassengers').textContent = totalPassengers;
+        const occupancy = totalCapacity > 0 ? Math.round((totalBookings / totalCapacity) * 100) : 0;
+        document.getElementById('occupancyRate').textContent = occupancy + '%';
+
+        container.innerHTML = renderFlightsHTML(flights);
+      } catch (err) {
+        console.error('Error rendering flights, showing fallback:', err);
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h4>Unable to display flights</h4>
+            <p>Retry refresh, or check connectivity.</p>
+            <button class="btn btn-outline-secondary" onclick="loadFlights()">
+              <i class="fas fa-sync-alt"></i> Retry
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    function renderFlightsHTML(flights) {
+      return flights.map(flight => {
+        const logoUrl = getAirlineLogo(flight.airline || '');
+        const occupancyPercent = flight.capacity > 0 ? Math.round((flight.bookings / flight.capacity) * 100) : 0;
+
+        const departRaw = flight.departure_time || flight.time || flight.departure || flight.depart || '';
+        const departDate = departRaw ? new Date(departRaw) : null;
+        const hasValidDate = departDate && !isNaN(departDate);
+        const formattedDate = hasValidDate ? departDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD';
+        const formattedTime = hasValidDate ? departDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+
+        const arrivalRaw = flight.arrival_time || flight.arrival || '';
+        const arrivalDate = arrivalRaw ? new Date(arrivalRaw) : null;
+        const formattedArrival = arrivalDate && !isNaN(arrivalDate) ? arrivalDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+        const gate = flight.gate || 'TBD';
+
+        return `
+          <div class="flight-card" onclick="openFlightActions('${flight.flight.replace(/'/g, "\\'")}', '${(flight.airline||'').replace(/'/g, "\\'")}', '${flight.origin}', '${flight.destination}', '${departRaw}', '${arrivalRaw}', '${gate}', ${flight.capacity}, ${flight.bookings}, ${flight.checkin_enabled ? 'true' : 'false'})">
+            <div class="flight-card-header">
+              <div class="airline-logo">
+                <img src="${logoUrl}" alt="${flight.airline}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23667eea%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-weight=%22bold%22 font-size=%2224%22%3E${flight.airline.substring(0, 2).toUpperCase()}%3C/text%3E%3C/svg%3E'">
+              </div>
+              <div class="flight-info-header">
+                <h6 class="mb-0">${flight.airline || 'Unknown Airline'}</h6>
+                <p class="text-muted mb-0">${flight.flight}</p>
+              </div>
+              <div class="flight-status">
+                ${flight.checkin_enabled ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-warning">Inactive</span>'}
+              </div>
+            </div>
+
+            <div class="flight-card-body">
+              <div class="route-display">
+                <div class="airport">
+                  <div class="airport-code">${flight.origin || 'N/A'}</div>
+                  <div class="airport-time">${formattedTime}</div>
+                </div>
+                <div class="route-line">
+                  <span class="route-duration">${formattedDate}</span>
+                </div>
+                <div class="airport">
+                  <div class="airport-code">${flight.destination || 'N/A'}</div>
+                  <div class="airport-time">${formattedArrival}</div>
+                </div>
+              </div>
+
+              <div class="flight-stats">
+                <div class="stat">
+                  <span class="stat-label">Capacity</span>
+                  <span class="stat-value">${flight.capacity || 0}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Booked</span>
+                  <span class="stat-value">${flight.bookings || 0}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Available</span>
+                  <span class="stat-value">${(flight.capacity || 0) - (flight.bookings || 0)}</span>
+                </div>
+                <div class="stat">
+                  <span class="stat-label">Gate</span>
+                  <span class="stat-value">${gate}</span>
+                </div>
+              </div>
+
+              <div class="occupancy-bar">
+                <div class="occupancy-fill" style="width: ${occupancyPercent}%"></div>
+                <span class="occupancy-text">${occupancyPercent}% Full</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openAddFlightModal() {
+      alert('Add Flight feature coming soon!');
+    }
+
+    function exportFlightsCSV() {
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+      (window.apiFetch ? apiFetch('/api/export/flights', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }) : fetch('/api/export/flights', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })).then(res => {
+        if (!res.ok) throw new Error('Export failed');
+        return res.blob();
+      }).then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'flights.csv';
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }).catch(err => {
+        console.error('Export error:', err);
+        alert('Failed to export flights');
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('session');
+      window.location.href = '/admin-login.html';
+    }
+
+    // Set active nav bubble based on current page
+    document.querySelectorAll('.nav-bubble').forEach(link => {
+      const href = link.getAttribute('href');
+      const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+      if (href === currentPage || (href === 'dashboard.html' && currentPage === '')) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
+    // Load flights on page load
+    loadFlights();
+    // Refresh flights every 30 seconds
+    setInterval(loadFlights, 30000);
+
+    // Flight actions modal
+    function openFlightActions(flightNumber, airline, origin, destination, departTime, arrivalTime, gate, capacity, bookings, checkinEnabled) {
+      try {
+        // Remove any existing modal to avoid stacking
+        closeFlightActions();
+
+        const safeDate = departTime ? new Date(departTime) : null;
+        const formattedDateTime = safeDate && !isNaN(safeDate) ? safeDate.toLocaleString() : 'TBD';
+        const arrivalDate = arrivalTime ? new Date(arrivalTime) : null;
+        const formattedArrival = arrivalDate && !isNaN(arrivalDate) ? arrivalDate.toLocaleString() : 'TBD';
+        const safeCapacity = Number.isFinite(capacity) ? capacity : 0;
+        const safeBookings = Number.isFinite(bookings) ? bookings : 0;
+        const safeAvailable = Math.max(0, safeCapacity - safeBookings);
+
+        const modal = document.createElement('div');
+        modal.id = 'flightActionsModal';
+        modal.className = 'modal-overlay';
+        modal.onclick = (e) => { if (e.target === modal) closeFlightActions(); };
+        modal.innerHTML = `
+          <div class="modal-dialog">
+            <div class="modal-header">
+              <h5>${airline || 'Flight'} - ${flightNumber}</h5>
+              <button class="modal-close" type="button">&times;</button>
+            </div>
+            <div class="modal-content-actions">
+              <div class="flight-details">
+                <p><strong>Route:</strong> ${origin || '�'} &rarr; ${destination || '�'}</p>
+                <p><strong>Departure:</strong> ${formattedDateTime}</p>
+                <p><strong>Arrival:</strong> ${formattedArrival}</p>
+                <p><strong>Gate:</strong> ${gate || 'TBD'} | <strong>Check-in:</strong> ${checkinEnabled ? 'Enabled' : 'Disabled'}</p>
+                <p><strong>Capacity:</strong> ${safeCapacity} | <strong>Booked:</strong> ${safeBookings} | <strong>Available:</strong> ${safeAvailable}</p>
+              </div>
+              <div class="action-buttons">
+                <button class="action-btn edit-btn" type="button">
+                  <i class="fas fa-edit"></i> Edit Flight
+                </button>
+                <button class="action-btn seats-btn" type="button">
+                  <i class="fas fa-chair"></i> Check Seats
+                </button>
+                <button class="action-btn delete-btn" type="button">
+                  <i class="fas fa-trash"></i> Delete Flight
+                </button>
+                <button class="action-btn close-btn" type="button">
+                  <i class="fas fa-times"></i> Close
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const dialog = modal.querySelector('.modal-dialog');
+        if (dialog) dialog.addEventListener('click', (e) => e.stopPropagation());
+        modal.querySelector('.modal-close')?.addEventListener('click', closeFlightActions);
+        modal.querySelector('.close-btn')?.addEventListener('click', closeFlightActions);
+        modal.querySelector('.edit-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          editFlight(flightNumber, departTime || '');
+        });
+        modal.querySelector('.seats-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          checkSeats(flightNumber, safeCapacity, safeBookings);
+        });
+        modal.querySelector('.delete-btn')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          deleteFlight(flightNumber);
+        });
+
+        document.body.appendChild(modal);
+      } catch (err) {
+        console.error('Error opening flight actions modal:', err);
+      }
+    }
+
+    function closeFlightActions() {
+      const modal = document.getElementById('flightActionsModal');
+      if (modal) modal.remove();
+    }
+
+    function editFlight(flightNumber, departTime) {
+      alert(`Edit flight: ${flightNumber}\nDeparture: ${new Date(departTime).toLocaleString()}`);
+      closeFlightActions();
+    }
+
+    function checkSeats(flightNumber, capacity, bookings) {
+      const safeCapacity = Number.isFinite(capacity) && capacity > 0 ? capacity : 0;
+      const safeBookings = Number.isFinite(bookings) && bookings > 0 ? Math.min(bookings, safeCapacity) : 0;
+      const availableSeats = Math.max(0, safeCapacity - safeBookings);
+      const occupancyRate = safeCapacity > 0 ? Math.round((safeBookings / safeCapacity) * 100) : 0;
+      const seatsHtml = generateSeatsGrid(safeCapacity, safeBookings);
+      const modal = document.createElement('div');
+      modal.id = 'seatsModal';
+      modal.className = 'modal-overlay';
+      modal.onclick = (e) => { if (e.target === modal) closeSeatsModal(); };
+      modal.innerHTML = `
+        <div class="modal-dialog">
+          <div class="modal-header">
+            <h5>Seat Occupancy - ${flightNumber}</h5>
+            <button class="modal-close" type="button">&times;</button>
+          </div>
+          <div class="modal-content-actions">
+            <div class="seats-info">
+              <p><strong>Total Capacity:</strong> ${safeCapacity}</p>
+              <p><strong>Booked Seats:</strong> ${safeBookings}</p>
+              <p><strong>Available Seats:</strong> ${availableSeats}</p>
+              <p><strong>Occupancy Rate:</strong> ${occupancyRate}%</p>
+            </div>
+            <div class="seats-grid">
+              ${seatsHtml}
+            </div>
+            <div class="action-buttons" style="margin-top:12px;">
+              <button class="action-btn close-btn" type="button">
+                <i class="fas fa-times"></i> Close
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+      const dialog = modal.querySelector('.modal-dialog');
+      if (dialog) dialog.addEventListener('click', (e) => e.stopPropagation());
+      modal.querySelector('.modal-close')?.addEventListener('click', closeSeatsModal);
+      modal.querySelector('.close-btn')?.addEventListener('click', closeSeatsModal);
+      document.body.appendChild(modal);
+    }
+
+    function generateSeatsGrid(capacity, bookings) {
+      let grid = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; padding: 16px 0;">';
+      const bookedSeats = Math.min(bookings, capacity);
+      
+      for (let i = 1; i <= capacity; i++) {
+        const isBooked = i <= bookedSeats;
+        const seatClass = isBooked ? 'seat-booked' : 'seat-available';
+        grid += `
+          <div class="seat-box ${seatClass}" title="Seat ${i}">
+            ${i}
+          </div>
+        `;
+      }
+      grid += '</div>';
+      return grid;
+    }
+
+    function closeSeatsModal() {
+      const modal = document.getElementById('seatsModal');
+      if (modal) modal.remove();
+    }
+
+        function deleteFlight(flightNumber) {
+      try {
+        const confirmed = confirm(`Are you sure you want to delete flight ${flightNumber}?`);
+        if (!confirmed) return;
+
+        const headers = { 'Content-Type': 'application/json' };
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        (window.apiFetch ? apiFetch(`/api/flights/${encodeURIComponent(flightNumber)}`, {
+          method: 'DELETE',
+          headers
+        }) : fetch(`/api/flights/${encodeURIComponent(flightNumber)}`, {
+          method: 'DELETE',
+          headers
+        })).then(res => {
+          if (!res.ok) throw new Error('API delete failed');
+          closeFlightActions();
+          loadFlights();
+          alert('Flight deleted');
+        }).catch(err => {
+          console.error('Delete flight error:', err);
+          alert('Failed to delete flight');
+        });
+      } catch (err) {
+        console.error('Delete flight handler failed:', err);
+        alert('Failed to delete flight');
+      }
+    }
+
+    // ============ LIVE MONITORING CHARTS ============
+    let flightStatusChart, onTimeChart, passengerLoadChart;
+    let monitoringRefreshInterval;
+
+    function initializeCharts() {
+      // Flight Status Distribution Chart
+      const statusCtx = document.getElementById('flightStatusChart');
+      if (statusCtx) {
+        flightStatusChart = new Chart(statusCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Scheduled', 'Departed', 'In Air', 'Landed', 'Delayed'],
+            datasets: [{
+              data: [8, 6, 12, 15, 3],
+              backgroundColor: ['#0dcaf0', '#198754', '#0d6efd', '#fd7e14', '#dc3545'],
+              borderColor: '#ffffff',
+              borderWidth: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { padding: 15, font: { size: 12, weight: '600' } }
+              }
             }
+          }
+        });
+      }
 
-            manageSeatBlocking(flightNumber);
-        }
-
-        async function saveSeatBlocking(flightNumber) {
-            const flight = allFlights.find(f => f.flight === flightNumber);
-            if (!flight) return;
-
-            try {
-                const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
-                const response = await fetch(`/api/flights/${flightNumber}/seats`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ blocked_seats: flight.blocked_seats })
-                });
-
-                if (response.ok) {
-                    alert('✅ Seat blocking updated successfully');
-                    closeSeatModal();
-                    loadFlights();
-                } else {
-                    alert('❌ Failed to save seat blocking');
-                }
-            } catch (error) {
-                console.error('Error saving seat blocking:', error);
-                alert('❌ Error saving. Please try again.');
+      // On-Time Performance Chart
+      const onTimeCtx = document.getElementById('onTimeChart');
+      if (onTimeCtx) {
+        onTimeChart = new Chart(onTimeCtx, {
+          type: 'bar',
+          data: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            datasets: [{
+              label: 'On-Time %',
+              data: [94, 96, 92, 95, 98, 91, 93],
+              backgroundColor: '#0dcaf0',
+              borderRadius: 8,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'x',
+            plugins: {
+              legend: { display: true, labels: { font: { size: 12, weight: '600' } } }
+            },
+            scales: {
+              y: { beginAtZero: true, max: 100, ticks: { callback: function(v) { return v + '%'; } } }
             }
-        }
+          }
+        });
+      }
 
-        function closeSeatModal() {
-            const modal = document.getElementById('seatModal');
-            if (modal) modal.remove();
-        }
+      // Passenger Load by Route Chart
+      const loadCtx = document.getElementById('passengerLoadChart');
+      if (loadCtx) {
+        passengerLoadChart = new Chart(loadCtx, {
+          type: 'bar',
+          data: {
+            labels: ['NBO-JNB', 'ADD-CDG', 'DAR-LHR', 'CMN-ORY', 'KGL-AMS'],
+            datasets: [{
+              label: 'Passengers',
+              data: [285, 189, 245, 201, 163],
+              backgroundColor: ['#0d6efd', '#0dcaf0', '#198754', '#fd7e14', '#6f42c1'],
+              borderRadius: 8,
+              borderSkipped: false
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'x',
+            plugins: {
+              legend: { display: true, labels: { font: { size: 12, weight: '600' } } }
+            },
+            scales: {
+              y: { beginAtZero: true }
+            }
+          }
+        });
+      }
+    }
 
-        function exportFlightsCSV() {
-            const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
-            fetch('/api/export/flights', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            }).then(res => {
-                if (!res.ok) throw new Error('Export failed');
-                return res.blob();
-            }).then(blob => {
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'flights.csv';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-            }).catch(err => {
-                console.error('Export error:', err);
-                alert('Failed to export flights');
-            });
-        }
+    function updateFlightLists() {
+      const now = new Date();
+      
+      // Get flights from the loaded data
+      const allFlights = window.allFlights || [];
+      
+      // Upcoming flights - scheduled or delayed, departing in the future (next 7 days)
+      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      const upcomingFlights = allFlights.filter(f => {
+        const depTime = new Date(f.departureTime || f.departure_time);
+        const status = (f.status || '').toLowerCase();
+        return depTime > now && depTime < sevenDaysFromNow && 
+               (status === 'scheduled' || status === 'delayed' || status === 'boarding');
+      }).sort((a, b) => {
+        const timeA = new Date(a.departureTime || a.departure_time);
+        const timeB = new Date(b.departureTime || b.departure_time);
+        return timeA - timeB;
+      }).slice(0, 8);
 
-        function logout() {
-            localStorage.removeItem('adminToken');
-            localStorage.removeItem('session');
-            window.location.href = '/admin-login.html';
-        }
+      // Departed flights - status is departed or already left
+      const departedFlights = allFlights.filter(f => {
+        const status = (f.status || '').toLowerCase();
+        return status === 'departed' || status === 'in_air' || status === 'in air';
+      }).sort((a, b) => {
+        const timeA = new Date(a.departureTime || a.departure_time);
+        const timeB = new Date(b.departureTime || b.departure_time);
+        return timeB - timeA; // Most recent first
+      }).slice(0, 8);
 
-        if (checkAuth()) {
-            loadFlights();
-        } else {
-            document.body.innerHTML = '<p style="text-align:center;padding:50px;">Redirecting to login...</p>';
-        }
-    </script>
-    <style>
-        .seat-item {
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .seat-available {
-            background: #f0fdf4;
-            border-color: #10b981;
-        }
-        .seat-available:hover {
-            background: #dcfce7;
-            transform: scale(1.05);
-        }
-        .seat-blocked {
-            background: #fef2f2;
-            border-color: #ef4444;
-        }
-        .seat-blocked:hover {
-            background: #fee2e2;
-            transform: scale(1.05);
-        }
-    </style>
+      // Incoming flights - arriving soon or status is arriving/landed (next 7 days)
+      const incomingFlights = allFlights.filter(f => {
+        const arrTime = new Date(f.arrivalTime || f.arrival_time);
+        const status = (f.status || '').toLowerCase();
+        return (arrTime > now && arrTime < sevenDaysFromNow) || 
+               status === 'arriving' || status === 'landed';
+      }).sort((a, b) => {
+        const timeA = new Date(a.arrivalTime || a.arrival_time);
+        const timeB = new Date(b.arrivalTime || b.arrival_time);
+        return timeA - timeB;
+      }).slice(0, 8);
+
+      // Render upcoming
+      const upcomingList = document.getElementById('upcomingFlightsList');
+      if (upcomingList) {
+        upcomingList.innerHTML = upcomingFlights.length === 0 
+          ? '<div class="text-center text-muted py-3"><i class="fas fa-inbox"></i><p class="mt-2">No upcoming flights</p></div>'
+          : upcomingFlights.map(f => {
+              const depTime = new Date(f.departureTime || f.departure_time);
+              const isDelayed = (f.status || '').toLowerCase() === 'delayed';
+              const delayMinutes = f.delay_minutes || 0;
+              const statusColor = isDelayed ? '#f59e0b' : '#0d6efd';
+              const statusBg = isDelayed ? '#fff3cd' : '#e7f5ff';
+              const statusText = isDelayed ? `Delayed ${delayMinutes}min` : 'Scheduled';
+              
+              return `
+            <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start; transition: background 0.2s;">
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <strong style="font-size: 0.95rem; color: #1e293b;">${f.flight_number}</strong>
+                  ${isDelayed ? '<i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 0.75rem;"></i>' : ''}
+                </div>
+                <div style="font-size: 0.85rem; color: #64748b;">${f.origin} → ${f.destination}</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Gate ${f.gate || 'TBA'}</div>
+              </div>
+              <div style="text-align: right; font-size: 0.85rem;">
+                <div style="color: #1e293b; font-weight: 600; margin-bottom: 4px;">${depTime.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+                <div style="color: ${statusColor}; font-weight: 600;">${depTime.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</div>
+                <span style="background: ${statusBg}; color: ${statusColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; display: inline-block; margin-top: 4px;">${statusText}</span>
+              </div>
+            </div>
+              `;
+            }).join('');
+      }
+
+      // Render departed
+      const departedList = document.getElementById('departedFlightsList');
+      if (departedList) {
+        departedList.innerHTML = departedFlights.length === 0
+          ? '<div class="text-center text-muted py-3"><i class="fas fa-plane-departure"></i><p class="mt-2">No departed flights</p></div>'
+          : departedFlights.map(f => {
+              const depTime = new Date(f.departureTime || f.departure_time);
+              const status = (f.status || '').toLowerCase();
+              const statusText = status === 'in_air' || status === 'in air' ? 'In Air' : 'Departed';
+              const statusIcon = status === 'in_air' || status === 'in air' ? 'fa-plane' : 'fa-plane-departure';
+              
+              return `
+            <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <strong style="font-size: 0.95rem; color: #1e293b;">${f.flight_number}</strong>
+                  <i class="fas ${statusIcon}" style="color: #10b981; font-size: 0.75rem;"></i>
+                </div>
+                <div style="font-size: 0.85rem; color: #64748b;">${f.origin} → ${f.destination}</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">Gate ${f.gate || 'N/A'} • ${f.aircraft || 'N/A'}</div>
+              </div>
+              <div style="text-align: right; font-size: 0.85rem;">
+                <div style="color: #1e293b; font-weight: 600; margin-bottom: 4px;">${depTime.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+                <div style="color: #10b981; font-weight: 600;">${depTime.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</div>
+                <span style="background: #d1e7dd; color: #10b981; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; display: inline-block; margin-top: 4px;">${statusText}</span>
+              </div>
+            </div>
+              `;
+            }).join('');
+      }
+
+      // Render incoming
+      const incomingList = document.getElementById('incomingFlightsList');
+      if (incomingList) {
+        incomingList.innerHTML = incomingFlights.length === 0
+          ? '<div class="text-center text-muted py-3"><i class="fas fa-plane-arrival"></i><p class="mt-2">No incoming flights</p></div>'
+          : incomingFlights.map(f => {
+              const arrTime = new Date(f.arrivalTime || f.arrival_time);
+              const status = (f.status || '').toLowerCase();
+              const isLanded = status === 'landed' || status === 'arrived';
+              const statusColor = isLanded ? '#10b981' : '#fd7e14';
+              const statusBg = isLanded ? '#d1e7dd' : '#fff3cd';
+              const statusText = isLanded ? 'Landed' : 'Landing Soon';
+              
+              // Calculate time until landing
+              const timeUntil = Math.floor((arrTime - now) / (1000 * 60)); // minutes
+              const timeDisplay = timeUntil > 60 ? `${Math.floor(timeUntil / 60)}h ${timeUntil % 60}m` : `${timeUntil}m`;
+              
+              return `
+            <div style="padding: 12px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: flex-start;">
+              <div style="flex: 1;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                  <strong style="font-size: 0.95rem; color: #1e293b;">${f.flight_number}</strong>
+                  <i class="fas fa-plane-arrival" style="color: ${statusColor}; font-size: 0.75rem;"></i>
+                </div>
+                <div style="font-size: 0.85rem; color: #64748b;">${f.origin} → ${f.destination}</div>
+                <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
+                  ${!isLanded && timeUntil > 0 ? `ETA: ${timeDisplay}` : 'Arrived'} • ${f.booked_seats || 0}/${f.capacity || 0} passengers
+                </div>
+              </div>
+              <div style="text-align: right; font-size: 0.85rem;">
+                <div style="color: #1e293b; font-weight: 600; margin-bottom: 4px;">${arrTime.toLocaleDateString('en-US', {month: 'short', day: 'numeric'})}</div>
+                <div style="color: ${statusColor}; font-weight: 600;">${arrTime.toLocaleTimeString('en-US', {hour: '2-digit', minute:'2-digit'})}</div>
+                <span style="background: ${statusBg}; color: ${statusColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; display: inline-block; margin-top: 4px;">${statusText}</span>
+              </div>
+            </div>
+              `;
+            }).join('');
+      }
+    }
+
+    function startMonitoring() {
+      initializeCharts();
+      updateFlightLists();
+      
+      // Refresh every 30 seconds
+      monitoringRefreshInterval = setInterval(() => {
+        updateFlightLists();
+      }, 30000);
+    }
+
+    // Initialize monitoring when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(startMonitoring, 1000);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+      if (monitoringRefreshInterval) clearInterval(monitoringRefreshInterval);
+    });
+
+  </script>
 </body>
 </html>

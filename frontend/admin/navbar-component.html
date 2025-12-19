@@ -1,0 +1,75 @@
+<!-- Top Navigation Bar - Copy this to replace sidebar in other admin pages -->
+<nav class="top-navbar">
+  <div class="navbar-container">
+    <!-- Brand Logo -->
+    <div class="navbar-brand">
+      <div class="brand-icon">
+        <i class="fas fa-plane-departure"></i>
+      </div>
+      <div class="brand-text">
+        <div class="brand-name">SmartFly</div>
+        <div class="brand-subtitle">Admin Panel</div>
+      </div>
+    </div>
+
+    <!-- Navigation Bubbles -->
+    <div class="nav-bubbles">
+      <a href="dashboard.html" class="nav-bubble" title="Dashboard">
+        <i class="fas fa-chart-line"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="flights.html" class="nav-bubble" title="Flights Management">
+        <i class="fas fa-plane"></i>
+        <span>Flights</span>
+      </a>
+      <a href="bookings.html" class="nav-bubble" title="Bookings">
+        <i class="fas fa-calendar-check"></i>
+        <span>Bookings</span>
+      </a>
+      <a href="checkins.html" class="nav-bubble" title="Check-Ins">
+        <i class="fas fa-passport"></i>
+        <span>Check-Ins</span>
+      </a>
+      <a href="payments.html" class="nav-bubble" title="Payments">
+        <i class="fas fa-credit-card"></i>
+        <span>Payments</span>
+      </a>
+      <a href="reports.html" class="nav-bubble" title="Reports">
+        <i class="fas fa-chart-bar"></i>
+        <span>Reports</span>
+      </a>
+      <a href="settings.html" class="nav-bubble" title="Settings">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+    </div>
+
+    <!-- User Profile & Actions -->
+    <div class="navbar-actions">
+      <div class="admin-profile-compact">
+        <div class="profile-avatar-small">RG</div>
+        <div class="profile-info-compact">
+          <div class="profile-name">Riley Gabi</div>
+          <div class="profile-role">Administrator</div>
+        </div>
+      </div>
+      <button class="btn-logout" title="Log out" onclick="window.location.href='../admin-login.html'">
+        <i class="fas fa-sign-out-alt"></i>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- JavaScript to highlight active page -->
+<script>
+  // Set active nav bubble based on current page
+  document.querySelectorAll('.nav-bubble').forEach(link => {
+    const href = link.getAttribute('href');
+    const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+    if (href === currentPage || (href === 'dashboard.html' && currentPage === '')) {
+      link.classList.add('active');
+    } else {
+      link.classList.remove('active');
+    }
+  });
+</script>

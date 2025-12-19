@@ -233,6 +233,7 @@
         </div>
     </div>
 
+    <script src="../js/api-client.js"></script>
     <script>
         let allEvents = [];
 
@@ -263,9 +264,11 @@
         async function loadActivityLog() {
             try {
                 const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
-                const res = await fetch('/api/events', {
+                const res = await (window.apiFetch ? apiFetch('/api/events', {
                     headers: { 'Authorization': `Bearer ${token}` }
-                });
+                }) : fetch('/api/events', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                }));
                 
                 let events = [];
                 if (res.ok) {

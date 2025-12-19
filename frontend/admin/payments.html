@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payments — SmartFly Airlines Admin</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="dashboard.css" rel="stylesheet">
+  <style>
+    body { display: flex; }
+  </style>
+</head>
+<body>
+  <div class="admin-layout d-flex w-100">
+    <!-- Sidebar -->
+    <aside class="sidebar d-flex flex-column p-3">
+      <div class="sidebar-brand mb-4">
+        <div class="brand-icon mb-3">
+          <i class="fas fa-plane-departure"></i>
+        </div>
+        <div class="brand-text">
+          <div class="fw-bold">SmartFly</div>
+          <div class="small">Admin Panel</div>
+        </div>
+      </div>
+      
+      <div class="admin-profile mb-4 pb-4 border-bottom border-secondary border-opacity-25">
+        <div class="d-flex align-items-center gap-3">
+          <div class="profile-avatar">RG</div>
+          <div>
+            <div class="fw-semibold small">Riley Gabi</div>
+            <div class="text-muted" style="font-size: 0.75rem;">Administrator</div>
+          </div>
+        </div>
+      </div>
+      
+      <nav class="nav flex-column sidebar-nav flex-grow-1">
+        <a class="nav-link" href="dashboard.html">
+          <i class="fas fa-chart-line"></i>
+          <span>Dashboard</span>
+        </a>
+        <a class="nav-link" href="flights.html">
+          <i class="fas fa-plane"></i>
+          <span>Flights</span>
+        </a>
+        <a class="nav-link" href="bookings.html">
+          <i class="fas fa-calendar-check"></i>
+          <span>Bookings</span>
+        </a>
+        <a class="nav-link" href="checkins.html">
+          <i class="fas fa-passport"></i>
+          <span>Check-Ins</span>
+        </a>
+        <a class="nav-link active" href="payments.html">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+        <a class="nav-link" href="reports.html">
+          <i class="fas fa-chart-bar"></i>
+          <span>Reports</span>
+        </a>
+        <a class="nav-link" href="settings.html">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <div class="pt-3 border-top border-secondary border-opacity-25">
+        <button class="btn btn-outline-light w-100 btn-sm" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Log out
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content flex-grow-1">
+      <div class="p-4">
+        <div class="dashboard-header mb-4">
+          <div class="row align-items-center">
+            <div class="col">
+              <h1 class="display-5 fw-bold">
+                <span class="greeting-text">💳 Payments Management</span>
+              </h1>
+              <p class="text-muted mb-0">View and manage all payment transactions</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card shadow-sm border-0 mb-4">
+          <div class="card-header bg-white border-bottom">
+            <div class="d-flex justify-content-between align-items-center">
+              <h5 class="mb-0 fw-semibold">Recent Transactions</h5>
+              <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
+                <i class="fas fa-sync"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th>Transaction ID</th>
+                    <th>Passenger</th>
+                    <th>Booking</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="paymentsTable">
+                  <tr>
+                    <td colspan="8" class="text-center text-muted py-4">Loading payments...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="../js/api-client.js"></script>
+  <script>
+    async function loadPayments() {
+      const tbody = document.getElementById('paymentsTable');
+      const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+      try {
+        const response = await (window.apiFetch ? apiFetch('/api/bookings', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }) : fetch('/api/bookings', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }));
+
+        if (!response.ok) throw new Error('API error');
+        const data = await response.json();
+        const payments = Array.isArray(data) ? data : (data.bookings || data || []);
+        
+        if (!payments.length) {
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No payments found</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = payments.map(payment => {
+          const status = payment.status || 'completed';
+          const statusBadge = {
+            'completed': '<span class="badge bg-success">Completed</span>',
+            'pending': '<span class="badge bg-warning">Pending</span>',
+            'failed': '<span class="badge bg-danger">Failed</span>'
+          }[status] || '<span class="badge bg-secondary">Unknown</span>';
+
+          const created = payment.created_at ? new Date(payment.created_at).toLocaleString() : '—';
+          const amount = typeof payment.amount === 'number' ? payment.amount.toFixed(2) : (payment.amount || '0');
+
+          return `
+            <tr>
+              <td><strong>${payment.id || payment.booking_ref || 'N/A'}</strong></td>
+              <td>${payment.name || payment.passenger_name || 'N/A'}</td>
+              <td>${payment.passport || payment.booking_id || 'N/A'}</td>
+              <td><strong>$${amount}</strong></td>
+              <td>${payment.payment_method || 'N/A'}</td>
+              <td>${statusBadge}</td>
+              <td>${created}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary" type="button" onclick="viewPayment('${payment.id || payment.booking_ref || ''}')">View</button>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      } catch (error) {
+        console.error('Error loading payments:', error);
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Error loading payments</td></tr>';
+      }
+    }
+
+    function viewPayment(id) {
+      if (!id) return;
+      alert('Booking/Payment ID: ' + id);
+    }
+
+    function logout() {
+      localStorage.removeItem('adminToken');
+      localStorage.removeItem('session');
+      window.location.href = '/admin-login.html';
+    }
+
+    // Set active nav link
+    document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
+      const href = link.getAttribute('href');
+      const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
+      if (href === currentPage) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+
+    loadPayments();
+    setInterval(loadPayments, 10000);
+  </script>
+</body>
+</html>

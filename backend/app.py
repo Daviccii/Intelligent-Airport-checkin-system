@@ -4,6 +4,7 @@ from flask_cors import CORS
 from security_utils import security_manager, sanitize_input, validate_passport, require_admin
 import bcrypt
 from flight_manager import FlightManager
+from activity_tracker import log_activity, get_activities, get_bookings_log, get_checkins_log, get_payments_log
 import json
 import os
 from dotenv import load_dotenv
@@ -24,6 +25,7 @@ load_dotenv()
 # Basic file/directory configuration (safe defaults)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend'))
+ADMIN_DIR = os.path.join(FRONTEND_DIR, 'admin')
 EVENTS_FILE = os.path.join(BASE_DIR, 'events.json')
 PASSENGER_FILE = os.path.join(BASE_DIR, 'passengers.json')
 SESSIONS_FILE = os.path.join(BASE_DIR, 'sessions.json')
@@ -32,6 +34,7 @@ ADMIN_USERS_FILE = os.path.join(BASE_DIR, 'admin_users.json')
 HOLDS_FILE = os.path.join(BASE_DIR, 'holds.json')
 OPENAPI_FILE = os.path.join(BASE_DIR, 'openapi.json')
 BOOKINGS_FILE = os.path.join(BASE_DIR, 'bookings.json')
+FLIGHTS_FILE = os.path.join(BASE_DIR, 'flights.json')
 FACE_DIR = os.path.join(BASE_DIR, 'face_store')
 SETTINGS_FILE = os.path.join(BASE_DIR, 'system_config.json')
 try:
@@ -53,6 +56,22 @@ fm = FlightManager()
 app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 # Enable CORS for API routes to support local file-served frontend during development
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
+
+
+# ---------------------------------------------------------------------------
+# Helper: minimal admin session check for protected admin HTML pages.
+# Accepts either the session cookie set by the frontend login flow or a Bearer
+# token header, and only controls access to static admin HTML. API routes still
+# rely on their own auth decorators.
+def _has_admin_session():
+    token = request.cookies.get('session') or request.headers.get('Authorization')
+    if not token:
+        cookie_header = request.headers.get('Cookie', '')
+        for part in cookie_header.split(';'):
+            if part.strip().startswith('session='):
+                token = part.split('=', 1)[1]
+                break
+    return bool(token)
 
 @app.route('/api/admin/settings', methods=['GET'])
 def api_get_admin_settings():
@@ -116,6 +135,119 @@ def api_save_admin_settings():
 @app.route('/')
 def serve_root():
     return send_from_directory(FRONTEND_DIR, 'index.html')
+
+# ---- Activities API (admin dashboard support) ---------------------------------------
+@app.route('/api/activities', methods=['GET'])
+def api_get_activities():
+    """Return recent activities; optional filter by type via ?type=booking|payment|checkin"""
+    try:
+        activity_type = request.args.get('type')
+        try:
+            limit = int(request.args.get('limit', '100'))
+        except Exception:
+            limit = 100
+        items = get_activities(activity_type, limit)
+        return jsonify({'activities': items}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/activities/bookings', methods=['GET'])
+def api_get_activities_bookings():
+    try:
+        items = get_bookings_log() or []
+        return jsonify({'bookings': items}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/activities/checkins', methods=['GET'])
+def api_get_activities_checkins():
+    try:
+        items = get_checkins_log() or []
+        return jsonify({'checkins': items}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/activities/payments', methods=['GET'])
+def api_get_activities_payments():
+    try:
+        items = get_payments_log() or []
+        return jsonify({'payments': items}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/activities/log', methods=['POST'])
+def api_log_activity():
+    """Allow logging a new activity from the frontend (optional)."""
+    try:
+        payload = request.get_json(silent=True) or {}
+        activity_type = payload.get('type')
+        data = payload.get('data') or {}
+        if not activity_type:
+            return jsonify({'error': 'missing_type'}), 400
+        item = log_activity(activity_type, data)
+        if not item:
+            return jsonify({'error': 'log_failed'}), 500
+        return jsonify({'ok': True, 'activity': item}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# ---- Core Data Endpoints (flights, passengers, bookings) ---------------------------
+@app.route('/api/flights', methods=['GET'])
+def api_get_flights():
+    """Return all flights from flights.json"""
+    try:
+        flights = _load_flights()
+        # Enrich with booking counts
+        booking_counts = {}
+        for p in passengers:
+            f = p.get('flight')
+            if f:
+                booking_counts[f] = booking_counts.get(f, 0) + 1
+        
+        for flight in flights:
+            # Normalize flight_number vs flight field (support both)
+            flight_id = flight.get('flight_number') or flight.get('flight')
+            if flight_id and 'flight' not in flight:
+                flight['flight'] = flight_id
+            if flight_id and 'flight_number' not in flight:
+                flight['flight_number'] = flight_id
+            
+            flight['bookings'] = booking_counts.get(flight_id, 0)
+            flight['booked_seats'] = booking_counts.get(flight_id, 0)
+            
+            # Normalize time fields for frontend compatibility
+            if 'time' in flight and 'departure_time' not in flight:
+                flight['departure_time'] = flight['time']
+            if 'departureTime' not in flight and 'departure_time' in flight:
+                flight['departureTime'] = flight['departure_time']
+            if 'arrival' in flight and 'arrival_time' not in flight:
+                flight['arrival_time'] = flight['arrival']
+            if 'arrivalTime' not in flight and 'arrival_time' in flight:
+                flight['arrivalTime'] = flight['arrival_time']
+        
+        return jsonify({'flights': flights}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/passengers', methods=['GET'])
+def api_get_passengers():
+    """Return all passengers"""
+    try:
+        return jsonify({'passengers': passengers}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/bookings', methods=['GET'])
+def api_get_bookings():
+    """Return all bookings"""
+    try:
+        bookings = _load_bookings()
+        return jsonify({'bookings': bookings}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/admin/dashboard.html')
@@ -596,6 +728,25 @@ def _add_booking(booking_data):
             'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
         })
         return None
+
+# Flights management functions
+def _load_flights():
+    """Load all flights from flights.json file."""
+    try:
+        if os.path.exists(FLIGHTS_FILE):
+            with open(FLIGHTS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f) or []
+    except Exception:
+        pass
+    return []
+
+def _save_flights(flights_list):
+    """Save flights list to flights.json file."""
+    try:
+        with open(FLIGHTS_FILE, 'w', encoding='utf-8') as f:
+            json.dump(flights_list, f, indent=2)
+    except Exception:
+        pass
 
 
 # --- simple session store (file-backed) ------------------------------------------------
@@ -1223,6 +1374,7 @@ def api_bookings():
         # Create booking record in bookings.json
         booking = {
             'id': data.get('id'),
+            'passenger_name': sanitize_input(data.get('name') or ''),
             'name': sanitize_input(data.get('name') or ''),
             'email': sanitize_input(data.get('email') or ''),
             'passport': sanitize_input(data.get('passport') or ''),
@@ -1231,24 +1383,42 @@ def api_bookings():
             'from': sanitize_input(data.get('from') or ''),
             'to': sanitize_input(data.get('to') or ''),
             'depart': sanitize_input(data.get('depart') or ''),
+            'flight_number': sanitize_input(data.get('flight_number') or data.get('flight') or 'N/A'),
             'return': sanitize_input(data.get('return') or ''),
             'class': sanitize_input(data.get('class') or 'economy'),
             'fare': sanitize_input(data.get('fare') or '0'),
+            'total_amount': float(data.get('amount') or 0),
             'amount': float(data.get('amount') or 0),
             'currency': sanitize_input(data.get('currency') or 'USD'),
             'payment_method': sanitize_input(data.get('payment_method') or ''),
+            'payment_status': 'completed',
+            'status': 'completed',
+            'booking_date': datetime.utcnow().isoformat() + 'Z',
             'created_at': datetime.utcnow().isoformat() + 'Z',
-            'status': 'completed'
         }
         
         # Save booking
         saved_booking = _add_booking(booking)
+        
+        # Log the booking activity
+        log_activity('booking', {
+            'passenger_name': booking.get('passenger_name'),
+            'flight_number': booking.get('flight_number'),
+            'from': booking.get('from'),
+            'to': booking.get('to'),
+            'amount': booking.get('amount'),
+            'payment_method': booking.get('payment_method'),
+            'timestamp': booking.get('created_at')
+        })
+        
         return jsonify({'status': 'ok', 'booking': saved_booking}), 201
     
     # GET endpoint
     session = _require_session(request)
     if not session:
-        return jsonify({'error': 'unauthorized'}), 401
+        # No session - return all bookings (for admin dashboard without auth)
+        bookings = _load_bookings()
+        return jsonify({'bookings': bookings}), 200
     if session.get('role') == 'admin':
         # Admin gets bookings from bookings.json (payment records)
         bookings = _load_bookings()
@@ -3708,6 +3878,20 @@ def passenger():
     return send_from_directory(FRONTEND_DIR, "passenger.html", mimetype="text/html")
 
 
+@app.route('/admin/checkins.html')
+def admin_checkins_page():
+    if not _has_admin_session():
+        return redirect('/admin-login.html')
+    return send_from_directory(ADMIN_DIR, 'checkins.html', mimetype='text/html')
+
+
+@app.route('/admin/payments.html')
+def admin_payments_page():
+    if not _has_admin_session():
+        return redirect('/admin-login.html')
+    return send_from_directory(ADMIN_DIR, 'payments.html', mimetype='text/html')
+
+
 @app.route('/assets/<path:path>')
 def serve_assets(path):
     return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), path)
@@ -4318,4 +4502,67 @@ if __name__ == "__main__":
         pass
 
     app.run(debug=True, host="127.0.0.1", port=5000)
+
+
+# ============================================================
+# ACTIVITY TRACKING ENDPOINTS
+# ============================================================
+
+@app.route('/api/activities', methods=['GET'])
+def api_get_activities():
+    """Get all recorded activities (admin only)"""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'admin_auth_required'}), 401
+    
+    activity_type = request.args.get('type')  # Optional filter: booking, payment, checkin, flight_status
+    limit = int(request.args.get('limit', 100))
+    
+    activities = get_activities(activity_type, limit)
+    return jsonify({'activities': activities, 'total': len(activities)}), 200
+
+@app.route('/api/activities/bookings', methods=['GET'])
+def api_get_bookings_activities():
+    """Get all booking activities (admin only)"""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'admin_auth_required'}), 401
+    
+    bookings = get_bookings_log()
+    return jsonify({'bookings': bookings, 'total': len(bookings)}), 200
+
+@app.route('/api/activities/checkins', methods=['GET'])
+def api_get_checkins_activities():
+    """Get all check-in activities (admin only)"""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'admin_auth_required'}), 401
+    
+    checkins = get_checkins_log()
+    return jsonify({'checkins': checkins, 'total': len(checkins)}), 200
+
+@app.route('/api/activities/payments', methods=['GET'])
+def api_get_payments_activities():
+    """Get all payment activities (admin only)"""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'admin_auth_required'}), 401
+    
+    payments = get_payments_log()
+    return jsonify({'payments': payments, 'total': len(payments)}), 200
+
+@app.route('/api/activities/log', methods=['POST'])
+def api_log_activity():
+    """Log a new activity (called from frontend)"""
+    data = request.get_json() or {}
+    activity_type = data.get('type')
+    activity_data = data.get('data', {})
+    
+    if not activity_type:
+        return jsonify({'error': 'activity_type_required'}), 400
+    
+    logged = log_activity(activity_type, activity_data)
+    if logged:
+        return jsonify({'status': 'ok', 'activity': logged}), 201
+    return jsonify({'error': 'failed_to_log'}), 500
 # ...existing code...
