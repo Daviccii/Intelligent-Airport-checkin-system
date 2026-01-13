@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Staff Login — SmartFly</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e3d59 0%, #0a2463 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+    }
+    
+    .login-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 48px;
+      width: 100%;
+      max-width: 420px;
+    }
+    
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .login-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      color: #1e3d59;
+    }
+    
+    .login-header p {
+      color: #6b7280;
+      font-size: 14px;
+      margin: 0;
+    }
+    
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .form-group label {
+      font-weight: 600;
+      font-size: 14px;
+      color: #111827;
+    }
+    
+    .form-group input {
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #1e3d59;
+      box-shadow: 0 0 0 3px rgba(30, 61, 89, 0.1);
+    }
+    
+    .form-group input:disabled {
+      background-color: #f3f4f6;
+      cursor: not-allowed;
+    }
+    
+    .login-btn {
+      padding: 12px;
+      background: linear-gradient(135deg, #1e3d59 0%, #0a2463 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    
+    .login-btn:hover:not(:disabled) {
+      opacity: 0.95;
+      transform: translateY(-2px);
+    }
+    
+    .login-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    .status-message {
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      text-align: center;
+      min-height: 20px;
+    }
+    
+    .status-message.loading {
+      color: #1e3d59;
+      background-color: #eff6ff;
+    }
+    
+    .status-message.success {
+      color: #10b981;
+      background-color: #ecfdf5;
+    }
+    
+    .status-message.error {
+      color: #dc2626;
+      background-color: #fef2f2;
+    }
+    
+    .back-link {
+      text-align: center;
+      margin-top: 20px;
+    }
+    
+    .back-link a {
+      color: #1e3d59;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <h1>✈️ SmartFly</h1>
+      <p>Staff Portal Login</p>
+    </div>
+
+    <form id="staffLoginForm" class="login-form">
+      <div class="form-group">
+        <label for="staffId">Staff ID</label>
+        <input 
+          id="staffId" 
+          type="text" 
+          placeholder="Enter your staff ID" 
+          required
+          autocomplete="username"
+        >
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input 
+          id="password" 
+          type="password" 
+          placeholder="Enter your password" 
+          required
+          autocomplete="current-password"
+        >
+      </div>
+
+      <button type="submit" id="loginBtn" class="login-btn">Sign In</button>
+    </form>
+
+    <div id="statusMsg" class="status-message" style="margin-top: 16px; display: none;"></div>
+    
+    <div class="back-link">
+      <a href="/">← Back to Home</a>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('staffLoginForm');
+    const staffIdInput = document.getElementById('staffId');
+    const passwordInput = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const statusMsg = document.getElementById('statusMsg');
+
+    function showStatus(message, type = 'loading') {
+      statusMsg.textContent = message;
+      statusMsg.className = `status-message ${type}`;
+      statusMsg.style.display = 'block';
+    }
+
+    function hideStatus() {
+      statusMsg.style.display = 'none';
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const staffId = staffIdInput.value.trim();
+      const password = passwordInput.value;
+
+      // Validate inputs
+      if (!staffId || !password) {
+        showStatus('Please enter both staff ID and password', 'error');
+        return;
+      }
+
+      // Disable form during submission
+      loginBtn.disabled = true;
+      staffIdInput.disabled = true;
+      passwordInput.disabled = true;
+
+      showStatus('Signing in...', 'loading');
+
+      try {
+        // Call login API with staff role
+        const response = await fetch('http://127.0.0.1:5000/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            role: 'staff',
+            username: staffId,
+            staffId: staffId,
+            password: password
+          }),
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Login failed (${response.status})`);
+        }
+
+        const data = await response.json();
+        
+        if (!data.token) {
+          throw new Error('No token received from server');
+        }
+
+        // Store token
+        const token = data.token;
+        localStorage.setItem('staffToken', token);
+        localStorage.setItem('session', token);
+        
+        // Set cookie
+        document.cookie = `session=${token}; path=/; max-age=86400; samesite=Lax`;
+
+        showStatus('✓ Login successful! Redirecting...', 'success');
+
+        // Redirect to staff portal
+        setTimeout(() => {
+          window.location.href = '/staff-portal.html';
+        }, 800);
+
+      } catch (err) {
+        console.error('Login error:', err);
+        showStatus(`Login failed: ${err.message}`, 'error');
+        
+        // Re-enable form
+        loginBtn.disabled = false;
+        staffIdInput.disabled = false;
+        passwordInput.disabled = false;
+        passwordInput.focus();
+      }
+    });
+
+    // Auto-focus staff ID on load
+    window.addEventListener('load', () => {
+      staffIdInput.focus();
+    });
+  </script>
+</body>
+</html>

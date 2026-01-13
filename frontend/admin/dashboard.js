@@ -88,11 +88,26 @@ async function fetchDashboardData() {
     state.summary.passengers.delta = Math.floor(allBookings.length * 0.08);
 
     // ========== REVENUE CALCULATION ==========
-    state.summary.revenue.total = allBookings.reduce((sum, b) => {
-      const amount = parseFloat(b.total_amount || b.amount || 0) || 0;
-      return sum + amount;
-    }, 0);
-    state.summary.revenue.deltaPct = 18;
+    // Try to fetch from new revenue API endpoint first
+    try {
+      const revenueRes = await (window.apiFetch ? apiFetch('/api/revenue/summary') : fetch('/api/revenue/summary'));
+      if (revenueRes.ok) {
+        const revenueData = await revenueRes.json();
+        state.summary.revenue.total = revenueData.total_revenue || 0;
+        state.summary.revenue.deltaPct = 18; // TODO: Calculate from by_date data
+        console.log('Revenue loaded from API:', revenueData);
+      } else {
+        throw new Error('Revenue API not available');
+      }
+    } catch (e) {
+      console.log('Using calculated revenue from bookings:', e);
+      // Fallback to calculating from bookings
+      state.summary.revenue.total = allBookings.reduce((sum, b) => {
+        const amount = parseFloat(b.total_amount || b.amount || 0) || 0;
+        return sum + amount;
+      }, 0);
+      state.summary.revenue.deltaPct = 18;
+    }
 
     // ========== CHECK-INS SUMMARY ==========
     state.summary.checkins.total = checkedInCount;

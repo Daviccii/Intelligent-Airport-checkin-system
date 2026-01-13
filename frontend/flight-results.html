@@ -303,6 +303,7 @@
                         var card = document.createElement('div');
                         card.className = 'flight-card';
                         card.style.position = 'relative';
+                        card.style.cursor = 'pointer';
 
                         var logoHTML = f.logo ? `<div class="airline-logo"><img src="${f.logo}" alt="${f.airline||''}" style="width:40px;height:40px;object-fit:contain"/></div>` : `<div class="airline-logo"></div>`;
                         var dep = f.time ? new Date(f.time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'TBD';
@@ -355,7 +356,7 @@
                                 ${offerBadge}
                                 ${logoHTML}
                                 <div class="flight-details">
-                                    <div class="detail-group"><h4>Departure</h4><p>${dep}</p><small>${f.gate||'TBA'}</small></div>
+                                    <div class="detail-group" data-dep-time><h4>Departure</h4><p>${dep}</p><small>${f.gate||'TBA'}</small></div>
                                     <div class="detail-group"><h4>Arrival</h4><p>${arr}</p><small>${f.arrival?new Date(f.arrival).toLocaleDateString():''}</small></div>
                                     <div class="detail-group"><h4>Airline</h4><p>${f.airline||''}</p><small>${f.flight||f.flightNumber||''}</small></div>
                                     <div class="detail-group"><h4>Stops</h4><p>${f.stops||0}</p><small></small></div>
@@ -366,6 +367,16 @@
                         fareContainer.style.gridColumn = '3';
                         fareContainer.innerHTML = fareUI;
                         card.appendChild(fareContainer);
+                        
+                        // Click handler to scroll to departure time
+                        card.addEventListener('click', function(e) {
+                            if (e.target.closest('.book-btn')) return; // Don't interfere with book buttons
+                            var depElement = card.querySelector('[data-dep-time]');
+                            if (depElement) {
+                                depElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }
+                        });
+                        
                         return card;
                     }
 

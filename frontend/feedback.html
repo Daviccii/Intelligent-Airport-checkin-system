@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback - SmartFly Airways</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <header class="main-nav">
+        <div class="container nav-container">
+            <div class="logo-container">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                </div>
+                <h2 class="logo-text">SmartFly</h2>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/experience.html">Experience</a>
+                <a href="/book.html">Book</a>
+                <a href="/help-center.html">Help</a>
+            </div>
+        </div>
+    </header>
+
+    <main style="padding: 60px 20px;">
+        <div class="container" style="max-width: 800px; margin: 0 auto;">
+            <h1 style="font-size: 2.5em; color: #0a2463; margin-bottom: 16px;">Share Your Feedback</h1>
+            <p style="font-size: 1.1em; color: #6b7280; margin-bottom: 40px;">Your opinions help us improve our service</p>
+            
+            <div class="card">
+                <div class="card-body">
+                    <form id="feedbackForm">
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; color: #0a2463; font-weight: 600; margin-bottom: 8px;">Feedback Type</label>
+                            <select id="feedbackType" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;">
+                                <option value="">Select feedback type</option>
+                                <option value="compliment">Compliment</option>
+                                <option value="suggestion">Suggestion</option>
+                                <option value="complaint">Complaint</option>
+                                <option value="general">General Feedback</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; color: #0a2463; font-weight: 600; margin-bottom: 8px;">Full Name</label>
+                            <input type="text" id="fullName" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;" placeholder="Enter your full name">
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; color: #0a2463; font-weight: 600; margin-bottom: 8px;">Email Address</label>
+                            <input type="email" id="email" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;" placeholder="your.email@example.com">
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; color: #0a2463; font-weight: 600; margin-bottom: 8px;">Flight Number (Optional)</label>
+                            <input type="text" id="flightNumber" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;" placeholder="e.g., SF123">
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; color: #0a2463; font-weight: 600; margin-bottom: 8px;">Travel Date (Optional)</label>
+                            <input type="date" id="travelDate" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;">
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; color: #0a2463; font-weight: 600; margin-bottom: 8px;">Subject</label>
+                            <input type="text" id="subject" required style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em;" placeholder="Brief subject of your feedback">
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; color: #0a2463; font-weight: 600; margin-bottom: 8px;">Your Feedback</label>
+                            <textarea id="feedback" required rows="6" style="width: 100%; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1em; resize: vertical;" placeholder="Please share your detailed feedback here..."></textarea>
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: block; color: #0a2463; font-weight: 600; margin-bottom: 8px;">Overall Rating</label>
+                            <div style="display: flex; gap: 8px;">
+                                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                    <input type="radio" name="rating" value="1" required>
+                                    <span>1 Star</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                    <input type="radio" name="rating" value="2">
+                                    <span>2 Stars</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                    <input type="radio" name="rating" value="3">
+                                    <span>3 Stars</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                    <input type="radio" name="rating" value="4">
+                                    <span>4 Stars</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                    <input type="radio" name="rating" value="5">
+                                    <span>5 Stars</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 24px;">
+                            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                                <input type="checkbox" id="contactMe">
+                                <span style="color: #334155;">I would like SmartFly to contact me regarding this feedback</span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Feedback</button>
+                    </form>
+
+                    <div id="successMessage" style="display: none; margin-top: 24px; padding: 16px; background: #d1fae5; border: 2px solid #10b981; border-radius: 8px; color: #065f46;">
+                        <strong>Thank you for your feedback!</strong>
+                        <p style="margin: 8px 0 0 0;">We appreciate you taking the time to share your thoughts with us. Your feedback has been received and will be reviewed by our team.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" style="margin-top: 24px;">
+                <div class="card-body">
+                    <h3 style="color: #0a2463; margin-bottom: 12px;">Other Ways to Reach Us</h3>
+                    <div style="color: #334155; line-height: 1.8;">
+                        <p><strong>Customer Service:</strong> +254 20 661 8000</p>
+                        <p><strong>Email:</strong> feedback@smartfly.com</p>
+                        <p><strong>Social Media:</strong> Follow us @SmartFlyAirways</p>
+                        <p style="margin-top: 12px;">Our customer service team is available 24/7 to assist you.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p style="text-align: center; padding: 24px 0; color: #e7eefc;">&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                type: document.getElementById('feedbackType').value,
+                name: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                flightNumber: document.getElementById('flightNumber').value,
+                travelDate: document.getElementById('travelDate').value,
+                subject: document.getElementById('subject').value,
+                feedback: document.getElementById('feedback').value,
+                rating: document.querySelector('input[name="rating"]:checked').value,
+                contactMe: document.getElementById('contactMe').checked
+            };
+
+            console.log('Feedback submitted:', formData);
+            
+            document.getElementById('feedbackForm').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'block';
+            
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 3000);
+        });
+    </script>
+</body>
+</html>

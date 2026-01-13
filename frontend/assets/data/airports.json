@@ -62,5 +62,19 @@
   { "code": "ARN", "name": "Stockholm Arlanda Airport", "city": "Stockholm", "country": "Sweden", "lat": 59.6519, "lon": 17.9186 },
   { "code": "OSL", "name": "Oslo Airport", "city": "Oslo", "country": "Norway", "lat": 60.1939, "lon": 11.1004 },
   { "code": "HEL", "name": "Helsinki-Vantaa Airport", "city": "Helsinki", "country": "Finland", "lat": 60.3172, "lon": 24.9633 },
-  { "code": "DUB", "name": "Dublin Airport", "city": "Dublin", "country": "Ireland", "lat": 53.4213, "lon": -6.2701 }
+  { "code": "DUB", "name": "Dublin Airport", "city": "Dublin", "country": "Ireland", "lat": 53.4213, "lon": -6.2701 },
+  { "code": "NBO", "name": "Jomo Kenyatta International Airport", "city": "Nairobi", "country": "Kenya", "lat": -1.3193, "lon": 36.9255 },
+  { "code": "MBA", "name": "Mombasa International Airport", "city": "Mombasa", "country": "Kenya", "lat": -4.0235, "lon": 39.5947 },
+  { "code": "ADD", "name": "Addis Ababa Bole International Airport", "city": "Addis Ababa", "country": "Ethiopia", "lat": 9.0265, "lon": 38.7469 },
+  { "code": "DSS", "name": "Dakar Léopold Sédar Senghor International Airport", "city": "Dakar", "country": "Senegal", "lat": 14.6639, "lon": -17.0732 },
+  { "code": "CIR", "name": "Cairo International Airport", "city": "Cairo", "country": "Egypt", "lat": 30.1219, "lon": 31.4055 },
+  { "code": "LLA", "name": "Lagos Murtala Muhammed International Airport", "city": "Lagos", "country": "Nigeria", "lat": 6.5769, "lon": 3.3209 },
+  { "code": "ACC", "name": "Kotoka International Airport", "city": "Accra", "country": "Ghana", "lat": 5.6052, "lon": -0.1689 },
+  { "code": "CMN", "name": "Marrakesh Menara Airport", "city": "Marrakesh", "country": "Morocco", "lat": 31.6295, "lon": -8.0089 },
+  { "code": "CFS", "name": "Casablanca International Airport", "city": "Casablanca", "country": "Morocco", "lat": 33.3675, "lon": -7.6898 },
+  { "code": "TUN", "name": "Tunis-Carthage International Airport", "city": "Tunis", "country": "Tunisia", "lat": 36.8515, "lon": 10.2269 },
+  { "code": "HRG", "name": "Hurghada International Airport", "city": "Hurghada", "country": "Egypt", "lat": 27.1742, "lon": 33.7992 },
+  { "code": "MRU", "name": "Mauritius Sir Seewoosagur Ramgoolam International Airport", "city": "Mauritius", "country": "Mauritius", "lat": -20.3933, "lon": 57.6836 },
+  { "code": "SEZ", "name": "Seychelles International Airport", "city": "Seychelles", "country": "Seychelles", "lat": -4.6796, "lon": 55.5225 },
+  { "code": "UIO", "name": "Mariscal Sucre International Airport", "city": "Quito", "country": "Ecuador", "lat": -0.4450, "lon": -78.4831 }
 ]

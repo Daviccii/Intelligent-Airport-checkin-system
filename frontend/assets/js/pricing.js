@@ -8,6 +8,20 @@ const PRICING_CONFIG = {
     pricePerKm: 0.12,           // Base price per kilometer (USD)
     minimumFare: 50,            // Minimum fare for any flight (USD)
     
+    // Cabin class multipliers
+    cabinClasses: {
+        economy: {
+            name: 'Economy',
+            multiplier: 1.0,
+            description: 'Standard seating and service'
+        },
+        business: {
+            name: 'Business',
+            multiplier: 2.5,
+            description: 'Premium seating, priority boarding, and enhanced service'
+        }
+    },
+    
     // Fare class multipliers
     fareClasses: {
         standard: {
@@ -87,11 +101,24 @@ function applyFareClass(baseFare, fareClass = 'standard') {
 }
 
 /**
+ * Apply cabin class multiplier
+ * @param {number} baseFare - Base fare amount
+ * @param {string} cabinClass - Cabin class key ('economy', 'business')
+ * @returns {number} Final fare with multiplier applied
+ */
+function applyCabinClass(baseFare, cabinClass = 'economy') {
+    const classConfig = PRICING_CONFIG.cabinClasses[cabinClass];
+    if (!classConfig) return baseFare;
+    
+    return baseFare * classConfig.multiplier;
+}
+
+/**
  * Calculate flight price between two airports
  * @param {Object} originAirport - Airport object with lat/lon
  * @param {Object} destAirport - Airport object with lat/lon
  * @param {string} fareClass - Fare class ('standard', 'flex', 'superflex')
- * @param {Object} options - Additional pricing options (peak, weekend, holiday)
+ * @param {Object} options - Additional pricing options (peak, weekend, holiday, cabinClass)
  * @returns {Object} Pricing details with distance and fare breakdown
  */
 function calculateFlightPrice(originAirport, destAirport, fareClass = 'standard', options = {}) {
@@ -114,6 +141,10 @@ function calculateFlightPrice(originAirport, destAirport, fareClass = 'standard'
     // Calculate base fare
     let fare = calculateBaseFare(distance);
     
+    // Apply cabin class multiplier (Economy vs Business)
+    const cabinClass = options.cabinClass || 'economy';
+    fare = applyCabinClass(fare, cabinClass);
+    
     // Apply fare class multiplier
     fare = applyFareClass(fare, fareClass);
     
@@ -131,6 +162,8 @@ function calculateFlightPrice(originAirport, destAirport, fareClass = 'standard'
         baseFare: Math.round(calculateBaseFare(distance)),
         fareClass: fareClass,
         fareClassName: PRICING_CONFIG.fareClasses[fareClass]?.name || fareClass,
+        cabinClass: cabinClass,
+        cabinClassName: PRICING_CONFIG.cabinClasses[cabinClass]?.name || cabinClass,
         finalFare: fare,
         currency: 'USD',
         pricePerKm: PRICING_CONFIG.pricePerKm,

@@ -948,6 +948,21 @@
       }
     ];
 
+    // Fetch real-time occupancy for a single flight
+    async function fetchOccupancyForFlight(flightId) {
+      try {
+        const response = await fetch(`/api/flights/${flightId}/occupancy`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log(`Occupancy for ${flightId}:`, data);
+          return data;
+        }
+      } catch (e) {
+        console.log(`Could not fetch occupancy for ${flightId}:`, e);
+      }
+      return null;
+    }
+
     async function loadFlights() {
       const container = document.getElementById('flightsContainer');
       const badge = document.getElementById('dataSourceBadge');
@@ -1060,7 +1075,29 @@
     function renderFlightsHTML(flights) {
       return flights.map(flight => {
         const logoUrl = getAirlineLogo(flight.airline || '');
+        // Calculate occupancy - will be updated by fetchOccupancy below
         const occupancyPercent = flight.capacity > 0 ? Math.round((flight.bookings / flight.capacity) * 100) : 0;
+        
+        // Fetch real-time occupancy asynchronously (non-blocking)
+        if (flight.flight) {
+          fetchOccupancyForFlight(flight.flight).then(occupancy => {
+            if (occupancy) {
+              // Update the displayed occupancy
+              const card = document.querySelector(`[data-flight-id="${flight.flight}"]`);
+              if (card) {
+                const occupancyBar = card.querySelector('.occupancy-fill');
+                const occupancyText = card.querySelector('.occupancy-text');
+                const bookingsBadge = card.querySelector('.bookings-badge');
+        return `
+          <div class="flight-card" data-flight-id="${flight.flight}" onclick="openFlightActions('${flight.flight.replace(/'/g, "\\'")}'
+                if (occupancyBar) occupancyBar.style.width = `${occupancy.occupancy_percent}%`;
+                if (occupancyText) occupancyText.textContent = `${occupancy.occupancy_percent}% Full`;
+                if (bookingsBadge) bookingsBadge.textContent = `${occupancy.booked} Bookings`;
+                if (checkedInBadge) checkedInBadge.textContent = `${occupancy.checked_in} Checked In`;
+              }
+            }
+          });
+        }
 
         const departRaw = flight.departure_time || flight.time || flight.departure || flight.depart || '';
         const departDate = departRaw ? new Date(departRaw) : null;
@@ -1125,6 +1162,10 @@
               <div class="occupancy-bar">
                 <div class="occupancy-fill" style="width: ${occupancyPercent}%"></div>
                 <span class="occupancy-text">${occupancyPercent}% Full</span>
+              </div>
+              <div class="flight-stats-mini" style="display: flex; gap: 10px; margin-top: 8px; font-size: 0.85rem;">
+                <span class="bookings-badge" style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px;">${flight.bookings || 0} Bookings</span>
+                <span class="checked-in-badge" style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px;">${flight.checked_in || 0} Checked In</span>
               </div>
             </div>
           </div>

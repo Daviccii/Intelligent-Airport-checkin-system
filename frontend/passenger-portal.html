@@ -276,16 +276,35 @@
 
     .features-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 24px;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     .feature-item {
       text-align: center;
+      background: white;
+      padding: 24px 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      border: 1px solid #f0f0f0;
+      transition: all 0.3s ease;
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .feature-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(1, 102, 166, 0.15);
+      border-color: var(--primary);
     }
 
     .feature-icon {
-      font-size: 40px;
+      font-size: 36px;
       color: var(--primary);
       margin-bottom: 12px;
     }
@@ -294,11 +313,13 @@
       font-weight: 700;
       margin-bottom: 8px;
       color: var(--text-dark);
+      font-size: 1.05em;
     }
 
     .feature-item p {
       color: var(--text-muted);
-      font-size: 13px;
+      font-size: 0.85em;
+      line-height: 1.4;
     }
 
     /* Footer */
@@ -335,7 +356,11 @@
       }
 
       .features-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
+      }
+      
+      .feature-item {
+        aspect-ratio: auto;
       }
 
       .header-content {
@@ -450,24 +475,6 @@
           <div class="feature-icon"><i class="fas fa-money-bill"></i></div>
           <h4>Best Prices</h4>
           <p>Guaranteed lowest fares available</p>
-        </div>
-
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fas fa-check-circle"></i></div>
-          <h4>Instant Confirmation</h4>
-          <p>Immediate ticket delivery</p>
-        </div>
-
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fas fa-globe"></i></div>
-          <h4>Global Coverage</h4>
-          <p>Destinations worldwide</p>
-        </div>
-
-        <div class="feature-item">
-          <div class="feature-icon"><i class="fas fa-sync"></i></div>
-          <h4>Easy Modifications</h4>
-          <p>Change dates and flights anytime</p>
         </div>
       </div>
     </section>

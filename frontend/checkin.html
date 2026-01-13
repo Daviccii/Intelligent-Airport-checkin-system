@@ -226,9 +226,10 @@ async function runQuickCheckin(){
   try{
     const res = await fetch('/api/passengers');
     const list = await res.json();
-    const matches = (list||[]).filter(p=>{
+    const passengers = Array.isArray(list) ? list : (list.passengers || []);
+    const matches = passengers.filter(p=>{
       const nameOk = (p.name||'').toLowerCase().includes(last);
-      const refOk = !ref || (p.passport||'').toLowerCase().includes(ref) || (p.bookingRef||'').toLowerCase().includes(ref);
+      const refOk = !ref || (p.passport||'').toLowerCase().includes(ref) || (p.bookingRef||'').toLowerCase().includes(ref) || (p.booking_ref||'').toLowerCase().includes(ref);
       return nameOk && refOk;
     });
     if(!matches.length){ renderQuickCheckinResult('No matching passenger. Check spelling or try the search below.', 'error'); return; }
@@ -236,9 +237,33 @@ async function runQuickCheckin(){
       const p = matches[0];
       // Auto-fill OTP email if passenger has one
       if(p.email){ try{ document.getElementById('otpEmail').value = p.email; }catch(e){} }
-      renderQuickCheckinResult(`Found <strong>${p.name}</strong> on flight <strong>${p.flight||'n/a'}</strong>. Opening boarding pass...`, 'success');
+      
+      // Call backend check-in API
+      try {
+        const checkinRes = await fetch('/api/checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            passport: p.passport,
+            flight: p.flight
+          })
+        });
+        
+        const checkinData = await checkinRes.json();
+        
+        if (checkinRes.ok && checkinData.ok) {
+          renderQuickCheckinResult(`Found <strong>${p.name}</strong> on flight <strong>${p.flight||'n/a'}</strong>. Checked in! Seat: <strong>${checkinData.seat}</strong>. Opening boarding pass...`, 'success');
+          console.log('Check-in successful:', checkinData);
+        } else {
+          renderQuickCheckinResult(`Found <strong>${p.name}</strong> on flight <strong>${p.flight||'n/a'}</strong>. Opening boarding pass...`, 'success');
+        }
+      } catch (checkinErr) {
+        console.error('Check-in API error:', checkinErr);
+        renderQuickCheckinResult(`Found <strong>${p.name}</strong> on flight <strong>${p.flight||'n/a'}</strong>. Opening boarding pass...`, 'success');
+      }
+      
       try{ sessionStorage.setItem('checkin_intent','1'); }catch(e){}
-      setTimeout(()=>{ window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(p.passport); }, 700);
+      setTimeout(()=>{ window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(p.passport); }, 1000);
       return;
     }
     const cards = matches.slice(0,5).map(p=>{
@@ -247,17 +272,38 @@ async function runQuickCheckin(){
           <div style="font-weight:700;color:#111827;">${p.name||'Unknown'}</div>
           <div style="color:#4b5563;font-size:13px;">Passport: ${p.passport||'—'} • Flight: ${p.flight||'—'}${p.seat?(' • Seat '+p.seat):''}</div>
         </div>
-        ${p.passport ? `<button class="btn primary" data-passport="${p.passport}" data-email="${p.email||''}">Open boarding pass</button>` : ''}
+        ${p.passport ? `<button class="btn primary" data-passport="${p.passport}" data-flight="${p.flight||''}" data-email="${p.email||''}">Check In & Open Boarding Pass</button>` : ''}
       </div>`;
     }).join('');
     renderQuickCheckinResult(`<div>Found ${matches.length} matches. Pick one to continue:</div>${cards}`,'info');
     // wire buttons
     const el = document.getElementById('quickCheckinResult');
     el.querySelectorAll('button[data-passport]').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
+      btn.addEventListener('click', async ()=>{
         const pp = btn.dataset.passport;
+        const fl = btn.dataset.flight;
         const em = btn.dataset.email;
         if(!pp) return;
+        
+        // Call backend check-in API
+        if (fl) {
+          try {
+            btn.textContent = 'Checking in...';
+            btn.disabled = true;
+            const checkinRes = await fetch('/api/checkin', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ passport: pp, flight: fl })
+            });
+            const checkinData = await checkinRes.json();
+            if (checkinRes.ok && checkinData.ok) {
+              console.log('Check-in successful:', checkinData);
+            }
+          } catch (checkinErr) {
+            console.error('Check-in API error:', checkinErr);
+          }
+        }
+        
         // Prefill OTP email for this passenger
         if(em){ try{ document.getElementById('otpEmail').value = em; }catch(e){} }
         try{ sessionStorage.setItem('checkin_intent','1'); }catch(e){}

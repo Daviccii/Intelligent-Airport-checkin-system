@@ -1355,7 +1355,7 @@
       document.getElementById('paymentTotal').textContent = `${getCurrencySymbol()}${total.toLocaleString()}`;
     }
 
-    function processPayment() {
+    async function processPayment() {
       const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
       const cardExpiry = document.getElementById('cardExpiry').value;
       const cardCVV = document.getElementById('cardCVV').value;
@@ -1365,23 +1365,60 @@
         return;
       }
 
-      // Generate ticket
-      const ticketNumber = 'SF' + Math.random().toString(36).substr(2, 9).toUpperCase();
-      const bookingRef = 'BK' + Math.random().toString(36).substr(2, 7).toUpperCase();
+      // Calculate total price
+      const basePrice = getPrice(bookingData.flight.priceUSD);
+      const taxes = basePrice * 0.15;
+      const total = basePrice + taxes;
 
-      document.getElementById('ticketNumber').textContent = ticketNumber;
-      document.getElementById('bookingRef').textContent = bookingRef;
-      document.getElementById('ticketFlight').textContent = `${bookingData.flight.airline} ${bookingData.flight.from}${bookingData.flight.to}`;
-      document.getElementById('ticketDateTime').textContent = `${bookingData.flight.date} at ${bookingData.flight.departure}`;
-      document.getElementById('ticketRoute').textContent = `${bookingData.flight.from} → ${bookingData.flight.to}`;
-      document.getElementById('ticketSeat').textContent = `${String.fromCharCode(65 + Math.floor((selectedSeat - 1) / 6))}${((selectedSeat - 1) % 6) + 1}`;
-      document.getElementById('ticketName').textContent = bookingData.passenger.name;
-      document.getElementById('ticketPassport').textContent = bookingData.passenger.passport;
-      document.getElementById('ticketEmail').textContent = bookingData.passenger.email;
-      document.getElementById('ticketPhone').textContent = bookingData.passenger.phone;
+      // Call backend API to register booking
+      try {
+        const seatLabel = `${String.fromCharCode(65 + Math.floor((selectedSeat - 1) / 6))}${((selectedSeat - 1) % 6) + 1}`;
+        
+        const response = await fetch('/api/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: bookingData.passenger.name,
+            passport: bookingData.passenger.passport,
+            email: bookingData.passenger.email,
+            flight: bookingData.flight.id,
+            from: bookingData.flight.from,
+            to: bookingData.flight.to,
+            seat_class: 'Economy',
+            amount: total,
+            currency: activeCurrency,
+            payment_method: 'card'
+          })
+        });
 
-      closeModal('paymentModal');
-      openModal('ticketModal');
+        const result = await response.json();
+        
+        if (response.ok && result.ok) {
+          // Use booking reference from backend
+          const bookingRef = result.booking_ref;
+          const ticketNumber = 'SF' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+          document.getElementById('ticketNumber').textContent = ticketNumber;
+          document.getElementById('bookingRef').textContent = bookingRef;
+          document.getElementById('ticketFlight').textContent = `${bookingData.flight.airline} ${bookingData.flight.from}${bookingData.flight.to}`;
+          document.getElementById('ticketDateTime').textContent = `${bookingData.flight.date} at ${bookingData.flight.departure}`;
+          document.getElementById('ticketRoute').textContent = `${bookingData.flight.from} → ${bookingData.flight.to}`;
+          document.getElementById('ticketSeat').textContent = seatLabel;
+          document.getElementById('ticketName').textContent = bookingData.passenger.name;
+          document.getElementById('ticketPassport').textContent = bookingData.passenger.passport;
+          document.getElementById('ticketEmail').textContent = bookingData.passenger.email;
+          document.getElementById('ticketPhone').textContent = bookingData.passenger.phone;
+
+          console.log('Booking registered successfully:', result);
+          closeModal('paymentModal');
+          openModal('ticketModal');
+        } else {
+          throw new Error(result.error || 'Booking failed');
+        }
+      } catch (error) {
+        console.error('Booking error:', error);
+        alert('Booking failed: ' + error.message + '. Please try again.');
+      }
     }
 
     function downloadTicket() {

@@ -153,13 +153,16 @@
     let selectedIndex = -1;
     let current = [];
     let nearest = null;
+    let geoRequested = false;
 
-    // Fetch geolocation once per page
-    if (!__geo && navigator.geolocation){
+    // Only request geolocation on user interaction (focus)
+    function ensureGeolocation(){
+      if (geoRequested || !navigator.geolocation) return;
+      geoRequested = true;
       try{
         navigator.geolocation.getCurrentPosition((pos)=>{
           __geo = { lat: pos.coords.latitude, lon: pos.coords.longitude };
-        }, ()=>{ __geo = null; }, { enableHighAccuracy: true, timeout: 3000, maximumAge: 600000 });
+        }, ()=>{ __geo = null; }, { enableHighAccuracy: false, maximumAge: 600000 });
       }catch(e){ __geo = null; }
     }
 
@@ -187,6 +190,7 @@
     }
 
     input.addEventListener('focus', function(){
+      ensureGeolocation();
       refresh();
       if (!input.value.trim()){
         const filter = buildFilter('');

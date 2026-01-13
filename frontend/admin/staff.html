@@ -1,0 +1,806 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Management — SmartFly Airlines</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="../admin-dashboard.css?v=999" rel="stylesheet">
+  <style>
+    .staff-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+    
+    .staff-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+    
+    .staff-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .staff-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    
+    .staff-username {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    
+    .staff-info {
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .staff-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #e0f2fe;
+      color: #0f172a;
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+      margin: 2px 4px 2px 0;
+    }
+    
+    .staff-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .btn-delete {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .btn-delete:hover {
+      background: #dc2626;
+    }
+    
+    .btn-reset-password {
+      background: #f59e0b;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .btn-reset-password:hover {
+      background: #d97706;
+    }
+
+    .btn-permissions {
+      background: #0f172a;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-permissions:hover {
+      opacity: 0.9;
+    }
+    
+    .modal {
+      display: none;
+      position: fixed;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    
+    .modal.active {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+    
+    .modal-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #1e293b;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: 14px;
+      color: #334155;
+      margin-bottom: 8px;
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: #0B74DE;
+      box-shadow: 0 0 0 3px rgba(11, 116, 222, 0.1);
+    }
+    
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #0B74DE 0%, #0056b3 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+    
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #334155;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    
+    .btn-secondary:hover {
+      background: #cbd5e1;
+    }
+    
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    
+    .alert-success {
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+    }
+    
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fecaca;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #64748b;
+    }
+    
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="top-navbar">
+    <div class="navbar-container">
+      <!-- Brand Logo -->
+      <div class="navbar-brand">
+        <div class="brand-icon">
+          <img src="../assets/airplane-logo.svg" alt="SmartFly" style="width: 28px; height: 28px;">
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">SmartFly</div>
+          <div class="brand-subtitle">Admin Panel</div>
+        </div>
+      </div>
+
+      <!-- Navigation Bubbles -->
+      <div class="nav-bubbles">
+        <a href="dashboard.html" class="nav-bubble" title="Dashboard">
+          <i class="fas fa-chart-line"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="flights.html" class="nav-bubble" title="Flights Management">
+          <i class="fas fa-plane"></i>
+          <span>Flights</span>
+        </a>
+        <a href="active-flights.html" class="nav-bubble" title="Active Flights Monitor">
+          <i class="fas fa-radar"></i>
+          <span>Live Monitor</span>
+        </a>
+        <a href="bookings.html" class="nav-bubble" title="Bookings">
+          <i class="fas fa-calendar-check"></i>
+          <span>Bookings</span>
+        </a>
+        <a href="members.html" class="nav-bubble" title="Members">
+          <i class="fas fa-users"></i>
+          <span>Members</span>
+        </a>
+        <a href="checkins.html" class="nav-bubble" title="Check-Ins">
+          <i class="fas fa-passport"></i>
+          <span>Check-Ins</span>
+        </a>
+        <a href="payments.html" class="nav-bubble" title="Payments">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+        <a href="staff.html" class="nav-bubble active" title="Staff Management">
+          <i class="fas fa-user-tie"></i>
+          <span>Staff</span>
+        </a>
+        <a href="settings.html" class="nav-bubble" title="Settings">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </a>
+      </div>
+
+      <!-- User Profile & Actions -->
+      <div class="navbar-actions">
+        <div class="admin-profile-compact">
+          <div class="profile-avatar-small">RG</div>
+          <div class="profile-info-compact">
+            <div class="profile-name">Riley Gabi</div>
+            <div class="profile-role">Administrator</div>
+          </div>
+        </div>
+        <button class="btn-logout" title="Log out" onclick="handleLogout()">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="admin-layout">
+    <main class="main-content flex-grow-1 p-4">
+      <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 class="display-6 mb-2 fw-bold">Staff Management</h1>
+          <p class="text-muted mb-0">
+            <i class="fas fa-user-tie"></i> Manage airline staff accounts and credentials
+          </p>
+        </div>
+        <button class="btn btn-primary" onclick="openAddStaffModal()">
+          <i class="fas fa-plus"></i> Add New Staff
+        </button>
+      </div>
+
+      <div id="alertContainer"></div>
+
+      <div id="staffList">
+        <div class="d-flex justify-content-center align-items-center" style="min-height: 300px;">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Staff Modal -->
+  <div id="addStaffModal" class="modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Add New Staff Member</h2>
+      <form id="addStaffForm">
+        <div class="form-group">
+          <label for="staffName">Full Name</label>
+          <input type="text" id="staffName" name="name" required placeholder="e.g., John Smith">
+        </div>
+        <div class="form-group">
+          <label for="staffUsername">Username</label>
+          <input type="text" id="staffUsername" name="username" required placeholder="e.g., jsmith">
+        </div>
+        <div class="form-group">
+          <label for="staffPassword">Password</label>
+          <input type="password" id="staffPassword" name="password" required placeholder="Minimum 8 characters">
+        </div>
+        <div class="form-group">
+          <label for="staffEmail">Email (Optional)</label>
+          <input type="email" id="staffEmail" name="email" placeholder="e.g., john.smith@smartfly.com">
+        </div>
+        <div class="form-group">
+          <label>Access (choose what this staff can view)</label>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="view_dashboard" id="permDashboard">
+            <label class="form-check-label" for="permDashboard">Dashboard overview</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="view_flights" id="permFlights">
+            <label class="form-check-label" for="permFlights">Flights</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="view_passengers" id="permPassengers">
+            <label class="form-check-label" for="permPassengers">Passenger information (read-only)</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="edit_passengers" id="permEditPassengers">
+            <label class="form-check-label" for="permEditPassengers">Passenger updates (edit)</label>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeAddStaffModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Add Staff</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reset Password Modal -->
+  <div id="resetPasswordModal" class="modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Reset Staff Password</h2>
+      <form id="resetPasswordForm">
+        <input type="hidden" id="resetUsername" name="username">
+        <div class="form-group">
+          <label for="newPassword">New Password</label>
+          <input type="password" id="newPassword" name="password" required placeholder="Minimum 8 characters">
+        </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" required placeholder="Re-enter password">
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closeResetPasswordModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Reset Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Permissions Modal -->
+  <div id="permissionsModal" class="modal">
+    <div class="modal-content">
+      <h2 class="modal-title">Update Permissions</h2>
+      <form id="permissionsForm">
+        <input type="hidden" id="permissionsUsername" name="username">
+        <p class="text-muted" style="margin-top: 0;">Select what this staff member can access.</p>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="view_dashboard" id="permModalDashboard">
+          <label class="form-check-label" for="permModalDashboard">Dashboard overview</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="view_flights" id="permModalFlights">
+          <label class="form-check-label" for="permModalFlights">Flights</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="view_passengers" id="permModalPassengers">
+          <label class="form-check-label" for="permModalPassengers">Passenger information (read-only)</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" value="edit_passengers" id="permModalEditPassengers">
+          <label class="form-check-label" for="permModalEditPassengers">Passenger updates (edit)</label>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" onclick="closePermissionsModal()">Cancel</button>
+          <button type="submit" class="btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Auth check
+    const token = localStorage.getItem('session') || localStorage.getItem('adminToken');
+    if (!token) {
+      window.location.href = '/admin-login.html';
+    }
+
+    // API Base URL - use direct connection to Flask backend
+    const API_BASE = 'http://127.0.0.1:5000/api/admin';
+    const PERMISSION_LABELS = {
+      view_dashboard: 'Dashboard overview',
+      view_flights: 'Flights',
+      view_passengers: 'Passenger info',
+      edit_passengers: 'Passenger updates'
+    };
+
+    // Parse JSON if possible; otherwise return raw text so we can surface errors without throwing
+    async function parseJsonSafe(response) {
+      const text = await response.text();
+      try {
+        return [JSON.parse(text), text];
+      } catch (err) {
+        return [null, text];
+      }
+    }
+
+    // Load staff list on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadStaffList();
+    });
+
+    // Load staff list
+    async function loadStaffList() {
+      try {
+        console.log('Loading staff list from:', `${API_BASE}/staff`);
+        const response = await fetch(`${API_BASE}/staff`, {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        console.log('Staff API response status:', response.status);
+        const [data, raw] = await parseJsonSafe(response);
+
+        if (!response.ok) {
+          console.error('Staff API error response:', raw);
+          throw new Error((data && data.error) || raw || `Failed to load staff list (${response.status})`);
+        }
+
+        console.log('Staff data received:', data);
+        renderStaffList((data && data.staff) || []);
+      } catch (error) {
+        console.error('Error loading staff:', error);
+        showAlert('Failed to load staff list. Please try again.', 'error');
+        document.getElementById('staffList').innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>Failed to load staff list: ${error.message}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Render staff list
+    function renderStaffList(staffList) {
+      const container = document.getElementById('staffList');
+      
+      if (staffList.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-user-tie"></i>
+            <h3>No Staff Members Yet</h3>
+            <p>Click "Add New Staff" to register your first staff member.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = staffList.map(staff => `
+        <div class="staff-card">
+          <div class="staff-header">
+            <div>
+              <div class="staff-name">${escapeHtml(staff.name || staff.username)}</div>
+              <div class="staff-username">@${escapeHtml(staff.username)}</div>
+              ${staff.email ? `<div class="staff-info"><i class="fas fa-envelope"></i> ${escapeHtml(staff.email)}</div>` : ''}
+              <div class="staff-info"><i class="fas fa-calendar"></i> Created: ${formatDate(staff.created_at)}</div>
+            </div>
+            <div class="staff-actions">
+              <button class="btn-permissions" onclick="openPermissionsModal('${escapeHtml(staff.username)}', ${JSON.stringify(staff.permissions || [])})">
+                <i class="fas fa-shield-alt"></i> Permissions
+              </button>
+              <button class="btn-reset-password" onclick="openResetPasswordModal('${escapeHtml(staff.username)}')">
+                <i class="fas fa-key"></i> Reset Password
+              </button>
+              <button class="btn-delete" onclick="deleteStaff('${escapeHtml(staff.username)}', '${escapeHtml(staff.name || staff.username)}')">
+                <i class="fas fa-trash"></i> Remove
+              </button>
+            </div>
+          </div>
+          <div class="staff-info" style="margin-top: 8px;">
+            <strong>Access:</strong> ${renderPermissionPills(staff.permissions)}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Open Add Staff Modal
+    function openAddStaffModal() {
+      document.getElementById('addStaffForm').reset();
+      document.getElementById('addStaffModal').classList.add('active');
+    }
+
+    // Close Add Staff Modal
+    function closeAddStaffModal() {
+      document.getElementById('addStaffModal').classList.remove('active');
+    }
+
+    // Handle Add Staff Form
+    document.getElementById('addStaffForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = {
+        name: document.getElementById('staffName').value.trim(),
+        username: document.getElementById('staffUsername').value.trim(),
+        password: document.getElementById('staffPassword').value,
+        email: document.getElementById('staffEmail').value.trim() || undefined,
+        permissions: Array.from(document.querySelectorAll('#addStaffForm .form-check-input:checked')).map(cb => cb.value)
+      };
+
+      if (formData.password.length < 8) {
+        showAlert('Password must be at least 8 characters long', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/staff`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const [data, raw] = await parseJsonSafe(response);
+
+        if (!response.ok) {
+          throw new Error((data && data.error) || raw || 'Failed to add staff member');
+        }
+
+        showAlert(`Staff member "${formData.name}" added successfully!`, 'success');
+        closeAddStaffModal();
+        loadStaffList();
+      } catch (error) {
+        console.error('Error adding staff:', error);
+        showAlert(error.message, 'error');
+      }
+    });
+
+    // Open Reset Password Modal
+    function openResetPasswordModal(username) {
+      document.getElementById('resetPasswordForm').reset();
+      document.getElementById('resetUsername').value = username;
+      document.getElementById('resetPasswordModal').classList.add('active');
+    }
+
+    // Close Reset Password Modal
+    function closeResetPasswordModal() {
+      document.getElementById('resetPasswordModal').classList.remove('active');
+    }
+
+    // Open Permissions Modal
+    function openPermissionsModal(username, permissions = []) {
+      document.getElementById('permissionsForm').reset();
+      document.getElementById('permissionsUsername').value = username;
+      
+      // Set checkboxes based on current permissions
+      const permCheckboxes = document.querySelectorAll('#permissionsForm .form-check-input');
+      permCheckboxes.forEach(checkbox => {
+        checkbox.checked = permissions.includes(checkbox.value);
+      });
+      
+      document.getElementById('permissionsModal').classList.add('active');
+    }
+
+    // Close Permissions Modal
+    function closePermissionsModal() {
+      document.getElementById('permissionsModal').classList.remove('active');
+    }
+
+    // Handle Permissions Form
+    document.getElementById('permissionsForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('permissionsUsername').value;
+      const permissions = Array.from(document.querySelectorAll('#permissionsForm .form-check-input:checked')).map(cb => cb.value);
+
+      try {
+        const response = await fetch(`${API_BASE}/staff/${encodeURIComponent(username)}/permissions`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ permissions })
+        });
+
+        const [data, raw] = await parseJsonSafe(response);
+
+        if (!response.ok) {
+          throw new Error((data && data.error) || raw || 'Failed to update permissions');
+        }
+
+        showAlert(`Permissions for "${username}" have been updated successfully!`, 'success');
+        closePermissionsModal();
+        loadStaffList();
+      } catch (error) {
+        console.error('Error updating permissions:', error);
+        showAlert(error.message, 'error');
+      }
+    });
+    document.getElementById('resetPasswordForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const username = document.getElementById('resetUsername').value;
+      const password = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        showAlert('Passwords do not match', 'error');
+        return;
+      }
+
+      if (password.length < 8) {
+        showAlert('Password must be at least 8 characters long', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/staff/${encodeURIComponent(username)}/password`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ password })
+        });
+
+        const [data, raw] = await parseJsonSafe(response);
+
+        if (!response.ok) {
+          throw new Error((data && data.error) || raw || 'Failed to reset password');
+        }
+
+        showAlert(`Password for "${username}" has been reset successfully!`, 'success');
+        closeResetPasswordModal();
+      } catch (error) {
+        console.error('Error resetting password:', error);
+        showAlert(error.message, 'error');
+      }
+    });
+
+    // Delete Staff
+    async function deleteStaff(username, name) {
+      if (!confirm(`Are you sure you want to remove "${name}" from the staff?\n\nThis action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/staff/${encodeURIComponent(username)}`, {
+          method: 'DELETE',
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const [data, raw] = await parseJsonSafe(response);
+
+        if (!response.ok) {
+          throw new Error((data && data.error) || raw || 'Failed to remove staff member');
+        }
+
+        showAlert(`Staff member "${name}" has been removed successfully`, 'success');
+        loadStaffList();
+      } catch (error) {
+        console.error('Error deleting staff:', error);
+        showAlert(error.message, 'error');
+      }
+    }
+
+    // Show Alert
+    function showAlert(message, type = 'success') {
+      const container = document.getElementById('alertContainer');
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type}`;
+      alert.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+        ${message}
+      `;
+      container.appendChild(alert);
+
+      setTimeout(() => {
+        alert.style.opacity = '0';
+        alert.style.transform = 'translateY(-20px)';
+        setTimeout(() => alert.remove(), 300);
+      }, 5000);
+    }
+
+    // Utility functions
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function formatDate(dateString) {
+      if (!dateString) return 'N/A';
+      try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'short', 
+          day: 'numeric' 
+        });
+      } catch (e) {
+        return dateString;
+      }
+    }
+
+    function renderPermissionPills(perms = []) {
+      const normalized = Array.isArray(perms) ? perms : [];
+      if (normalized.length === 0) {
+        return '<span class="text-muted">No access set</span>';
+      }
+      return normalized.map(p => {
+        const label = PERMISSION_LABELS[p] || p;
+        return `<span class="staff-pill"><i class="fas fa-check"></i> ${escapeHtml(label)}</span>`;
+      }).join(' ');
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('session');
+      localStorage.removeItem('adminToken');
+      document.cookie = 'session=;path=/;max-age=0';
+      window.location.href = '/admin-login.html';
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -271,7 +271,7 @@
 
                 <div class="actions">
                     <button class="btn secondary" onclick="skipSeat()">Skip Seat Selection</button>
-                    <button class="btn primary" id="continueBtn" disabled onclick="continueToBaggage()">Continue to Baggage</button>
+                    <button class="btn primary" id="continueBtn" disabled onclick="continueToBaggage()">Continue to Booking</button>
                 </div>
             </div>
 
@@ -406,17 +406,18 @@
             document.getElementById('flightInfo').textContent = `Flight: ${flightParams.flight} | Class: ${flightParams.class}`;
         }
 
-        function skipSeat() {
-            sessionStorage.setItem('selected_seats', JSON.stringify([]));
-            window.location.href = '/baggage.html';
-        }
-
-        function continueToBaggage() {
-            sessionStorage.setItem('selected_seats', JSON.stringify(selectedSeats));
-            window.location.href = '/baggage.html';
-        }
-
-        function showToast(message, type = 'success') {
+		function skipSeat() {
+			sessionStorage.setItem('selected_seats', JSON.stringify([]));
+			// Build URL with all booking parameters
+			const params = new URLSearchParams(window.location.search);
+			window.location.href = '/booking.html?' + params.toString();
+		}		function continueToBaggage() {
+			sessionStorage.setItem('selected_seats', JSON.stringify(selectedSeats));
+			// Build URL with all booking parameters including selected seats
+			const params = new URLSearchParams(window.location.search);
+			params.set('seats', selectedSeats.join(','));
+			window.location.href = '/booking.html?' + params.toString();
+		}        function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.textContent = message;

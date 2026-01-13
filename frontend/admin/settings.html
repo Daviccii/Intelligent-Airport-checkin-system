@@ -162,6 +162,32 @@
       border-radius: 8px;
       border: none;
       margin-bottom: 24px;
+      padding: 16px 20px;
+      font-weight: 500;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert-success {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #166534;
+    }
+
+    .alert-danger {
+      background: #fee2e2;
+      border: 1px solid #fca5a5;
+      color: #991b1b;
     }
 
     .section-divider {
@@ -398,13 +424,29 @@
         </div>
       `;
       alertContainer.innerHTML = alertHtml;
+      // Keep alert visible for 6 seconds for errors, 5 for success
+      const duration = type === 'success' ? 5000 : 6000;
       setTimeout(() => {
-        alertContainer.innerHTML = '';
-      }, 4000);
+        if (alertContainer.innerHTML === alertHtml) {
+          alertContainer.innerHTML = '';
+        }
+      }, duration);
     }
 
     async function saveSettings() {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+      
+      if (!token) {
+        showAlert('✗ Error: Not authenticated. Please log in again.', 'error');
+        setTimeout(() => window.location.href = '/admin-login.html', 2000);
+        return;
+      }
+      
+      // Show loading state
+      const saveBtn = document.querySelector('.btn-save');
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+      saveBtn.disabled = true;
       
       const settings = {
         system_name: document.getElementById('systemName').value,
@@ -425,27 +467,42 @@
       };
 
       try {
-        const response = await (window.apiFetch ? apiFetch('/api/admin/settings', {
+        console.log('Sending settings to /api/admin/settings');
+        
+        // Try both with and without Bearer token format
+        const response = await fetch('http://127.0.0.1:5000/api/admin/settings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'X-SESSION': token
           },
           body: JSON.stringify(settings)
-        }) : fetch('/api/admin/settings', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(settings)
-        }));
+        });
 
-        if (!response.ok) throw new Error('Failed to save settings');
-        showAlert('Settings saved successfully!', 'success');
+        console.log('Response status:', response.status);
+        const responseText = await response.text();
+        console.log('Response text:', responseText);
+        
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          data = { error: responseText };
+        }
+
+        if (!response.ok) {
+          const errorMsg = data.error || `HTTP ${response.status}`;
+          throw new Error(errorMsg);
+        }
+        
+        showAlert('✓ Settings saved successfully!', 'success');
       } catch (error) {
         console.error('Save error:', error);
-        showAlert('Failed to save settings. Please try again.', 'error');
+        showAlert(`✗ Error: ${error.message}`, 'error');
+      } finally {
+        // Restore button state
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
       }
     }
 
@@ -459,11 +516,11 @@
     async function loadSettings() {
       const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
       try {
-        const response = await (window.apiFetch ? apiFetch('/api/admin/settings', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }) : fetch('/api/admin/settings', {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }));
+        const response = await fetch('http://127.0.0.1:5000/api/admin/settings', {
+          headers: { 
+            'X-SESSION': token
+          }
+        });
         
         if (!response.ok) throw new Error('Failed to load settings');
         const data = await response.json();

@@ -1,102 +1,376 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <script>
-    (function(){
-      const params = new URLSearchParams(location.search || '');
-      const interest = (params.get('interest')||'').toLowerCase();
-      const deal = (params.get('deal')||'').toLowerCase();
-      const titleEl = document.getElementById('ds-title');
-      const descEl = document.getElementById('ds-desc');
-      const badge = document.getElementById('ds-badge');
-      const grid = document.getElementById('grid');
-      const gtitle = document.getElementById('grid-title');
-      const gsub = document.getElementById('grid-sub');
-
-      function cardHTML(item){
-        return `<a class="deal-card" href="${item.to}">\
-                  <img alt="${item.name}" src="${item.img}">\
-                  <div class="deal-info"><span class="badge">Explore</span><h4>${item.name}</h4><p>${item.blurb}</p></div>\
-                </a>`;
-      }
-
-      async function loadCatalog(){
-        try{
-          const res = await fetch('assets/data/destinations.json', { cache: 'no-store' });
-          if (!res.ok) throw new Error('Failed to load destinations');
-          return await res.json();
-        }catch(e){ console.warn(e); return { interests:{}, deals:{} }; }
-      }
-
-      (async function init(){
-        const catalog = await loadCatalog();
-        let items = [];
-        if (interest && catalog.interests && catalog.interests[interest]) {
-          badge.textContent = 'Interest';
-          titleEl.textContent = interest.charAt(0).toUpperCase()+interest.slice(1);
-          descEl.textContent = 'Top picks for ' + interest + ' lovers.';
-          gtitle.textContent = 'Popular ' + interest + ' spots';
-          gsub.textContent = 'Tap a card to see flights and availability.';
-          items = catalog.interests[interest];
-        } else if (deal && catalog.deals && catalog.deals[deal]) {
-          badge.textContent = 'Deal';
-          titleEl.textContent = deal.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-          descEl.textContent = 'Limited-time offers and packages.';
-          gtitle.textContent = 'Deal highlights';
-          gsub.textContent = 'Hurry—availability may be limited.';
-          items = catalog.deals[deal];
-        } else {
-          badge.textContent = 'Discover';
-          titleEl.textContent = 'Destinations';
-          descEl.textContent = 'Pick a region or filter from the homepage.';
-          gtitle.textContent = 'Regions';
-          items = [
-            { name:'Europe', img:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60', blurb:'History and modernity', to:'flight-results.html?region=europe' },
-            { name:'Africa', img:'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=60', blurb:'Vast landscapes and culture', to:'flight-results.html?region=africa' },
-            { name:'Asia', img:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60', blurb:'Traditions and tech hubs', to:'flight-results.html?region=asia' },
-            { name:'Americas', img:'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=60', blurb:'Cities and natural wonders', to:'flight-results.html?region=americas' }
-          ];
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Destinations - SmartFly Airways</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #0a2463 0%, #1e3d59 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
         }
-        grid.innerHTML = items.map(cardHTML).join('');
-      })();
-    })();
-  </script>
-                  <img alt="${item.name}" src="${item.img}">\
-                  <div class="deal-info"><span class="badge">Explore</span><h4>${item.name}</h4><p>${item.blurb}</p></div>\
-                </a>`;
-      }
+        
+        .hero-section h1 {
+            font-size: 2.8em;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+        }
+        
+        .hero-section p {
+            font-size: 1.2em;
+            margin: 0;
+            opacity: 0.95;
+        }
+        
+        .destination-badge {
+            display: inline-block;
+            background: #f39c12;
+            color: #0a2463;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            padding: 60px 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .destination-card {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .destination-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+        }
+        
+        .destination-card:focus-visible {
+            outline: 3px solid #f39c12;
+            outline-offset: 2px;
+        }
+        
+        .destination-card img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .destination-info {
+            padding: 24px;
+            background: white;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .destination-info h3 {
+            color: #0a2463;
+            margin: 0 0 12px 0;
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+        
+        .destination-info p {
+            color: #6b7280;
+            margin: 0;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 18px;
+            background: #0a2463;
+            color: white;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+            text-decoration: none;
+        }
+        
+        .destination-card:hover .cta-button {
+            background: #f39c12;
+            color: #0a2463;
+        }
+        
+        .section-title {
+            font-size: 2.2em;
+            color: #0a2463;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+        
+        .section-subtitle {
+            font-size: 1.1em;
+            color: #6b7280;
+            margin-bottom: 40px;
+        }
+        
+        .destinations-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        .filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #0a2463;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            border-color: #f39c12;
+            background: #f39c12;
+            color: #0a2463;
+        }
+        
+        .filter-btn:focus-visible {
+            outline: 2px solid #0a2463;
+            outline-offset: 2px;
+        }
+        
+        @media (max-width: 768px) {
+            .destinations-grid {
+                grid-template-columns: 1fr;
+                padding: 40px 16px;
+            }
+            
+            .hero-section h1 {
+                font-size: 2em;
+            }
+            
+            .section-title {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <div class="container nav-container">
+            <div class="logo-container">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                </div>
+                <h2 class="logo-text">SmartFly</h2>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/experience.html">Experience</a>
+                <a href="/book.html">Book</a>
+                <a href="/help-center.html">Help</a>
+            </div>
+        </div>
+    </header>
 
-      let items = [];
-      if (interest && catalog.interests[interest]) {
-        badge.textContent = 'Interest';
-        titleEl.textContent = interest.charAt(0).toUpperCase()+interest.slice(1);
-        descEl.textContent = 'Top picks for ' + interest + ' lovers.';
-        gtitle.textContent = 'Popular ' + interest + ' spots';
-        gsub.textContent = 'Tap a card to see flights and availability.';
-        items = catalog.interests[interest];
-      } else if (deal && catalog.deals[deal]) {
-        badge.textContent = 'Deal';
-        titleEl.textContent = deal.replace(/-/g,' ').replace(/\b\w/g,c=>c.toUpperCase());
-        descEl.textContent = 'Limited-time offers and packages.';
-        gtitle.textContent = 'Deal highlights';
-        gsub.textContent = 'Hurry—availability may be limited.';
-        items = catalog.deals[deal];
-      } else {
-        badge.textContent = 'Discover';
-        titleEl.textContent = 'Destinations';
-        descEl.textContent = 'Pick a region or filter from the homepage.';
-        gtitle.textContent = 'Regions';
-        items = [
-          { name:'Europe', img:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60', blurb:'History and modernity', to:'flight-results.html?region=europe' },
-          { name:'Africa', img:'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=60', blurb:'Vast landscapes and culture', to:'flight-results.html?region=africa' },
-          { name:'Asia', img:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60', blurb:'Traditions and tech hubs', to:'flight-results.html?region=asia' },
-          { name:'Americas', img:'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=60', blurb:'Cities and natural wonders', to:'flight-results.html?region=americas' }
-        ];
-      }
-      grid.innerHTML = items.map(cardHTML).join('');
-    })();
-  </script>
+    <section class="hero-section">
+        <div class="container">
+            <span class="destination-badge" id="ds-badge">Discover</span>
+            <h1 id="ds-title">Explore Destinations</h1>
+            <p id="ds-desc">Find your next adventure across the globe</p>
+        </div>
+    </section>
+
+    <section class="destinations-container">
+        <div style="text-align: center; margin-bottom: 40px;">
+            <h2 class="section-title" id="grid-title">Popular Destinations</h2>
+            <p class="section-subtitle" id="grid-sub">Choose a region to discover flights and special offers</p>
+        </div>
+        
+        <div class="filters" role="group" aria-label="Filter destinations">
+            <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
+            <button class="filter-btn" data-filter="africa" aria-pressed="false">Africa</button>
+            <button class="filter-btn" data-filter="europe" aria-pressed="false">Europe</button>
+            <button class="filter-btn" data-filter="asia" aria-pressed="false">Asia</button>
+            <button class="filter-btn" data-filter="americas" aria-pressed="false">Americas</button>
+        </div>
+
+        <div class="destinations-grid" id="grid" role="region" aria-label="Destinations list">
+            <!-- Populated by JavaScript -->
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p style="text-align: center; padding: 24px 0; color: #e7eefc;">&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        (function(){
+            const params = new URLSearchParams(location.search || '');
+            const interest = (params.get('interest')||'').toLowerCase();
+            const deal = (params.get('deal')||'').toLowerCase();
+            const type = (params.get('type')||'').toLowerCase(); // Add type parameter support
+            
+            const titleEl = document.getElementById('ds-title');
+            const descEl = document.getElementById('ds-desc');
+            const badge = document.getElementById('ds-badge');
+            const grid = document.getElementById('grid');
+            const gtitle = document.getElementById('grid-title');
+            const gsub = document.getElementById('grid-sub');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            
+            let allItems = [];
+            let currentFilter = 'all';
+
+            function cardHTML(item){
+                return `<a class="destination-card" href="${item.to}" role="article">
+                          <img alt="Destination: ${item.name}" src="${item.img}" loading="lazy">
+                          <div class="destination-info">
+                            <h3>${item.name}</h3>
+                            <p>${item.blurb}</p>
+                            <span class="cta-button">Explore</span>
+                          </div>
+                        </a>`;
+            }
+
+            function renderCards(items) {
+                if (items.length === 0) {
+                    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 40px;">No destinations found for this filter.</p>';
+                } else {
+                    grid.innerHTML = items.map(cardHTML).join('');
+                }
+            }
+
+            function filterCards(filterType) {
+                currentFilter = filterType;
+                
+                if (filterType === 'all') {
+                    renderCards(allItems);
+                } else {
+                    const filtered = allItems.filter(item => item.region === filterType);
+                    renderCards(filtered);
+                }
+                
+                // Update button states
+                filterButtons.forEach(btn => {
+                    if (btn.dataset.filter === filterType) {
+                        btn.classList.add('active');
+                        btn.setAttribute('aria-pressed', 'true');
+                    } else {
+                        btn.classList.remove('active');
+                        btn.setAttribute('aria-pressed', 'false');
+                    }
+                });
+            }
+
+            async function loadCatalog(){
+                try{
+                    const res = await fetch('assets/data/destinations.json', { cache: 'no-store' });
+                    if (!res.ok) throw new Error('Failed to load destinations');
+                    return await res.json();
+                }catch(e){ 
+                    console.warn(e); 
+                    return { interests:{}, deals:{} }; 
+                }
+            }
+
+            (async function init(){
+                const catalog = await loadCatalog();
+                
+                if (type === 'popular') {
+                    badge.textContent = 'Popular';
+                    titleEl.textContent = 'Popular Destinations';
+                    descEl.textContent = 'Our most sought-after travel destinations';
+                    gtitle.textContent = 'Top Picks';
+                    gsub.textContent = 'Explore our travelers\' favorite destinations';
+                    allItems = [
+                        { name:'Mombasa', region:'africa', img:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=80', blurb:'Pristine beaches and historic charm', to:'/book.html?to=MBA' },
+                        { name:'Nairobi', region:'africa', img:'https://images.unsplash.com/photo-1611348524140-53c9a25263d6?auto=format&fit=crop&w=800&q=80', blurb:'Gateway to East African adventures', to:'/book.html?to=NBO' },
+                        { name:'Johannesburg', region:'africa', img:'https://images.unsplash.com/photo-1577948000111-9c970dfe3743?auto=format&fit=crop&w=800&q=80', blurb:'Vibrant city with rich history', to:'/book.html?to=JNB' },
+                        { name:'Zanzibar', region:'africa', img:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=80', blurb:'Tropical paradise and spice island', to:'/book.html?to=ZNZ' },
+                        { name:'Entebbe', region:'africa', img:'https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?auto=format&fit=crop&w=800&q=80', blurb:'Gateway to Uganda\'s natural wonders', to:'/book.html?to=EBB' },
+                        { name:'Cape Town', region:'africa', img:'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=800&q=80', blurb:'Stunning scenery and diverse culture', to:'/book.html?to=CPT' }
+                    ];
+                } else if (type === 'longhaul') {
+                    badge.textContent = 'Long-Haul';
+                    titleEl.textContent = 'Long-Haul Destinations';
+                    descEl.textContent = 'International flights to major cities worldwide';
+                    gtitle.textContent = 'Intercontinental Travel';
+                    gsub.textContent = 'Direct and connecting flights to global destinations';
+                    allItems = [
+                        { name:'New York', region:'americas', img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80', blurb:'The city that never sleeps', to:'/book.html?to=JFK' },
+                        { name:'Dubai', region:'middle-east', img:'https://images.unsplash.com/photo-1512453459498-46bbf73fdfc8?auto=format&fit=crop&w=800&q=80', blurb:'Luxury shopping and modern marvels', to:'/book.html?to=DXB' },
+                        { name:'London', region:'europe', img:'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80', blurb:'Historic capital with royal heritage', to:'/book.html?to=LHR' },
+                        { name:'Paris', region:'europe', img:'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80', blurb:'City of lights and romance', to:'/book.html?to=CDG' },
+                        { name:'Amsterdam', region:'europe', img:'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?auto=format&fit=crop&w=800&q=80', blurb:'Canals, culture, and cosmopolitan charm', to:'/book.html?to=AMS' },
+                        { name:'Singapore', region:'asia', img:'https://images.unsplash.com/photo-1493384671275-8fb4ee6d56bb?auto=format&fit=crop&w=800&q=80', blurb:'Garden city with futuristic skyline', to:'/book.html?to=SIN' }
+                    ];
+                    document.querySelector('.filters').style.display = 'none';
+                } else if (interest && catalog.interests && catalog.interests[interest]) {
+                    badge.textContent = 'Interest';
+                    titleEl.textContent = interest.charAt(0).toUpperCase() + interest.slice(1);
+                    descEl.textContent = 'Top picks for ' + interest + ' lovers.';
+                    gtitle.textContent = 'Popular ' + interest + ' spots';
+                    gsub.textContent = 'Tap a card to see flights and availability.';
+                    allItems = catalog.interests[interest];
+                } else if (deal && catalog.deals && catalog.deals[deal]) {
+                    badge.textContent = 'Deal';
+                    titleEl.textContent = deal.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+                    descEl.textContent = 'Limited-time offers and packages.';
+                    gtitle.textContent = 'Deal highlights';
+                    gsub.textContent = 'Hurry—availability may be limited.';
+                    allItems = catalog.deals[deal];
+                    document.querySelector('.filters').style.display = 'none';
+                } else {
+                    badge.textContent = 'Discover';
+                    titleEl.textContent = 'Explore Destinations';
+                    descEl.textContent = 'Find your next adventure across the globe';
+                    gtitle.textContent = 'Popular Destinations';
+                    gsub.textContent = 'Choose a region to discover flights and special offers';
+                    allItems = [
+                        { name:'Europe', region:'europe', img:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60', blurb:'History, art, and modernity converge', to:'flight-results.html?region=europe' },
+                        { name:'Africa', region:'africa', img:'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=60', blurb:'Vast landscapes and vibrant culture', to:'flight-results.html?region=africa' },
+                        { name:'Asia', region:'asia', img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=60', blurb:'Ancient traditions and tech hubs', to:'flight-results.html?region=asia' },
+                        { name:'Americas', region:'americas', img:'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=60', blurb:'Dynamic cities and natural wonders', to:'flight-results.html?region=americas' }
+                    ];
+                }
+                
+                renderCards(allItems);
+                
+                // Add filter event listeners
+                filterButtons.forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        filterCards(this.dataset.filter);
+                    });
+                });
+            })();
+        })();
+    </script>
 </body>
 </html>

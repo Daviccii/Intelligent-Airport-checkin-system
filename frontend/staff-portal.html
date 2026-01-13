@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Portal — SmartFly Airlines</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #0B74DE 0%, #0056b3 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .portal-container {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 900px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .portal-header {
+      background: linear-gradient(135deg, #0B74DE 0%, #0056b3 100%);
+      color: white;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .portal-header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .portal-header p {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    .portal-content {
+      padding: 40px;
+    }
+
+    .staff-welcome {
+      margin-bottom: 40px;
+      padding-bottom: 30px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .staff-welcome h2 {
+      font-size: 24px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 12px;
+    }
+
+    .staff-info-box {
+      background: #f0f9ff;
+      border-left: 4px solid #0B74DE;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .staff-info-label {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 4px;
+    }
+
+    .staff-info-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+
+    .access-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .access-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .access-card:hover {
+      border-color: #0B74DE;
+      box-shadow: 0 4px 12px rgba(11, 116, 222, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .access-card.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      background: #f1f5f9;
+    }
+
+    .access-card.disabled:hover {
+      border-color: #e2e8f0;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .access-card-icon {
+      font-size: 32px;
+      color: #0B74DE;
+      margin-bottom: 12px;
+    }
+
+    .access-card.disabled .access-card-icon {
+      color: #cbd5e1;
+    }
+
+    .access-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .access-card-desc {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .permission-pills {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .permission-pills h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 16px;
+    }
+
+    .pills-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .permission-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #dcfce7;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .no-access {
+      font-size: 14px;
+      color: #64748b;
+      font-style: italic;
+    }
+
+    .portal-footer {
+      background: #f8fafc;
+      padding: 24px 40px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .portal-footer p {
+      font-size: 14px;
+      color: #64748b;
+      margin: 0;
+    }
+
+    .btn-logout {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-logout:hover {
+      background: #dc2626;
+    }
+
+    .spinner {
+      display: none;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .spinner.active {
+      display: block;
+    }
+
+    .error-message {
+      background: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 16px;
+      color: #991b1b;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error-message.active {
+      display: block;
+    }
+
+    @media (max-width: 768px) {
+      .portal-header {
+        padding: 30px 20px;
+      }
+
+      .portal-header h1 {
+        font-size: 24px;
+      }
+
+      .portal-content {
+        padding: 20px;
+      }
+
+      .portal-footer {
+        padding: 16px 20px;
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+
+      .access-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="portal-container">
+    <!-- Header -->
+    <div class="portal-header">
+      <h1><i class="fas fa-plane"></i> SmartFly Staff Portal</h1>
+      <p>Welcome to your staff dashboard</p>
+    </div>
+
+    <!-- Content -->
+    <div class="portal-content">
+      <!-- Error Message -->
+      <div id="errorMessage" class="error-message">
+        <i class="fas fa-exclamation-circle"></i> <span id="errorText"></span>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div id="spinner" class="spinner active">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="text-muted mt-3">Loading your profile...</p>
+      </div>
+
+      <!-- Welcome Section -->
+      <div id="welcomeSection" style="display: none;">
+        <div class="staff-welcome">
+          <h2 id="welcomeMessage"></h2>
+          <div class="staff-info-box">
+            <div class="staff-info-label">Staff Username</div>
+            <div class="staff-info-value" id="staffUsername"></div>
+          </div>
+        </div>
+
+        <!-- Access Grid -->
+        <div>
+          <h3 style="font-size: 18px; font-weight: 600; color: #1e293b; margin-bottom: 20px;">
+            <i class="fas fa-shield-alt"></i> Your Access
+          </h3>
+          <div class="access-grid">
+            <!-- Dashboard Card -->
+            <a href="/admin/dashboard.html" class="access-card" id="dashboardCard">
+              <div class="access-card-icon">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              <div class="access-card-title">Dashboard Overview</div>
+              <div class="access-card-desc">View airline metrics and analytics</div>
+            </a>
+
+            <!-- Flights Card -->
+            <a href="/admin/flights.html" class="access-card" id="flightsCard">
+              <div class="access-card-icon">
+                <i class="fas fa-plane"></i>
+              </div>
+              <div class="access-card-title">Flights Management</div>
+              <div class="access-card-desc">Manage flight schedules and info</div>
+            </a>
+
+            <!-- Passengers Card (Read-only) -->
+            <a href="/admin/checkins.html" class="access-card" id="passengersCard">
+              <div class="access-card-icon">
+                <i class="fas fa-passport"></i>
+              </div>
+              <div class="access-card-title">Passenger Information</div>
+              <div class="access-card-desc">View passenger and booking details</div>
+            </a>
+
+            <!-- Passengers Card (Edit) -->
+            <div class="access-card" id="editPassengersCard" onclick="this.classList.contains('disabled') || navigateTo('/admin/checkins.html')">
+              <div class="access-card-icon">
+                <i class="fas fa-edit"></i>
+              </div>
+              <div class="access-card-title">Update Passenger Records</div>
+              <div class="access-card-desc">Edit passenger and check-in data</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Permissions List -->
+        <div class="permission-pills">
+          <h3>Your Permissions</h3>
+          <div class="pills-container" id="permissionsList">
+            <div class="no-access">Loading permissions...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="portal-footer">
+      <p><i class="fas fa-info-circle"></i> You can manage your own password and view your profile at any time.</p>
+      <button class="btn-logout" onclick="handleLogout()">
+        <i class="fas fa-sign-out-alt"></i> Log Out
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem('session') || localStorage.getItem('staffToken');
+    const API_BASE = 'http://127.0.0.1:5000/api/staff';
+
+    const PERMISSION_LABELS = {
+      view_dashboard: 'Dashboard access',
+      view_flights: 'Flights management',
+      view_passengers: 'View passenger info',
+      edit_passengers: 'Edit passenger records'
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!token) {
+        redirectToLogin();
+        return;
+      }
+      loadStaffProfile();
+    });
+
+    async function loadStaffProfile() {
+      try {
+        const response = await fetch(`${API_BASE}/me`, {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            redirectToLogin();
+            return;
+          }
+          throw new Error('Failed to load profile');
+        }
+
+        const data = await response.json();
+        displayProfile(data.staff || data);
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        showError('Failed to load your profile. Please try logging in again.');
+        setTimeout(() => redirectToLogin(), 2000);
+      }
+    }
+
+    function displayProfile(staff) {
+      // Hide spinner, show content
+      document.getElementById('spinner').classList.remove('active');
+      document.getElementById('welcomeSection').style.display = 'block';
+
+      // Set welcome message
+      const name = staff.name || staff.username || 'Staff Member';
+      document.getElementById('welcomeMessage').textContent = `Welcome, ${name}!`;
+      document.getElementById('staffUsername').textContent = `@${staff.username}`;
+
+      // Process permissions
+      const permissions = Array.isArray(staff.permissions) ? staff.permissions : [];
+      updateAccessCards(permissions);
+      displayPermissions(permissions);
+    }
+
+    function updateAccessCards(permissions) {
+      const perms = new Set(permissions);
+
+      // Dashboard
+      const dashboardCard = document.getElementById('dashboardCard');
+      if (!perms.has('view_dashboard')) {
+        dashboardCard.classList.add('disabled');
+        dashboardCard.onclick = (e) => e.preventDefault();
+      }
+
+      // Flights
+      const flightsCard = document.getElementById('flightsCard');
+      if (!perms.has('view_flights')) {
+        flightsCard.classList.add('disabled');
+        flightsCard.onclick = (e) => e.preventDefault();
+      }
+
+      // Passengers (read)
+      const passengersCard = document.getElementById('passengersCard');
+      if (!perms.has('view_passengers')) {
+        passengersCard.classList.add('disabled');
+        passengersCard.onclick = (e) => e.preventDefault();
+      }
+
+      // Passengers (edit)
+      const editCard = document.getElementById('editPassengersCard');
+      if (!perms.has('edit_passengers')) {
+        editCard.classList.add('disabled');
+      }
+    }
+
+    function displayPermissions(permissions) {
+      const container = document.getElementById('permissionsList');
+      if (!permissions || permissions.length === 0) {
+        container.innerHTML = '<div class="no-access"><i class="fas fa-lock"></i> No access assigned yet. Contact your administrator.</div>';
+        return;
+      }
+
+      container.innerHTML = permissions.map(perm => {
+        const label = PERMISSION_LABELS[perm] || perm;
+        return `<div class="permission-pill"><i class="fas fa-check-circle"></i> ${label}</div>`;
+      }).join('');
+    }
+
+    function showError(message) {
+      const errorDiv = document.getElementById('errorMessage');
+      document.getElementById('errorText').textContent = message;
+      errorDiv.classList.add('active');
+    }
+
+    function navigateTo(path) {
+      window.location.href = path;
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('session');
+      localStorage.removeItem('staffToken');
+      document.cookie = 'session=;path=/;max-age=0';
+      window.location.href = '/staff-login.html';
+    }
+
+    function redirectToLogin() {
+      window.location.href = '/staff-login.html';
+    }
+  </script>
+</body>
+</html>

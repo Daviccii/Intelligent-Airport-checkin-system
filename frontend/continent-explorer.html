@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore by Continent - SmartFly Airways</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #1a202c;
+            line-height: 1.6;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #0a2463 0%, #1e3d59 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(243, 156, 18, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.05) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .hero-section h1 {
+            font-size: 2.8em;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .hero-section p {
+            font-size: 1.2em;
+            margin: 0;
+            opacity: 0.95;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .continent-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .continent-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .continent-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #f39c12 0%, #ff9a3c 100%);
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            z-index: 0;
+        }
+        
+        .continent-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: #f39c12;
+            box-shadow: 0 16px 32px rgba(243, 156, 18, 0.2);
+        }
+        
+        .continent-card:hover::before {
+            opacity: 0.05;
+        }
+        
+        .continent-card.active {
+            background: linear-gradient(135deg, #0a2463 0%, #1e3d59 100%);
+            color: white;
+            border-color: #f39c12;
+            box-shadow: 0 12px 28px rgba(10, 36, 99, 0.3);
+            transform: translateY(-4px);
+        }
+        
+        .continent-card.active::before {
+            opacity: 0;
+        }
+        
+        .continent-icon {
+            font-size: 3.5em;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        
+        .continent-card h3 {
+            font-size: 1.5em;
+            margin: 0 0 8px 0;
+            color: inherit;
+            font-weight: 700;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .continent-card p {
+            margin: 0;
+            font-size: 0.9em;
+            opacity: 0.8;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .content-area {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px 80px;
+            min-height: 600px;
+        }
+        
+        .section-title {
+            font-size: 2.5em;
+            color: #0a2463;
+            margin-bottom: 12px;
+            font-weight: 700;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        .section-subtitle {
+            font-size: 1.15em;
+            color: #6b7280;
+            margin-bottom: 40px;
+            animation: fadeInUp 0.6s ease 0.1s both;
+        }
+        
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 32px;
+            margin-bottom: 40px;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        
+        .destinations-grid.loading {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+        
+        .destination-item {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #e5e7eb;
+            animation: fadeInUp 0.5s ease both;
+            position: relative;
+        }
+        
+        .destination-item:nth-child(1) { animation-delay: 0.1s; }
+        .destination-item:nth-child(2) { animation-delay: 0.15s; }
+        .destination-item:nth-child(3) { animation-delay: 0.2s; }
+        .destination-item:nth-child(4) { animation-delay: 0.25s; }
+        .destination-item:nth-child(5) { animation-delay: 0.3s; }
+        .destination-item:nth-child(6) { animation-delay: 0.35s; }
+        
+        .destination-item:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 16px 32px rgba(0,0,0,0.15);
+            border-color: #f39c12;
+        }
+        
+        .destination-image {
+            width: 100%;
+            height: 260px;
+            object-fit: cover;
+            background: linear-gradient(135deg, #0a2463 0%, #1e3d59 100%);
+            transition: transform 0.5s ease;
+        }
+        
+        .destination-item:hover .destination-image {
+            transform: scale(1.08);
+        }
+        
+        .destination-content {
+            padding: 28px;
+        }
+        
+        .destination-content h4 {
+            color: #0a2463;
+            margin: 0 0 10px 0;
+            font-size: 1.35em;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+        
+        .destination-content p {
+            color: #6b7280;
+            font-size: 0.95em;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+        }
+        
+        .flights-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 16px;
+        }
+        
+        .flights-title {
+            font-size: 0.85em;
+            font-weight: 700;
+            color: #0a2463;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .flights-title::before {
+            content: '✈';
+            font-size: 1.2em;
+        }
+        
+        .flight-option {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 12px;
+            align-items: center;
+            padding: 14px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.95em;
+            transition: all 0.2s ease;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .flight-option:hover {
+            background: #f8f9fa;
+            transform: translateX(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .flight-option:last-child {
+            border-bottom: none;
+        }
+        
+        .flight-route {
+            color: #222;
+            font-weight: 600;
+        }
+        
+        .flight-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+        
+        .flight-frequency {
+            color: #6b7280;
+            font-size: 0.85em;
+            white-space: nowrap;
+        }
+        
+        .flight-date {
+            color: #9ca3af;
+            font-size: 0.8em;
+            font-style: italic;
+        }
+        
+        .flight-price {
+            color: #f39c12;
+            font-weight: 700;
+            font-size: 1.3em;
+            white-space: nowrap;
+            background: linear-gradient(135deg, #f39c12 0%, #ff9a3c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .book-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #0a2463 0%, #1e3d59 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(10, 36, 99, 0.2);
+        }
+        
+        .book-btn:hover {
+            background: linear-gradient(135deg, #f39c12 0%, #ff9a3c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(243, 156, 18, 0.3);
+        }
+        
+        .book-btn:active {
+            transform: translateY(0);
+        }
+            margin-bottom: 40px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 60px;
+            color: #6b7280;
+            font-size: 1.1em;
+        }
+        
+        .loading.active {
+            display: block;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px;
+            color: #6b7280;
+            grid-column: 1 / -1;
+            font-size: 1.1em;
+        }
+        
+        /* Navigation styles */
+        .main-nav {
+            background: white;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #0a2463 0%, #1e3d59 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+        
+        .logo-text {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #0a2463;
+            margin: 0;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+        
+        .nav-links a {
+            color: #1a202c;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            padding: 8px 0;
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: #f39c12;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: #f39c12;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        /* Footer */
+        .site-footer {
+            background: linear-gradient(135deg, #0a2463 0%, #1e3d59 100%);
+            color: white;
+            margin-top: 60px;
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+        
+        @keyframes dots {
+            0%, 20% {
+                content: '.';
+            }
+            40% {
+                content: '..';
+            }
+            60%, 100% {
+                content: '...';
+            }
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .continent-selector {
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: 16px;
+                padding: 30px 16px;
+            }
+            
+            .continent-card {
+                padding: 20px;
+            }
+            
+            .continent-card h3 {
+                font-size: 1.2em;
+            }
+            
+            .continent-icon {
+                font-size: 2.8em;
+            }
+            
+            .section-title {
+                font-size: 2em;
+            }
+            
+            .section-subtitle {
+                font-size: 1em;
+            }
+            
+            .destinations-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            
+            .hero-section h1 {
+                font-size: 2em;
+            }
+            
+            .hero-section p {
+                font-size: 1em;
+            }
+            
+            .nav-links {
+                gap: 16px;
+                font-size: 0.9em;
+            }
+            
+            .content-area {
+                padding: 30px 16px 60px;
+            }
+            
+            .destination-content {
+                padding: 20px;
+            }
+            
+            .flight-option {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .flight-details {
+                align-items: flex-start;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .destination-image {
+                height: 200px;
+            }
+            
+            .flight-option {
+                padding: 12px;
+            }
+            
+            .flight-price {
+                font-size: 1.2em;
+            }
+            
+            .destination-content h4 {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <div class="container nav-container">
+            <div class="logo-container">
+                <div class="logo">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+                    </svg>
+                </div>
+                <h2 class="logo-text">SmartFly</h2>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/destinations.html">Destinations</a>
+                <a href="/book.html">Book</a>
+                <a href="/help-center.html">Help</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero-section">
+        <div class="container">
+            <h1>Explore by Continent</h1>
+            <p>Select a continent to discover destinations, cities, and available flights</p>
+        </div>
+    </section>
+
+    <section class="content-area">
+        <div class="continent-selector" id="continentSelector">
+            <div class="continent-card" data-continent="africa">
+                <div class="continent-icon">🌍</div>
+                <h3>Africa</h3>
+                <p>Wildlife, Safaris & Culture</p>
+            </div>
+            <div class="continent-card" data-continent="europe">
+                <div class="continent-icon">🏰</div>
+                <h3>Europe</h3>
+                <p>Heritage & History</p>
+            </div>
+            <div class="continent-card" data-continent="asia">
+                <div class="continent-icon">🏯</div>
+                <h3>Asia</h3>
+                <p>Traditions & Modernity</p>
+            </div>
+            <div class="continent-card" data-continent="americas">
+                <div class="continent-icon">🗽</div>
+                <h3>Americas</h3>
+                <p>Diversity & Adventure</p>
+            </div>
+            <div class="continent-card" data-continent="middle-east">
+                <div class="continent-icon">🕌</div>
+                <h3>Middle East</h3>
+                <p>Luxury & Culture</p>
+            </div>
+        </div>
+
+        <div id="contentDisplay">
+            <div class="loading" id="loading">Loading...</div>
+            <div id="continentContent"></div>
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p style="text-align: center; padding: 24px 0; color: #e7eefc;">&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Continent data with destinations and sample flights
+        const continentData = {
+            africa: {
+                name: 'Africa',
+                description: 'Experience the beauty of African landscapes, wildlife, and rich cultural heritage',
+                destinations: [
+                    {
+                        name: 'Serengeti National Park, Tanzania',
+                        description: 'World-famous for the Great Migration, wildlife safaris, and endless plains',
+                        code: 'ARK',
+                        image: 'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Nairobi to Arusha', price: '$180', frequency: '3x Daily' },
+                            { route: 'Dar es Salaam to Arusha', price: '$220', frequency: '2x Daily' },
+                            { route: 'Johannesburg to Arusha', price: '$420', frequency: 'Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Victoria Falls, Zimbabwe/Zambia',
+                        description: 'One of the Seven Natural Wonders - spectacular waterfalls and adventure activities',
+                        code: 'VFA',
+                        image: 'https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Johannesburg to Victoria Falls', price: '$280', frequency: '2x Daily' },
+                            { route: 'Cape Town to Victoria Falls', price: '$320', frequency: 'Daily' },
+                            { route: 'Nairobi to Victoria Falls', price: '$450', frequency: '3x Weekly' }
+                        ]
+                    },
+                    {
+                        name: 'Marrakech, Morocco',
+                        description: 'Ancient medina, bustling souks, and stunning desert landscapes nearby',
+                        code: 'RAK',
+                        image: 'https://images.unsplash.com/photo-1508702191650-dc77ec4f8685?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'London to Marrakech', price: '$180', frequency: '4x Daily' },
+                            { route: 'Paris to Marrakech', price: '$160', frequency: '3x Daily' },
+                            { route: 'Madrid to Marrakech', price: '$95', frequency: '5x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Zanzibar, Tanzania',
+                        description: 'Pristine beaches, spice plantations, and historic Stone Town',
+                        code: 'ZNZ',
+                        image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Dar es Salaam to Zanzibar', price: '$85', frequency: 'Hourly' },
+                            { route: 'Nairobi to Zanzibar', price: '$220', frequency: '3x Daily' },
+                            { route: 'Dubai to Zanzibar', price: '$480', frequency: 'Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Pyramids of Giza, Egypt',
+                        description: 'Ancient wonders, Sphinx, and rich history of pharaohs',
+                        code: 'CAI',
+                        image: 'https://images.unsplash.com/photo-1572252009286-268acec5ca0a?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'London to Cairo', price: '$420', frequency: '2x Daily' },
+                            { route: 'Dubai to Cairo', price: '$280', frequency: '4x Daily' },
+                            { route: 'Nairobi to Cairo', price: '$380', frequency: 'Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Cape Town, South Africa',
+                        description: 'Table Mountain, stunning beaches, wineries, and vibrant culture',
+                        code: 'CPT',
+                        image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Johannesburg to Cape Town', price: '$145', frequency: '10x Daily' },
+                            { route: 'London to Cape Town', price: '$890', frequency: 'Daily' },
+                            { route: 'Nairobi to Cape Town', price: '$580', frequency: '2x Daily' }
+                        ]
+                    }
+                ]
+            },
+            europe: {
+                name: 'Europe',
+                description: 'Discover historic cities, cultural landmarks, and charming European villages',
+                destinations: [
+                    {
+                        name: 'Santorini, Greece',
+                        description: 'Iconic white-washed buildings, blue domes, and breathtaking sunsets',
+                        code: 'JTR',
+                        image: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Athens to Santorini', price: '$95', frequency: '8x Daily' },
+                            { route: 'London to Santorini', price: '$280', frequency: 'Daily' },
+                            { route: 'Paris to Santorini', price: '$320', frequency: '3x Weekly' }
+                        ]
+                    },
+                    {
+                        name: 'Paris, France',
+                        description: 'Eiffel Tower, Louvre Museum, Notre-Dame, and world-class cuisine',
+                        code: 'CDG',
+                        image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'London to Paris', price: '$85', frequency: '12x Daily' },
+                            { route: 'Nairobi to Paris', price: '$950', frequency: '3x Weekly' },
+                            { route: 'New York to Paris', price: '$580', frequency: '5x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Venice, Italy',
+                        description: 'Romantic canals, gondola rides, and stunning Renaissance architecture',
+                        code: 'VCE',
+                        image: 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Rome to Venice', price: '$85', frequency: '6x Daily' },
+                            { route: 'London to Venice', price: '$180', frequency: '4x Daily' },
+                            { route: 'Paris to Venice', price: '$165', frequency: '3x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Barcelona, Spain',
+                        description: 'Gaudí architecture, beaches, Gothic Quarter, and tapas culture',
+                        code: 'BCN',
+                        image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Madrid to Barcelona', price: '$75', frequency: '10x Daily' },
+                            { route: 'London to Barcelona', price: '$120', frequency: '8x Daily' },
+                            { route: 'Paris to Barcelona', price: '$95', frequency: '6x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Swiss Alps, Switzerland',
+                        description: 'Stunning mountain peaks, skiing, hiking, and charming alpine villages',
+                        code: 'GVA',
+                        image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'London to Geneva', price: '$195', frequency: '5x Daily' },
+                            { route: 'Paris to Geneva', price: '$145', frequency: '8x Daily' },
+                            { route: 'Dubai to Geneva', price: '$520', frequency: '2x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Amsterdam, Netherlands',
+                        description: 'Canal cruises, Van Gogh Museum, Anne Frank House, and tulip fields',
+                        code: 'AMS',
+                        image: 'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'London to Amsterdam', price: '$95', frequency: '10x Daily' },
+                            { route: 'Paris to Amsterdam', price: '$120', frequency: '8x Daily' },
+                            { route: 'Nairobi to Amsterdam', price: '$920', frequency: '2x Weekly' }
+                        ]
+                    }
+                ]
+            },
+            asia: {
+                name: 'Asia',
+                description: 'Immerse yourself in ancient traditions, modern metropolises, and diverse cultures',
+                destinations: [
+                    {
+                        name: 'Bali, Indonesia',
+                        description: 'Tropical paradise with temples, rice terraces, beaches, and yoga retreats',
+                        code: 'DPS',
+                        image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Singapore to Bali', price: '$180', frequency: '8x Daily' },
+                            { route: 'Bangkok to Bali', price: '$220', frequency: '4x Daily' },
+                            { route: 'Dubai to Bali', price: '$580', frequency: '2x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Kyoto, Japan',
+                        description: 'Ancient temples, traditional geishas, bamboo forests, and cherry blossoms',
+                        code: 'KIX',
+                        image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Tokyo to Kyoto', price: '$85', frequency: '15x Daily' },
+                            { route: 'Singapore to Osaka', price: '$420', frequency: '3x Daily' },
+                            { route: 'Bangkok to Osaka', price: '$480', frequency: '2x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Maldives',
+                        description: 'Luxury overwater bungalows, pristine beaches, and world-class diving',
+                        code: 'MLE',
+                        image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Dubai to Maldives', price: '$380', frequency: '4x Daily' },
+                            { route: 'Singapore to Maldives', price: '$420', frequency: '2x Daily' },
+                            { route: 'Nairobi to Maldives', price: '$650', frequency: 'Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Taj Mahal, India',
+                        description: 'Iconic monument of love, rich Mughal history, and vibrant culture',
+                        code: 'DEL',
+                        image: 'https://images.unsplash.com/photo-1564507592333-c60657eea523?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Mumbai to Delhi', price: '$95', frequency: '12x Daily' },
+                            { route: 'Dubai to Delhi', price: '$220', frequency: '10x Daily' },
+                            { route: 'London to Delhi', price: '$680', frequency: '3x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Ha Long Bay, Vietnam',
+                        description: 'UNESCO World Heritage site with limestone karsts and emerald waters',
+                        code: 'HAN',
+                        image: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Bangkok to Hanoi', price: '$145', frequency: '5x Daily' },
+                            { route: 'Singapore to Hanoi', price: '$195', frequency: '4x Daily' },
+                            { route: 'Hong Kong to Hanoi', price: '$165', frequency: '3x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Angkor Wat, Cambodia',
+                        description: 'Ancient temple complex, jungle adventures, and rich Khmer heritage',
+                        code: 'REP',
+                        image: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Bangkok to Siem Reap', price: '$120', frequency: '6x Daily' },
+                            { route: 'Singapore to Siem Reap', price: '$220', frequency: '3x Daily' },
+                            { route: 'Hanoi to Siem Reap', price: '$85', frequency: '4x Daily' }
+                        ]
+                    }
+                ]
+            },
+            americas: {
+                name: 'Americas',
+                description: 'Experience vibrant cities, natural wonders, and diverse Latin American culture',
+                destinations: [
+                    {
+                        name: 'Machu Picchu, Peru',
+                        description: 'Ancient Incan citadel in the Andes, one of the New Seven Wonders of the World',
+                        code: 'CUZ',
+                        image: 'https://images.unsplash.com/photo-1587595431973-160d0d94add1?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Lima to Cusco', price: '$95', frequency: '10x Daily' },
+                            { route: 'Miami to Lima', price: '$420', frequency: '3x Daily' },
+                            { route: 'New York to Lima', price: '$480', frequency: '2x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Cancún & Riviera Maya, Mexico',
+                        description: 'Pristine beaches, Mayan ruins, cenotes, and vibrant nightlife',
+                        code: 'CUN',
+                        image: 'https://images.unsplash.com/photo-1568402102990-bc541580b59f?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'New York to Cancún', price: '$280', frequency: '8x Daily' },
+                            { route: 'Miami to Cancún', price: '$185', frequency: '12x Daily' },
+                            { route: 'London to Cancún', price: '$620', frequency: '2x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Grand Canyon, USA',
+                        description: 'Breathtaking natural wonder with hiking, rafting, and stunning vistas',
+                        code: 'LAS',
+                        image: 'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Los Angeles to Las Vegas', price: '$95', frequency: '15x Daily' },
+                            { route: 'New York to Las Vegas', price: '$320', frequency: '10x Daily' },
+                            { route: 'London to Las Vegas', price: '$580', frequency: 'Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Rio de Janeiro, Brazil',
+                        description: 'Christ the Redeemer, Copacabana Beach, carnival, and Sugarloaf Mountain',
+                        code: 'GIG',
+                        image: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'São Paulo to Rio', price: '$85', frequency: '20x Daily' },
+                            { route: 'Miami to Rio', price: '$520', frequency: '3x Daily' },
+                            { route: 'London to Rio', price: '$820', frequency: '2x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Banff National Park, Canada',
+                        description: 'Stunning Rocky Mountains, turquoise lakes, wildlife, and outdoor adventures',
+                        code: 'YYC',
+                        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Vancouver to Calgary', price: '$145', frequency: '8x Daily' },
+                            { route: 'Toronto to Calgary', price: '$220', frequency: '10x Daily' },
+                            { route: 'London to Calgary', price: '$680', frequency: 'Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Patagonia, Argentina/Chile',
+                        description: 'Dramatic glaciers, mountains, and pristine wilderness at the end of the world',
+                        code: 'FTE',
+                        image: 'https://images.unsplash.com/photo-1542728928-1413d1894ed1?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Buenos Aires to El Calafate', price: '$220', frequency: '3x Daily' },
+                            { route: 'Santiago to Punta Arenas', price: '$180', frequency: '4x Daily' },
+                            { route: 'Miami to Buenos Aires', price: '$580', frequency: '2x Daily' }
+                        ]
+                    }
+                ]
+            },
+            'middle-east': {
+                name: 'Middle East',
+                description: 'Discover ancient history, modern luxury, and diverse cultural heritage',
+                destinations: [
+                    {
+                        name: 'Dubai, UAE',
+                        description: 'Burj Khalifa, luxury shopping malls, desert safaris, and golden beaches',
+                        code: 'DXB',
+                        image: 'https://images.unsplash.com/photo-1512453459498-46bbf73fdfc8?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'London to Dubai', price: '$650', frequency: '8x Daily' },
+                            { route: 'Nairobi to Dubai', price: '$480', frequency: '4x Daily' },
+                            { route: 'Mumbai to Dubai', price: '$180', frequency: '10x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Petra, Jordan',
+                        description: 'Ancient rose-red city carved into cliffs, one of the New Seven Wonders',
+                        code: 'AMM',
+                        image: 'https://images.unsplash.com/photo-1579606032821-4e6161c81bd3?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Dubai to Amman', price: '$220', frequency: '3x Daily' },
+                            { route: 'London to Amman', price: '$420', frequency: 'Daily' },
+                            { route: 'Cairo to Amman', price: '$165', frequency: '2x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Istanbul, Turkey',
+                        description: 'Hagia Sophia, Blue Mosque, Grand Bazaar, and Bosphorus cruises',
+                        code: 'IST',
+                        image: 'https://images.unsplash.com/photo-1527838832700-5059252407fa?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'London to Istanbul', price: '$280', frequency: '6x Daily' },
+                            { route: 'Dubai to Istanbul', price: '$320', frequency: '4x Daily' },
+                            { route: 'Paris to Istanbul', price: '$240', frequency: '5x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Wadi Rum, Jordan',
+                        description: 'Dramatic desert landscapes, Bedouin culture, and Mars-like terrain',
+                        code: 'AQJ',
+                        image: 'https://images.unsplash.com/photo-1605016880332-6f2d96a1b18d?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Amman to Aqaba', price: '$65', frequency: '2x Daily' },
+                            { route: 'Dubai to Aqaba', price: '$280', frequency: 'Daily' },
+                            { route: 'Cairo to Aqaba', price: '$195', frequency: '3x Weekly' }
+                        ]
+                    },
+                    {
+                        name: 'Abu Dhabi, UAE',
+                        description: 'Sheikh Zayed Mosque, Louvre Abu Dhabi, and Formula 1 racing',
+                        code: 'AUH',
+                        image: 'https://images.unsplash.com/photo-1512632578888-169bbbc64f33?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Dubai to Abu Dhabi', price: '$45', frequency: '20x Daily' },
+                            { route: 'London to Abu Dhabi', price: '$620', frequency: '3x Daily' },
+                            { route: 'Mumbai to Abu Dhabi', price: '$195', frequency: '6x Daily' }
+                        ]
+                    },
+                    {
+                        name: 'Muscat, Oman',
+                        description: 'Sultan Qaboos Mosque, traditional souks, stunning coastline, and desert forts',
+                        code: 'MCT',
+                        image: 'https://images.unsplash.com/photo-1547500979-d5ccb728c8b5?auto=format&fit=crop&w=800&q=80',
+                        flights: [
+                            { route: 'Dubai to Muscat', price: '$120', frequency: '6x Daily' },
+                            { route: 'London to Muscat', price: '$580', frequency: '2x Daily' },
+                            { route: 'Mumbai to Muscat', price: '$150', frequency: '5x Daily' }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        let currentContinent = 'africa';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            
+            // Check URL parameter for continent selection
+            const urlParams = new URLSearchParams(window.location.search);
+            const selectedContinent = urlParams.get('continent');
+            
+            // Display selected continent or default to Africa
+            const continentToDisplay = (selectedContinent && continentData[selectedContinent]) ? selectedContinent : 'africa';
+            displayContent(continentToDisplay);
+            updateActiveCard(continentToDisplay);
+        });
+
+        function setupEventListeners() {
+            document.querySelectorAll('.continent-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const continent = this.dataset.continent;
+                    
+                    // Smooth scroll to content
+                    const contentArea = document.querySelector('.content-area');
+                    if (contentArea) {
+                        contentArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    
+                    // Update active card first for immediate feedback
+                    updateActiveCard(continent);
+                    
+                    // Then display content with animation
+                    setTimeout(() => {
+                        displayContent(continent);
+                    }, 100);
+                });
+                
+                // Add keyboard accessibility
+                card.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        this.click();
+                    }
+                });
+                
+                // Make focusable
+                card.setAttribute('tabindex', '0');
+                card.setAttribute('role', 'button');
+            });
+            
+            // Event delegation for book buttons (handles dynamically created buttons)
+            document.addEventListener('click', function(e) {
+                if (e.target && e.target.classList.contains('book-btn')) {
+                    const destination = e.target.getAttribute('data-destination');
+                    if (destination) {
+                        bookFlight(destination);
+                    }
+                } else if (e.target && e.target.parentElement && e.target.parentElement.classList.contains('book-btn')) {
+                    // Handle clicks on the span inside the button
+                    const destination = e.target.parentElement.getAttribute('data-destination');
+                    if (destination) {
+                        bookFlight(destination);
+                    }
+                }
+            });
+        }
+
+        function updateActiveCard(continent) {
+            document.querySelectorAll('.continent-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            const activeCard = document.querySelector(`.continent-card[data-continent="${continent}"]`);
+            if (activeCard) {
+                activeCard.classList.add('active');
+            }
+        }
+
+        function displayContent(continent) {
+            currentContinent = continent;
+            const data = continentData[continent];
+            const contentDiv = document.getElementById('continentContent');
+            
+            // Add fade out effect
+            contentDiv.style.opacity = '0';
+            contentDiv.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                let html = `
+                    <h2 class="section-title">${data.name}</h2>
+                    <p class="section-subtitle">${data.description}</p>
+                    <div class="destinations-grid">
+                `;
+
+                data.destinations.forEach((dest, index) => {
+                    html += `
+                        <div class="destination-item" style="animation-delay: ${index * 0.05}s">
+                            <img src="${dest.image}" alt="${dest.name}" class="destination-image" loading="lazy" onerror="this.style.background='linear-gradient(135deg, #0a2463 0%, #1e3d59 100%)'; this.style.display='block';">
+                            <div class="destination-content">
+                                <h4>${dest.name}</h4>
+                                <p>${dest.description}</p>
+                                <div class="flights-section">
+                                    <div class="flights-title">Available Flights</div>
+                                    ${dest.flights.map(flight => `
+                                        <div class="flight-option">
+                                            <span class="flight-route">${flight.route}</span>
+                                            <div class="flight-details">
+                                                <span class="flight-frequency">${flight.frequency}</span>
+                                                <span class="flight-date">Next: ${getNextFlightDate()}</span>
+                                            </div>
+                                            <span class="flight-price">${flight.price}</span>
+                                        </div>
+                                    `).join('')}
+                                    <button class="book-btn" data-destination="${dest.code}">
+                                        <span style="margin-right: 8px;">✈</span>Book Flight to ${dest.name.split(',')[0]}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += '</div>';
+                contentDiv.innerHTML = html;
+                
+                // Trigger reflow and fade in
+                contentDiv.offsetHeight;
+                contentDiv.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                contentDiv.style.opacity = '1';
+                contentDiv.style.transform = 'translateY(0)';
+            }, 300);
+        }
+
+        function bookFlight(destinationCode) {
+            window.location.href = `/book.html?to=${destinationCode}`;
+        }
+        
+        function getNextFlightDate() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            return tomorrow.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+    </script>
+</body>
+</html>

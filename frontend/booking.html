@@ -361,6 +361,10 @@
         <h4>Fare Class</h4>
         <div class="summary-card-value" id="fareClass">—</div>
       </div>
+      <div class="summary-card" id="seatCard" style="display:none;">
+        <h4>Selected Seat(s)</h4>
+        <div class="summary-card-value" id="selectedSeats">—</div>
+      </div>
       <div class="summary-card">
         <h4>Price</h4>
         <div class="summary-card-value" id="fareAmount">—</div>
@@ -617,8 +621,9 @@
       to: getParam('to') || '',
       depart: getParam('depart') || '',
       ret: getParam('return') || '',
-      cls: getParam('class') || '',
-      fare: getParam('fare') || ''
+      cls: getParam('class') || 'Economy',
+      fare: getParam('fare') || getParam('price') || '',
+      seats: getParam('seats') || ''
     };
 
     // Populate summaries
@@ -629,6 +634,14 @@
     document.getElementById('tripDates').textContent = ctx.depart ? `${fmtDate(ctx.depart)}${ctx.ret ? ' - ' + fmtDate(ctx.ret) : ''}` : '—';
     document.getElementById('fareClass').textContent = ctx.cls || '—';
     document.getElementById('fareAmount').textContent = ctx.fare ? fmtCurrency(ctx.fare) : '—';
+    
+    // Display selected seats if available
+    if (ctx.seats) {
+      const seatCard = document.getElementById('seatCard');
+      const seatsDisplay = document.getElementById('selectedSeats');
+      seatCard.style.display = 'block';
+      seatsDisplay.textContent = ctx.seats.replace(/,/g, ', ');
+    }
 
     // Form validation and submission
     const form = document.getElementById('bookingForm');
