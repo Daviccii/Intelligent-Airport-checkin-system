@@ -6,9 +6,34 @@
   <title>Airport Checkin - Search</title>
   <style>
     body { font-family: Arial, Helvetica, sans-serif; margin: 16px; }
-    .search-row { display:flex; gap:8px; align-items:center; margin-bottom:12px; }
-    .search-row input { padding:8px; font-size:14px; }
-    .search-btn { display:inline-flex; align-items:center; gap:8px; padding:8px 12px; font-weight:600; cursor:pointer; }
+    /* Mega navigation */
+    .mega-nav { display:flex; align-items:center; gap:18px; padding:12px 0 16px 0; border-bottom:1px solid #e6e9ef; flex-wrap:wrap; }
+    .mega-nav .brand { font-size:18px; font-weight:800; color:#0a2463; text-decoration:none; }
+    .mega-nav .menu { display:flex; gap:14px; flex-wrap:wrap; }
+    .mega-item { position:relative; }
+    .mega-trigger { display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:10px; border:1px solid #d7dde5; background:#f6f8fb; color:#0f172a; font-weight:700; cursor:pointer; text-decoration:none; }
+    .mega-trigger:hover { background:#0a2463; color:#fff; border-color:#0a2463; }
+    .mega-menu { position:absolute; top:calc(100% + 6px); left:0; min-width:220px; background:#fff; border:1px solid #d7dde5; border-radius:12px; box-shadow:0 10px 32px rgba(0,0,0,0.12); padding:12px 0; display:none; z-index:999; }
+    .mega-item:hover .mega-menu, .mega-item:focus-within .mega-menu { display:block; }
+    .mega-menu a { display:block; padding:10px 16px; text-decoration:none; color:#0f172a; font-weight:600; }
+    .mega-menu a span { display:block; font-size:12px; color:#6b7280; font-weight:500; }
+    .mega-menu a:hover { background:#f6f8fb; color:#0a2463; }
+    @media (max-width: 720px) {
+      .mega-menu { position:static; display:block; width:100%; box-shadow:none; border:1px solid #e5e7eb; margin-top:8px; }
+    }
+    .search-row { display:flex; gap:12px; align-items:flex-end; margin-bottom:12px; flex-wrap:wrap; }
+    .field { display:flex; flex-direction:column; gap:6px; min-width:200px; }
+    .field.small { min-width:140px; width:160px; }
+    .field label { font-weight:600; font-size:14px; color:#0b2a4a; }
+    .field .hint { font-weight:500; color:#6b7280; font-size:12px; }
+    .search-row input { padding:10px; font-size:14px; border:1px solid #d7dde5; border-radius:8px; }
+    .search-row input:focus { outline:2px solid #0a7be0; border-color:#0a7be0; }
+    .search-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; font-weight:700; cursor:pointer; background:#0a2463; color:#fff; border:none; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.12); }
+    .search-btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,0.18); }
+    .quick-tabs { display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 16px 0; }
+    .pill { padding:8px 14px; border-radius:999px; text-decoration:none; border:1px solid #d7dde5; color:#0f172a; font-weight:600; background:#f6f8fb; transition:all 0.2s; }
+    .pill.primary { background:#0a2463; color:#fff; border-color:#0a2463; }
+    .pill:hover { transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,0.08); }
     .offers { margin-top:16px; }
     .airline-box { border:1px solid #ddd; padding:8px; margin-top:8px; border-radius:6px; background:#fff }
     .dates-panel a { display:inline-block; margin:4px; padding:6px 8px; border-radius:6px; text-decoration:none; color:#111 }
@@ -23,14 +48,102 @@
   </style>
 </head>
 <body>
-  <h1>Search Flights</h1>
+  <nav class="mega-nav" aria-label="Main navigation">
+    <a class="brand" href="/">SmartFly</a>
+    <div class="menu">
+      <div class="mega-item">
+        <a class="mega-trigger" href="/flight-results.html">Explore ▾</a>
+        <div class="mega-menu">
+          <a href="/flight-results.html">Destinations <span>Search routes & fares</span></a>
+          <a href="/destinations.html">Top picks <span>Beach • Culture • Eco</span></a>
+          <a href="/plan.html">Travel guides <span>Weather • Visa tips</span></a>
+        </div>
+      </div>
+
+      <div class="mega-item">
+        <a class="mega-trigger" href="/plan.html">Plan ▾</a>
+        <div class="mega-menu">
+          <a href="/plan.html">Trip planner <span>Itinerary & budget</span></a>
+          <a href="/extras.html">Extras <span>Seats • Bags • Meals</span></a>
+          <a href="/help.html">Travel requirements <span>Docs & vaccines</span></a>
+        </div>
+      </div>
+
+      <div class="mega-item">
+        <a class="mega-trigger" href="/book.html">Book &amp; Manage ▾</a>
+        <div class="mega-menu">
+          <a href="/book.html">Book flights <span>Search & checkout</span></a>
+          <a href="/lookup.html">Manage booking <span>Changes • Refunds</span></a>
+          <a href="/checkin.html">Check-In <span>Get boarding pass</span></a>
+        </div>
+      </div>
+
+      <div class="mega-item">
+        <a class="mega-trigger" href="/experience.html">Experience ▾</a>
+        <div class="mega-menu">
+          <a href="/experience.html">Onboard experience <span>Cabins • Wi‑Fi • Dining</span></a>
+          <a href="/extras.html">Upgrades & seats <span>Choose seats • Legroom</span></a>
+          <a href="/baggage.html">Baggage <span>Allowances & tracking</span></a>
+        </div>
+      </div>
+
+      <div class="mega-item">
+        <a class="mega-trigger" href="/loyalty.html">Loyalty Program ▾</a>
+        <div class="mega-menu">
+          <a href="/loyalty.html">Earn & redeem <span>Points on every trip</span></a>
+          <a href="/membership.html">Membership tiers <span>Local & Premium</span></a>
+          <a href="/login.html">Member login <span>View balance</span></a>
+        </div>
+      </div>
+
+      <div class="mega-item">
+        <a class="mega-trigger" href="/help.html">Help ▾</a>
+        <div class="mega-menu">
+          <a href="/help.html">Help center <span>FAQs & guides</span></a>
+          <a href="/contact.html">Contact us <span>Chat • Phone • Email</span></a>
+          <a href="/policy.html">Policies <span>Travel & refunds</span></a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <h1 style="margin-bottom:6px">Book &amp; Manage Your Trip</h1>
+  <p style="margin:0 0 12px;color:#4b5563">Use the FROM and TO fields to book flights. You can also jump to Check-In or Manage Booking.</p>
+
+  <div class="quick-tabs">
+    <span class="pill primary" aria-current="page">Book flight</span>
+    <a class="pill" href="/checkin.html">Check-In</a>
+    <a class="pill" href="/lookup.html">Manage booking</a>
+    <a class="pill" href="/flights.html">Flight status</a>
+    <a class="pill" href="/help.html">Help &amp; support</a>
+  </div>
+
   <form id="searchForm" onsubmit="return false;">
     <div class="search-row">
-      <input id="originInput" name="origin" placeholder="Origin (IATA) e.g. JFK" />
-      <input id="destInput" name="dest" placeholder="Destination (IATA) e.g. LHR" />
-      <input id="startInput" name="start" type="date" />
-      <input id="endInput" name="end" type="date" />
-      <button id="searchBtn" class="search-btn" title="Search flights" aria-label="Search flights">Search flights</button>
+      <div class="field" aria-label="From departure airport">
+        <label for="originInput">From (Departure)</label>
+        <span class="hint">City or airport code, e.g., NBO or JFK</span>
+        <input id="originInput" name="origin" placeholder="Type departure city/airport" />
+      </div>
+      <div class="field" aria-label="To arrival airport">
+        <label for="destInput">To (Arrival)</label>
+        <span class="hint">City or airport code, e.g., DXB or LHR</span>
+        <input id="destInput" name="dest" placeholder="Type arrival city/airport" />
+      </div>
+      <div class="field small">
+        <label for="startInput">Depart</label>
+        <input id="startInput" name="start" type="date" />
+      </div>
+      <div class="field small">
+        <label for="endInput">Return</label>
+        <input id="endInput" name="end" type="date" />
+      </div>
+      <div class="field" style="min-width:180px">
+        <label>&nbsp;</label>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button id="searchBtn" class="search-btn" title="Search flights" aria-label="Search flights">Search flights</button>
+          <a class="pill" href="/checkin.html" style="padding:10px 14px">Go to Check-In</a>
+        </div>
+      </div>
     </div>
   </form>
 
@@ -332,7 +445,7 @@
 
     input.addEventListener('focus', function(){ refresh(input.value || ''); });
     input.addEventListener('input', function(){ refresh(input.value || ''); });
-    input.addEventListener('blur', function(){ setTimeout(()=>{ container.style.display='none'; }, 180); });
+    input.addEventListener('blur', function(){ setTimeout(()=>{ container.style.display='none'; }, 72000); });
 
     input.addEventListener('keydown', function(ev){
       if (container.style.display === 'none') return;
@@ -358,8 +471,8 @@
   document.addEventListener('DOMContentLoaded', () => {
     attachSearchHandler();
     // wire autocomplete for origin and destination
-    attachAutocomplete('originInput');
-    attachAutocomplete('destInput');
+    // attachAutocomplete('originInput'); // DISABLED: old dropdown
+    // attachAutocomplete('destInput'); // DISABLED: old dropdown
   });
 
   // TEMP DEBUG OVERLAY: shows airports load status and suggestion elements

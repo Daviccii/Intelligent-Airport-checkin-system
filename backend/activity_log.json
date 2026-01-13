@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "type": "booking",
+    "timestamp": "2026-01-09T12:45:50.437662",
+    "data": {
+      "passenger_name": "Kim",
+      "flight_number": "N/A",
+      "from": "NBO",
+      "to": "LHR",
+      "amount": 821.0,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-09T09:45:50.325480Z"
+    }
+  },
+  {
+    "id": 2,
+    "type": "booking",
+    "timestamp": "2026-01-12T09:07:50.732740",
+    "data": {
+      "passenger_name": "Martha",
+      "flight_number": "N/A",
+      "from": "NBO",
+      "to": "LHR",
+      "amount": 821.0,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-12T06:07:50.674268Z"
+    }
+  }
+]

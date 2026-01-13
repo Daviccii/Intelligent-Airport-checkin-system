@@ -494,13 +494,102 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Store all activities for filtering
 let allActivities = [];
 
-// Handle clickable summary cards
-document.querySelectorAll('.clickable-card').forEach(card => {
-  card.addEventListener('click', function() {
-    const cardType = this.getAttribute('data-card');
-    showCardDetails(cardType);
+// Handle clickable summary cards - redirect to detail pages
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.clickable-card').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', function() {
+      const cardType = this.getAttribute('data-card');
+      redirectToDetailPage(cardType);
+    });
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-8px)';
+      this.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.2)';
+    });
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = '';
+      this.style.boxShadow = '';
+    });
+  });
+
+  // Handle chart clicks - redirect to detail pages
+  const chartBookingsEl = document.getElementById('chartBookings');
+  if (chartBookingsEl && chartBookingsEl.parentElement) {
+    chartBookingsEl.parentElement.style.cursor = 'pointer';
+    chartBookingsEl.parentElement.addEventListener('click', () => {
+      window.location.href = 'bookings.html?view=analytics';
+    });
+  }
+
+  const chartSharesEl = document.getElementById('chartShares');
+  if (chartSharesEl && chartSharesEl.parentElement) {
+    chartSharesEl.parentElement.style.cursor = 'pointer';
+    chartSharesEl.parentElement.addEventListener('click', () => {
+      window.location.href = 'flights.html?view=distribution';
+    });
+  }
+
+  const chartRevenueEl = document.getElementById('chartRevenue');
+  if (chartRevenueEl && chartRevenueEl.parentElement) {
+    chartRevenueEl.parentElement.style.cursor = 'pointer';
+    chartRevenueEl.parentElement.addEventListener('click', () => {
+      window.location.href = 'payments.html?view=revenue';
+    });
+  }
+
+  // Make KPI cards clickable
+  document.querySelectorAll('.kpi-box').forEach((box, index) => {
+    box.style.cursor = 'pointer';
+    box.addEventListener('click', () => {
+      const views = ['bookings.html?view=conversion', 'bookings.html?view=ratings', 'checkins.html?view=response-times', 'payments.html?view=monthly'];
+      if (views[index]) window.location.href = views[index];
+    });
+    box.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-8px)';
+    });
+    box.addEventListener('mouseleave', function() {
+      this.style.transform = '';
+    });
+  });
+
+  // Make performance cards clickable
+  document.querySelectorAll('.performance-card').forEach((card, index) => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      const views = ['flights.html?view=performance', 'flights.html?view=occupancy', 'bookings.html?view=satisfaction'];
+      if (views[index]) window.location.href = views[index];
+    });
+    card.addEventListener('mouseenter', function() {
+      this.style.transform = 'translateY(-8px)';
+    });
+    card.addEventListener('mouseleave', function() {
+      this.style.transform = '';
+    });
+  });
+
+  // Make route cards clickable
+  document.querySelectorAll('.route-card').forEach(card => {
+    card.style.cursor = 'pointer';
+    card.addEventListener('click', () => {
+      const flightNum = card.getAttribute('data-flight') || 'all';
+      window.location.href = `flights.html?view=routes&flight=${flightNum}`;
+    });
   });
 });
+
+// Redirect to detail page based on card type
+function redirectToDetailPage(cardType) {
+  const redirects = {
+    'flights': 'flights.html',
+    'passengers': 'bookings.html',
+    'revenue': 'payments.html',
+    'checkins': 'checkins.html'
+  };
+  
+  if (redirects[cardType]) {
+    window.location.href = redirects[cardType];
+  }
+}
 
 // Show card details modal
 function showCardDetails(cardType) {

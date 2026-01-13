@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bookings Management — SmartFly Airlines</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="../admin-dashboard.css?v=2" rel="stylesheet">
+  <style>
+    .booking-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .booking-card:hover {
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.15);
+      transform: translateY(-4px);
+      border-color: #3b82f6;
+    }
+    .booking-status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .booking-status.confirmed {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+    .booking-status.pending {
+      background: #fff3cd;
+      color: #664d03;
+    }
+    .booking-status.cancelled {
+      background: #f8d7da;
+      color: #842029;
+    }
+    .booking-section {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 30px;
+      border: 1px solid #e2e8f0;
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .filter-tab {
+      padding: 8px 16px;
+      border-radius: 6px;
+      border: 1px solid #e2e8f0;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+    .filter-tab.active {
+      background: #3b82f6;
+      color: white;
+      border-color: #3b82f6;
+    }
+    .booking-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="top-navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <div class="brand-icon">
+          <img src="../assets/airplane-logo.svg" alt="SmartFly" style="width: 28px; height: 28px;">
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">SmartFly</div>
+          <div class="brand-subtitle">Admin Panel</div>
+        </div>
+      </div>
+
+      <div class="nav-bubbles">
+        <a href="dashboard.html" class="nav-bubble" title="Dashboard">
+          <i class="fas fa-chart-line"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="flights.html" class="nav-bubble" title="Flights Management">
+          <i class="fas fa-plane"></i>
+          <span>Flights</span>
+        </a>
+        <a href="bookings-detail.html" class="nav-bubble active" title="Bookings">
+          <i class="fas fa-calendar-check"></i>
+          <span>Bookings</span>
+        </a>
+        <a href="checkins-detail.html" class="nav-bubble" title="Check-Ins">
+          <i class="fas fa-passport"></i>
+          <span>Check-Ins</span>
+        </a>
+        <a href="payments-detail.html" class="nav-bubble" title="Payments">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="admin-container">
+    <!-- Header -->
+    <div style="margin-bottom: 40px;">
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <a href="dashboard.html" style="color: #3b82f6; text-decoration: none;">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+      <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0; color: #0f172a;">📅 Bookings Management</h1>
+      <p style="color: #64748b; font-size: 1.1rem; margin-top: 8px;">Manage and monitor all passenger bookings</p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-5">
+      <div class="col-md-6 col-lg-3">
+        <div style="background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%); border-radius: 12px; padding: 20px; color: white;">
+          <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Total Bookings</div>
+          <div style="font-size: 2.5rem; font-weight: 800;" id="statTotalBookings">—</div>
+          <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;" id="statBookingsChange">+0 this month</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div style="background: linear-gradient(135deg, #10b981 0%, #047857 100%); border-radius: 12px; padding: 20px; color: white;">
+          <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Confirmed</div>
+          <div style="font-size: 2.5rem; font-weight: 800;" id="statConfirmed">—</div>
+          <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;">Ready to travel</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; padding: 20px; color: white;">
+          <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Pending</div>
+          <div style="font-size: 2.5rem; font-weight: 800;" id="statPending">—</div>
+          <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;">Awaiting confirmation</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 12px; padding: 20px; color: white;">
+          <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Total Revenue</div>
+          <div style="font-size: 2.5rem; font-weight: 800;" id="statRevenueBookings">—</div>
+          <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;">From all bookings</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="booking-section">
+      <h3 style="font-weight: 700; margin-bottom: 20px;">Filter Bookings</h3>
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="filterBookings('all')">All Bookings</button>
+        <button class="filter-tab" onclick="filterBookings('confirmed')">✓ Confirmed</button>
+        <button class="filter-tab" onclick="filterBookings('pending')">⏳ Pending</button>
+        <button class="filter-tab" onclick="filterBookings('cancelled')">✕ Cancelled</button>
+      </div>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <input type="text" id="searchBooking" placeholder="Search by passenger name, flight number..." style="flex: 1; padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px;">
+        <button class="btn btn-primary" onclick="loadBookingsData()"><i class="fas fa-sync"></i> Refresh</button>
+        <button class="btn btn-outline-primary" onclick="exportBookings()"><i class="fas fa-download"></i> Export</button>
+      </div>
+    </div>
+
+    <!-- Bookings List -->
+    <div class="booking-section">
+      <h3 style="font-weight: 700; margin-bottom: 20px;">Recent Bookings</h3>
+      <div id="bookingsContainer" class="booking-grid">
+        <div style="text-align: center; color: #94a3b8; padding: 40px;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 2rem; margin-bottom: 15px;"></i>
+          <div>Loading bookings...</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let allBookings = [];
+    let currentFilter = 'all';
+
+    async function loadBookingsData() {
+      try {
+        // Try to fetch from activities first (real-time logs)
+        let bookings = [];
+        try {
+          const response = await fetch('/api/activities/bookings', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            // Convert activity logs to booking format
+            bookings = (data.bookings || []).map(activity => ({
+              id: activity.id,
+              booking_id: activity.id,
+              passenger_name: activity.data.passenger_name || 'Guest',
+              flight_number: activity.data.flight_number || 'N/A',
+              from: activity.data.from || 'N/A',
+              to: activity.data.to || 'N/A',
+              total_amount: activity.data.amount || 0,
+              payment_method: activity.data.payment_method || 'Unknown',
+              booking_date: activity.data.timestamp || activity.timestamp,
+              payment_status: 'completed',
+              status: 'confirmed'
+            }));
+          }
+        } catch (e) {
+          console.log('Using fallback bookings data');
+        }
+
+        // Fallback: fetch regular bookings
+        if (bookings.length === 0) {
+          const response = await fetch('/api/bookings', {
+            headers: {
+              'Authorization': `Bearer ${localStorage.getItem('auth_token') || ''}`
+            }
+          });
+          const data = await response.json();
+          bookings = Array.isArray(data) ? data : (data.bookings || []);
+        }
+
+        allBookings = bookings;
+        
+        // Calculate stats
+        const confirmed = allBookings.filter(b => b.payment_status === 'completed' || b.status === 'confirmed').length;
+        const pending = allBookings.filter(b => b.payment_status === 'pending' || b.status === 'pending').length;
+        const totalRevenue = allBookings.reduce((sum, b) => sum + (parseFloat(b.total_amount) || 0), 0);
+
+        document.getElementById('statTotalBookings').textContent = allBookings.length;
+        document.getElementById('statConfirmed').textContent = confirmed;
+        document.getElementById('statPending').textContent = pending;
+        document.getElementById('statRevenueBookings').textContent = '$' + Math.floor(totalRevenue).toLocaleString();
+
+        renderBookings(allBookings);
+      } catch (error) {
+        console.error('Error loading bookings:', error);
+        document.getElementById('bookingsContainer').innerHTML = '<div style="color: #ef4444; padding: 40px; text-align: center;"><i class="fas fa-exclamation-triangle"></i> Error loading bookings</div>';
+      }
+    }
+
+    function renderBookings(bookings) {
+      const container = document.getElementById('bookingsContainer');
+      const searchTerm = document.getElementById('searchBooking').value.toLowerCase();
+      
+      let filtered = bookings.filter(b => {
+        const matchesSearch = !searchTerm || 
+          (b.passenger_name && b.passenger_name.toLowerCase().includes(searchTerm)) ||
+          (b.flight_number && b.flight_number.toLowerCase().includes(searchTerm));
+        
+        if (currentFilter === 'all') return matchesSearch;
+        if (currentFilter === 'confirmed') return matchesSearch && (b.payment_status === 'completed' || b.status === 'confirmed');
+        if (currentFilter === 'pending') return matchesSearch && (b.payment_status === 'pending' || b.status === 'pending');
+        if (currentFilter === 'cancelled') return matchesSearch && (b.status === 'cancelled' || b.payment_status === 'failed');
+        return matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="color: #94a3b8; padding: 40px; text-align: center;"><i class="fas fa-inbox"></i><p style="margin-top: 15px;">No bookings found</p></div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(booking => {
+        const status = booking.payment_status === 'completed' || booking.status === 'confirmed' ? 'confirmed' :
+                      booking.payment_status === 'pending' || booking.status === 'pending' ? 'pending' : 'cancelled';
+        const statusText = status.charAt(0).toUpperCase() + status.slice(1);
+        const bookingDate = new Date(booking.booking_date || booking.created_at).toLocaleDateString();
+        const amount = parseFloat(booking.total_amount || 0).toFixed(2);
+
+        return `
+          <div class="booking-card" onclick="viewBookingDetails('${booking.id || booking.booking_id}')">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 15px;">
+              <div>
+                <div style="font-weight: 700; font-size: 1.1rem; color: #0f172a;">${booking.passenger_name || 'Guest'}</div>
+                <div style="color: #64748b; font-size: 0.9rem;">Flight ${booking.flight_number || 'N/A'}</div>
+              </div>
+              <span class="booking-status ${status}">${statusText}</span>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; padding: 15px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+              <div>
+                <div style="color: #94a3b8; font-size: 0.85rem;">Booking Date</div>
+                <div style="color: #0f172a; font-weight: 600; margin-top: 4px;">${bookingDate}</div>
+              </div>
+              <div>
+                <div style="color: #94a3b8; font-size: 0.85rem;">Amount</div>
+                <div style="color: #0f172a; font-weight: 600; margin-top: 4px;">$${amount}</div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+              <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); editBooking('${booking.id || booking.booking_id}')">
+                <i class="fas fa-edit"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); deleteBooking('${booking.id || booking.booking_id}')">
+                <i class="fas fa-trash"></i> Delete
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterBookings(filter) {
+      currentFilter = filter;
+      document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+      renderBookings(allBookings);
+    }
+
+    function viewBookingDetails(bookingId) {
+      alert(`Viewing booking details for ${bookingId}`);
+      // In a real app, open a modal or detail page
+    }
+
+    function editBooking(bookingId) {
+      alert(`Editing booking ${bookingId}`);
+    }
+
+    function deleteBooking(bookingId) {
+      if (confirm('Are you sure you want to delete this booking?')) {
+        alert(`Deleted booking ${bookingId}`);
+      }
+    }
+
+    function exportBookings() {
+      const csv = [
+        ['Passenger Name', 'Flight Number', 'From', 'To', 'Booking Date', 'Amount', 'Payment Method', 'Status'],
+        ...allBookings.map(b => {
+          const bookingDate = new Date(b.booking_date || b.created_at).toLocaleDateString();
+          return [
+            b.passenger_name || 'Guest',
+            b.flight_number || 'N/A',
+            b.from || 'N/A',
+            b.to || 'N/A',
+            bookingDate,
+            '$' + (b.total_amount || 0).toFixed(2),
+            b.payment_method || 'Unknown',
+            b.status || 'Unknown'
+          ];
+        })
+      ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `bookings_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    document.getElementById('searchBooking').addEventListener('input', () => {
+      renderBookings(allBookings);
+    });
+
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', loadBookingsData);
+
+    // Refresh every 30 seconds
+    setInterval(loadBookingsData, 30000);
+  </script>
+</body>
+</html>

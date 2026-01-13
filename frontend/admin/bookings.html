@@ -773,7 +773,36 @@
                     throw new Error('Failed to load bookings');
                 }
 
-                allBookings = await response.json();
+                const raw = await response.json();
+                // Normalize backend booking payloads to the UI shape
+                allBookings = (raw || []).map(item => {
+                    const amount = Number(item.total_amount ?? item.amount ?? 0);
+                    const method = (item.payment_method || '').toLowerCase();
+                    const normalizedMethod = method.includes('card') ? 'card'
+                        : method.includes('paypal') ? 'paypal'
+                        : method.includes('mpesa') ? 'mpesa'
+                        : method.includes('bank') ? 'bank'
+                        : method || 'card';
+
+                    return {
+                        id: item.booking_id || item.id || item.booking_reference || item.reference || 'N/A',
+                        name: item.passenger_name || item.name || (item.passengers && item.passengers[0]) || 'Unknown',
+                        email: item.email || '—',
+                        passport: item.passport || item.passport_number || item.document_number || '—',
+                        from: item.origin || item.from || item.departure_airport || '—',
+                        to: item.destination || item.to || item.arrival_airport || '—',
+                        depart: item.departure_date || item.depart || item.booking_date || item.created_at || '',
+                        return: item.return_date || item.return || '',
+                        class: item.seat_class || item.class || 'economy',
+                        fare: item.fare_type || item.fare || 'standard',
+                        amount,
+                        currency: item.currency || 'USD',
+                        payment_method: normalizedMethod,
+                        created_at: item.booking_date || item.created_at || new Date().toISOString(),
+                        status: item.booking_status || item.status || item.payment_status || 'pending'
+                    };
+                });
+
                 filteredBookings = allBookings;
                 currentPage = 1;
                 updateStats();

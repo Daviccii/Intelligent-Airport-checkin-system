@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate Mock Members</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+        }
+        h1 {
+            color: #2d3748;
+            margin-bottom: 20px;
+        }
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Generate Mock Members</h1>
+        <p>Click the button below to generate 100 mock members across all membership tiers.</p>
+        <button class="btn" onclick="generateMockMembers()">Generate Members</button>
+        <div id="status"></div>
+    </div>
+
+    <script>
+        function generateMockMembers() {
+            const firstNames = [
+                'James', 'Mary', 'John', 'Patricia', 'Robert', 'Jennifer', 'Michael', 'Linda', 'William', 'Elizabeth',
+                'David', 'Barbara', 'Richard', 'Susan', 'Joseph', 'Jessica', 'Thomas', 'Sarah', 'Charles', 'Karen',
+                'Christopher', 'Nancy', 'Daniel', 'Lisa', 'Matthew', 'Betty', 'Anthony', 'Margaret', 'Mark', 'Sandra',
+                'Donald', 'Ashley', 'Steven', 'Kimberly', 'Paul', 'Emily', 'Andrew', 'Donna', 'Joshua', 'Michelle',
+                'Kenneth', 'Dorothy', 'Kevin', 'Carol', 'Brian', 'Amanda', 'George', 'Melissa', 'Edward', 'Deborah',
+                'Ronald', 'Stephanie', 'Timothy', 'Rebecca', 'Jason', 'Sharon', 'Jeffrey', 'Laura', 'Ryan', 'Cynthia',
+                'Jacob', 'Kathleen', 'Gary', 'Amy', 'Nicholas', 'Shirley', 'Eric', 'Angela', 'Jonathan', 'Helen',
+                'Stephen', 'Anna', 'Larry', 'Brenda', 'Justin', 'Pamela', 'Scott', 'Nicole', 'Brandon', 'Emma',
+                'Benjamin', 'Samantha', 'Samuel', 'Katherine', 'Raymond', 'Christine', 'Patrick', 'Debra', 'Alexander', 'Rachel',
+                'Jack', 'Catherine', 'Dennis', 'Carolyn', 'Jerry', 'Janet', 'Tyler', 'Ruth', 'Aaron', 'Maria'
+            ];
+
+            const lastNames = [
+                'Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez',
+                'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin',
+                'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson',
+                'Walker', 'Young', 'Allen', 'King', 'Wright', 'Scott', 'Torres', 'Nguyen', 'Hill', 'Flores',
+                'Green', 'Adams', 'Nelson', 'Baker', 'Hall', 'Rivera', 'Campbell', 'Mitchell', 'Carter', 'Roberts',
+                'Gomez', 'Phillips', 'Evans', 'Turner', 'Diaz', 'Parker', 'Cruz', 'Edwards', 'Collins', 'Reyes',
+                'Stewart', 'Morris', 'Morales', 'Murphy', 'Cook', 'Rogers', 'Gutierrez', 'Ortiz', 'Morgan', 'Cooper',
+                'Peterson', 'Bailey', 'Reed', 'Kelly', 'Howard', 'Ramos', 'Kim', 'Cox', 'Ward', 'Richardson',
+                'Watson', 'Brooks', 'Chavez', 'Wood', 'James', 'Bennett', 'Gray', 'Mendoza', 'Ruiz', 'Hughes',
+                'Price', 'Alvarez', 'Castillo', 'Sanders', 'Patel', 'Myers', 'Long', 'Ross', 'Foster', 'Jimenez'
+            ];
+
+            const countries = [
+                'United States', 'Canada', 'United Kingdom', 'Australia', 'Germany', 
+                'France', 'Japan', 'South Korea', 'Singapore', 'Netherlands',
+                'Switzerland', 'Sweden', 'Norway', 'Denmark', 'Finland',
+                'New Zealand', 'Ireland', 'Belgium', 'Austria', 'Spain',
+                'Italy', 'Portugal', 'Greece', 'Brazil', 'Mexico',
+                'Argentina', 'Chile', 'United Arab Emirates', 'Qatar', 'Saudi Arabia'
+            ];
+
+            const membershipTiers = [
+                { name: 'Silver', fee: 29, count: 0 },
+                { name: 'Gold', fee: 59, count: 0 },
+                { name: 'Platinum', fee: 99, count: 0 }
+            ];
+
+            const members = [];
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Generating members...';
+
+            // Generate 100 members
+            for (let i = 0; i < 100; i++) {
+                const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+                const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+                const country = countries[Math.floor(Math.random() * countries.length)];
+                
+                // Distribute tiers: 40% Silver, 35% Gold, 25% Platinum
+                let tierIndex;
+                const rand = Math.random();
+                if (rand < 0.40) {
+                    tierIndex = 0; // Silver
+                } else if (rand < 0.75) {
+                    tierIndex = 1; // Gold
+                } else {
+                    tierIndex = 2; // Platinum
+                }
+                
+                const tier = membershipTiers[tierIndex];
+                tier.count++;
+
+                // Generate random phone number
+                const phone = `+1-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 900 + 100)}-${Math.floor(Math.random() * 9000 + 1000)}`;
+                
+                // Generate email
+                const email = `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@email.com`;
+                
+                // Generate random join date within last 2 years
+                const daysAgo = Math.floor(Math.random() * 730);
+                const joinDate = new Date();
+                joinDate.setDate(joinDate.getDate() - daysAgo);
+                
+                // Generate random balance between $50 and $5000
+                const balance = Math.floor(Math.random() * 4951) + 50;
+                
+                members.push({
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    phone: phone,
+                    country: country,
+                    password: 'member123', // Default password for all mock members
+                    memberType: tier.name,
+                    membershipFee: tier.fee,
+                    balance: balance,
+                    joined: joinDate.toISOString()
+                });
+            }
+
+            // Store in localStorage
+            localStorage.setItem('registeredMembers', JSON.stringify(members));
+
+            // Show success message
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = `
+                <strong>✓ Success!</strong><br>
+                Generated 100 members:<br>
+                • Silver: ${membershipTiers[0].count} members<br>
+                • Gold: ${membershipTiers[1].count} members<br>
+                • Platinum: ${membershipTiers[2].count} members<br><br>
+                <small>Data stored in localStorage as 'registeredMembers'</small>
+            `;
+
+            console.log('Generated members:', members);
+            console.log('Distribution:', {
+                Silver: membershipTiers[0].count,
+                Gold: membershipTiers[1].count,
+                Platinum: membershipTiers[2].count
+            });
+        }
+    </script>
+</body>
+</html>

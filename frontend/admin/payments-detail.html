@@ -1,0 +1,406 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payments Management — SmartFly Airlines</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.min.js" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.min.js"></script>
+  <link href="../admin-dashboard.css?v=2" rel="stylesheet">
+  <style>
+    .payment-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 15px;
+      transition: all 0.3s ease;
+    }
+    .payment-card:hover {
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.15);
+      transform: translateY(-4px);
+    }
+    .payment-status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .payment-status.completed {
+      background: #d1e7dd;
+      color: #0f5132;
+    }
+    .payment-status.pending {
+      background: #fff3cd;
+      color: #664d03;
+    }
+    .payment-status.failed {
+      background: #f8d7da;
+      color: #842029;
+    }
+    .stat-box {
+      background: linear-gradient(135deg, var(--grad-start) 0%, var(--grad-end) 100%);
+      border-radius: 12px;
+      padding: 20px;
+      color: white;
+      --grad-start: #3b82f6;
+      --grad-end: #1e40af;
+    }
+    .chart-container {
+      background: #f8fafc;
+      border-radius: 16px;
+      padding: 30px;
+      border: 1px solid #e2e8f0;
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <nav class="top-navbar">
+    <div class="navbar-container">
+      <div class="navbar-brand">
+        <div class="brand-icon">
+          <img src="../assets/airplane-logo.svg" alt="SmartFly" style="width: 28px; height: 28px;">
+        </div>
+        <div class="brand-text">
+          <div class="brand-name">SmartFly</div>
+          <div class="brand-subtitle">Admin Panel</div>
+        </div>
+      </div>
+
+      <div class="nav-bubbles">
+        <a href="dashboard.html" class="nav-bubble" title="Dashboard">
+          <i class="fas fa-chart-line"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="flights.html" class="nav-bubble" title="Flights Management">
+          <i class="fas fa-plane"></i>
+          <span>Flights</span>
+        </a>
+        <a href="bookings-detail.html" class="nav-bubble" title="Bookings">
+          <i class="fas fa-calendar-check"></i>
+          <span>Bookings</span>
+        </a>
+        <a href="checkins-detail.html" class="nav-bubble" title="Check-Ins">
+          <i class="fas fa-passport"></i>
+          <span>Check-Ins</span>
+        </a>
+        <a href="payments-detail.html" class="nav-bubble active" title="Payments">
+          <i class="fas fa-credit-card"></i>
+          <span>Payments</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="admin-container">
+    <!-- Header -->
+    <div style="margin-bottom: 40px;">
+      <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px;">
+        <a href="dashboard.html" style="color: #3b82f6; text-decoration: none;">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+      <h1 style="font-size: 2.5rem; font-weight: 800; margin: 0; color: #0f172a;">💰 Payments Management</h1>
+      <p style="color: #64748b; font-size: 1.1rem; margin-top: 8px;">Monitor revenue and transaction details</p>
+    </div>
+
+    <!-- Stats Row -->
+    <div class="row g-3 mb-5">
+      <div class="col-md-6 col-lg-3">
+        <div class="stat-box" style="--grad-start: #3b82f6; --grad-end: #1e40af;">
+          <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Total Revenue</div>
+          <div style="font-size: 2.5rem; font-weight: 800;" id="statTotalRevenue">—</div>
+          <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;">All time</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="stat-box" style="--grad-start: #10b981; --grad-end: #047857;">
+          <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Completed</div>
+          <div style="font-size: 2.5rem; font-weight: 800;" id="statCompleted">—</div>
+          <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;">Transactions</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="stat-box" style="--grad-start: #f59e0b; --grad-end: #d97706;">
+          <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Pending</div>
+          <div style="font-size: 2.5rem; font-weight: 800;" id="statPendingPayments">—</div>
+          <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;">Awaiting settlement</div>
+        </div>
+      </div>
+      <div class="col-md-6 col-lg-3">
+        <div class="stat-box" style="--grad-start: #ef4444; --grad-end: #dc2626;">
+          <div style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 10px;">Avg Transaction</div>
+          <div style="font-size: 2.5rem; font-weight: 800;" id="statAvgTransaction">—</div>
+          <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 10px;">Per booking</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Chart -->
+    <div class="chart-container">
+      <h3 style="font-weight: 700; margin-bottom: 20px;">Revenue Trend (Last 12 Months)</h3>
+      <div style="position: relative; height: 400px;">
+        <canvas id="revenueChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Payment Status Chart -->
+    <div class="row mb-5">
+      <div class="col-lg-6">
+        <div class="chart-container">
+          <h3 style="font-weight: 700; margin-bottom: 20px;">Payment Status Distribution</h3>
+          <div style="position: relative; height: 300px;">
+            <canvas id="paymentStatusChart"></canvas>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6">
+        <div class="chart-container">
+          <h3 style="font-weight: 700; margin-bottom: 20px;">Payment Methods</h3>
+          <div style="position: relative; height: 300px;">
+            <canvas id="paymentMethodChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div style="background: #f8fafc; border-radius: 16px; padding: 30px; border: 1px solid #e2e8f0;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h3 style="font-weight: 700; margin: 0;">Recent Transactions</h3>
+        <button class="btn btn-outline-primary" onclick="exportPayments()"><i class="fas fa-download"></i> Export</button>
+      </div>
+      <input type="text" id="searchTransaction" placeholder="Search by passenger name, booking ID..." style="width: 100%; padding: 10px 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 20px;">
+      <div id="transactionsContainer">
+        <div style="text-align: center; color: #94a3b8; padding: 40px;">
+          <i class="fas fa-spinner fa-spin" style="font-size: 2rem;"></i>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let allTransactions = [];
+    let revenueChart, statusChart, methodChart;
+
+    async function loadPaymentData() {
+      try {
+        // Try to fetch from activities first
+        let transactions = [];
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('session') || localStorage.getItem('auth_token') || '';
+        try {
+          const response = await fetch('/api/activities/payments', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            transactions = (data.payments || []).map(activity => ({
+              id: activity.id,
+              passenger: activity.data.passenger_name || 'Guest',
+              bookingId: activity.data.flight_number || 'N/A',
+              amount: activity.data.amount || 0,
+              status: 'completed',
+              method: activity.data.payment_method || 'Credit Card',
+              date: new Date(activity.data.timestamp || activity.timestamp)
+            }));
+          }
+        } catch (e) {
+          console.log('Using fallback payment data');
+        }
+
+        // Fallback: fetch bookings and convert to transactions
+        if (transactions.length === 0) {
+          const response = await fetch('/api/bookings', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          const data = await response.json();
+          const bookings = Array.isArray(data) ? data : (data.bookings || []);
+          
+          transactions = bookings.map(b => ({
+            id: b.id || b.booking_id,
+            passenger: b.passenger_name || b.name || 'Guest',
+            bookingId: b.flight_number || 'N/A',
+            amount: parseFloat(b.total_amount || 0),
+            status: b.payment_status || b.status || 'pending',
+            method: b.payment_method || 'Credit Card',
+            date: new Date(b.booking_date || b.created_at)
+          }));
+        }
+
+        allTransactions = transactions;
+
+        // Calculate stats
+        const totalRevenue = allTransactions.reduce((sum, t) => sum + t.amount, 0);
+        const completed = allTransactions.filter(t => t.status === 'completed').length;
+        const pending = allTransactions.filter(t => t.status === 'pending').length;
+        const avgTransaction = allTransactions.length > 0 ? totalRevenue / allTransactions.length : 0;
+
+        document.getElementById('statTotalRevenue').textContent = '$' + Math.floor(totalRevenue).toLocaleString();
+        document.getElementById('statCompleted').textContent = completed;
+        document.getElementById('statPendingPayments').textContent = pending;
+        document.getElementById('statAvgTransaction').textContent = '$' + Math.floor(avgTransaction).toLocaleString();
+
+        initCharts();
+        renderTransactions();
+      } catch (error) {
+        console.error('Error loading payments:', error);
+      }
+    }
+
+    function initCharts() {
+      // Revenue trend chart
+      const ctx1 = document.getElementById('revenueChart').getContext('2d');
+      revenueChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+          datasets: [{
+            label: 'Monthly Revenue ($)',
+            data: [45000, 52000, 48000, 61000, 55000, 67000, 72000, 68000, 75000, 80000, 78000, 85000],
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointBackgroundColor: '#3b82f6'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+
+      // Payment status chart
+      const ctx2 = document.getElementById('paymentStatusChart').getContext('2d');
+      const completed = allTransactions.filter(t => t.status === 'completed').length;
+      const pending = allTransactions.filter(t => t.status === 'pending').length;
+      const failed = allTransactions.filter(t => t.status === 'failed').length;
+
+      statusChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['Completed', 'Pending', 'Failed'],
+          datasets: [{
+            data: [completed, pending, failed],
+            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+            borderColor: '#fff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom' } }
+        }
+      });
+
+      // Payment methods chart
+      const ctx3 = document.getElementById('paymentMethodChart').getContext('2d');
+      methodChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+          labels: ['Credit Card', 'Debit Card', 'Digital Wallet', 'Bank Transfer'],
+          datasets: [{
+            label: 'Transactions',
+            data: [65, 30, 22, 18],
+            backgroundColor: ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    function renderTransactions() {
+      const container = document.getElementById('transactionsContainer');
+      const searchTerm = document.getElementById('searchTransaction').value.toLowerCase();
+      
+      const filtered = allTransactions.filter(t => 
+        t.passenger.toLowerCase().includes(searchTerm) ||
+        t.bookingId.toLowerCase().includes(searchTerm)
+      ).sort((a, b) => b.date - a.date);
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 40px;">No transactions found</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(t => `
+        <div class="payment-card">
+          <div style="display: flex; justify-content: space-between; align-items: start;">
+            <div>
+              <div style="font-weight: 700; font-size: 1.1rem; color: #0f172a;">${t.passenger}</div>
+              <div style="color: #64748b; font-size: 0.9rem;">Flight ${t.bookingId}</div>
+            </div>
+            <span class="payment-status ${t.status}">${t.status.charAt(0).toUpperCase() + t.status.slice(1)}</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin: 15px 0; padding: 15px 0; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+            <div>
+              <div style="color: #94a3b8; font-size: 0.85rem;">Amount</div>
+              <div style="color: #0f172a; font-weight: 600; margin-top: 4px;">$${t.amount.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="color: #94a3b8; font-size: 0.85rem;">Method</div>
+              <div style="color: #0f172a; font-weight: 600; margin-top: 4px;">${t.method}</div>
+            </div>
+            <div>
+              <div style="color: #94a3b8; font-size: 0.85rem;">Date</div>
+              <div style="color: #0f172a; font-weight: 600; margin-top: 4px;">${t.date.toLocaleDateString()}</div>
+            </div>
+          </div>
+          <button class="btn btn-sm btn-outline-primary"><i class="fas fa-receipt"></i> Receipt</button>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('searchTransaction').addEventListener('input', renderTransactions);
+
+    function exportPayments() {
+      const csv = [
+        ['Passenger', 'Flight Number', 'Amount', 'Payment Method', 'Status', 'Date'],
+        ...allTransactions.map(t => [
+          t.passenger,
+          t.bookingId,
+          '$' + t.amount.toFixed(2),
+          t.method,
+          t.status.charAt(0).toUpperCase() + t.status.slice(1),
+          t.date.toLocaleDateString()
+        ])
+      ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `payments_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPaymentData);
+    setInterval(loadPaymentData, 30000);
+  </script>
+</body>
+</html>

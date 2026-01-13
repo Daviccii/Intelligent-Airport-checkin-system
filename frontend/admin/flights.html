@@ -643,11 +643,11 @@
             <i class="fas fa-calendar-check"></i>
             <span>Bookings</span>
           </a>
-          <a href="checkins.html" class="nav-bubble" title="Check-Ins">
+          <a href="checkins-detail.html" class="nav-bubble" title="Check-Ins">
             <i class="fas fa-passport"></i>
             <span>Check-Ins</span>
           </a>
-          <a href="payments.html" class="nav-bubble" title="Payments">
+          <a href="payments-detail.html" class="nav-bubble" title="Payments">
             <i class="fas fa-credit-card"></i>
             <span>Payments</span>
           </a>
@@ -965,7 +965,10 @@
         if (finished) return;
         finished = true;
         if (badge && sourceLabel) badge.textContent = sourceLabel;
+        // Store flights in window for table updates
+        window.allFlights = flights;
         renderFlights(flights);
+        updateFlightLists(); // Update the tables with new data
       };
 
       // Hard fallback in case fetch or render hangs
@@ -1452,35 +1455,38 @@
       // Get flights from the loaded data
       const allFlights = window.allFlights || [];
       
-      // Upcoming flights - scheduled or delayed, departing in the future (next 7 days)
-      const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+      // Upcoming flights - scheduled or delayed, departing in the future (next 30 days)
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
       const upcomingFlights = allFlights.filter(f => {
         const depTime = new Date(f.departureTime || f.departure_time);
         const status = (f.status || '').toLowerCase();
-        return depTime > now && depTime < sevenDaysFromNow && 
-               (status === 'scheduled' || status === 'delayed' || status === 'boarding');
+        return depTime > now && depTime < thirtyDaysFromNow && 
+               (status === 'scheduled' || status === 'delayed' || status === 'boarding' || status === 'on time');
       }).sort((a, b) => {
         const timeA = new Date(a.departureTime || a.departure_time);
         const timeB = new Date(b.departureTime || b.departure_time);
         return timeA - timeB;
       }).slice(0, 8);
 
-      // Departed flights - status is departed or already left
+      // Departed flights - check both status and if departure was in past 24 hours
+      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
       const departedFlights = allFlights.filter(f => {
+        const depTime = new Date(f.departureTime || f.departure_time);
         const status = (f.status || '').toLowerCase();
-        return status === 'departed' || status === 'in_air' || status === 'in air';
+        return (status === 'departed' || status === 'in_air' || status === 'in air' || status === 'en route') ||
+               (depTime < now && depTime > oneDayAgo && status !== 'cancelled');
       }).sort((a, b) => {
         const timeA = new Date(a.departureTime || a.departure_time);
         const timeB = new Date(b.departureTime || b.departure_time);
         return timeB - timeA; // Most recent first
       }).slice(0, 8);
 
-      // Incoming flights - arriving soon or status is arriving/landed (next 7 days)
+      // Incoming flights - arriving in next 30 days or status indicates arrival
       const incomingFlights = allFlights.filter(f => {
         const arrTime = new Date(f.arrivalTime || f.arrival_time);
         const status = (f.status || '').toLowerCase();
-        return (arrTime > now && arrTime < sevenDaysFromNow) || 
-               status === 'arriving' || status === 'landed';
+        return (arrTime > now && arrTime < thirtyDaysFromNow) || 
+               status === 'arriving' || status === 'landed' || status === 'approaching';
       }).sort((a, b) => {
         const timeA = new Date(a.arrivalTime || a.arrival_time);
         const timeB = new Date(b.arrivalTime || b.arrival_time);

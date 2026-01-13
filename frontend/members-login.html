@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Members Login - SmartFly</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 1000px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .login-left {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            padding: 60px 40px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-left h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .login-left p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .benefits-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .benefits-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .benefits-list i {
+            background: rgba(255, 255, 255, 0.2);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-right {
+            padding: 60px 40px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .login-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .login-header p {
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border 0.3s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #ff6b6b;
+        }
+
+        .input-icon {
+            position: relative;
+        }
+
+        .input-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+
+        .input-icon input {
+            padding-left: 45px;
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-top: -15px;
+            margin-bottom: 25px;
+        }
+
+        .forgot-password a {
+            color: #ff6b6b;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .divider {
+            text-align: center;
+            margin: 25px 0;
+            color: #a0aec0;
+            font-size: 13px;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 40%;
+            height: 1px;
+            background: #e2e8f0;
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 25px;
+            color: #718096;
+            font-size: 14px;
+        }
+
+        .signup-link a {
+            color: #ff6b6b;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .back-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .back-home:hover {
+            background: rgba(255, 255, 255, 0.3);
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .login-container {
+                grid-template-columns: 1fr;
+            }
+
+            .login-left {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-home"><i class="fas fa-arrow-left"></i> Back to Home</a>
+
+    <div class="login-container">
+        <div class="login-left">
+            <h1><i class="fas fa-crown"></i> Premium Membership</h1>
+            <p>Unlock exclusive benefits and enjoy a premium travel experience with SmartFly Airlines.</p>
+            
+            <ul class="benefits-list">
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span>Priority check-in and boarding</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span>Extra baggage allowance</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span>Access to exclusive lounges</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span>Special discounts up to 30%</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span>Earn 2x loyalty points</span>
+                </li>
+                <li>
+                    <i class="fas fa-check"></i>
+                    <span>24/7 premium customer support</span>
+                </li>
+            </ul>
+        </div>
+
+        <div class="login-right">
+            <div class="login-header">
+                <h2>Welcome Back</h2>
+                <p>Login to access your member benefits</p>
+            </div>
+
+            <form id="membersLoginForm">
+                <div class="form-group">
+                    <label for="memberEmail">Email or Member ID</label>
+                    <div class="input-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" class="form-control" id="memberEmail" placeholder="Enter your email or member ID" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="memberPassword">Password</label>
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="memberPassword" placeholder="Enter your password" required>
+                    </div>
+                </div>
+
+                <div class="forgot-password">
+                    <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt"></i> Login to Members Area
+                </button>
+
+                <div class="divider">OR</div>
+
+                <div class="signup-link">
+                    Don't have an account? <a href="/members-register.html">Join Premium</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('membersLoginForm').addEventListener('submit', function(e){
+            e.preventDefault();
+            
+            const email = document.getElementById('memberEmail').value.trim();
+            const password = document.getElementById('memberPassword').value;
+
+            if (!email || !password) {
+                alert('Please enter both email and password');
+                return;
+            }
+
+            // Check against registered members in localStorage
+            const registeredMembers = JSON.parse(localStorage.getItem('registeredMembers') || '[]');
+            const member = registeredMembers.find(m => m.email === email && m.password === password);
+
+            if (member) {
+                // Store member session
+                localStorage.setItem('memberToken', 'member-token-' + Date.now());
+                localStorage.setItem('memberEmail', member.email);
+                localStorage.setItem('memberName', member.fullName);
+                localStorage.setItem('memberType', member.membershipType);
+                localStorage.setItem('memberBalance', member.balance || 0);
+                localStorage.setItem('memberJoined', member.joinedDate);
+                
+                alert('✈️ Welcome back, ' + member.fullName + '!');
+                window.location.href = '/members-dashboard.html';
+            } else if (email === 'member@smartfly.com' && password === 'member123') {
+                // Demo account fallback
+                localStorage.setItem('memberToken', 'demo-member-token-' + Date.now());
+                localStorage.setItem('memberEmail', email);
+                localStorage.setItem('memberName', 'Demo Member');
+                localStorage.setItem('memberType', 'premium');
+                localStorage.setItem('memberBalance', '500');
+                
+                alert('✈️ Welcome back, Premium Member!');
+                window.location.href = '/members-dashboard.html';
+            } else {
+                alert('Invalid credentials.\n\nDon\'t have an account? Click "Join Premium" to register.');
+            }
+        });
+
+        document.getElementById('forgotPasswordLink').addEventListener('click', function(e){
+            e.preventDefault();
+            alert('Password reset link will be sent to your registered email address.');
+        });
+    </script>
+</body>
+</html>

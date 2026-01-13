@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Flight Schedule — SmartFly</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; background: #f8f9fa; }
+    .main-nav { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); padding: 16px 0; }
+    .nav-container { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+    .logo-container { display: flex; align-items: center; gap: 12px; color: white; text-decoration: none; }
+    .logo { width: 40px; height: 40px; }
+    .logo svg { width: 100%; height: 100%; fill: white; }
+    .brand { margin: 0; }
+    .logo-text { margin: 0; font-size: 20px; color: white; }
+    .site-vision { margin: 0; font-size: 12px; color: rgba(255,255,255,0.8); }
+    .header-tabs { display: flex; gap: 20px; }
+    .tab-link { color: rgba(255,255,255,0.8); text-decoration: none; font-weight: 500; transition: color 0.3s; }
+    .tab-link:hover, .tab-link.active { color: white; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+    .page-container { padding: 20px 0; }
+    .hero-section { background: linear-gradient(135deg,#667eea 0%,#764ba2 100%); color: white; }
+    .hero-content { text-align: center; }
+    .hero-content h2 { margin: 0 0 10px 0; font-size: 32px; font-weight: 700; }
+    .lead { margin: 0; font-size: 16px; opacity: 0.9; }
+    .utility-links { padding: 0 20px; justify-content: center; }
+    .btn { display: inline-block; padding: 10px 20px; background: #667eea; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s; }
+    .btn:hover { background: #764ba2; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+    .card { background: white; border-radius: 12px; padding: 24px; margin: 20px auto; max-width: 1000px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card h3 { margin-top: 0; color: #073067; }
+    .schedule-table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    .schedule-table th { background: #f8f9fa; padding: 12px; text-align: left; font-weight: 600; border-bottom: 2px solid #e6e9ef; }
+    .schedule-table td { padding: 12px; border-bottom: 1px solid #e6e9ef; }
+    .schedule-table tr:hover { background: #f8f9fa; }
+    .flight-status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .status-on-time { background: #e8f5e9; color: #2e7d32; }
+    .status-delayed { background: #fff3e0; color: #e65100; }
+    .status-boarding { background: #e3f2fd; color: #1565c0; }
+    .status-departed { background: #f3e5f5; color: #6a1b9a; }
+    .loading { text-align: center; padding: 40px 20px; }
+    .spinner { display: inline-block; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #667eea; border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .error-message { background: #ffebee; color: #c62828; padding: 16px; border-radius: 8px; margin: 20px auto; max-width: 1000px; }
+  </style>
+</head>
+<body>
+  <nav class="main-nav"><div class="container nav-container">
+      <div class="logo-container">
+        <div class="logo"><svg viewBox="0 0 24 24"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg></div>
+        <div class="brand"><h2 class="logo-text">SmartFly</h2><p class="site-vision">your journey starts here</p></div>
+      </div>
+      <div class="header-right">
+      <nav class="header-tabs">
+        <a class="tab-link" href="flight-results.html">Explore</a>
+        <a class="tab-link" href="plan.html">Plan</a>
+        <a class="tab-link" href="book-manage.html">Book &amp; Manage</a>
+        <a class="tab-link" href="experience.html">Experience</a>
+        <a class="tab-link" href="loyalty.html">Loyalty Program</a>
+        <a class="tab-link" href="help.html">Help</a>
+      </nav>
+    </div></div></nav>
+
+  <main class="page-container">
+    <section class="hero-section" style="padding:36px 20px;margin-bottom:12px">
+      <div class="hero-content"><h2>Flight Schedule</h2><p class="lead">View real-time flight schedules and status updates.</p></div>
+    </section>
+
+    <!-- Utility links: Check-In / My Bookings / Status -->
+    <div class="utility-links" style="margin:12px 0;display:flex;gap:8px;flex-wrap:wrap;">
+      <a class="btn" href="checkin.html">Check-In</a>
+      <a class="btn" href="lookup.html">My Bookings</a>
+      <a class="btn" href="experience.html">Experience</a>
+    </div>
+
+    <section class="card">
+      <h3><i class="fas fa-calendar-alt" style="margin-right:8px;"></i>All Scheduled Flights</h3>
+      <p>Below are all scheduled flights. Status is updated in real-time.</p>
+      <div id="flightContainer" class="loading">
+        <div class="spinner"></div>
+        <p>Loading flight schedule...</p>
+      </div>
+    </section>
+
+    <section class="card" style="margin-top:18px">
+      <h3>Flight Status Legend</h3>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;">
+        <div>
+          <span class="flight-status status-on-time">On Time</span>
+          <p style="margin:8px 0 0 0;font-size:14px;">Flight is operating on schedule</p>
+        </div>
+        <div>
+          <span class="flight-status status-delayed">Delayed</span>
+          <p style="margin:8px 0 0 0;font-size:14px;">Flight is running behind schedule</p>
+        </div>
+        <div>
+          <span class="flight-status status-boarding">Boarding</span>
+          <p style="margin:8px 0 0 0;font-size:14px;">Passengers are currently boarding</p>
+        </div>
+        <div>
+          <span class="flight-status status-departed">Departed</span>
+          <p style="margin:8px 0 0 0;font-size:14px;">Flight has already departed</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    async function loadFlights() {
+      try {
+        const response = await fetch('/api/flights');
+        if (!response.ok) throw new Error('Failed to load flights');
+        const data = response.json ? await response.json() : JSON.parse(response);
+        const flights = data.flights || data || [];
+        
+        // Ensure flights is an array
+        const flightArray = Array.isArray(flights) ? flights : Object.values(flights);
+        
+        if (flightArray.length === 0) {
+          document.getElementById('flightContainer').innerHTML = '<p style="text-align:center;padding:40px 20px;color:#666;">No flights available.</p>';
+          return;
+        }
+
+        // Sort by departure time
+        flightArray.sort((a, b) => {
+          const timeA = new Date(a.departure_time || a.departure || 0).getTime();
+          const timeB = new Date(b.departure_time || b.departure || 0).getTime();
+          return timeA - timeB;
+        });
+
+        const table = document.createElement('table');
+        table.className = 'schedule-table';
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Flight Number</th>
+              <th>Airline</th>
+              <th>Route</th>
+              <th>Departure</th>
+              <th>Arrival</th>
+              <th>Gate</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${flightArray.map(f => {
+              const depTime = new Date(f.departure_time || f.departure || '');
+              const arrTime = new Date(f.arrival_time || f.arrival || '');
+              const depStr = depTime.toString() === 'Invalid Date' ? '-' : depTime.toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
+              const arrStr = arrTime.toString() === 'Invalid Date' ? '-' : arrTime.toLocaleString('en-US', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: true });
+              
+              let status = 'On Time';
+              let statusClass = 'status-on-time';
+              const statusVal = (f.status || '').toLowerCase();
+              if (statusVal.includes('delay')) {
+                status = 'Delayed';
+                statusClass = 'status-delayed';
+              } else if (statusVal.includes('board')) {
+                status = 'Boarding';
+                statusClass = 'status-boarding';
+              } else if (statusVal.includes('depart')) {
+                status = 'Departed';
+                statusClass = 'status-departed';
+              }
+
+              return `
+                <tr>
+                  <td><strong>${f.flight_number || f.flight || f.id || '-'}</strong></td>
+                  <td>${f.airline || '-'}</td>
+                  <td>${f.origin || '-'} → ${f.destination || '-'}</td>
+                  <td>${depStr}</td>
+                  <td>${arrStr}</td>
+                  <td>${f.gate || '-'}</td>
+                  <td><span class="flight-status ${statusClass}">${status}</span></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        `;
+        document.getElementById('flightContainer').innerHTML = '';
+        document.getElementById('flightContainer').appendChild(table);
+      } catch (error) {
+        console.error('Error loading flights:', error);
+        document.getElementById('flightContainer').innerHTML = `<div class="error-message"><strong>Error:</strong> ${error.message}</div>`;
+      }
+    }
+
+    // Load flights when page loads
+    document.addEventListener('DOMContentLoaded', loadFlights);
+  </script>
+</body>
+</html>

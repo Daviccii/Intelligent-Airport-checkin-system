@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Members Dashboard - SmartFly Premium</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            border-radius: 20px;
+            padding: 30px 40px;
+            color: white;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .header-title p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-header {
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-header:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .member-stats {
+            display: flex;
+            gap: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-info h3 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .stat-info p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .card-header .btn-link {
+            color: #ff6b6b;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .offers-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .offer-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offer-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .offer-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        .offer-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .offer-description {
+            font-size: 14px;
+            opacity: 0.95;
+            margin-bottom: 15px;
+        }
+
+        .offer-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .offer-code {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .btn-claim {
+            background: white;
+            color: #667eea;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-claim:hover {
+            transform: scale(1.05);
+        }
+
+        .benefits-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .benefit-item:hover {
+            background: #e9ecef;
+        }
+
+        .benefit-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .benefit-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 2px;
+        }
+
+        .benefit-info p {
+            font-size: 12px;
+            color: #718096;
+            margin: 0;
+        }
+
+        .upcoming-flights {
+            display: grid;
+            gap: 15px;
+        }
+
+        .flight-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: border 0.3s;
+        }
+
+        .flight-card:hover {
+            border-color: #ff6b6b;
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .flight-airport {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2d3748;
+        }
+
+        .flight-arrow {
+            color: #a0aec0;
+        }
+
+        .flight-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            color: #718096;
+        }
+
+        .loyalty-card {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            border-radius: 15px;
+            padding: 25px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .loyalty-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .loyalty-tier {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .points-display {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .points-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .progress-bar-custom {
+            background: rgba(255, 255, 255, 0.2);
+            height: 8px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 15px;
+        }
+
+        .progress-fill {
+            background: white;
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #2d3748;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .back-home:hover {
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 992px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-home"><i class="fas fa-arrow-left"></i> Home</a>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-top">
+                <div class="header-title">
+                    <h1><i class="fas fa-crown"></i> Welcome Back, <span id="memberName">Premium Member</span>!</h1>
+                    <p>Member since January 2024 • ID: <strong id="memberId">MB-2024-001</strong></p>
+                </div>
+                <div class="header-actions">
+                    <button class="btn-header" onclick="window.location.href='/'"><i class="fas fa-home"></i> Home</button>
+                    <button class="btn-header" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </div>
+            
+            <div class="member-stats">
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-plane"></i></div>
+                    <div class="stat-info">
+                        <h3 id="totalFlights">12</h3>
+                        <p>Total Flights</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-info">
+                        <h3 id="accountBalance">$500</h3>
+                        <p>Account Balance</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-star"></i></div>
+                    <div class="stat-info">
+                        <h3 id="loyaltyPoints">5,420</h3>
+                        <p>Loyalty Points</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="stat-info">
+                        <h3 id="savings">$1,240</h3>
+                        <p>Total Savings</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Left Column -->
+            <div>
+                <!-- Exclusive Offers -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-gift"></i> Exclusive Member Offers</h2>
+                        <a href="/members-exclusive.html" class="btn-link">View All →</a>
+                    </div>
+                    <div class="offers-grid">
+                        <div class="offer-card" style="background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);">
+                            <span class="offer-badge">Limited Time</span>
+                            <h3 class="offer-title">30% Off International Flights</h3>
+                            <p class="offer-description">Book any international flight and save up to 30% on your journey.</p>
+                            <div class="offer-footer">
+                                <span class="offer-code">MEMBER30</span>
+                                <button class="btn-claim" onclick="claimOffer('MEMBER30')">Claim Now</button>
+                            </div>
+                        </div>
+
+                        <div class="offer-card" style="background: linear-gradient(135deg, #10b981 0%, #34d399 100%);">
+                            <span class="offer-badge">Premium Only</span>
+                            <h3 class="offer-title">Free Lounge Access</h3>
+                            <p class="offer-description">Enjoy complimentary access to all SmartFly premium lounges worldwide.</p>
+                            <div class="offer-footer">
+                                <span class="offer-code">LOUNGE24</span>
+                                <button class="btn-claim" onclick="claimOffer('LOUNGE24')">Activate</button>
+                            </div>
+                        </div>
+
+                        <div class="offer-card">
+                            <span class="offer-badge">New</span>
+                            <h3 class="offer-title">Double Points Weekend</h3>
+                            <p class="offer-description">Earn 2x loyalty points on all bookings this weekend only.</p>
+                            <div class="offer-footer">
+                                <span class="offer-code">2XPOINTS</span>
+                                <button class="btn-claim" onclick="claimOffer('2XPOINTS')">Join Now</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Flights -->
+                <div class="card" style="margin-top: 25px;">
+                    <div class="card-header">
+                        <h2><i class="fas fa-calendar-alt"></i> Your Upcoming Flights</h2>
+                        <a href="/book.html" class="btn-link">Book New →</a>
+                    </div>
+                    <div class="upcoming-flights" id="upcomingFlights">
+                        <div class="flight-card">
+                            <div class="flight-route">
+                                <span class="flight-airport">NYC</span>
+                                <i class="fas fa-plane flight-arrow"></i>
+                                <span class="flight-airport">LON</span>
+                            </div>
+                            <div class="flight-details">
+                                <span><i class="fas fa-calendar"></i> Jan 15, 2026</span>
+                                <span><i class="fas fa-clock"></i> 10:30 AM</span>
+                                <span><i class="fas fa-chair"></i> Seat 12A</span>
+                            </div>
+                        </div>
+
+                        <div class="flight-card">
+                            <div class="flight-route">
+                                <span class="flight-airport">LON</span>
+                                <i class="fas fa-plane flight-arrow"></i>
+                                <span class="flight-airport">DXB</span>
+                            </div>
+                            <div class="flight-details">
+                                <span><i class="fas fa-calendar"></i> Jan 25, 2026</span>
+                                <span><i class="fas fa-clock"></i> 2:45 PM</span>
+                                <span><i class="fas fa-chair"></i> Seat 8C</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div>
+                <!-- Loyalty Points Card -->
+                <div class="loyalty-card">
+                    <div class="loyalty-header">
+                        <h3>Account Balance</h3>
+                        <button onclick="rechargeAccount()" style="background: rgba(255,255,255,0.2); border: none; padding: 8px 16px; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                            <i class="fas fa-plus"></i> Recharge
+                        </button>
+                    </div>
+                    <div class="points-display" id="balanceDisplay">$500</div>
+                    <p class="points-label">Available Balance</p>
+                    <p style="margin-top: 15px; font-size: 13px; opacity: 0.9;">
+                        Use your balance for exclusive offers, upgrades, and premium services
+                    </p>
+                </div>
+
+                <!-- Loyalty Points Card -->
+                <div class="loyalty-card" style="margin-top: 20px;">
+                    <div class="loyalty-header">
+                        <h3>Loyalty Points</h3>
+                        <span class="loyalty-tier"><i class="fas fa-crown"></i> <span id="memberTier">PREMIUM</span></span>
+                    </div>
+                    <div class="points-display" id="pointsDisplay">5,420</div>
+                    <p class="points-label">Available Points</p>
+                    <div class="progress-bar-custom">
+                        <div class="progress-fill" style="width: 54%"></div>
+                    </div>
+                    <p style="margin-top: 10px; font-size: 12px; opacity: 0.9;">4,580 points to Elite status</p>
+                </div>
+
+                <!-- Member Benefits -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2><i class="fas fa-check-circle"></i> Your Benefits</h2>
+                    </div>
+                    <div class="benefits-list">
+                        <div class="benefit-item">
+                            <div class="benefit-icon"><i class="fas fa-plane-departure"></i></div>
+                            <div class="benefit-info">
+                                <h4>Priority Boarding</h4>
+                                <p>Board first on every flight</p>
+                            </div>
+                        </div>
+
+                        <div class="benefit-item">
+                            <div class="benefit-icon"><i class="fas fa-suitcase"></i></div>
+                            <div class="benefit-info">
+                                <h4>Extra Baggage</h4>
+                                <p>+20kg allowance included</p>
+                            </div>
+                        </div>
+
+                        <div class="benefit-item">
+                            <div class="benefit-icon"><i class="fas fa-couch"></i></div>
+                            <div class="benefit-info">
+                                <h4>Lounge Access</h4>
+                                <p>Free entry at 200+ airports</p>
+                            </div>
+                        </div>
+
+                        <div class="benefit-item">
+                            <div class="benefit-icon"><i class="fas fa-headset"></i></div>
+                            <div class="benefit-info">
+                                <h4>24/7 Support</h4>
+                                <p>Dedicated premium line</p>
+                            </div>
+                        </div>
+
+                        <div class="benefit-item">
+                            <div class="benefit-icon"><i class="fas fa-tag"></i></div>
+                            <div class="benefit-info">
+                                <h4>Exclusive Discounts</h4>
+                                <p>Up to 30% off on bookings</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in
+        window.addEventListener('DOMContentLoaded', function(){
+            const memberToken = localStorage.getItem('memberToken');
+            const memberEmail = localStorage.getItem('memberEmail');
+            const memberName = localStorage.getItem('memberName');
+            const memberBalance = localStorage.getItem('memberBalance') || '500';
+            const memberType = localStorage.getItem('memberType') || 'premium';
+            
+            if (!memberToken) {
+                alert('Please login to access the members dashboard');
+                window.location.href = '/members-login.html';
+                return;
+            }
+
+            // Display member info
+            if (memberName) {
+                document.getElementById('memberName').textContent = memberName;
+            } else if (memberEmail) {
+                const name = memberEmail.split('@')[0];
+                document.getElementById('memberName').textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            }
+
+            // Display balance
+            document.getElementById('accountBalance').textContent = '$' + parseFloat(memberBalance).toLocaleString();
+            document.getElementById('balanceDisplay').textContent = '$' + parseFloat(memberBalance).toLocaleString();
+
+            // Display membership tier
+            document.getElementById('memberTier').textContent = memberType.toUpperCase();
+
+            // Animate points
+            animateValue('pointsDisplay', 0, 5420, 1500);
+        });
+
+        function animateValue(id, start, end, duration) {
+            const element = document.getElementById(id);
+            const range = end - start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            let current = start;
+
+            const timer = setInterval(function() {
+                current += increment * 50;
+                if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+                    current = end;
+                    clearInterval(timer);
+                }
+                element.textContent = current.toLocaleString();
+            }, stepTime);
+        }
+
+        function rechargeAccount() {
+            const currentBalance = parseFloat(localStorage.getItem('memberBalance') || '0');
+            const amount = prompt('Enter recharge amount (minimum $50):', '100');
+            
+            if (!amount) return;
+            
+            const rechargeAmount = parseFloat(amount);
+            
+            if (isNaN(rechargeAmount) || rechargeAmount < 50) {
+                alert('Minimum recharge amount is $50');
+                return;
+            }
+
+            // Simulate payment processing
+            if (confirm(`Recharge $${rechargeAmount} to your account?\n\nNote: This is a demo. No actual payment will be processed.`)) {
+                const newBalance = currentBalance + rechargeAmount;
+                localStorage.setItem('memberBalance', newBalance.toString());
+                
+                // Update display
+                document.getElementById('accountBalance').textContent = '$' + newBalance.toLocaleString();
+                document.getElementById('balanceDisplay').textContent = '$' + newBalance.toLocaleString();
+                
+                alert(`✅ Recharge successful!\n\nAmount: $${rechargeAmount}\nNew Balance: $${newBalance}`);
+            }
+        }
+
+        function claimOffer(code) {
+            const currentBalance = parseFloat(localStorage.getItem('memberBalance') || '0');
+            
+            if (currentBalance < 10) {
+                if (confirm('Insufficient balance. Would you like to recharge your account?')) {
+                    rechargeAccount();
+                }
+                return;
+            }
+
+            // Copy code to clipboard
+            navigator.clipboard.writeText(code).then(() => {
+                alert(`✈️ Offer code "${code}" copied to clipboard!\n\nUse this code at checkout to get your exclusive member discount.\n\nNote: Some offers may deduct from your account balance when redeemed.`);
+            }).catch(() => {
+                alert(`Your exclusive code: ${code}\n\nUse this code at checkout!`);
+            });
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                localStorage.removeItem('memberToken');
+                localStorage.removeItem('memberEmail');
+                localStorage.removeItem('memberName');
+                localStorage.removeItem('memberType');
+                // Keep balance for next login
+                alert('You have been logged out successfully');
+                window.location.href = '/';
+            }
+        }
+    </script>
+</body>
+</html>

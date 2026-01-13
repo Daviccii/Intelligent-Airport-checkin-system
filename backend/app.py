@@ -5,6 +5,7 @@ from security_utils import security_manager, sanitize_input, validate_passport, 
 import bcrypt
 from flight_manager import FlightManager
 from activity_tracker import log_activity, get_activities, get_bookings_log, get_checkins_log, get_payments_log
+from booking_endpoints import register_booking_endpoints
 import json
 import os
 from dotenv import load_dotenv
@@ -37,6 +38,13 @@ BOOKINGS_FILE = os.path.join(BASE_DIR, 'bookings.json')
 FLIGHTS_FILE = os.path.join(BASE_DIR, 'flights.json')
 FACE_DIR = os.path.join(BASE_DIR, 'face_store')
 SETTINGS_FILE = os.path.join(BASE_DIR, 'system_config.json')
+STAFF_FILE = os.path.join(BASE_DIR, 'staff.json')
+STAFF_ALLOWED_PERMISSIONS = [
+    'view_passengers',
+    'view_flights',
+    'view_dashboard',
+    'edit_passengers'
+]
 try:
     os.makedirs(FRONTEND_DIR, exist_ok=True)
 except Exception:
@@ -59,6 +67,56 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 
 # ---------------------------------------------------------------------------
+# Helper Functions
+def _load_json_file(filepath, default=None):
+    """Load JSON from file, return default if not found or invalid."""
+    try:
+        if os.path.exists(filepath):
+            with open(filepath, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return default if default is not None else {}
+
+def _save_json_file(filepath, data):
+    """Save JSON to file."""
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        return True
+    except Exception as e:
+        print(f'Error saving to {filepath}: {e}')
+        return False
+
+def _get_session_from_request(request):
+    """Extract session token from request headers or cookies."""
+    token = request.headers.get('X-SESSION') or request.headers.get('Authorization', '')
+    if token.startswith('Bearer '):
+        token = token[7:]
+    if not token:
+        token = request.cookies.get('session', '')
+    return token
+
+def _require_session(request, require_role=None):
+    """Check if user has valid session. Returns session dict or None."""
+    token = _get_session_from_request(request)
+    if not token:
+        return None
+    
+    # Load sessions file
+    sessions = _load_json_file(SESSIONS_FILE, {})
+    session_data = sessions.get(token)
+    
+    if not session_data:
+        return None
+    
+    # Check if role matches (if required)
+    if require_role and session_data.get('role') != require_role:
+        return None
+    
+    return session_data
+
+# ---------------------------------------------------------------------------
 # Helper: minimal admin session check for protected admin HTML pages.
 # Accepts either the session cookie set by the frontend login flow or a Bearer
 # token header, and only controls access to static admin HTML. API routes still
@@ -73,62 +131,269 @@ def _has_admin_session():
                 break
     return bool(token)
 
-@app.route('/api/admin/settings', methods=['GET'])
-def api_get_admin_settings():
+@app.route('/api/admin/settings', methods=['GET', 'POST'])
+def api_admin_settings():
+    """Get or save admin settings"""
     sess = _require_session(request, require_role='admin')
     if not sess:
         return jsonify({'error': 'admin_auth_required'}), 401
-    data = _load_json_file(SETTINGS_FILE, {})
-    # Provide sensible defaults if file empty
-    defaults = {
-        'system_name': 'SmartFly Airlines',
-        'system_email': '',
-        'timezone': 'UTC',
-        'date_format': 'MM/DD/YYYY',
-        'admin_session_ttl': 3600,
-        'passenger_session_ttl': 7200,
-        'enable_mfa': False,
-        'enable_audit_log': True,
-        'email_notifications': True,
-        'sms_notifications': False,
-        'slack_notifications': False,
-        'notify_email': '',
-        'maintenance_mode': False,
-        'maintenance_message': '',
-        'backup_frequency': 'daily'
-    }
-    if not isinstance(data, dict):
-        data = {}
-    merged = {**defaults, **data}
-    return jsonify(merged), 200
+    
+    if request.method == 'GET':
+        data = _load_json_file(SETTINGS_FILE, {})
+        # Provide sensible defaults if file empty
+        defaults = {
+            'system_name': 'SmartFly Airlines',
+            'system_email': '',
+            'timezone': 'UTC',
+            'date_format': 'MM/DD/YYYY',
+            'admin_session_ttl': 3600,
+            'passenger_session_ttl': 7200,
+            'enable_mfa': False,
+            'enable_audit_log': True,
+            'email_notifications': True,
+            'sms_notifications': False,
+            'slack_notifications': False,
+            'notify_email': '',
+            'maintenance_mode': False,
+            'maintenance_message': '',
+            'backup_frequency': 'daily'
+        }
+        if not isinstance(data, dict):
+            data = {}
+        merged = {**defaults, **data}
+        return jsonify(merged), 200
+    
+    elif request.method == 'POST':
+        try:
+            payload = request.get_json(silent=True) or {}
+            if not isinstance(payload, dict):
+                return jsonify({'error': 'invalid_payload'}), 400
+            # Keep only known keys to avoid arbitrary file writes
+            allowed_keys = {
+                'system_name', 'system_email', 'timezone', 'date_format',
+                'admin_session_ttl', 'passenger_session_ttl',
+                'enable_mfa', 'enable_audit_log',
+                'email_notifications', 'sms_notifications', 'slack_notifications',
+                'notify_email', 'maintenance_mode', 'maintenance_message',
+                'backup_frequency'
+            }
+            clean = {k: payload.get(k) for k in allowed_keys if k in payload}
+            existing = _load_json_file(SETTINGS_FILE, {})
+            if not isinstance(existing, dict):
+                existing = {}
+            to_save = {**existing, **clean}
+            _save_json_file(SETTINGS_FILE, to_save)
+            return jsonify({'ok': True}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
-@app.route('/api/admin/settings', methods=['POST'])
-def api_save_admin_settings():
+
+# ---- Staff Management API (admin) ----
+@app.route('/api/admin/test-staff-route', methods=['GET'])
+def test_staff_route():
+    """Test route to verify staff routes are loaded"""
+    return jsonify({'message': 'Staff routes are loaded', 'timestamp': datetime.now(timezone.utc).isoformat()}), 200
+
+@app.route('/api/admin/staff', methods=['GET', 'POST'])
+def api_staff_list():
+    """Get all staff members (GET) or create a new staff member (POST)"""
+    sess = _require_session(request, require_role='admin')
+    if not sess:
+        return jsonify({'error': 'admin_auth_required'}), 401
+    
+    if request.method == 'GET':
+        try:
+            staff_list = _load_json_file(STAFF_FILE, [])
+            if not isinstance(staff_list, list):
+                staff_list = []
+            # Remove password hashes from response
+            clean_staff = []
+            for s in staff_list:
+                clean_s = {k: v for k, v in s.items() if k != 'password_hash'}
+                clean_staff.append(clean_s)
+            return jsonify({'staff': clean_staff}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    elif request.method == 'POST':
+        try:
+            payload = request.get_json(silent=True) or {}
+            
+            # Validate required fields
+            name = payload.get('name', '').strip()
+            username = payload.get('username', '').strip()
+            password = payload.get('password', '').strip()
+            email = payload.get('email', '').strip()
+            permissions = payload.get('permissions', [])
+            
+            if not name or not username or not password:
+                return jsonify({'error': 'missing_required_fields'}), 400
+            
+            if len(password) < 8:
+                return jsonify({'error': 'password_too_short'}), 400
+            
+            # Load existing staff
+            staff_list = _load_json_file(STAFF_FILE, [])
+            if not isinstance(staff_list, list):
+                staff_list = []
+            
+            # Check if username already exists
+            if any(s.get('username') == username for s in staff_list):
+                return jsonify({'error': 'username_exists'}), 409
+            
+            # Normalize and validate permissions
+            if isinstance(permissions, list):
+                permissions = [p for p in permissions if p in STAFF_ALLOWED_PERMISSIONS]
+            else:
+                permissions = []
+            
+            # Hash password
+            password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            
+            # Create staff record
+            staff_record = {
+                'username': username,
+                'name': name,
+                'email': email or None,
+                'password_hash': password_hash,
+                'role': 'staff',
+                'system_id': secrets.token_hex(8),
+                'permissions': permissions,
+                'created_at': datetime.now(timezone.utc).isoformat(),
+                'updated_at': datetime.now(timezone.utc).isoformat()
+            }
+            
+            staff_list.append(staff_record)
+            _save_json_file(STAFF_FILE, staff_list)
+            
+            # Return staff record without password
+            response = {k: v for k, v in staff_record.items() if k != 'password_hash'}
+            return jsonify({'ok': True, 'staff': response}), 201
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/staff/<username>', methods=['DELETE', 'PUT'])
+def api_staff_detail(username):
+    """Delete a staff member (DELETE) or update staff (PUT)"""
+    sess = _require_session(request, require_role='admin')
+    if not sess:
+        return jsonify({'error': 'admin_auth_required'}), 401
+    
+    if request.method == 'DELETE':
+        try:
+            staff_list = _load_json_file(STAFF_FILE, [])
+            if not isinstance(staff_list, list):
+                staff_list = []
+            
+            # Find and remove staff
+            original_len = len(staff_list)
+            staff_list = [s for s in staff_list if s.get('username') != username]
+            
+            if len(staff_list) == original_len:
+                return jsonify({'error': 'staff_not_found'}), 404
+            
+            _save_json_file(STAFF_FILE, staff_list)
+            return jsonify({'ok': True}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    # PUT method will be handled below for password/permissions updates
+
+@app.route('/api/admin/staff/<username>/password', methods=['PUT'])
+def api_reset_staff_password(username):
+    """Reset a staff member's password"""
     sess = _require_session(request, require_role='admin')
     if not sess:
         return jsonify({'error': 'admin_auth_required'}), 401
     try:
         payload = request.get_json(silent=True) or {}
-        if not isinstance(payload, dict):
-            return jsonify({'error': 'invalid_payload'}), 400
-        # Keep only known keys to avoid arbitrary file writes
-        allowed_keys = {
-            'system_name', 'system_email', 'timezone', 'date_format',
-            'admin_session_ttl', 'passenger_session_ttl',
-            'enable_mfa', 'enable_audit_log',
-            'email_notifications', 'sms_notifications', 'slack_notifications',
-            'notify_email', 'maintenance_mode', 'maintenance_message',
-            'backup_frequency'
-        }
-        clean = {k: payload.get(k) for k in allowed_keys if k in payload}
-        existing = _load_json_file(SETTINGS_FILE, {})
-        if not isinstance(existing, dict):
-            existing = {}
-        to_save = {**existing, **clean}
-        _save_json_file(SETTINGS_FILE, to_save)
+        password = payload.get('password', '').strip()
+        
+        if not password or len(password) < 8:
+            return jsonify({'error': 'invalid_password'}), 400
+        
+        staff_list = _load_json_file(STAFF_FILE, [])
+        if not isinstance(staff_list, list):
+            staff_list = []
+        
+        # Find and update staff
+        found = False
+        for staff in staff_list:
+            if staff.get('username') == username:
+                password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                staff['password_hash'] = password_hash
+                staff['updated_at'] = datetime.now(timezone.utc).isoformat()
+                found = True
+                break
+        
+        if not found:
+            return jsonify({'error': 'staff_not_found'}), 404
+        
+        _save_json_file(STAFF_FILE, staff_list)
         return jsonify({'ok': True}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/api/admin/staff/<username>/permissions', methods=['PUT'])
+def api_update_staff_permissions(username):
+    """Update a staff member's permissions"""
+    sess = _require_session(request, require_role='admin')
+    if not sess:
+        return jsonify({'error': 'admin_auth_required'}), 401
+    try:
+        payload = request.get_json(silent=True) or {}
+        permissions = payload.get('permissions', [])
+        
+        # Validate and normalize permissions
+        if isinstance(permissions, list):
+            permissions = [p for p in permissions if p in STAFF_ALLOWED_PERMISSIONS]
+        else:
+            permissions = []
+        
+        staff_list = _load_json_file(STAFF_FILE, [])
+        if not isinstance(staff_list, list):
+            staff_list = []
+        
+        # Find and update staff
+        found = False
+        for staff in staff_list:
+            if staff.get('username') == username:
+                staff['permissions'] = permissions
+                staff['updated_at'] = datetime.now(timezone.utc).isoformat()
+                found = True
+                break
+        
+        if not found:
+            return jsonify({'error': 'staff_not_found'}), 404
+        
+        _save_json_file(STAFF_FILE, staff_list)
+        return jsonify({'ok': True}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/staff/me', methods=['GET'])
+def api_staff_profile():
+    """Get current staff member's profile"""
+    sess = _require_session(request, require_role='staff')
+    if not sess:
+        return jsonify({'error': 'staff_auth_required'}), 401
+    try:
+        username = sess.get('username')
+        staff_list = _load_json_file(STAFF_FILE, [])
+        if not isinstance(staff_list, list):
+            staff_list = []
+        
+        # Find staff by username
+        for staff in staff_list:
+            if staff.get('username') == username:
+                # Return staff data without password
+                response = {k: v for k, v in staff.items() if k != 'password_hash'}
+                return jsonify({'staff': response}), 200
+        
+        return jsonify({'error': 'staff_not_found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 
 
 # Basic page routes for static frontend
@@ -282,13 +547,14 @@ def _load_sessions():
 def _save_sessions(items):
     _save_json_file(SESSIONS_FILE, items or [])
 
-def _create_session(role, passport=None, ttl_seconds=3600.0):
+def _create_session(role, passport=None, ttl_seconds=3600.0, user_id=None):
     token = secrets.token_urlsafe(24)
     exp = (datetime.utcnow() + timedelta(seconds=float(ttl_seconds))).isoformat() + 'Z'
     sess = {
         'token': token,
         'role': role,
         'passport': passport,
+        'user_id': user_id,
         'expires': exp
     }
     items = _load_sessions()
@@ -398,6 +664,40 @@ def _load_admin_users():
             return json.load(f)
     except Exception:
         return {}
+
+
+def _load_staff():
+    try:
+        data = _load_json_file(STAFF_FILE, [])
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def _save_staff(items):
+    try:
+        _save_json_file(STAFF_FILE, items or [])
+    except Exception:
+        pass
+
+
+def _find_staff(identifier):
+    """Find staff by username or system_id (case-sensitive)."""
+    staff = _load_staff()
+    for s in staff:
+        if s.get('username') == identifier or s.get('system_id') == identifier:
+            return s
+    return None
+
+
+def _normalize_permissions(perms):
+    if not isinstance(perms, list):
+        return []
+    clean = []
+    for p in perms:
+        if p in STAFF_ALLOWED_PERMISSIONS and p not in clean:
+            clean.append(p)
+    return clean
 
 
 def _load_airports_list():
@@ -920,25 +1220,9 @@ def view_passengers():
 def find_duplicate(passport, flight):
     return any(p.get("passport") == passport and p.get("flight") == flight for p in passengers)
 
-app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
-# register airports route (defined earlier in the file)
-try:
-    app.add_url_rule('/api/airports', 'api_airports', api_airports, methods=['GET'])
-except Exception:
-    # If the function isn't defined yet for some reason, we'll rely on module load order.
-    pass
-
-@app.route("/api/passengers", methods=["GET", "DELETE"])
-def api_get_passengers():
-    if request.method == "GET":
-        return jsonify(passengers)
-    
-    if request.method == "DELETE":
-        # Clear all passengers
-        passengers.clear()
-        save_passengers()
-        return jsonify({"message": "All passengers deleted successfully"}), 200
-
+# NOTE: The Flask app instance is created earlier in the file (line 64), don't recreate it here!
+# Recreating the app destroys all previously registered routes
+# The /api/passengers route is already defined at line 499
 
 @app.route('/api/admin/passengers', methods=['POST','PUT','DELETE'])
 def api_admin_passengers():
@@ -3518,7 +3802,11 @@ def admin_files(filename):
     # Allow common admin HTML pages; otherwise redirect HTML requests to the canonical dashboard
     # This keeps static assets (css/js/png/svg/woff, etc.) served directly while preventing stray HTML pages.
     allowed_html = {
-        'dashboard.html', 'flights.html', 'bookings.html', 'users.html', 'reports.html', 'settings.html', 'merged-dashboard.html'
+        # Core admin pages we intentionally expose
+        'dashboard.html', 'flights.html', 'bookings.html', 'users.html', 'reports.html', 'settings.html',
+        'merged-dashboard.html',
+        # Navigation targets in the admin UI
+        'staff.html', 'active-flights.html', 'checkins.html', 'payments.html', 'members.html'
     }
     lower = filename.lower()
     if lower.endswith('.html'):
@@ -3890,6 +4178,27 @@ def admin_payments_page():
     if not _has_admin_session():
         return redirect('/admin-login.html')
     return send_from_directory(ADMIN_DIR, 'payments.html', mimetype='text/html')
+
+
+@app.route('/admin/active-flights.html')
+def admin_active_flights_page():
+    if not _has_admin_session():
+        return redirect('/admin-login.html')
+    return send_from_directory(ADMIN_DIR, 'active-flights.html', mimetype='text/html')
+
+
+@app.route('/admin/members.html')
+def admin_members_page():
+    if not _has_admin_session():
+        return redirect('/admin-login.html')
+    return send_from_directory(ADMIN_DIR, 'members.html', mimetype='text/html')
+
+
+@app.route('/admin/load-members.html')
+def admin_load_members_page():
+    if not _has_admin_session():
+        return redirect('/admin-login.html')
+    return send_from_directory(ADMIN_DIR, 'load-members.html', mimetype='text/html')
 
 
 @app.route('/assets/<path:path>')
@@ -4480,14 +4789,49 @@ def api_get_users():
 @app.after_request
 def add_cors(resp):
     resp.headers["Access-Control-Allow-Origin"] = "*"
-    resp.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
-    resp.headers["Access-Control-Allow-Methods"] = "GET,POST,PATCH,DELETE,OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization,X-SESSION"
+    resp.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,PATCH,DELETE,OPTIONS"
     return resp
 
 # Serve the SPA index at '/'
 @app.route('/')
 def _serve_index():
     return send_from_directory(FRONTEND_DIR, 'index.html')
+
+# Serve admin CSS and JS files
+@app.route('/admin-dashboard.css')
+def serve_admin_css():
+    """Serve admin dashboard CSS"""
+    return send_from_directory(FRONTEND_DIR, 'admin-dashboard.css')
+
+@app.route('/admin-dashboard.js')
+def serve_admin_js():
+    """Serve admin dashboard JS"""
+    return send_from_directory(FRONTEND_DIR, 'admin-dashboard.js')
+
+# Serve admin dashboard and related files
+@app.route('/admin/dashboard.html')
+def admin_dashboard():
+    """Serve admin dashboard"""
+    try:
+        return send_from_directory(ADMIN_DIR, 'dashboard.html')
+    except Exception as e:
+        return f"Error loading dashboard: {str(e)}", 500
+
+@app.route('/admin/<path:filename>')
+def serve_admin(filename):
+    """Serve admin files from admin folder"""
+    try:
+        admin_path = os.path.join(ADMIN_DIR, filename)
+        if os.path.exists(admin_path):
+            return send_from_directory(ADMIN_DIR, filename)
+        # Fallback for files in root frontend directory (like admin-dashboard.css)
+        root_path = os.path.join(FRONTEND_DIR, filename)
+        if os.path.exists(root_path):
+            return send_from_directory(FRONTEND_DIR, filename)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+    return "File not found", 404
 
 if __name__ == "__main__":
     # Load persisted passengers into memory when starting the server
@@ -4502,67 +4846,3 @@ if __name__ == "__main__":
         pass
 
     app.run(debug=True, host="127.0.0.1", port=5000)
-
-
-# ============================================================
-# ACTIVITY TRACKING ENDPOINTS
-# ============================================================
-
-@app.route('/api/activities', methods=['GET'])
-def api_get_activities():
-    """Get all recorded activities (admin only)"""
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'admin_auth_required'}), 401
-    
-    activity_type = request.args.get('type')  # Optional filter: booking, payment, checkin, flight_status
-    limit = int(request.args.get('limit', 100))
-    
-    activities = get_activities(activity_type, limit)
-    return jsonify({'activities': activities, 'total': len(activities)}), 200
-
-@app.route('/api/activities/bookings', methods=['GET'])
-def api_get_bookings_activities():
-    """Get all booking activities (admin only)"""
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'admin_auth_required'}), 401
-    
-    bookings = get_bookings_log()
-    return jsonify({'bookings': bookings, 'total': len(bookings)}), 200
-
-@app.route('/api/activities/checkins', methods=['GET'])
-def api_get_checkins_activities():
-    """Get all check-in activities (admin only)"""
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'admin_auth_required'}), 401
-    
-    checkins = get_checkins_log()
-    return jsonify({'checkins': checkins, 'total': len(checkins)}), 200
-
-@app.route('/api/activities/payments', methods=['GET'])
-def api_get_payments_activities():
-    """Get all payment activities (admin only)"""
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'admin_auth_required'}), 401
-    
-    payments = get_payments_log()
-    return jsonify({'payments': payments, 'total': len(payments)}), 200
-
-@app.route('/api/activities/log', methods=['POST'])
-def api_log_activity():
-    """Log a new activity (called from frontend)"""
-    data = request.get_json() or {}
-    activity_type = data.get('type')
-    activity_data = data.get('data', {})
-    
-    if not activity_type:
-        return jsonify({'error': 'activity_type_required'}), 400
-    
-    logged = log_activity(activity_type, activity_data)
-    if logged:
-        return jsonify({'status': 'ok', 'activity': logged}), 201
-    return jsonify({'error': 'failed_to_log'}), 500
-# ...existing code...

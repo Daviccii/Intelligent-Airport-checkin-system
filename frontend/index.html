@@ -406,6 +406,8 @@
                     }
                 }catch(e){ console.debug('[heroTabs] init failed', e); }
             })();
+            
+
         </script>
     <style>
         /* Hero Section */
@@ -1944,8 +1946,14 @@
                             if (blurTimer) { clearTimeout(blurTimer); blurTimer = null; }
                             container.classList.add('active');
                         });
-                        input.addEventListener('blur', function(){
-                            // Do not hide on blur to keep dropdown visible
+                        input.addEventListener('blur', function(e){
+                            // Keep dropdown open to allow selection - use mousedown in container to prevent close
+                            // Only close if clicking completely outside
+                            setTimeout(() => {
+                                if (!container.contains(document.activeElement) && document.activeElement !== input) {
+                                    container.classList.remove('active');
+                                }
+                            }, 200);
                         });
 
                         // Keyboard navigation
@@ -2023,7 +2031,6 @@
                         
                         // Do not auto-hide on outside click to keep dropdown mandatory/visible
                     }
-
                     function attachAutocomplete(inputEl, suggEl){
                         if (!inputEl || !suggEl) {
                             console.error('[attachAutocomplete] Missing elements:', {inputEl, suggEl});
@@ -2031,36 +2038,47 @@
                         }
                         console.log('[attachAutocomplete] Attached to:', inputEl.id, 'with container:', suggEl.id);
                         let active = -1;
-                        let userInteracted = false;
                         function hide(){ suggEl.classList.remove('active'); active = -1; }
+                        function show(){ suggEl.classList.add('active'); }
+                        
                         function showList(q){ 
-                            if (!userInteracted) return;
                             console.log('[showList] Query:', q, 'Airports:', airports.length);
                             const items = filterAirports(q); 
                             console.log('[showList] Filtered items:', items.length);
-                            renderSuggestions(suggEl, items); 
+                            renderSuggestions(suggEl, items);
+                            show();
                             active = -1; 
                         }
 
-                        // Show suggestions on focus only after user has interacted
+                        // Show suggestions on focus
                         inputEl.addEventListener('focus', function(){ 
-                            userInteracted = true;
                             console.log('[focus] Input focused:', inputEl.id);
                             const q = (inputEl.value||'').trim();
                             showList(q);
                         });
 
-                        inputEl.addEventListener('input', debounce(function(){ try{ clearFieldError(inputEl); }catch(e){} const q = (inputEl.value||'').trim(); if (!q){ showList(q); return; } showList(q); // when suggestions shown, clear any existing error
-                            try{ clearFieldError(inputEl); }catch(e){} }, 180));
+                        inputEl.addEventListener('input', debounce(function(){ 
+                            const q = (inputEl.value||'').trim(); 
+                            showList(q);
+                        }, 180));
 
-                        inputEl.addEventListener('keydown', function(e){ if (!suggEl.classList.contains('active')) return; const items = Array.from(suggEl.querySelectorAll('.airport-suggestion-item')); if (!items.length) return;
+                        inputEl.addEventListener('keydown', function(e){ 
+                            if (!suggEl.classList.contains('active')) return; 
+                            const items = Array.from(suggEl.querySelectorAll('.airport-suggestion-item')); 
+                            if (!items.length) return;
                             if (e.key === 'ArrowDown'){ e.preventDefault(); active = Math.min(active+1, items.length-1); updateActive(); }
                             else if (e.key === 'ArrowUp'){ e.preventDefault(); active = Math.max(active-1, 0); updateActive(); }
                             else if (e.key === 'Enter'){ e.preventDefault(); const sel = (active === -1) ? items[0] : items[active]; if (sel) selectItem(sel); }
                             else if (e.key === 'Escape'){ hide(); }
                         });
 
-                        function updateActive(){ const items = Array.from(suggEl.querySelectorAll('.airport-suggestion-item')); items.forEach((it,i)=>{ if (i===active) it.setAttribute('aria-selected','true'); else it.removeAttribute('aria-selected'); }); }
+                        function updateActive(){ 
+                            const items = Array.from(suggEl.querySelectorAll('.airport-suggestion-item')); 
+                            items.forEach((it,i)=>{ 
+                                if (i===active) it.setAttribute('aria-selected','true'); 
+                                else it.removeAttribute('aria-selected'); 
+                            }); 
+                        }
 
                         function selectItem(itemEl){ 
                             const code = itemEl && itemEl.dataset && itemEl.dataset.iata; 
@@ -2071,21 +2089,19 @@
                                 inputEl.value = (match.city ? match.city + ' (' + match.code + ')' : (match.code||'').toUpperCase()); 
                                 inputEl.dataset.selected = 'true'; 
                                 inputEl.dataset.iata = match.code || ''; 
-                                clearFieldError(inputEl); 
                             }catch(e){} 
-                            hide(); 
+                            
+                            // Keep dropdown visible
+                            show();
                             
                             // Check if both airports are now selected and different
-                            const fromValid = validateFromToDifferent();
                             checkBothAirportsSelected();
                             
                             // Auto-navigate to next field
                             if (inputEl.id === 'from') {
-                                // Move to 'to' field after selecting 'from'
                                 const toInput = document.getElementById('to');
                                 if (toInput) setTimeout(() => toInput.focus(), 100);
-                            } else if (inputEl.id === 'to' && fromValid) {
-                                // If both are selected and valid, focus on date
+                            } else if (inputEl.id === 'to') {
                                 setTimeout(() => {
                                     const departInput = document.getElementById('departDate');
                                     if (departInput) departInput.focus();
@@ -2093,18 +2109,22 @@
                             }
                         }
 
-                        // mouse selection
-                        suggEl.addEventListener('mousedown', function(ev){ const card = ev.target.closest && ev.target.closest('.airport-suggestion-item'); if (card){ ev.preventDefault(); selectItem(card); } });
+                        // Handle mouse selection
+                        suggEl.addEventListener('mousedown', function(ev){ 
+                            const card = ev.target.closest && ev.target.closest('.airport-suggestion-item'); 
+                            if (card){ 
+                                ev.preventDefault(); 
+                                selectItem(card); 
+                            } 
+                        });
 
-                        // Keep suggestions visible; no blur/outside auto-hide
-                        let blurTimer2 = null;
-                        inputEl.addEventListener('focus', function(){ if (blurTimer2) { clearTimeout(blurTimer2); blurTimer2 = null; } showList(inputEl.value||''); });
-                        suggEl.addEventListener('mousedown', function(ev){ if (blurTimer2) { clearTimeout(blurTimer2); blurTimer2 = null; } ev.preventDefault(); showList(inputEl.value||''); });
-                        inputEl.addEventListener('blur', function(){ /* intentionally no hide to keep dropdown open */ });
-                        document.addEventListener('mousedown', function(ev){ if (inputEl.contains(ev.target) || suggEl.contains(ev.target)) return; /* no auto-hide */ });
+                        // Hide only when clicking outside
+                        document.addEventListener('mousedown', function(ev){ 
+                            if (!inputEl.contains(ev.target) && !suggEl.contains(ev.target)) {
+                                hide();
+                            }
+                        });
                     }
-
-                    // Initialize autocomplete and wire handlers
                     const fromEl = document.getElementById('from'); const toEl = document.getElementById('to');
                     if (fromEl && toEl){
                         // Load airports and attach autocomplete
@@ -2134,9 +2154,8 @@
                             updateFlightPrice();
                         });
                         
-                        // keep validation on blur and form submit
-                        fromEl.addEventListener('blur', function(){ validateInputEl(fromEl); });
-                        toEl.addEventListener('blur', function(){ validateInputEl(toEl); });
+                        // Don't validate on blur - only on form submit to prevent interfering with dropdown
+                        // Validation will happen in form submission handler instead
                         
                         // Handle trip type changes
                         const tripTypeSelect = document.getElementById('tripType');
@@ -5383,7 +5402,18 @@
                     <a href="/flight-results.html">Flights</a>
                     <a href="/checkin.html">Check-In</a>
                     <a href="/lookup.html">My Bookings</a>
-                    <a href="/membership.html">Membership</a>
+                    <div class="membership-dropdown" style="position:relative;margin-top:8px">
+                        <a href="#" id="footerMembershipBtn" style="display:flex;align-items:center;gap:6px;cursor:pointer;color:#4a90e2;font-weight:600;text-decoration:none">
+                            <i class="fas fa-crown"></i> Membership <i class="fas fa-chevron-down" style="font-size:10px"></i>
+                        </a>
+                        <div id="footerMembershipMenu" style="display:none;position:fixed;top:auto;bottom:auto;left:auto;right:auto;background:white;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,0.15);min-width:220px;z-index:99999;border:1px solid #e0e0e0">
+                            <a href="/members-login.html" style="display:block;padding:12px 16px;color:#333;text-decoration:none;border-bottom:1px solid #f0f0f0;transition:background 0.2s"><i class="fas fa-sign-in-alt" style="margin-right:8px;color:#ff6b6b"></i> Member Login</a>
+                            <a href="/members-register.html" style="display:block;padding:12px 16px;color:#333;text-decoration:none;border-bottom:1px solid #f0f0f0;transition:background 0.2s"><i class="fas fa-user-plus" style="margin-right:8px;color:#10b981"></i> Register Now</a>
+                            <a href="/membership.html" style="display:block;padding:12px 16px;color:#333;text-decoration:none;border-bottom:1px solid #f0f0f0;transition:background 0.2s"><i class="fas fa-star" style="margin-right:8px;color:#ffd700"></i> View Plans</a>
+                            <a href="/members-exclusive.html" style="display:block;padding:12px 16px;color:#333;text-decoration:none;border-bottom:1px solid #f0f0f0;transition:background 0.2s"><i class="fas fa-gift" style="margin-right:8px;color:#ff6b6b"></i> Exclusive Offers</a>
+                            <a href="/members-dashboard.html" style="display:block;padding:12px 16px;color:#333;text-decoration:none;transition:background 0.2s"><i class="fas fa-th-large" style="margin-right:8px;color:#667eea"></i> My Dashboard</a>
+                        </div>
+                    </div>
                     <a href="/help.html">Help</a>
                 </nav>
                 <div class="footer-newsletter">
@@ -5427,6 +5457,57 @@
                         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate(); }
                     });
                 });
+                
+                // Footer Membership dropdown functionality
+                const footerMembershipBtn = document.getElementById('footerMembershipBtn');
+                const footerMembershipMenu = document.getElementById('footerMembershipMenu');
+                
+                if (footerMembershipBtn && footerMembershipMenu){
+                    function positionMenu() {
+                        const btnRect = footerMembershipBtn.getBoundingClientRect();
+                        footerMembershipMenu.style.position = 'fixed';
+                        footerMembershipMenu.style.top = (btnRect.bottom + 8) + 'px';
+                        footerMembershipMenu.style.left = (btnRect.left - 10) + 'px';
+                        footerMembershipMenu.style.right = 'auto';
+                        footerMembershipMenu.style.bottom = 'auto';
+                    }
+                    
+                    footerMembershipBtn.addEventListener('click', function(e){
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const isOpen = footerMembershipMenu.style.display === 'block';
+                        if (!isOpen) {
+                            positionMenu();
+                        }
+                        footerMembershipMenu.style.display = isOpen ? 'none' : 'block';
+                    });
+                    
+                    // Close dropdown when clicking outside
+                    document.addEventListener('click', function(e){
+                        if (!footerMembershipBtn.contains(e.target) && !footerMembershipMenu.contains(e.target)){
+                            footerMembershipMenu.style.display = 'none';
+                        }
+                    });
+                    
+                    // Reposition on scroll
+                    window.addEventListener('scroll', function(){
+                        if (footerMembershipMenu.style.display === 'block') {
+                            positionMenu();
+                        }
+                    });
+                    
+                    // Hover effects for menu items
+                    const menuItems = footerMembershipMenu.querySelectorAll('a');
+                    menuItems.forEach(item => {
+                        item.addEventListener('mouseenter', function(){
+                            this.style.background = '#f8f9fa';
+                        });
+                        item.addEventListener('mouseleave', function(){
+                            this.style.background = '';
+                        });
+                    });
+                }
+                
                 // footer year
                 const yc = document.getElementById('yearCopy');
                 if (yc) yc.textContent = new Date().getFullYear();

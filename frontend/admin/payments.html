@@ -3,206 +3,745 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Payments — SmartFly Airlines Admin</title>
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <title>Payments Management — SmartFly Airlines</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="dashboard.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.min.js"></script>
   <style>
-    body { display: flex; }
+    * { font-family: 'Inter', sans-serif; }
+    body { background: #f0f4f8; color: #0f172a; }
+    
+    /* Navigation */
+    .top-nav { background: white; border-bottom: 1px solid #e2e8f0; padding: 16px 0; }
+    .top-nav-content { max-width: 1400px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .top-nav-title { font-size: 1.3rem; font-weight: 700; color: #0f172a; }
+    .top-nav-title i { color: #3b82f6; margin-right: 8px; }
+    
+    /* Main Container */
+    .main-container { max-width: 1400px; margin: 0 auto; padding: 32px 24px; }
+    
+    /* Hero */
+    .hero { margin-bottom: 40px; }
+    .hero h1 { font-size: 2.2rem; font-weight: 800; color: #0f172a; margin-bottom: 8px; }
+    .hero p { color: #64748b; font-size: 1rem; margin: 0; }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+    
+    .stat-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      transition: all 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .stat-card:hover {
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    
+    .stat-card.blue { border-top: 4px solid #3b82f6; }
+    .stat-card.green { border-top: 4px solid #10b981; }
+    .stat-card.amber { border-top: 4px solid #f59e0b; }
+    .stat-card.red { border-top: 4px solid #ef4444; }
+    
+    .stat-info { flex: 1; }
+    .stat-label { font-size: 0.9rem; color: #64748b; margin-bottom: 6px; font-weight: 500; }
+    .stat-value { font-size: 2rem; font-weight: 800; color: #0f172a; }
+    .stat-subtitle { font-size: 0.85rem; color: #94a3b8; margin-top: 4px; }
+    .stat-icon { font-size: 2.5rem; color: #cbd5e1; margin-left: 12px; }
+    
+    /* Charts */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 24px;
+      margin-bottom: 40px;
+    }
+    
+    .card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    .card h3 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #0f172a;
+    }
+    
+    .card-desc {
+      color: #64748b;
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+    }
+    
+    .chart-wrapper {
+      position: relative;
+      height: 300px;
+    }
+    
+    .charts-grid .card:last-child {
+      grid-column: 1 / -1;
+    }
+    
+    /* Filters */
+    .filters {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .filters input,
+    .filters select {
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      background: white;
+      color: #0f172a;
+      transition: all 0.3s ease;
+    }
+    
+    .filters input:focus,
+    .filters select:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      outline: none;
+    }
+    
+    /* Buttons */
+    .btn-primary { background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-primary:hover { background: #2563eb; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); color: white; }
+    
+    .btn-secondary { background: #e2e8f0; color: #0f172a; border: none; padding: 8px 16px; border-radius: 10px; font-weight: 600; cursor: pointer; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+    .btn-secondary:hover { background: #cbd5e1; }
+    
+    /* Transactions */
+    .transaction-row {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      padding: 18px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto;
+      gap: 16px;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+    
+    .transaction-row:hover {
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
+      border-color: #bfdbfe;
+    }
+    
+    .transaction-col { display: flex; flex-direction: column; }
+    .transaction-col-label { font-size: 0.85rem; color: #94a3b8; margin-bottom: 4px; }
+    .transaction-col-value { font-weight: 600; color: #0f172a; }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .status-completed { background: #d1e7dd; color: #0f5132; }
+    .status-pending { background: #fff3cd; color: #664d03; }
+    .status-failed { background: #f8d7da; color: #842029; }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #94a3b8;
+    }
+    
+    .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: 0.5; }
+    .empty-state p { margin: 0; font-size: 1rem; }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .transaction-row { grid-template-columns: 1fr; }
+      .stat-card { flex-direction: column; }
+      .stat-icon { margin-left: 0; margin-top: 12px; }
+      .charts-grid { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.8rem; }
+    }
   </style>
 </head>
 <body>
-  <div class="admin-layout d-flex w-100">
-    <!-- Sidebar -->
-    <aside class="sidebar d-flex flex-column p-3">
-      <div class="sidebar-brand mb-4">
-        <div class="brand-icon mb-3">
-          <i class="fas fa-plane-departure"></i>
+  <!-- Navigation -->
+  <nav class="top-nav">
+    <div class="top-nav-content">
+      <div class="top-nav-title">
+        <i class="fas fa-credit-card"></i> Payments Management
+      </div>
+      <div>
+        <a href="dashboard.html" style="color: #64748b; text-decoration: none;">
+          <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-container">
+    
+    <!-- Hero -->
+    <div class="hero">
+      <h1>Payment Analytics & Transactions</h1>
+      <p>Monitor all payment activities, revenue trends, and transaction statuses in real-time.</p>
+    </div>
+
+    <!-- Key Metrics -->
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-info">
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value" id="statTotalRevenue">$0</div>
+          <div class="stat-subtitle">All-time earnings</div>
         </div>
-        <div class="brand-text">
-          <div class="fw-bold">SmartFly</div>
-          <div class="small">Admin Panel</div>
-        </div>
+        <div class="stat-icon"><i class="fas fa-dollar-sign"></i></div>
       </div>
       
-      <div class="admin-profile mb-4 pb-4 border-bottom border-secondary border-opacity-25">
-        <div class="d-flex align-items-center gap-3">
-          <div class="profile-avatar">RG</div>
-          <div>
-            <div class="fw-semibold small">Riley Gabi</div>
-            <div class="text-muted" style="font-size: 0.75rem;">Administrator</div>
-          </div>
+      <div class="stat-card green">
+        <div class="stat-info">
+          <div class="stat-label">Completed</div>
+          <div class="stat-value" id="statCompleted">0</div>
+          <div class="stat-subtitle">Successful payments</div>
         </div>
+        <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
       </div>
       
-      <nav class="nav flex-column sidebar-nav flex-grow-1">
-        <a class="nav-link" href="dashboard.html">
-          <i class="fas fa-chart-line"></i>
-          <span>Dashboard</span>
-        </a>
-        <a class="nav-link" href="flights.html">
-          <i class="fas fa-plane"></i>
-          <span>Flights</span>
-        </a>
-        <a class="nav-link" href="bookings.html">
-          <i class="fas fa-calendar-check"></i>
-          <span>Bookings</span>
-        </a>
-        <a class="nav-link" href="checkins.html">
-          <i class="fas fa-passport"></i>
-          <span>Check-Ins</span>
-        </a>
-        <a class="nav-link active" href="payments.html">
-          <i class="fas fa-credit-card"></i>
-          <span>Payments</span>
-        </a>
-        <a class="nav-link" href="reports.html">
-          <i class="fas fa-chart-bar"></i>
-          <span>Reports</span>
-        </a>
-        <a class="nav-link" href="settings.html">
-          <i class="fas fa-cog"></i>
-          <span>Settings</span>
-        </a>
-      </nav>
+      <div class="stat-card amber">
+        <div class="stat-info">
+          <div class="stat-label">Pending</div>
+          <div class="stat-value" id="statPendingPayments">0</div>
+          <div class="stat-subtitle">Awaiting settlement</div>
+        </div>
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+      </div>
       
-      <div class="pt-3 border-top border-secondary border-opacity-25">
-        <button class="btn btn-outline-light w-100 btn-sm" onclick="logout()">
-          <i class="fas fa-sign-out-alt"></i> Log out
-        </button>
-      </div>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="main-content flex-grow-1">
-      <div class="p-4">
-        <div class="dashboard-header mb-4">
-          <div class="row align-items-center">
-            <div class="col">
-              <h1 class="display-5 fw-bold">
-                <span class="greeting-text">💳 Payments Management</span>
-              </h1>
-              <p class="text-muted mb-0">View and manage all payment transactions</p>
-            </div>
-          </div>
+      <div class="stat-card red">
+        <div class="stat-info">
+          <div class="stat-label">Failed</div>
+          <div class="stat-value" id="statFailed">0</div>
+          <div class="stat-subtitle">Requires attention</div>
         </div>
+        <div class="stat-icon"><i class="fas fa-times-circle"></i></div>
+      </div>
+    </div>
 
-        <div class="card shadow-sm border-0 mb-4">
-          <div class="card-header bg-white border-bottom">
-            <div class="d-flex justify-content-between align-items-center">
-              <h5 class="mb-0 fw-semibold">Recent Transactions</h5>
-              <button class="btn btn-sm btn-outline-secondary" onclick="location.reload()">
-                <i class="fas fa-sync"></i> Refresh
-              </button>
-            </div>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                  <tr>
-                    <th>Transaction ID</th>
-                    <th>Passenger</th>
-                    <th>Booking</th>
-                    <th>Amount</th>
-                    <th>Method</th>
-                    <th>Status</th>
-                    <th>Date</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="paymentsTable">
-                  <tr>
-                    <td colspan="8" class="text-center text-muted py-4">Loading payments...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+    <!-- Charts -->
+    <div class="charts-grid">
+      <div class="card">
+        <h3>Revenue Trend</h3>
+        <p class="card-desc">Monthly revenue over the past 12 months</p>
+        <div class="chart-wrapper">
+          <canvas id="revenueChart"></canvas>
         </div>
       </div>
-    </main>
-  </div>
 
+      <div class="card">
+        <h3>Payment Status</h3>
+        <p class="card-desc">Distribution of payment statuses</p>
+        <div class="chart-wrapper">
+          <canvas id="statusChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Payment Methods Usage</h3>
+        <p class="card-desc">Transaction volume by payment method</p>
+        <div class="chart-wrapper">
+          <canvas id="methodChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions Ledger -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+        <div>
+          <h3 style="margin: 0 0 8px;">Transaction Ledger</h3>
+          <p class="card-desc" style="margin: 0;">Complete record of all payments processed</p>
+        </div>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <button class="btn-primary" onclick="loadPaymentData()">
+            <i class="fas fa-sync-alt"></i> Refresh
+          </button>
+          <button class="btn-secondary" onclick="exportPayments()">
+            <i class="fas fa-download"></i> Export CSV
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <input 
+          type="text" 
+          id="searchTransaction" 
+          placeholder="🔍 Search by passenger, flight, or booking..."
+        />
+        <select id="statusFilter">
+          <option value="">All statuses</option>
+          <option value="completed">✓ Completed</option>
+          <option value="pending">⏳ Pending</option>
+          <option value="failed">✗ Failed</option>
+        </select>
+        <select id="methodFilter">
+          <option value="">All payment methods</option>
+        </select>
+        <select id="sortFilter" onchange="renderTransactions()">
+          <option value="date-desc">📅 Newest First</option>
+          <option value="date-asc">📅 Oldest First</option>
+          <option value="amount-desc">💰 Highest Amount</option>
+          <option value="amount-asc">💰 Lowest Amount</option>
+          <option value="passenger">👤 Passenger A-Z</option>
+        </select>
+      </div>
+
+      <!-- Transactions Container -->
+      <div id="transactionsContainer">
+        <div class="empty-state">
+          <i class="fas fa-spinner fa-spin"></i>
+          <p>Loading transactions...</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="../js/api-client.js"></script>
   <script>
-    async function loadPayments() {
-      const tbody = document.getElementById('paymentsTable');
-      const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
+    let allTransactions = [];
+    let revenueChart, statusChart, methodChart;
+
+    async function loadPaymentData() {
+      console.log('🔄 Loading payment data...');
       try {
-        const response = await (window.apiFetch ? apiFetch('/api/bookings', {
+        let transactions = [];
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('session') || localStorage.getItem('auth_token') || '';
+        console.log('🔑 Token:', token ? 'Found' : 'Not found');
+        
+        // Fetch bookings as transactions
+        const response = await fetch('/api/bookings', {
           headers: { 'Authorization': `Bearer ${token}` }
-        }) : fetch('/api/bookings', {
-          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        console.log('📡 API Response status:', response.status);
+        
+        if (!response.ok) {
+          throw new Error(`Failed to load bookings: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('📊 Raw data received:', data);
+        
+        const bookings = Array.isArray(data) ? data : (data.bookings || []);
+        console.log('📦 Bookings count:', bookings.length);
+        
+        transactions = bookings.map((b, idx) => ({
+          id: b.id || b.booking_id || `BK-${idx + 1}`,
+          passenger: b.passenger_name || b.name || 'Guest',
+          bookingId: b.flight_number || 'N/A',
+          amount: parseFloat(b.total_amount || b.amount || 0),
+          status: b.payment_status || 'completed',
+          method: b.payment_method || 'Credit Card',
+          date: new Date(b.booking_date || b.created_at || Date.now())
         }));
 
-        if (!response.ok) throw new Error('API error');
-        const data = await response.json();
-        const payments = Array.isArray(data) ? data : (data.bookings || data || []);
+        console.log('✅ Transactions processed:', transactions.length);
+        console.log('💰 Sample transaction:', transactions[0]);
+
+        allTransactions = transactions;
+        updateStats();
+        initCharts();
+        renderTransactions();
         
-        if (!payments.length) {
-          tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">No payments found</td></tr>';
-          return;
-        }
-
-        tbody.innerHTML = payments.map(payment => {
-          const status = payment.status || 'completed';
-          const statusBadge = {
-            'completed': '<span class="badge bg-success">Completed</span>',
-            'pending': '<span class="badge bg-warning">Pending</span>',
-            'failed': '<span class="badge bg-danger">Failed</span>'
-          }[status] || '<span class="badge bg-secondary">Unknown</span>';
-
-          const created = payment.created_at ? new Date(payment.created_at).toLocaleString() : '—';
-          const amount = typeof payment.amount === 'number' ? payment.amount.toFixed(2) : (payment.amount || '0');
-
-          return `
-            <tr>
-              <td><strong>${payment.id || payment.booking_ref || 'N/A'}</strong></td>
-              <td>${payment.name || payment.passenger_name || 'N/A'}</td>
-              <td>${payment.passport || payment.booking_id || 'N/A'}</td>
-              <td><strong>$${amount}</strong></td>
-              <td>${payment.payment_method || 'N/A'}</td>
-              <td>${statusBadge}</td>
-              <td>${created}</td>
-              <td>
-                <button class="btn btn-sm btn-outline-primary" type="button" onclick="viewPayment('${payment.id || payment.booking_ref || ''}')">View</button>
-              </td>
-            </tr>
-          `;
-        }).join('');
+        console.log('✨ Payment data loaded successfully!');
       } catch (error) {
-        console.error('Error loading payments:', error);
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Error loading payments</td></tr>';
+        console.error('❌ Error loading payments:', error);
+        document.getElementById('transactionsContainer').innerHTML = 
+          `<div class="empty-state">
+            <i class="fas fa-exclamation-circle"></i>
+            <p>Error loading transactions: ${error.message}</p>
+            <p style="font-size: 0.9rem; margin-top: 10px;">Check browser console for details</p>
+          </div>`;
       }
     }
 
-    function viewPayment(id) {
-      if (!id) return;
-      alert('Booking/Payment ID: ' + id);
+    function updateStats() {
+      console.log('📈 Updating stats for', allTransactions.length, 'transactions');
+      const totalRevenue = allTransactions.reduce((sum, t) => sum + t.amount, 0);
+      const completed = allTransactions.filter(t => t.status === 'completed').length;
+      const pending = allTransactions.filter(t => t.status === 'pending').length;
+      const failed = allTransactions.filter(t => t.status === 'failed').length;
+
+      console.log('💵 Total Revenue:', totalRevenue);
+      console.log('✅ Completed:', completed, '⏳ Pending:', pending, '❌ Failed:', failed);
+
+      document.getElementById('statTotalRevenue').textContent = '$' + Math.floor(totalRevenue).toLocaleString();
+      document.getElementById('statCompleted').textContent = completed;
+      document.getElementById('statPendingPayments').textContent = pending;
+      document.getElementById('statFailed').textContent = failed;
+
+      // Populate method filter
+      const methods = [...new Set(allTransactions.map(t => t.method))];
+      const methodFilter = document.getElementById('methodFilter');
+      methodFilter.innerHTML = '<option value="">All payment methods</option>' + 
+        methods.map(m => `<option value="${m}">${m}</option>`).join('');
     }
 
-    function logout() {
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('session');
-      window.location.href = '/admin-login.html';
+    function initCharts() {
+      const completed = allTransactions.filter(t => t.status === 'completed').length;
+      const pending = allTransactions.filter(t => t.status === 'pending').length;
+      const failed = allTransactions.filter(t => t.status === 'failed').length;
+
+      // Calculate real monthly revenue from transactions
+      const monthlyRevenue = Array(12).fill(0);
+      const currentDate = new Date();
+      allTransactions.forEach(t => {
+        const transactionMonth = t.date.getMonth();
+        const transactionYear = t.date.getFullYear();
+        // Only include this year's data
+        if (transactionYear === currentDate.getFullYear()) {
+          monthlyRevenue[transactionMonth] += t.amount;
+        }
+      });
+
+      // Revenue Chart with actual data
+      const ctx1 = document.getElementById('revenueChart').getContext('2d');
+      if (revenueChart) revenueChart.destroy();
+      revenueChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+          datasets: [{
+            label: 'Monthly Revenue ($)',
+            data: monthlyRevenue,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 6,
+            pointHoverRadius: 8,
+            pointBackgroundColor: '#3b82f6',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return 'Revenue: $' + context.parsed.y.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+              }
+            }
+          },
+          scales: { 
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                callback: function(value) {
+                  return '$' + value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+              }
+            } 
+          }
+        }
+      });
+
+      // Status Chart with actual percentages
+      const ctx2 = document.getElementById('statusChart').getContext('2d');
+      if (statusChart) statusChart.destroy();
+      const total = allTransactions.length;
+      statusChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['Completed', 'Pending', 'Failed'],
+          datasets: [{
+            data: [completed, pending, failed],
+            backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+            borderColor: '#fff',
+            borderWidth: 3,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { 
+              position: 'bottom',
+              labels: {
+                padding: 15,
+                font: { size: 13, weight: '600' },
+                generateLabels: function(chart) {
+                  const data = chart.data;
+                  return data.labels.map((label, i) => {
+                    const value = data.datasets[0].data[i];
+                    const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                    return {
+                      text: `${label}: ${value} (${percentage}%)`,
+                      fillStyle: data.datasets[0].backgroundColor[i],
+                      hidden: false,
+                      index: i
+                    };
+                  });
+                }
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const value = context.parsed;
+                  const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                  return `${context.label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Methods Chart with actual data and amounts
+      const ctx3 = document.getElementById('methodChart').getContext('2d');
+      if (methodChart) methodChart.destroy();
+      const methodData = {};
+      allTransactions.forEach(t => {
+        if (!methodData[t.method]) {
+          methodData[t.method] = { count: 0, amount: 0 };
+        }
+        methodData[t.method].count++;
+        methodData[t.method].amount += t.amount;
+      });
+      
+      const methodLabels = Object.keys(methodData).sort((a, b) => methodData[b].count - methodData[a].count);
+      const methodCounts = methodLabels.map(m => methodData[m].count);
+      const methodAmounts = methodLabels.map(m => methodData[m].amount);
+      
+      // Generate colors for each method
+      const colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4', '#ef4444'];
+      const methodColors = methodLabels.map((_, i) => colors[i % colors.length]);
+      
+      methodChart = new Chart(ctx3, {
+        type: 'bar',
+        data: {
+          labels: methodLabels.length > 0 ? methodLabels : ['Credit Card'],
+          datasets: [{
+            label: 'Transaction Count',
+            data: methodCounts.length > 0 ? methodCounts : [0],
+            backgroundColor: methodColors,
+            borderRadius: 8,
+            borderWidth: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { 
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const method = context.label;
+                  const count = context.parsed.y;
+                  const amount = methodData[method]?.amount || 0;
+                  return [
+                    `Transactions: ${count}`,
+                    `Total: $${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`
+                  ];
+                }
+              }
+            }
+          },
+          scales: { 
+            y: { 
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+                callback: function(value) {
+                  return Number.isInteger(value) ? value : null;
+                }
+              }
+            } 
+          }
+        }
+      });
     }
 
-    // Set active nav link
-    document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
-      const href = link.getAttribute('href');
-      const currentPage = window.location.pathname.split('/').pop() || 'dashboard.html';
-      if (href === currentPage) {
-        link.classList.add('active');
-      } else {
-        link.classList.remove('active');
+    function renderTransactions() {
+      const container = document.getElementById('transactionsContainer');
+      const searchTerm = document.getElementById('searchTransaction').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+      const methodFilter = document.getElementById('methodFilter').value;
+      const sortFilter = document.getElementById('sortFilter')?.value || 'date-desc';
+      
+      let filtered = allTransactions.filter(t => {
+        const matchesSearch = t.passenger.toLowerCase().includes(searchTerm) ||
+                              t.bookingId.toLowerCase().includes(searchTerm) ||
+                              t.id.toLowerCase().includes(searchTerm);
+        const matchesStatus = !statusFilter || t.status === statusFilter;
+        const matchesMethod = !methodFilter || t.method === methodFilter;
+        return matchesSearch && matchesStatus && matchesMethod;
+      });
+      
+      // Apply sorting
+      switch(sortFilter) {
+        case 'date-desc':
+          filtered.sort((a, b) => b.date - a.date);
+          break;
+        case 'date-asc':
+          filtered.sort((a, b) => a.date - b.date);
+          break;
+        case 'amount-desc':
+          filtered.sort((a, b) => b.amount - a.amount);
+          break;
+        case 'amount-asc':
+          filtered.sort((a, b) => a.amount - b.amount);
+          break;
+        case 'passenger':
+          filtered.sort((a, b) => a.passenger.localeCompare(b.passenger));
+          break;
       }
-    });
 
-    loadPayments();
-    setInterval(loadPayments, 10000);
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No transactions found</p></div>';
+        return;
+      }
+
+      // Add summary above transactions
+      const filteredTotal = filtered.reduce((sum, t) => sum + t.amount, 0);
+      const summaryHtml = `
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+          <div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">Showing Results</div>
+            <div style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;">${filtered.length}</div>
+            <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 2px;">transactions</div>
+          </div>
+          <div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">Total Value</div>
+            <div style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;">$${filteredTotal.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}</div>
+            <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 2px;">from filtered results</div>
+          </div>
+          <div>
+            <div style="font-size: 0.9rem; opacity: 0.9;">Average Transaction</div>
+            <div style="font-size: 1.8rem; font-weight: 800; margin-top: 4px;">$${filtered.length > 0 ? (filteredTotal / filtered.length).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",") : '0.00'}</div>
+            <div style="font-size: 0.85rem; opacity: 0.8; margin-top: 2px;">per transaction</div>
+          </div>
+        </div>
+      `;
+      
+      container.innerHTML = summaryHtml + filtered.map(t => {
+        const statusIcons = {
+          completed: '✓',
+          pending: '⏳',
+          failed: '✗'
+        };
+        const dateStr = t.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const timeStr = t.date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        
+        return `
+        <div class="transaction-row">
+          <div class="transaction-col">
+            <div class="transaction-col-label">Passenger</div>
+            <div class="transaction-col-value" style="display: flex; align-items: center; gap: 8px;">
+              <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem;">
+                ${t.passenger.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <div style="font-weight: 600;">${t.passenger}</div>
+                <div style="font-size: 0.8rem; color: #94a3b8;">ID: ${t.id}</div>
+              </div>
+            </div>
+          </div>
+          <div class="transaction-col">
+            <div class="transaction-col-label">Flight & Date</div>
+            <div class="transaction-col-value">
+              <div style="font-weight: 600; color: #3b82f6;">${t.bookingId}</div>
+              <div style="font-size: 0.85rem; color: #64748b; margin-top: 2px;">${dateStr} • ${timeStr}</div>
+            </div>
+          </div>
+          <div class="transaction-col">
+            <div class="transaction-col-label">Payment Method</div>
+            <div class="transaction-col-value">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <i class="fas fa-credit-card" style="color: #64748b;"></i>
+                <span>${t.method}</span>
+              </div>
+            </div>
+          </div>
+          <div class="transaction-col">
+            <div class="transaction-col-label">Amount</div>
+            <div class="transaction-col-value" style="font-size: 1.2rem; font-weight: 700; color: #10b981;">
+              $${t.amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+            </div>
+          </div>
+          <div>
+            <span class="status-badge status-${t.status}">
+              ${statusIcons[t.status]} ${t.status.charAt(0).toUpperCase() + t.status.slice(1)}
+            </span>
+          </div>
+        </div>
+      `;
+      }).join('');
+    }
+
+    document.getElementById('searchTransaction').addEventListener('input', renderTransactions);
+    document.getElementById('statusFilter').addEventListener('change', renderTransactions);
+    document.getElementById('methodFilter').addEventListener('change', renderTransactions);
+
+    function exportPayments() {
+      const csv = [
+        ['Passenger', 'Flight', 'Amount', 'Method', 'Status', 'Date'],
+        ...allTransactions.map(t => [
+          t.passenger,
+          t.bookingId,
+          '$' + t.amount.toFixed(2),
+          t.method,
+          t.status.charAt(0).toUpperCase() + t.status.slice(1),
+          t.date.toLocaleDateString()
+        ])
+      ].map(row => row.map(cell => `"${cell}"`).join(',')).join('\n');
+
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `payments_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPaymentData);
+    setInterval(loadPaymentData, 30000);
   </script>
 </body>
 </html>
