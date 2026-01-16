@@ -795,5 +795,143 @@
     "role": "admin",
     "username": "Riley Gabi",
     "timestamp": "2026-01-13T07:35:54.803039Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-14T05:46:27.032470Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-14T06:53:28.470998Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-14T07:08:48.595391+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-14T11:36:10.900395+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-14T11:40:18.514116+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-14T13:40:40.528122Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-14T13:42:11.232570+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-14T13:42:31.524819+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "teststaff",
+    "staff_id": "SF-2026-00001A",
+    "timestamp": "2026-01-14T13:47:26.129918+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-14T14:00:27.896513+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-14T14:01:25.896637Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-15T05:27:53.787251Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-15T05:36:31.300862+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-15T05:37:01.250735+00:00Z"
+  },
+  {
+    "type": "staff_login",
+    "username": "teststaff",
+    "system_id": "SF-2026-00001A",
+    "timestamp": "2026-01-15T07:10:19.429994Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-15T10:01:12.425634+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-15T10:27:07.254787+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-15T11:27:35.555430Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-16T06:06:38.916088Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-16T11:16:48.099065Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-16T12:13:55.127810+00:00Z"
   }
 ]

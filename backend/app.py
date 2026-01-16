@@ -110,11 +110,46 @@ def _require_session(request, require_role=None):
     if not session_data:
         return None
     
+    # Expiry check (cleanup if expired)
+    expires_at = session_data.get('expires_at')
+    if expires_at:
+        try:
+            exp_dt = datetime.fromisoformat(expires_at)
+            if exp_dt < datetime.now(timezone.utc):
+                sessions.pop(token, None)
+                _save_json_file(SESSIONS_FILE, sessions)
+                return None
+        except Exception:
+            pass
+
     # Check if role matches (if required)
     if require_role and session_data.get('role') != require_role:
         return None
     
     return session_data
+
+
+def _create_session(username, role='staff', ttl_seconds=86400):
+    """Create a session token and persist it to sessions.json."""
+    try:
+        sessions = _load_json_file(SESSIONS_FILE, {})
+        if not isinstance(sessions, dict):
+            sessions = {}
+    except Exception:
+        sessions = {}
+
+    token = secrets.token_urlsafe(32)
+    now = datetime.now(timezone.utc)
+    session_entry = {
+        'username': username,
+        'role': role,
+        'created_at': now.isoformat(),
+        'expires_at': (now + timedelta(seconds=ttl_seconds)).isoformat()
+    }
+
+    sessions[token] = session_entry
+    _save_json_file(SESSIONS_FILE, sessions)
+    return token, session_entry
 
 # ---------------------------------------------------------------------------
 # Helper: minimal admin session check for protected admin HTML pages.
@@ -130,6 +165,38 @@ def _has_admin_session():
                 token = part.split('=', 1)[1]
                 break
     return bool(token)
+
+def _generate_staff_id():
+    """
+    Generate a realistic staff ID in format: SF-2026-00001A
+    Structure: [Airline Code]-[Year]-[Sequential Number + Letter]
+    Example: SF-2026-00042B means 42 staff members created in 2026, B batch
+    """
+    try:
+        # Load existing staff to get next sequence number
+        staff_list = _load_json_file(STAFF_FILE, [])
+        
+        # Count staff members created in current year
+        current_year = datetime.now(timezone.utc).year
+        current_year_staff = [
+            s for s in staff_list 
+            if s.get('created_at', '').startswith(str(current_year))
+        ]
+        
+        # Next sequence number (1-indexed)
+        sequence = len(current_year_staff) + 1
+        
+        # Generate batch letter based on sequence (A-Z, AA-ZZ, etc.)
+        letter_code = chr(65 + (sequence % 26)) if sequence <= 26 else f"A{chr(65 + ((sequence - 1) % 26))}"
+        
+        # Format: SF-YEAR-SEQUENCE+LETTER (e.g., SF-2026-00042B)
+        staff_id = f"SF-{current_year}-{sequence:05d}{letter_code}"
+        
+        return staff_id
+    except Exception as e:
+        print(f"Error generating staff ID: {e}")
+        # Fallback to random ID if anything fails
+        return f"SF-{datetime.now(timezone.utc).year}-{secrets.token_hex(4).upper()}"
 
 @app.route('/api/admin/settings', methods=['GET', 'POST'])
 def api_admin_settings():
@@ -250,14 +317,14 @@ def api_staff_list():
             # Hash password
             password_hash = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
             
-            # Create staff record
+            # Create staff record with realistic ID
             staff_record = {
                 'username': username,
                 'name': name,
                 'email': email or None,
                 'password_hash': password_hash,
                 'role': 'staff',
-                'system_id': secrets.token_hex(8),
+                'system_id': _generate_staff_id(),
                 'permissions': permissions,
                 'created_at': datetime.now(timezone.utc).isoformat(),
                 'updated_at': datetime.now(timezone.utc).isoformat()
@@ -378,7 +445,10 @@ def api_staff_profile():
     if not sess:
         return jsonify({'error': 'staff_auth_required'}), 401
     try:
-        username = sess.get('username')
+        # Sessions may store the staff username under different keys depending
+        # on which _create_session implementation ran. Accept common fallbacks
+        # so staff sessions created earlier (which set 'passport') still work.
+        username = sess.get('username') or sess.get('passport') or sess.get('user_id')
         staff_list = _load_json_file(STAFF_FILE, [])
         if not isinstance(staff_list, list):
             staff_list = []
@@ -458,11 +528,37 @@ def api_log_activity():
 
 
 # ---- Core Data Endpoints (flights, passengers, bookings) ---------------------------
+def _load_flights():
+    """Load flights from flights.json file"""
+    try:
+        if os.path.exists(FLIGHTS_FILE):
+            with open(FLIGHTS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        print(f'Error loading flights: {e}')
+    return []
+
+def _load_bookings():
+    """Load bookings from bookings.json file"""
+    try:
+        if os.path.exists(BOOKINGS_FILE):
+            with open(BOOKINGS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except Exception as e:
+        print(f'Error loading bookings: {e}')
+    return []
+
 @app.route('/api/flights', methods=['GET'])
 def api_get_flights():
-    """Return all flights from flights.json"""
+    """Return all flights from flights.json, with optional filtering by origin, destination, and date"""
     try:
         flights = _load_flights()
+        
+        # Get query parameters for filtering
+        origin_filter = request.args.get('origin', '').strip().upper()
+        destination_filter = request.args.get('destination', '').strip().upper()
+        date_filter = request.args.get('date', '').strip()
+        
         # Enrich with booking counts
         booking_counts = {}
         for p in passengers:
@@ -470,6 +566,7 @@ def api_get_flights():
             if f:
                 booking_counts[f] = booking_counts.get(f, 0) + 1
         
+        filtered_flights = []
         for flight in flights:
             # Normalize flight_number vs flight field (support both)
             flight_id = flight.get('flight_number') or flight.get('flight')
@@ -490,9 +587,46 @@ def api_get_flights():
                 flight['arrival_time'] = flight['arrival']
             if 'arrivalTime' not in flight and 'arrival_time' in flight:
                 flight['arrivalTime'] = flight['arrival_time']
+            
+            # Apply filters if provided
+            if origin_filter or destination_filter or date_filter:
+                matches = True
+                
+                # Filter by origin
+                if origin_filter:
+                    flight_origin = (flight.get('origin') or '').strip().upper()
+                    if flight_origin != origin_filter:
+                        matches = False
+                
+                # Filter by destination
+                if destination_filter:
+                    flight_dest = (flight.get('destination') or '').strip().upper()
+                    if flight_dest != destination_filter:
+                        matches = False
+                
+                # Filter by date (check if departure date matches)
+                if date_filter:
+                    dep_time = flight.get('departure_time') or flight.get('time') or flight.get('departureTime')
+                    if dep_time:
+                        try:
+                            # Extract date from datetime string
+                            dep_date = dep_time.split('T')[0] if 'T' in dep_time else dep_time[:10]
+                            if dep_date != date_filter:
+                                matches = False
+                        except:
+                            matches = False
+                    else:
+                        matches = False
+                
+                if matches:
+                    filtered_flights.append(flight)
+            else:
+                # No filters, include all flights
+                filtered_flights.append(flight)
         
-        return jsonify({'flights': flights}), 200
+        return jsonify({'flights': filtered_flights}), 200
     except Exception as e:
+        print(f'Error in api_get_flights: {e}')
         return jsonify({'error': str(e)}), 500
 
 
@@ -517,7 +651,8 @@ def api_get_bookings():
 
 @app.route('/admin/dashboard.html')
 def serve_admin_dashboard():
-    return send_from_directory(FRONTEND_DIR, 'admin-dashboard.html')
+    # Serve the modern admin dashboard from the admin subfolder
+    return send_from_directory(ADMIN_DIR, 'dashboard.html')
 
 
 # ----------------------
@@ -1115,6 +1250,18 @@ def _delete_session(token: str):
             _save_sessions(sessions)
         except Exception:
             pass
+
+
+    staff_list = _load_json_file(STAFF_FILE, [])
+    if not isinstance(staff_list, list):
+        staff_list = []
+
+    staff_member = next((s for s in staff_list if s.get('username') == staff_identifier or s.get('system_id') == staff_identifier), None)
+    if not staff_member:
+        return jsonify({'error': 'staff_not_found'}), 404
+
+    safe = {k: v for k, v in staff_member.items() if k != 'password_hash'}
+    return jsonify({'staff': safe}), 200
 
 def log_event(event: dict):
     """Append an event dict to events.json (simple audit log)."""
@@ -3773,6 +3920,79 @@ def api_login():
 
         return jsonify({'error': 'invalid_credentials'}), 403
 
+    if role == 'staff':
+        """Staff login: { role: 'staff', staff_id: <str>, password: <str> }"""
+        staff_id = (data.get('staff_id') or data.get('username') or '').strip()
+        password = data.get('password', '').strip()
+        
+        if not staff_id or not password:
+            return jsonify({'error': 'missing_credentials'}), 400
+        
+        try:
+            # Load staff list
+            staff_list = _load_json_file(STAFF_FILE, [])
+            if not isinstance(staff_list, list):
+                staff_list = []
+            
+            # Find staff by system_id or username
+            staff_member = None
+            for s in staff_list:
+                if s.get('system_id') == staff_id or s.get('username') == staff_id:
+                    staff_member = s
+                    break
+            
+            if not staff_member:
+                return jsonify({'error': 'invalid_credentials'}), 403
+            
+            # Check password
+            stored_hash = staff_member.get('password_hash')
+            try:
+                if stored_hash and stored_hash.startswith('$2'):
+                    ok = bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
+                else:
+                    ok = (password == stored_hash)
+            except Exception:
+                ok = False
+            
+            if not ok:
+                return jsonify({'error': 'invalid_credentials'}), 403
+            
+            # Create staff session
+            try:
+                staff_ttl = float(os.getenv('STAFF_SESSION_TTL_SECONDS', '28800'))  # Default 8 hours
+            except Exception:
+                staff_ttl = 28800.0
+            
+            token, expires = _create_session('staff', staff_member.get('username'), ttl_seconds=staff_ttl)
+            log_event({
+                'type': 'login',
+                'role': 'staff',
+                'username': staff_member.get('username'),
+                'staff_id': staff_member.get('system_id'),
+                'timestamp': datetime.now(timezone.utc).isoformat() + 'Z'
+            })
+            
+            # Create response with session cookie
+            resp = jsonify({
+                'token': token,
+                'role': 'staff',
+                'username': staff_member.get('username'),
+                'staff_id': staff_member.get('system_id'),
+                'name': staff_member.get('name'),
+                'expires': expires,
+                'status': 'ok'
+            })
+            
+            try:
+                resp.set_cookie('session', token, max_age=int(staff_ttl), httponly=True, samesite='Lax', path='/')
+            except Exception:
+                pass
+            
+            return resp, 200
+        
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+
     return jsonify({'error': 'unknown_role'}), 400
 
 
@@ -3782,6 +4002,9 @@ def api_logout():
     if token:
         _delete_session(token)
     return jsonify({'status': 'ok'})
+
+
+# (The staff profile endpoint is defined once lower in the file to avoid duplicate registrations)
 
 # Serve admin static files only to authenticated admin sessions.
 @app.route('/admin')
@@ -3793,26 +4016,8 @@ def admin_root():
 
 @app.route('/admin/<path:filename>')
 def admin_files(filename):
-    # Only allow serving admin files to an authenticated admin session
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return redirect('/admin-login.html')
-    # serve from frontend/admin directory
+    # Serve admin assets and pages directly from the admin directory
     admin_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'admin'))
-    # Allow common admin HTML pages; otherwise redirect HTML requests to the canonical dashboard
-    # This keeps static assets (css/js/png/svg/woff, etc.) served directly while preventing stray HTML pages.
-    allowed_html = {
-        # Core admin pages we intentionally expose
-        'dashboard.html', 'flights.html', 'bookings.html', 'users.html', 'reports.html', 'settings.html',
-        'merged-dashboard.html',
-        # Navigation targets in the admin UI
-        'staff.html', 'active-flights.html', 'checkins.html', 'payments.html', 'members.html'
-    }
-    lower = filename.lower()
-    if lower.endswith('.html'):
-        base = os.path.basename(lower)
-        if base not in allowed_html:
-            return redirect('/admin/dashboard.html')
     return send_from_directory(admin_dir, filename)
 
 
@@ -4791,6 +4996,16 @@ def add_cors(resp):
     resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization,X-SESSION"
     resp.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+    # Development: reduce caching to ensure frontend changes reflect immediately
+    try:
+        ct = (resp.headers.get('Content-Type') or '').lower()
+        if 'text/html' in ct:
+            resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+            resp.headers['Pragma'] = 'no-cache'
+        elif 'text/css' in ct or 'javascript' in ct or 'application/json' in ct:
+            resp.headers['Cache-Control'] = 'no-cache, max-age=0'
+    except Exception:
+        pass
     return resp
 
 # Serve the SPA index at '/'
@@ -4809,29 +5024,7 @@ def serve_admin_js():
     """Serve admin dashboard JS"""
     return send_from_directory(FRONTEND_DIR, 'admin-dashboard.js')
 
-# Serve admin dashboard and related files
-@app.route('/admin/dashboard.html')
-def admin_dashboard():
-    """Serve admin dashboard"""
-    try:
-        return send_from_directory(ADMIN_DIR, 'dashboard.html')
-    except Exception as e:
-        return f"Error loading dashboard: {str(e)}", 500
-
-@app.route('/admin/<path:filename>')
-def serve_admin(filename):
-    """Serve admin files from admin folder"""
-    try:
-        admin_path = os.path.join(ADMIN_DIR, filename)
-        if os.path.exists(admin_path):
-            return send_from_directory(ADMIN_DIR, filename)
-        # Fallback for files in root frontend directory (like admin-dashboard.css)
-        root_path = os.path.join(FRONTEND_DIR, filename)
-        if os.path.exists(root_path):
-            return send_from_directory(FRONTEND_DIR, filename)
-    except Exception as e:
-        return f"Error: {str(e)}", 500
-    return "File not found", 404
+# (Removed duplicate admin routes to avoid collisions)
 
 if __name__ == "__main__":
     # Load persisted passengers into memory when starting the server

@@ -1,287 +1,47 @@
 {
-  "sess_0001": {
-    "user_id": "USR0107",
-    "username": "xmoody",
-    "user_name": "Wanda Merritt",
-    "email": "julia10@example.org",
-    "role": "admin",
-    "membership_tier": "silver",
-    "last_activity": "2025-12-18T15:35:53.729180Z",
-    "last_action": "Adding baggage",
-    "created_at": "2025-12-18T15:19:53.729180Z",
-    "ip_address": "192.168.61.36",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  "da7b819f81ca4fdb922343e118befec7": {
+    "role": "staff",
+    "passport": "Antigen",
+    "expires": "2026-01-15T15:20:49.533795Z"
   },
-  "sess_0002": {
-    "user_id": "USR0082",
-    "username": "cbailey",
-    "user_name": "Amanda Rosales DVM",
-    "email": "pughalyssa@example.com",
-    "role": "admin",
-    "membership_tier": "gold",
-    "last_activity": "2025-12-18T15:40:53.729180Z",
-    "last_action": "Viewing dashboard",
-    "created_at": "2025-12-18T15:22:53.729180Z",
-    "ip_address": "192.168.47.145",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  "2aaa893da0f346b684170e38ae769124": {
+    "role": "staff",
+    "passport": "Antigen",
+    "expires": "2026-01-15T15:21:03.866070Z"
   },
-  "sess_0003": {
-    "user_id": "USR0027",
-    "username": "sarahmitchell",
-    "user_name": "Leon Patel",
-    "email": "claudia41@example.org",
-    "role": "user",
-    "membership_tier": "local",
-    "last_activity": "2025-12-18T15:39:53.729180Z",
-    "last_action": "Logged in",
-    "created_at": "2025-12-18T15:32:53.729180Z",
-    "ip_address": "192.168.141.155",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  "3a2a7716c6974baeb6e8eef61655356d": {
+    "role": "staff",
+    "passport": "Antigen",
+    "expires": "2026-01-15T15:21:27.718907Z"
   },
-  "sess_0004": {
-    "user_id": "USR0001",
-    "username": "coopercheryl",
-    "user_name": "Andrew Johnson",
-    "email": "walter16@example.com",
-    "role": "user",
-    "membership_tier": "local",
-    "last_activity": "2025-12-18T15:34:53.729180Z",
-    "last_action": "Processing payment",
-    "created_at": "2025-12-18T15:20:53.729180Z",
-    "ip_address": "192.168.227.2",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  "069c035f6c284acaaba9a76a15638ef6": {
+    "role": "staff",
+    "passport": "Antigen",
+    "expires": "2026-01-15T15:30:27.520316Z"
   },
-  "sess_0005": {
-    "user_id": "USR0042",
-    "username": "smarks",
-    "user_name": "John Murray",
-    "email": "griffithkevin@example.org",
-    "role": "user",
-    "membership_tier": "local",
-    "last_activity": "2025-12-18T15:41:53.729180Z",
-    "last_action": "Adding baggage",
-    "created_at": "2025-12-18T15:24:53.729180Z",
-    "ip_address": "192.168.90.55",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  "01070f287f34488bb2736646b9d64137": {
+    "role": "staff",
+    "passport": "Antigen",
+    "expires": "2026-01-15T18:01:12.413818Z"
   },
-  "sess_0006": {
-    "user_id": "USR0102",
-    "username": "susanmoore",
-    "user_name": "Crystal Waller",
-    "email": "donaldmora@example.com",
-    "role": "user",
-    "membership_tier": "silver",
-    "last_activity": "2025-12-18T15:40:53.729180Z",
-    "last_action": "Searching flights",
-    "created_at": "2025-12-18T15:15:53.729180Z",
-    "ip_address": "192.168.146.41",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+  "0ab719f14b2f413aba452225100ead46": {
+    "role": "staff",
+    "passport": "Antigen",
+    "expires": "2026-01-15T18:27:07.234940Z"
   },
-  "sess_0007": {
-    "user_id": "USR0112",
-    "username": "mendozatyler",
-    "user_name": "Todd Johnson",
-    "email": "jacobhuffman@example.net",
-    "role": "user",
-    "membership_tier": "silver",
-    "last_activity": "2025-12-18T15:41:53.729180Z",
-    "last_action": "Adding baggage",
-    "created_at": "2025-12-18T15:17:53.729180Z",
-    "ip_address": "192.168.243.58",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "sess_0008": {
-    "user_id": "USR0022",
-    "username": "garciajustin",
-    "user_name": "Julie Lewis",
-    "email": "rodrigueznancy@example.org",
-    "role": "user",
-    "membership_tier": "local",
-    "last_activity": "2025-12-18T15:34:53.729180Z",
-    "last_action": "Managing account",
-    "created_at": "2025-12-18T15:20:53.729180Z",
-    "ip_address": "192.168.227.186",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "sess_0009": {
-    "user_id": "USR0064",
-    "username": "woodjeffrey",
-    "user_name": "Richard Gibbs",
-    "email": "benjaminrich@example.com",
-    "role": "premium",
-    "membership_tier": "gold",
-    "last_activity": "2025-12-18T15:44:53.729180Z",
-    "last_action": "Searching flights",
-    "created_at": "2025-12-18T15:15:53.729180Z",
-    "ip_address": "192.168.154.157",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "sess_0010": {
-    "user_id": "USR0140",
-    "username": "steven39",
-    "user_name": "Wendy White",
-    "email": "jonathan02@example.net",
-    "role": "premium",
-    "membership_tier": "platinum",
-    "last_activity": "2025-12-18T15:42:53.729180Z",
-    "last_action": "Managing account",
-    "created_at": "2025-12-18T15:13:53.729180Z",
-    "ip_address": "192.168.215.152",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "sess_0011": {
-    "user_id": "USR0111",
-    "username": "yhernandez",
-    "user_name": "Jonathan Christian",
-    "email": "hbrooks@example.com",
-    "role": "user",
-    "membership_tier": "silver",
-    "last_activity": "2025-12-18T15:41:53.729180Z",
-    "last_action": "Logged in",
-    "created_at": "2025-12-18T15:13:53.729180Z",
-    "ip_address": "192.168.236.139",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "sess_0012": {
-    "user_id": "USR0071",
-    "username": "garcialawrence",
-    "user_name": "Melissa Williams",
-    "email": "millerthomas@example.net",
-    "role": "premium",
-    "membership_tier": "gold",
-    "last_activity": "2025-12-18T15:40:53.729180Z",
-    "last_action": "Searching flights",
-    "created_at": "2025-12-18T15:33:53.729180Z",
-    "ip_address": "192.168.43.129",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "sess_0013": {
-    "user_id": "USR0025",
-    "username": "lindsay95",
-    "user_name": "Brian Brown",
-    "email": "zachary60@example.com",
-    "role": "user",
-    "membership_tier": "local",
-    "last_activity": "2025-12-18T15:41:53.729180Z",
-    "last_action": "Viewing bookings",
-    "created_at": "2025-12-18T15:22:53.729180Z",
-    "ip_address": "192.168.77.157",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "sess_0014": {
-    "user_id": "USR0061",
-    "username": "judyellis",
-    "user_name": "James Mcclain",
-    "email": "josephwright@example.org",
-    "role": "premium",
-    "membership_tier": "gold",
-    "last_activity": "2025-12-18T15:40:53.729180Z",
-    "last_action": "Checking in",
-    "created_at": "2025-12-18T15:25:53.729180Z",
-    "ip_address": "192.168.19.166",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "sess_0015": {
-    "user_id": "USR0126",
-    "username": "carol66",
-    "user_name": "Erik Miller",
-    "email": "tcastaneda@example.org",
-    "role": "user",
-    "membership_tier": "silver",
-    "last_activity": "2025-12-18T15:36:53.729180Z",
-    "last_action": "Managing account",
-    "created_at": "2025-12-18T15:12:53.729180Z",
-    "ip_address": "192.168.12.216",
-    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-  },
-  "085bd40d452249b9aa2c9c6387da526d": {
+  "b5e1f10b65704b3280dc8cac7935f3ce": {
     "role": "admin",
     "passport": null,
-    "expires": "2025-12-18T13:52:49.330964Z"
+    "expires": "2026-01-15T12:27:35.544073Z"
   },
-  "3a943e4ef3aa473aa6337697a1663d02": {
+  "6185393e67774f7ab94a03329af9a077": {
     "role": "admin",
     "passport": null,
-    "expires": "2025-12-19T05:57:08.108424Z"
+    "expires": "2026-01-16T12:16:48.081430Z"
   },
-  "7000391ea61b49bb9a6d8ac1f323f807": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-12-19T06:23:10.930470Z"
-  },
-  "731b524898164e7281d0fc433c5c934a": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-12-19T06:32:51.276690Z"
-  },
-  "1472940d28ff44f099207ab760a42330": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-12-19T07:57:24.552564Z"
-  },
-  "14ab7ae39163492fb31511b3b617d467": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-12-19T08:19:08.389358Z"
-  },
-  "b48389ab0c304d6d87e8bcdc3cc5116a": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-12-19T09:33:45.183689Z"
-  },
-  "cd8f45b822424e7492ce16b015d34e02": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-12-19T09:34:38.526551Z"
-  },
-  "295904a39ce34f30a870fa895ee55def": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-12-19T11:00:08.731982Z"
-  },
-  "3f79646e59524f8a98bf309b6daa60e9": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2025-12-19T11:37:19.870047Z"
-  },
-  "7f6add2aafe7452bb52c264f8b19d405": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2026-01-07T11:01:56.808818Z"
-  },
-  "c1c0ac31ec6f44a39f288a8c7ab5c906": {
-    "role": "passenger",
-    "passport": "UX876ZUI",
-    "expires": "2026-01-07T12:22:23.336672Z"
-  },
-  "b007818a3c124aab85c31f3a6dd3059c": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2026-01-08T06:37:30.688192Z"
-  },
-  "75e5cf95d94441c88a33378fb108775b": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2026-01-09T12:46:06.819160Z"
-  },
-  "d2f5a81248974b329cd7f934d24fcc68": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2026-01-12T13:00:38.272447Z"
-  },
-  "894aa22f490d42db9eb5ed838623fe9e": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2026-01-12T14:15:22.409347Z"
-  },
-  "77a0141de6a84c0f9ad6cecc7c4f2c06": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2026-01-13T08:19:53.950028Z"
-  },
-  "f8832e2995564afc8bf552a85cd8c602": {
-    "role": "admin",
-    "passport": null,
-    "expires": "2026-01-13T08:35:54.789812Z"
+  "5dbf34aadd494369b7b2dbca1ef582f9": {
+    "role": "staff",
+    "passport": "Antigen",
+    "expires": "2026-01-16T20:13:55.114341Z"
   }
 }
