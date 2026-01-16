@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Staff Dashboard — SmartFly Airlines</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f8fafc;
+    }
+
+    .sidebar {
+      background: linear-gradient(135deg, #0B74DE 0%, #0056b3 100%);
+      min-height: 100vh;
+      padding: 24px 16px;
+      color: white;
+    }
+
+    .sidebar-logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+      font-size: 20px;
+      font-weight: 700;
+    }
+
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .nav-link-staff {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: rgba(255, 255, 255, 0.85);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .nav-link-staff:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: white;
+    }
+
+    .nav-link-staff.active {
+      background: rgba(255, 255, 255, 0.25);
+      color: white;
+      font-weight: 600;
+    }
+
+    .nav-link-staff i {
+      width: 20px;
+      text-align: center;
+    }
+
+    .main-content {
+      padding: 32px;
+    }
+
+    .page-header {
+      margin-bottom: 32px;
+    }
+
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 8px;
+    }
+
+    .page-header p {
+      color: #64748b;
+      font-size: 14px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      border-left: 4px solid #0B74DE;
+    }
+
+    .stat-card-icon {
+      font-size: 28px;
+      color: #0B74DE;
+      margin-bottom: 12px;
+    }
+
+    .stat-card-label {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .content-card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 24px;
+    }
+
+    .content-card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 20px;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f1f5f9;
+    }
+
+    th {
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      color: #64748b;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e2e8f0;
+      color: #1e293b;
+    }
+
+    tr:hover {
+      background: #f8fafc;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 16px 32px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      margin-bottom: 32px;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #0B74DE;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .logout-btn {
+      padding: 8px 16px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: #dc2626;
+    }
+
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .layout-sidebar {
+      width: 250px;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    .layout-main {
+      margin-left: 250px;
+      flex: 1;
+    }
+
+    @media (max-width: 768px) {
+      .layout-sidebar {
+        width: 100%;
+        height: auto;
+        position: static;
+      }
+
+      .layout-main {
+        margin-left: 0;
+      }
+
+      .sidebar {
+        padding: 16px;
+      }
+
+      .main-content {
+        padding: 16px;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .top-nav {
+        padding: 12px 16px;
+      }
+    }
+
+    .badge-pill {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .badge-danger {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="layout-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-logo">
+          <i class="fas fa-plane"></i>
+          SmartFly Staff
+        </div>
+        
+        <div class="sidebar-nav">
+          <a href="/staff/dashboard.html" class="nav-link-staff active" onclick="setActive(event)">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="/staff/passengers.html" class="nav-link-staff" onclick="setActive(event)">
+            <i class="fas fa-users"></i>
+            <span>Passengers</span>
+          </a>
+          <a href="/staff/flights.html" class="nav-link-staff" onclick="setActive(event)">
+            <i class="fas fa-plane"></i>
+            <span>Flights</span>
+          </a>
+          <a href="/staff/check-ins.html" class="nav-link-staff" onclick="setActive(event)">
+            <i class="fas fa-check-circle"></i>
+            <span>Check-ins</span>
+          </a>
+          <hr style="opacity: 0.2; margin: 16px 0;">
+          <a href="#" class="nav-link-staff" onclick="logout(event)">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="layout-main">
+      <!-- Top Navigation -->
+      <div class="top-nav">
+        <div>
+          <h2 style="font-size: 18px; margin: 0; color: #1e293b;">Staff Dashboard</h2>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar" id="userInitial">S</div>
+          <div>
+            <div id="staffName" style="font-weight: 600; color: #1e293b;">Staff</div>
+            <div id="staffId" style="font-size: 12px; color: #64748b;">SF-XXXX-XXXXX</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <div class="page-header">
+          <h1><i class="fas fa-chart-line"></i> Dashboard Overview</h1>
+          <p>Welcome to your staff dashboard. Manage passengers, flights, and check-ins.</p>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-card-label">Total Passengers</div>
+            <div class="stat-card-value" id="totalPassengers">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-plane"></i></div>
+            <div class="stat-card-label">Active Flights</div>
+            <div class="stat-card-value" id="activeFlights">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-card-label">Checked In</div>
+            <div class="stat-card-value" id="checkedIn">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-calendar"></i></div>
+            <div class="stat-card-label">Pending Check-ins</div>
+            <div class="stat-card-value" id="pendingCheckins">0</div>
+          </div>
+        </div>
+
+        <!-- Recent Passengers -->
+        <div class="content-card">
+          <h2><i class="fas fa-users"></i> Recent Passengers</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Passport</th>
+                  <th>Flight</th>
+                  <th>Status</th>
+                  <th>Check-in</th>
+                </tr>
+              </thead>
+              <tbody id="passengerTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 32px; color: #94a3b8;">
+                    <i class="fas fa-info-circle"></i> Loading passenger data...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Flights -->
+        <div class="content-card">
+          <h2><i class="fas fa-plane"></i> Active Flights</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Flight Number</th>
+                  <th>Destination</th>
+                  <th>Departure</th>
+                  <th>Passengers</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="flightTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 32px; color: #94a3b8;">
+                    <i class="fas fa-info-circle"></i> Loading flight data...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api/staff';
+    const token = localStorage.getItem('session') || localStorage.getItem('staffToken');
+
+    function setActive(event) {
+      event.preventDefault();
+      const link = event.currentTarget;
+      document.querySelectorAll('.nav-link-staff').forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+      // Navigate
+      window.location.href = link.href;
+    }
+
+    async function logout(event) {
+      event.preventDefault();
+      localStorage.removeItem('session');
+      localStorage.removeItem('staffToken');
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      window.location.href = '/staff-login.html';
+    }
+
+    async function loadDashboardData() {
+      if (!token) {
+        window.location.href = '/staff-login.html';
+        return;
+      }
+
+      try {
+        // Load staff profile
+        const profileResp = await fetch(`${API_BASE}/me`, {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (profileResp.ok) {
+          const profileData = await profileResp.json();
+          const staff = profileData.staff;
+          document.getElementById('staffName').textContent = staff.name || 'Staff';
+          document.getElementById('staffId').textContent = staff.system_id || 'SF-XXXX-XXXXX';
+          document.getElementById('userInitial').textContent = (staff.name || 'S').charAt(0).toUpperCase();
+        }
+
+        // Load passengers
+        const passengersResp = await fetch('/api/passengers', {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (passengersResp.ok) {
+          const passengersData = await passengersResp.json();
+          const passengers = passengersData.passengers || [];
+          document.getElementById('totalPassengers').textContent = passengers.length;
+          
+          // Populate table with first 5 passengers
+          const tbody = document.getElementById('passengerTableBody');
+          tbody.innerHTML = '';
+          passengers.slice(0, 5).forEach(p => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td>${p.name || p.passport || 'N/A'}</td>
+              <td>${p.passport || 'N/A'}</td>
+              <td>${p.flight || 'Not assigned'}</td>
+              <td><span class="badge-pill badge-${p.checked_in ? 'success' : 'warning'}">${p.checked_in ? 'Checked In' : 'Pending'}</span></td>
+              <td>${p.checked_in ? '<i class="fas fa-check" style="color: #22c55e;"></i>' : '<i class="fas fa-clock" style="color: #f59e0b;"></i>'}</td>
+            `;
+            tbody.appendChild(row);
+          });
+
+          if (passengers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 32px; color: #94a3b8;">No passengers found</td></tr>';
+          }
+
+          document.getElementById('checkedIn').textContent = passengers.filter(p => p.checked_in).length;
+          document.getElementById('pendingCheckins').textContent = passengers.filter(p => !p.checked_in).length;
+        }
+
+        // Load flights
+        const flightsResp = await fetch('/api/flights', {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (flightsResp.ok) {
+          const flightsData = await flightsResp.json();
+          const flights = flightsData.flights || [];
+          document.getElementById('activeFlights').textContent = flights.length;
+          
+          // Populate flights table
+          const tbody = document.getElementById('flightTableBody');
+          tbody.innerHTML = '';
+          flights.slice(0, 5).forEach(f => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+              <td><strong>${f.flight_number || f.flight || 'N/A'}</strong></td>
+              <td>${f.destination || 'N/A'}</td>
+              <td>${f.departure_time || f.time || 'N/A'}</td>
+              <td>${f.bookings || 0}</td>
+              <td><span class="badge-pill badge-success">Active</span></td>
+            `;
+            tbody.appendChild(row);
+          });
+
+          if (flights.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 32px; color: #94a3b8;">No flights found</td></tr>';
+          }
+        }
+
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadDashboardData);
+  </script>
+</body>
+</html>

@@ -76,5 +76,11 @@
   { "code": "HRG", "name": "Hurghada International Airport", "city": "Hurghada", "country": "Egypt", "lat": 27.1742, "lon": 33.7992 },
   { "code": "MRU", "name": "Mauritius Sir Seewoosagur Ramgoolam International Airport", "city": "Mauritius", "country": "Mauritius", "lat": -20.3933, "lon": 57.6836 },
   { "code": "SEZ", "name": "Seychelles International Airport", "city": "Seychelles", "country": "Seychelles", "lat": -4.6796, "lon": 55.5225 },
-  { "code": "UIO", "name": "Mariscal Sucre International Airport", "city": "Quito", "country": "Ecuador", "lat": -0.4450, "lon": -78.4831 }
+  { "code": "UIO", "name": "Mariscal Sucre International Airport", "city": "Quito", "country": "Ecuador", "lat": -0.4450, "lon": -78.4831 },
+  { "code": "NBO", "name": "Jomo Kenyatta International Airport", "city": "Nairobi", "country": "Kenya", "lat": -1.3195, "lon": 36.9280 },
+  { "code": "MBA", "name": "Mombasa International Airport", "city": "Mombasa", "country": "Kenya", "lat": -4.0356, "lon": 39.5947 },
+  { "code": "KIS", "name": "Kisumu International Airport", "city": "Kisumu", "country": "Kenya", "lat": -0.4282, "lon": 34.7289 },
+  { "code": "ELD", "name": "Eldoret International Airport", "city": "Eldoret", "country": "Kenya", "lat": 0.4033, "lon": 35.2400 },
+  { "code": "JNB", "name": "OR Tambo International Airport", "city": "Johannesburg", "country": "South Africa", "lat": -26.1367, "lon": 28.2411 },
+  { "code": "ADD", "name": "Addis Ababa Bole International Airport", "city": "Addis Ababa", "country": "Ethiopia", "lat": 8.9842, "lon": 38.7469 }
 ]

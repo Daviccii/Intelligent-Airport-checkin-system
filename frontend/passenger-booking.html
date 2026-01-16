@@ -1435,6 +1435,35 @@
 
     // Initialize
     renderOffers();
+
+    // If coming from availability selection, preload flight and open traveler modal
+    try {
+      const sel = sessionStorage.getItem('selected_flight');
+      if (sel) {
+        const f = JSON.parse(sel);
+        selectedFlight = {
+          id: f.id || 'SF-' + Math.random().toString(36).slice(2,8).toUpperCase(),
+          airline: f.airline || 'SmartFly Airways',
+          from: f.from,
+          to: f.to,
+          departure: f.departure,
+          arrival: f.arrival,
+          date: f.date,
+          duration: f.duration || '',
+          priceUSD: f.priceUSD || 0,
+          originalPriceUSD: f.originalPriceUSD || Math.round((f.priceUSD || 0) * 1.2),
+          capacity: f.capacity || 180,
+          booked: f.booked || 0,
+          stops: f.stops || 'Direct'
+        };
+        // Open traveler flow
+        currentStep = 1;
+        renderFlightsList();
+        openModal('flightModal');
+      }
+    } catch (e) {
+      console.warn('No selected flight preload', e);
+    }
   </script>
 </body>
 </html>

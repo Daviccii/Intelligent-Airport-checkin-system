@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Flights — Staff Portal</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/staff/staff-styles.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="layout-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-logo">
+          <i class="fas fa-plane"></i>
+          SmartFly Staff
+        </div>
+        
+        <div class="sidebar-nav">
+          <a href="/staff/dashboard.html" class="nav-link-staff">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="/staff/passengers.html" class="nav-link-staff">
+            <i class="fas fa-users"></i>
+            <span>Passengers</span>
+          </a>
+          <a href="/staff/flights.html" class="nav-link-staff active">
+            <i class="fas fa-plane"></i>
+            <span>Flights</span>
+          </a>
+          <a href="/staff/check-ins.html" class="nav-link-staff">
+            <i class="fas fa-check-circle"></i>
+            <span>Check-ins</span>
+          </a>
+          <hr style="opacity: 0.2; margin: 16px 0;">
+          <a href="#" class="nav-link-staff" onclick="logout(event)">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="layout-main">
+      <!-- Top Navigation -->
+      <div class="top-nav">
+        <div>
+          <h2 style="font-size: 18px; margin: 0; color: #1e293b;">Flight Management</h2>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar" id="userInitial">S</div>
+          <div>
+            <div id="staffName" style="font-weight: 600; color: #1e293b;">Staff</div>
+            <div id="staffId" style="font-size: 12px; color: #64748b;">SF-XXXX-XXXXX</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <div class="page-header">
+          <h1><i class="fas fa-plane"></i> Flight Management</h1>
+          <p>View and monitor active flights</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-plane"></i></div>
+            <div class="stat-card-label">Total Flights</div>
+            <div class="stat-card-value" id="totalFlights">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-card-label">Total Passengers</div>
+            <div class="stat-card-value" id="totalPassengers">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-card-label">Avg Check-in Rate</div>
+            <div class="stat-card-value" id="avgCheckinRate">0%</div>
+          </div>
+        </div>
+
+        <!-- Flights Table -->
+        <div class="content-card">
+          <h2><i class="fas fa-plane"></i> All Flights</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Flight Number</th>
+                  <th>Destination</th>
+                  <th>Departure</th>
+                  <th>Arrival</th>
+                  <th>Passengers</th>
+                  <th>Check-ins</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="flightTableBody">
+                <tr>
+                  <td colspan="7" style="text-align: center; padding: 32px; color: #94a3b8;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading flights...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api/staff';
+    const token = localStorage.getItem('session') || localStorage.getItem('staffToken');
+
+    async function logout(event) {
+      event.preventDefault();
+      localStorage.removeItem('session');
+      localStorage.removeItem('staffToken');
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      window.location.href = '/staff-login.html';
+    }
+
+    async function loadFlights() {
+      if (!token) {
+        window.location.href = '/staff-login.html';
+        return;
+      }
+
+      try {
+        // Load staff profile
+        const profileResp = await fetch(`${API_BASE}/me`, {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (profileResp.ok) {
+          const profileData = await profileResp.json();
+          const staff = profileData.staff;
+          document.getElementById('staffName').textContent = staff.name || 'Staff';
+          document.getElementById('staffId').textContent = staff.system_id || 'SF-XXXX-XXXXX';
+          document.getElementById('userInitial').textContent = (staff.name || 'S').charAt(0).toUpperCase();
+        }
+
+        // Load flights
+        const flightsResp = await fetch('/api/flights', {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (flightsResp.ok) {
+          const flightsData = await flightsResp.json();
+          const flights = flightsData.flights || [];
+          document.getElementById('totalFlights').textContent = flights.length;
+
+          // Load passengers to calculate check-in stats
+          const passengersResp = await fetch('/api/passengers', {
+            headers: {
+              'X-SESSION': token,
+              'Authorization': `Bearer ${token}`
+            }
+          });
+
+          if (passengersResp.ok) {
+            const passengersData = await passengersResp.json();
+            const passengers = passengersData.passengers || [];
+            document.getElementById('totalPassengers').textContent = passengers.length;
+
+            // Calculate check-in rate
+            const checkedIn = passengers.filter(p => p.checked_in).length;
+            const rate = passengers.length > 0 ? Math.round((checkedIn / passengers.length) * 100) : 0;
+            document.getElementById('avgCheckinRate').textContent = `${rate}%`;
+
+            // Populate flights table
+            const tbody = document.getElementById('flightTableBody');
+            tbody.innerHTML = '';
+
+            flights.forEach(f => {
+              const flightPassengers = passengers.filter(p => p.flight === (f.flight_number || f.flight));
+              const checkedInCount = flightPassengers.filter(p => p.checked_in).length;
+              const totalPassengers = flightPassengers.length;
+
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td><strong>${f.flight_number || f.flight || 'N/A'}</strong></td>
+                <td>${f.destination || 'N/A'}</td>
+                <td>${f.departure_time || f.time || 'N/A'}</td>
+                <td>${f.arrival_time || 'N/A'}</td>
+                <td>${totalPassengers}</td>
+                <td>${checkedInCount} / ${totalPassengers}</td>
+                <td><span class="badge-pill badge-success"><i class="fas fa-check-circle"></i> Active</span></td>
+              `;
+              tbody.appendChild(row);
+            });
+
+            if (flights.length === 0) {
+              tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 32px; color: #94a3b8;">No flights found</td></tr>';
+            }
+          }
+        }
+
+      } catch (error) {
+        console.error('Error loading flights:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadFlights);
+  </script>
+</body>
+</html>

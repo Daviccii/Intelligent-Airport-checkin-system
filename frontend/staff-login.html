@@ -151,11 +151,11 @@
 
     <form id="staffLoginForm" class="login-form">
       <div class="form-group">
-        <label for="staffId">Staff ID</label>
+        <label for="staffId">Staff ID <span style="color: #6b7280; font-size: 12px; font-weight: 400;">(provided by admin)</span></label>
         <input 
           id="staffId" 
           type="text" 
-          placeholder="Enter your staff ID" 
+          placeholder="e.g., SF-2026-00001A" 
           required
           autocomplete="username"
         >
@@ -219,8 +219,8 @@
       showStatus('Signing in...', 'loading');
 
       try {
-        // Call login API with staff role
-        const response = await fetch('http://127.0.0.1:5000/api/login', {
+        // Call login API with staff role (use relative URL)
+        const response = await fetch('/api/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'

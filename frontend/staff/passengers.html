@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Passengers — Staff Portal</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/staff/staff-styles.css">
+  <style>
+    .filter-section {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .search-box {
+      margin-bottom: 16px;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .search-box input:focus {
+      outline: none;
+      border-color: #0B74DE;
+      box-shadow: 0 0 0 3px rgba(11, 116, 222, 0.1);
+    }
+
+    .filter-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .filter-group label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+    }
+
+    .filter-group select {
+      padding: 10px 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .filter-group select:focus {
+      outline: none;
+      border-color: #0B74DE;
+    }
+
+    .passenger-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .passenger-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      transform: translateY(-2px);
+    }
+
+    .passenger-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .passenger-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .passenger-passport {
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 4px;
+    }
+
+    .passenger-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .detail-label {
+      font-size: 12px;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .detail-value {
+      font-size: 14px;
+      color: #1e293b;
+      font-weight: 500;
+    }
+
+    .badge-checkin {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .badge-checked-in {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge-not-checked-in {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .no-results {
+      text-align: center;
+      padding: 48px 20px;
+      color: #94a3b8;
+    }
+
+    .no-results i {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="layout-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-logo">
+          <i class="fas fa-plane"></i>
+          SmartFly Staff
+        </div>
+        
+        <div class="sidebar-nav">
+          <a href="/staff/dashboard.html" class="nav-link-staff">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="/staff/passengers.html" class="nav-link-staff active">
+            <i class="fas fa-users"></i>
+            <span>Passengers</span>
+          </a>
+          <a href="/staff/flights.html" class="nav-link-staff">
+            <i class="fas fa-plane"></i>
+            <span>Flights</span>
+          </a>
+          <a href="/staff/check-ins.html" class="nav-link-staff">
+            <i class="fas fa-check-circle"></i>
+            <span>Check-ins</span>
+          </a>
+          <hr style="opacity: 0.2; margin: 16px 0;">
+          <a href="#" class="nav-link-staff" onclick="logout(event)">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="layout-main">
+      <!-- Top Navigation -->
+      <div class="top-nav">
+        <div>
+          <h2 style="font-size: 18px; margin: 0; color: #1e293b;">Passenger Management</h2>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar" id="userInitial">S</div>
+          <div>
+            <div id="staffName" style="font-weight: 600; color: #1e293b;">Staff</div>
+            <div id="staffId" style="font-size: 12px; color: #64748b;">SF-XXXX-XXXXX</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <div class="page-header">
+          <h1><i class="fas fa-users"></i> Passenger Records</h1>
+          <p>View and manage passenger information</p>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+          <div class="search-box">
+            <i class="fas fa-search" style="position: absolute; margin-left: 12px; margin-top: 12px; color: #94a3b8;"></i>
+            <input 
+              type="text" 
+              id="searchInput" 
+              placeholder="Search by name, passport, or email..." 
+              style="padding-left: 40px;"
+            >
+          </div>
+          
+          <div class="filter-row">
+            <div class="filter-group">
+              <label>Flight</label>
+              <select id="flightFilter">
+                <option value="">All Flights</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label>Check-in Status</label>
+              <select id="statusFilter">
+                <option value="">All Statuses</option>
+                <option value="checked-in">Checked In</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Passengers List -->
+        <div id="passengersList">
+          <div style="text-align: center; padding: 32px; color: #94a3b8;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 32px; margin-bottom: 16px;"></i>
+            <p>Loading passengers...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api/staff';
+    const token = localStorage.getItem('session') || localStorage.getItem('staffToken');
+    let allPassengers = [];
+
+    async function logout(event) {
+      event.preventDefault();
+      localStorage.removeItem('session');
+      localStorage.removeItem('staffToken');
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      window.location.href = '/staff-login.html';
+    }
+
+    async function loadPassengers() {
+      if (!token) {
+        window.location.href = '/staff-login.html';
+        return;
+      }
+
+      try {
+        // Load staff profile
+        const profileResp = await fetch(`${API_BASE}/me`, {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (profileResp.ok) {
+          const profileData = await profileResp.json();
+          const staff = profileData.staff;
+          document.getElementById('staffName').textContent = staff.name || 'Staff';
+          document.getElementById('staffId').textContent = staff.system_id || 'SF-XXXX-XXXXX';
+          document.getElementById('userInitial').textContent = (staff.name || 'S').charAt(0).toUpperCase();
+        }
+
+        // Load passengers
+        const passengersResp = await fetch('/api/passengers', {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (passengersResp.ok) {
+          const passengersData = await passengersResp.json();
+          allPassengers = passengersData.passengers || [];
+          
+          // Populate flight filter
+          const flights = [...new Set(allPassengers.map(p => p.flight).filter(f => f))];
+          const flightFilter = document.getElementById('flightFilter');
+          flights.forEach(flight => {
+            const option = document.createElement('option');
+            option.value = flight;
+            option.textContent = flight;
+            flightFilter.appendChild(option);
+          });
+
+          renderPassengers(allPassengers);
+        }
+
+      } catch (error) {
+        console.error('Error loading passengers:', error);
+        document.getElementById('passengersList').innerHTML = `
+          <div style="text-align: center; padding: 32px; color: #dc2626;">
+            <i class="fas fa-exclamation-circle" style="font-size: 32px; margin-bottom: 16px;"></i>
+            <p>Error loading passengers</p>
+          </div>
+        `;
+      }
+    }
+
+    function renderPassengers(passengers) {
+      const container = document.getElementById('passengersList');
+      
+      if (passengers.length === 0) {
+        container.innerHTML = `
+          <div class="no-results">
+            <div><i class="fas fa-inbox"></i></div>
+            <h3 style="color: #1e293b; margin-bottom: 8px;">No passengers found</h3>
+            <p>Try adjusting your filters or search terms</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = passengers.map(p => `
+        <div class="passenger-card">
+          <div class="passenger-header">
+            <div>
+              <div class="passenger-name">${p.name || p.passport || 'Unknown'}</div>
+              <div class="passenger-passport">${p.passport || 'No Passport'}</div>
+            </div>
+            <span class="badge-checkin badge-${p.checked_in ? 'checked-in' : 'not-checked-in'}">
+              ${p.checked_in ? '<i class="fas fa-check-circle"></i> Checked In' : '<i class="fas fa-clock"></i> Pending'}
+            </span>
+          </div>
+          
+          <div class="passenger-details">
+            <div class="detail-item">
+              <div class="detail-label">Email</div>
+              <div class="detail-value">${p.email || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Phone</div>
+              <div class="detail-value">${p.phone || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Flight</div>
+              <div class="detail-value">${p.flight || 'Not Assigned'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Seat</div>
+              <div class="detail-value">${p.seat || 'N/A'}</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Search and filter
+    document.getElementById('searchInput').addEventListener('input', filterPassengers);
+    document.getElementById('flightFilter').addEventListener('change', filterPassengers);
+    document.getElementById('statusFilter').addEventListener('change', filterPassengers);
+
+    function filterPassengers() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const flightFilter = document.getElementById('flightFilter').value;
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      const filtered = allPassengers.filter(p => {
+        const matchesSearch = !searchTerm || 
+          (p.name && p.name.toLowerCase().includes(searchTerm)) ||
+          (p.passport && p.passport.toLowerCase().includes(searchTerm)) ||
+          (p.email && p.email.toLowerCase().includes(searchTerm));
+        
+        const matchesFlight = !flightFilter || p.flight === flightFilter;
+        
+        const matchesStatus = !statusFilter ||
+          (statusFilter === 'checked-in' && p.checked_in) ||
+          (statusFilter === 'pending' && !p.checked_in);
+        
+        return matchesSearch && matchesFlight && matchesStatus;
+      });
+
+      renderPassengers(filtered);
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPassengers);
+  </script>
+</body>
+</html>

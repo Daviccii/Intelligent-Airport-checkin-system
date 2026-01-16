@@ -240,9 +240,451 @@
       margin-bottom: 16px;
       opacity: 0.3;
     }
+
+    /* SmartFly Top Header */
+    .smartfly-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .smartfly-header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 250px;
+    }
+
+    .smartfly-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+    }
+
+    .smartfly-logo {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+      border-radius: 8px;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .smartfly-brand-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .smartfly-brand-name {
+      color: white;
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .smartfly-brand-subtitle {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .smartfly-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      justify-content: center;
+      min-width: 400px;
+      flex-wrap: wrap;
+    }
+
+    .smartfly-nav-item {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+
+    .smartfly-nav-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .smartfly-nav-item.active {
+      background: rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.5);
+    }
+
+    .smartfly-nav-item i {
+      font-size: 12px;
+    }
+
+    .smartfly-header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 200px;
+      justify-content: flex-end;
+    }
+
+    .smartfly-user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-right: 16px;
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .smartfly-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .smartfly-user-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .smartfly-user-name {
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .smartfly-user-role {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .smartfly-logout-btn {
+      background: rgba(239, 68, 68, 0.1);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .smartfly-logout-btn:hover {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    /* Enhanced Header Styles */
+    .staff-header-enhanced {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+      padding: 28px 24px;
+      margin: 0 -16px 32px -16px;
+      border-radius: 0;
+      box-shadow: none;
+    }
+    
+    .staff-header-title {
+      color: #0f172a;
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 8px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      letter-spacing: -0.5px;
+    }
+    
+    .staff-header-title i {
+      color: #3b82f6;
+      font-size: 32px;
+    }
+    
+    .staff-header-subtitle {
+      color: #64748b;
+      font-size: 14px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .staff-controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    
+    .staff-search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+    
+    .staff-search-box input {
+      width: 100%;
+      padding: 10px 16px 10px 40px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      height: 100%;
+      font-family: inherit;
+    }
+    
+    .staff-search-box input::placeholder {
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .staff-search-box input:focus {
+      outline: none;
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    
+    .staff-search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: rgba(255, 255, 255, 0.5);
+      font-size: 14px;
+      pointer-events: none;
+    }
+    
+    .staff-filter-dropdown {
+      padding: 10px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+      font-weight: 500;
+    }
+    
+    .staff-filter-dropdown:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: #3b82f6;
+    }
+    
+    .staff-filter-dropdown:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+    
+    .staff-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .staff-stat-card {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: white;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .staff-stat-card:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: #3b82f6;
+    }
+    
+    .staff-stat-card i {
+      color: #3b82f6;
+      font-size: 16px;
+    }
+    
+    .staff-stat-value {
+      font-weight: 700;
+      font-size: 16px;
+      color: #60a5fa;
+    }
+    
+    .add-staff-btn {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      height: 40px;
+      padding: 0 20px;
+    }
+    
+    .add-staff-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+    }
+    
+    .add-staff-btn:active {
+      transform: translateY(0);
+    }
+
+    /* Responsive tweaks */
+    @media (max-width: 768px) {
+      .staff-header-enhanced {
+        padding: 24px 16px;
+        margin: -16px -16px 24px -16px;
+      }
+
+      .staff-header-title {
+        font-size: 24px;
+      }
+
+      .staff-controls {
+        flex-direction: column;
+      }
+
+      .staff-search-box {
+        min-width: 100%;
+      }
+
+      .add-staff-btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .staff-stats {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- SmartFly Header -->
+  <header class="smartfly-header">
+    <!-- Left: Brand Logo -->
+    <div class="smartfly-header-left">
+      <a href="dashboard.html" class="smartfly-brand">
+        <div class="smartfly-logo">
+          <i class="fas fa-plane"></i>
+        </div>
+        <div class="smartfly-brand-text">
+          <div class="smartfly-brand-name">SmartFly</div>
+          <div class="smartfly-brand-subtitle">Admin Panel</div>
+        </div>
+      </a>
+    </div>
+
+    <!-- Center: Navigation -->
+    <nav class="smartfly-nav">
+      <a href="dashboard.html" class="smartfly-nav-item" title="Dashboard">
+        <i class="fas fa-chart-line"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="flights.html" class="smartfly-nav-item" title="Flights">
+        <i class="fas fa-plane"></i>
+        <span>Flights</span>
+      </a>
+      <a href="active-flights.html" class="smartfly-nav-item" title="Live Monitor">
+        <i class="fas fa-radar"></i>
+        <span>Live Monitor</span>
+      </a>
+      <a href="bookings.html" class="smartfly-nav-item" title="Bookings">
+        <i class="fas fa-calendar-check"></i>
+        <span>Bookings</span>
+      </a>
+      <a href="members.html" class="smartfly-nav-item" title="Members">
+        <i class="fas fa-users"></i>
+        <span>Members</span>
+      </a>
+      <a href="checkins.html" class="smartfly-nav-item" title="Check-Ins">
+        <i class="fas fa-passport"></i>
+        <span>Check-Ins</span>
+      </a>
+      <a href="payments.html" class="smartfly-nav-item" title="Payments">
+        <i class="fas fa-credit-card"></i>
+        <span>Payments</span>
+      </a>
+      <a href="staff.html" class="smartfly-nav-item active" title="Staff">
+        <i class="fas fa-user-tie"></i>
+        <span>Staff</span>
+      </a>
+      <a href="settings.html" class="smartfly-nav-item" title="Settings">
+        <i class="fas fa-cog"></i>
+        <span>Settings</span>
+      </a>
+    </nav>
+
+    <!-- Right: User Profile -->
+    <div class="smartfly-header-right">
+      <div class="smartfly-user-info">
+        <div class="smartfly-avatar">RG</div>
+        <div class="smartfly-user-details">
+          <div class="smartfly-user-name">Riley Gabi</div>
+          <div class="smartfly-user-role">Administrator</div>
+        </div>
+      </div>
+      <button class="smartfly-logout-btn" onclick="handleLogout()" title="Log out">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Log Out</span>
+      </button>
+    </div>
+  </header>
+
   <!-- Top Navigation Bar -->
   <nav class="top-navbar">
     <div class="navbar-container">
@@ -316,16 +758,50 @@
   <!-- Main Content -->
   <div class="admin-layout">
     <main class="main-content flex-grow-1 p-4">
-      <div class="dashboard-header d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h1 class="display-6 mb-2 fw-bold">Staff Management</h1>
-          <p class="text-muted mb-0">
-            <i class="fas fa-user-tie"></i> Manage airline staff accounts and credentials
-          </p>
+      <!-- Enhanced Staff Header -->
+      <div class="staff-header-enhanced">
+        <h1 class="staff-header-title">
+          <i class="fas fa-user-tie"></i>
+          Staff Management System
+        </h1>
+        <p class="staff-header-subtitle">
+          <i class="fas fa-shield-alt"></i>
+          Manage airline personnel, permissions, and security credentials
+        </p>
+
+        <!-- Controls Section -->
+        <div class="staff-controls">
+          <div class="staff-search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="staffSearch" placeholder="Search by name or username..." onkeyup="filterStaff()">
+          </div>
+          <select class="staff-filter-dropdown" id="permissionFilter" onchange="filterStaff()">
+            <option value="">All Permissions</option>
+            <option value="view_dashboard">Dashboard Access</option>
+            <option value="view_flights">Flights Access</option>
+            <option value="view_passengers">Passenger Access</option>
+            <option value="edit_passengers">Edit Permissions</option>
+          </select>
+          <button class="add-staff-btn" onclick="openAddStaffModal()">
+            <i class="fas fa-plus-circle"></i> Add New Staff
+          </button>
         </div>
-        <button class="btn btn-primary" onclick="openAddStaffModal()">
-          <i class="fas fa-plus"></i> Add New Staff
-        </button>
+
+        <!-- Stats Cards -->
+        <div class="staff-stats">
+          <div class="staff-stat-card">
+            <i class="fas fa-users"></i>
+            <div>Total Staff: <span class="staff-stat-value" id="totalStaffCount">0</span></div>
+          </div>
+          <div class="staff-stat-card">
+            <i class="fas fa-shield-alt"></i>
+            <div>Admin Access: <span class="staff-stat-value" id="adminCount">0</span></div>
+          </div>
+          <div class="staff-stat-card">
+            <i class="fas fa-clock"></i>
+            <div>Last Updated: <span class="staff-stat-value" id="lastUpdated">Just now</span></div>
+          </div>
+        </div>
       </div>
 
       <div id="alertContainer"></div>
@@ -344,6 +820,10 @@
   <div id="addStaffModal" class="modal">
     <div class="modal-content">
       <h2 class="modal-title">Add New Staff Member</h2>
+      <p style="color: #666; font-size: 13px; margin-bottom: 20px;">
+        <i class="fas fa-info-circle"></i>
+        A unique Staff ID will be automatically generated. Share this ID with the staff for login along with their password.
+      </p>
       <form id="addStaffForm">
         <div class="form-group">
           <label for="staffName">Full Name</label>
@@ -470,6 +950,8 @@
     // Load staff list on page load
     document.addEventListener('DOMContentLoaded', () => {
       loadStaffList();
+      // Auto-refresh every 30 seconds
+      setInterval(loadStaffList, 30000);
     });
 
     // Load staff list
@@ -492,7 +974,9 @@
         }
 
         console.log('Staff data received:', data);
-        renderStaffList((data && data.staff) || []);
+        const staffList = (data && data.staff) || [];
+        renderStaffList(staffList);
+        updateStaffStats(staffList);
       } catch (error) {
         console.error('Error loading staff:', error);
         showAlert('Failed to load staff list. Please try again.', 'error');
@@ -503,6 +987,22 @@
           </div>
         `;
       }
+    }
+
+    // Update stats cards
+    function updateStaffStats(staffList) {
+      const totalStaff = staffList.length;
+      const adminCount = staffList.filter(s => (s.permissions || []).includes('view_dashboard')).length;
+      
+      document.getElementById('totalStaffCount').textContent = totalStaff;
+      document.getElementById('adminCount').textContent = adminCount;
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+      
+      // Store full list for filtering
+      window.fullStaffList = staffList;
     }
 
     // Render staff list
@@ -526,6 +1026,7 @@
             <div>
               <div class="staff-name">${escapeHtml(staff.name || staff.username)}</div>
               <div class="staff-username">@${escapeHtml(staff.username)}</div>
+              ${staff.system_id ? `<div class="staff-info" style="color: #3b82f6; font-weight: 600;"><i class="fas fa-id-card"></i> ID: ${escapeHtml(staff.system_id)}</div>` : ''}
               ${staff.email ? `<div class="staff-info"><i class="fas fa-envelope"></i> ${escapeHtml(staff.email)}</div>` : ''}
               <div class="staff-info"><i class="fas fa-calendar"></i> Created: ${formatDate(staff.created_at)}</div>
             </div>
@@ -593,7 +1094,41 @@
           throw new Error((data && data.error) || raw || 'Failed to add staff member');
         }
 
-        showAlert(`Staff member "${formData.name}" added successfully!`, 'success');
+        // Show success with staff ID
+        const staffData = data.staff || {};
+        const staffId = staffData.system_id || 'N/A';
+        const successMsg = `
+          ✓ Staff member "${formData.name}" created successfully!<br>
+          <strong>Staff ID:</strong> ${staffId}<br>
+          <small style="opacity: 0.8;">Share this ID with the staff for login</small>
+        `;
+        
+        // Create a custom alert showing the staff ID
+        const container = document.getElementById('alertContainer');
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success';
+        alert.style.minHeight = '100px';
+        alert.style.display = 'flex';
+        alert.style.alignItems = 'center';
+        alert.innerHTML = `
+          <div style="flex: 1;">
+            <i class="fas fa-check-circle"></i>
+            <div style="display: inline-block; margin-left: 12px; vertical-align: middle;">
+              ${successMsg}
+            </div>
+          </div>
+          <button onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; font-size: 18px;">×</button>
+        `;
+        container.appendChild(alert);
+
+        setTimeout(() => {
+          if (alert.parentElement) {
+            alert.style.opacity = '0';
+            alert.style.transform = 'translateY(-20px)';
+            setTimeout(() => alert.remove(), 300);
+          }
+        }, 8000);
+
         closeAddStaffModal();
         loadStaffList();
       } catch (error) {
@@ -801,6 +1336,79 @@
         }
       });
     });
+
+    // Filter and Search Staff
+    function filterStaff() {
+      const searchTerm = document.getElementById('staffSearch').value.toLowerCase();
+      const permissionFilter = document.getElementById('permissionFilter').value;
+      
+      if (!window.fullStaffList) return;
+
+      let filtered = window.fullStaffList.filter(staff => {
+        // Search filter
+        const matchesSearch = !searchTerm || 
+          (staff.name && staff.name.toLowerCase().includes(searchTerm)) ||
+          (staff.username && staff.username.toLowerCase().includes(searchTerm)) ||
+          (staff.email && staff.email.toLowerCase().includes(searchTerm));
+
+        // Permission filter
+        const matchesPermission = !permissionFilter || 
+          (staff.permissions && staff.permissions.includes(permissionFilter));
+
+        return matchesSearch && matchesPermission;
+      });
+
+      renderStaffList(filtered);
+
+      // Show no results message
+      if (filtered.length === 0 && (searchTerm || permissionFilter)) {
+        document.getElementById('staffList').innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h3>No Staff Members Found</h3>
+            <p>Try adjusting your search or filter criteria.</p>
+          </div>
+        `;
+      }
+    }
+
+    // Export staff list as CSV
+    function exportStaffList() {
+      if (!window.fullStaffList || window.fullStaffList.length === 0) {
+        showAlert('No staff to export', 'error');
+        return;
+      }
+
+      const headers = ['Name', 'Username', 'Email', 'Permissions', 'Created Date'];
+      const rows = window.fullStaffList.map(staff => [
+        staff.name || staff.username,
+        staff.username,
+        staff.email || 'N/A',
+        (staff.permissions || []).join('; '),
+        formatDate(staff.created_at)
+      ]);
+
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `staff-list-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      
+      showAlert('Staff list exported successfully', 'success');
+    }
+
+    // Refresh staff list manually
+    function refreshStaffList() {
+      showAlert('Refreshing staff list...', 'success');
+      loadStaffList();
+    }
   </script>
 </body>
 </html>

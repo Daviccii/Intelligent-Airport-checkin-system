@@ -2119,7 +2119,7 @@
 
                     function debounce(fn, wait){ let t; return function(){ const args = arguments; clearTimeout(t); t = setTimeout(()=> fn.apply(this,args), wait||200); }; }
                     
-                    // Reveal next step and advance focus when both airports are valid
+                    // Placeholder functions - can be expanded later
                     function checkBothAirportsSelected(){
                         const fromEl = document.getElementById('from');
                         const toEl = document.getElementById('to');
@@ -2127,13 +2127,7 @@
                         if (fromEl && toEl && travelExtras){
                             const fromSet = fromEl.dataset.iata && fromEl.dataset.iata.length === 3;
                             const toSet = toEl.dataset.iata && toEl.dataset.iata.length === 3;
-                            if (fromSet && toSet){
-                                travelExtras.classList.remove('hidden');
-                                try { initHeroDatePickers && initHeroDatePickers(); } catch(e) {}
-                                try { updateDateFieldsVisibility && updateDateFieldsVisibility(); } catch(e) {}
-                                // Move to Departure Date
-                                try { setTimeout(() => document.getElementById('departDate')?.focus(), 50); } catch(e) {}
-                            }
+                            if (fromSet && toSet){ travelExtras.classList.remove('hidden'); }
                         }
                     }
                     
@@ -2164,16 +2158,12 @@
                             if (fromEl.dataset.iata) fromEl.dataset.selected = 'true';
                             checkBothAirportsSelected();
                             updateFlightPrice();
-                            // Advance focus to Destination
-                            if (fromEl.dataset.iata) { try { document.getElementById('to')?.focus(); } catch(e) {} }
                         });
                         toEl.addEventListener('change', function(){
                             toEl.dataset.iata = toEl.dataset.iata || (toEl.value.match(/\(([A-Z]{3})\)/) || [])[1] || '';
                             if (toEl.dataset.iata) toEl.dataset.selected = 'true';
                             checkBothAirportsSelected();
                             updateFlightPrice();
-                            // Advance focus to Departure Date when destination set
-                            if (toEl.dataset.iata) { try { setTimeout(() => document.getElementById('departDate')?.focus(), 50); } catch(e) {} }
                         });
                         
                         // Don't validate on blur - only on form submit to prevent interfering with dropdown
@@ -2262,8 +2252,8 @@
                             params.set('to', toIata);
                             params.set('tripType', tripType);
                             params.set('cabin', cabinClass);
-                            if (departDate) { params.set('depart', departDate); params.set('departureDate', departDate); }
-                            if (returnDate && tripType === 'roundtrip') { params.set('return', returnDate); params.set('returnDate', returnDate); }
+                            if (departDate) params.set('departureDate', departDate);
+                            if (returnDate && tripType === 'roundtrip') params.set('returnDate', returnDate);
                             
                             // Save comprehensive data to sessionStorage for availability page
                             try{
@@ -2294,26 +2284,6 @@
                             window.location.href = '/availability.html?' + params.toString();
                             return false;
                         }); }
-                        // After selecting dates, auto-advance focus through steps
-                        try {
-                            const departInput = document.getElementById('departDate');
-                            const returnInput = document.getElementById('returnDate');
-                            if (departInput) {
-                                departInput.addEventListener('change', function(){
-                                    const tripType = document.getElementById('tripType')?.value || 'roundtrip';
-                                    if (tripType === 'roundtrip') {
-                                        try { document.getElementById('returnDate')?.focus(); } catch(e) {}
-                                    } else {
-                                        try { form?.querySelector('button[type="submit"]')?.focus(); } catch(e) {}
-                                    }
-                                });
-                            }
-                            if (returnInput) {
-                                returnInput.addEventListener('change', function(){
-                                    try { form?.querySelector('button[type="submit"]')?.focus(); } catch(e) {}
-                                });
-                            }
-                        } catch(e) {}
                     }
 
                     // populate airports when fetched; if fetch fails, handlers are still attached and will show "No matches" while typing

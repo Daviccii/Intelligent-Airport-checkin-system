@@ -306,40 +306,40 @@
           </h3>
           <div class="access-grid">
             <!-- Dashboard Card -->
-            <a href="/admin/dashboard.html" class="access-card" id="dashboardCard">
+            <a href="/staff/dashboard.html" class="access-card" id="dashboardCard">
               <div class="access-card-icon">
                 <i class="fas fa-chart-line"></i>
               </div>
               <div class="access-card-title">Dashboard Overview</div>
-              <div class="access-card-desc">View airline metrics and analytics</div>
+              <div class="access-card-desc">View your staff dashboard and metrics</div>
             </a>
 
             <!-- Flights Card -->
-            <a href="/admin/flights.html" class="access-card" id="flightsCard">
+            <a href="/staff/flights.html" class="access-card" id="flightsCard">
               <div class="access-card-icon">
                 <i class="fas fa-plane"></i>
               </div>
-              <div class="access-card-title">Flights Management</div>
-              <div class="access-card-desc">Manage flight schedules and info</div>
+              <div class="access-card-title">Flight Management</div>
+              <div class="access-card-desc">View active flights and passenger distribution</div>
             </a>
 
-            <!-- Passengers Card (Read-only) -->
-            <a href="/admin/checkins.html" class="access-card" id="passengersCard">
+            <!-- Passengers Card -->
+            <a href="/staff/passengers.html" class="access-card" id="passengersCard">
               <div class="access-card-icon">
-                <i class="fas fa-passport"></i>
+                <i class="fas fa-users"></i>
               </div>
-              <div class="access-card-title">Passenger Information</div>
-              <div class="access-card-desc">View passenger and booking details</div>
+              <div class="access-card-title">Passenger Records</div>
+              <div class="access-card-desc">View and search passenger information</div>
             </a>
 
-            <!-- Passengers Card (Edit) -->
-            <div class="access-card" id="editPassengersCard" onclick="this.classList.contains('disabled') || navigateTo('/admin/checkins.html')">
+            <!-- Check-ins Card -->
+            <a href="/staff/check-ins.html" class="access-card" id="checkinCard">
               <div class="access-card-icon">
-                <i class="fas fa-edit"></i>
+                <i class="fas fa-check-circle"></i>
               </div>
-              <div class="access-card-title">Update Passenger Records</div>
-              <div class="access-card-desc">Edit passenger and check-in data</div>
-            </div>
+              <div class="access-card-title">Check-in Status</div>
+              <div class="access-card-desc">Monitor passenger check-in progress</div>
+            </a>
           </div>
         </div>
 
@@ -364,7 +364,7 @@
 
   <script>
     const token = localStorage.getItem('session') || localStorage.getItem('staffToken');
-    const API_BASE = 'http://127.0.0.1:5000/api/staff';
+    const API_BASE = '/api/staff';
 
     const PERMISSION_LABELS = {
       view_dashboard: 'Dashboard access',

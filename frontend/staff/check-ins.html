@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Check-ins — Staff Portal</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="/staff/staff-styles.css">
+</head>
+<body>
+  <div class="layout">
+    <!-- Sidebar -->
+    <div class="layout-sidebar">
+      <div class="sidebar">
+        <div class="sidebar-logo">
+          <i class="fas fa-plane"></i>
+          SmartFly Staff
+        </div>
+        
+        <div class="sidebar-nav">
+          <a href="/staff/dashboard.html" class="nav-link-staff">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="/staff/passengers.html" class="nav-link-staff">
+            <i class="fas fa-users"></i>
+            <span>Passengers</span>
+          </a>
+          <a href="/staff/flights.html" class="nav-link-staff">
+            <i class="fas fa-plane"></i>
+            <span>Flights</span>
+          </a>
+          <a href="/staff/check-ins.html" class="nav-link-staff active">
+            <i class="fas fa-check-circle"></i>
+            <span>Check-ins</span>
+          </a>
+          <hr style="opacity: 0.2; margin: 16px 0;">
+          <a href="#" class="nav-link-staff" onclick="logout(event)">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="layout-main">
+      <!-- Top Navigation -->
+      <div class="top-nav">
+        <div>
+          <h2 style="font-size: 18px; margin: 0; color: #1e293b;">Check-in Management</h2>
+        </div>
+        <div class="user-profile">
+          <div class="user-avatar" id="userInitial">S</div>
+          <div>
+            <div id="staffName" style="font-weight: 600; color: #1e293b;">Staff</div>
+            <div id="staffId" style="font-size: 12px; color: #64748b;">SF-XXXX-XXXXX</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="main-content">
+        <div class="page-header">
+          <h1><i class="fas fa-check-circle"></i> Check-in Records</h1>
+          <p>Track passenger check-in status</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-card-icon"><i class="fas fa-users"></i></div>
+            <div class="stat-card-label">Total Passengers</div>
+            <div class="stat-card-value" id="totalPassengers">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="color: #22c55e;"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-card-label">Checked In</div>
+            <div class="stat-card-value" id="checkedIn">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="color: #f59e0b;"><i class="fas fa-hourglass-end"></i></div>
+            <div class="stat-card-label">Pending</div>
+            <div class="stat-card-value" id="pending">0</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-icon" style="color: #3b82f6;"><i class="fas fa-percentage"></i></div>
+            <div class="stat-card-label">Check-in Rate</div>
+            <div class="stat-card-value" id="checkinRate">0%</div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div style="margin-bottom: 24px;">
+          <button class="btn" style="background: #0B74DE; color: white; margin-right: 8px;" onclick="filterTab('all')">All</button>
+          <button class="btn" style="background: white; color: #0B74DE; border: 2px solid #0B74DE;" onclick="filterTab('checked-in')">Checked In</button>
+          <button class="btn" style="background: white; color: #f59e0b; border: 2px solid #f59e0b; margin-left: 8px;" onclick="filterTab('pending')">Pending</button>
+        </div>
+
+        <!-- Check-ins Table -->
+        <div class="content-card">
+          <h2><i class="fas fa-list"></i> Check-in Details</h2>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Passenger Name</th>
+                  <th>Passport</th>
+                  <th>Flight</th>
+                  <th>Check-in Status</th>
+                  <th>Check-in Time</th>
+                </tr>
+              </thead>
+              <tbody id="checkinTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 32px; color: #94a3b8;">
+                    <i class="fas fa-spinner fa-spin"></i> Loading check-in data...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = '/api/staff';
+    const token = localStorage.getItem('session') || localStorage.getItem('staffToken');
+    let allPassengers = [];
+    let currentFilter = 'all';
+
+    async function logout(event) {
+      event.preventDefault();
+      localStorage.removeItem('session');
+      localStorage.removeItem('staffToken');
+      document.cookie = 'session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+      window.location.href = '/staff-login.html';
+    }
+
+    function filterTab(tab) {
+      currentFilter = tab;
+      renderCheckins();
+      
+      // Update button styles
+      document.querySelectorAll('button.btn').forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.color = '#0B74DE';
+        btn.style.border = '2px solid #e2e8f0';
+      });
+      event.target.style.background = '#0B74DE';
+      event.target.style.color = 'white';
+      event.target.style.border = '2px solid #0B74DE';
+    }
+
+    function renderCheckins() {
+      let filtered = allPassengers;
+      
+      if (currentFilter === 'checked-in') {
+        filtered = allPassengers.filter(p => p.checked_in);
+      } else if (currentFilter === 'pending') {
+        filtered = allPassengers.filter(p => !p.checked_in);
+      }
+
+      const tbody = document.getElementById('checkinTableBody');
+      
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; padding: 32px; color: #94a3b8;">No check-in records found</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = filtered.map(p => `
+        <tr>
+          <td><strong>${p.name || p.passport || 'Unknown'}</strong></td>
+          <td>${p.passport || 'N/A'}</td>
+          <td>${p.flight || 'Not Assigned'}</td>
+          <td>
+            <span class="badge-pill ${p.checked_in ? 'badge-success' : 'badge-warning'}">
+              ${p.checked_in ? '<i class="fas fa-check-circle"></i> Checked In' : '<i class="fas fa-clock"></i> Pending'}
+            </span>
+          </td>
+          <td>${p.checked_in_time || 'N/A'}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadCheckins() {
+      if (!token) {
+        window.location.href = '/staff-login.html';
+        return;
+      }
+
+      try {
+        // Load staff profile
+        const profileResp = await fetch(`${API_BASE}/me`, {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (profileResp.ok) {
+          const profileData = await profileResp.json();
+          const staff = profileData.staff;
+          document.getElementById('staffName').textContent = staff.name || 'Staff';
+          document.getElementById('staffId').textContent = staff.system_id || 'SF-XXXX-XXXXX';
+          document.getElementById('userInitial').textContent = (staff.name || 'S').charAt(0).toUpperCase();
+        }
+
+        // Load passengers
+        const passengersResp = await fetch('/api/passengers', {
+          headers: {
+            'X-SESSION': token,
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (passengersResp.ok) {
+          const passengersData = await passengersResp.json();
+          allPassengers = passengersData.passengers || [];
+
+          // Update stats
+          const checkedInCount = allPassengers.filter(p => p.checked_in).length;
+          const pendingCount = allPassengers.filter(p => !p.checked_in).length;
+          const rate = allPassengers.length > 0 ? Math.round((checkedInCount / allPassengers.length) * 100) : 0;
+
+          document.getElementById('totalPassengers').textContent = allPassengers.length;
+          document.getElementById('checkedIn').textContent = checkedInCount;
+          document.getElementById('pending').textContent = pendingCount;
+          document.getElementById('checkinRate').textContent = `${rate}%`;
+
+          renderCheckins();
+        }
+
+      } catch (error) {
+        console.error('Error loading check-ins:', error);
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadCheckins);
+  </script>
+</body>
+</html>
