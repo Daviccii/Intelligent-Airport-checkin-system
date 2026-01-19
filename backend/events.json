@@ -933,5 +933,293 @@
     "username": "Antigen",
     "staff_id": "7e6c926212eec636",
     "timestamp": "2026-01-16T12:13:55.127810+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-18T08:46:04.132813Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "MRE54321",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:36:23.801877Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-18T13:37:21.354138Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD123456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:48:40.527948Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JD123456",
+    "booking_ref": "SF0001",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T13:48:42.092680Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD4154456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:49:14.121517Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JD4154456",
+    "booking_ref": "SF0002",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T13:49:14.541016Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "JD4154456",
+    "flight": "FL001",
+    "seat": 3,
+    "baggage_count": 0,
+    "timestamp": "2026-01-18T13:49:15.041399Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD4154456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:49:15.045933Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD4170456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:49:30.336532Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JD4170456",
+    "booking_ref": "SF0003",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T13:49:30.357664Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "JD4170456",
+    "flight": "FL001",
+    "seat": 4,
+    "baggage_count": 0,
+    "timestamp": "2026-01-18T13:49:30.593081Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD4170456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:49:30.603477Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD4181456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:49:41.128476Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JD4181456",
+    "booking_ref": "SF0004",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T13:49:41.150559Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "JD4181456",
+    "flight": "FL001",
+    "seat": 5,
+    "baggage_count": 0,
+    "timestamp": "2026-01-18T13:49:41.379545Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD4181456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:49:41.385336Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD4273456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:51:13.385739Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JD4273456",
+    "booking_ref": "SF0005",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T13:51:13.555075Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "JD4273456",
+    "flight": "FL001",
+    "seat": 6,
+    "baggage_count": 0,
+    "timestamp": "2026-01-18T13:51:13.802832Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JD4273456",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:51:13.810164Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JO54321",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T13:55:06.393401Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JO54321",
+    "booking_ref": "SF0002",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T13:55:06.414077Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JJ54321",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T18:09:19.953129Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JJ54321",
+    "booking_ref": "SF0003",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T18:09:20.354921Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "ABC123",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T18:12:30.754627Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "ABC123",
+    "booking_ref": "SF0004",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T18:12:31.226327Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JJ54321",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T19:30:55.745946Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JJ54321",
+    "booking_ref": "SF0001",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T19:30:55.772792Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JJ54321",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T19:31:44.109393Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JJ54321",
+    "booking_ref": "SF0001",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T19:31:44.129651Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "EX876543",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T19:33:49.411732Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "EX876543",
+    "booking_ref": "SF0001",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T19:33:49.436417Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "EX876543",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T20:06:01.045356Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "EX876543",
+    "booking_ref": "SF0002",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T20:06:01.470349Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "EX876543",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T20:06:34.731235Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "EX876543",
+    "booking_ref": "SF0005",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T20:06:34.756828Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "XYZ789",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T20:13:05.748635Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "XYZ789",
+    "booking_ref": "SF0006",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T20:13:06.974009Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "EX876543",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T20:13:56.519968Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "EX876543",
+    "booking_ref": "SF0007",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T20:13:56.547307Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "JJ54321",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-18T20:14:55.675471Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "JJ54321",
+    "booking_ref": "SF0008",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-18T20:14:55.730117Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-18T20:27:17.851189Z"
   }
 ]

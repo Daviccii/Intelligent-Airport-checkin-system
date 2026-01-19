@@ -26,5 +26,341 @@
       "payment_method": "mpesa",
       "timestamp": "2026-01-12T06:07:50.674268Z"
     }
+  },
+  {
+    "id": 3,
+    "type": "booking",
+    "timestamp": "2026-01-18T16:51:13.393941",
+    "data": {
+      "passenger_name": "John Doe",
+      "flight_number": "FL001",
+      "from": "NBO",
+      "to": "JNB",
+      "amount": 250.0,
+      "payment_method": "card",
+      "timestamp": "2026-01-18T13:51:13.393270Z"
+    }
+  },
+  {
+    "id": 4,
+    "type": "payment",
+    "timestamp": "2026-01-18T16:51:13.396886",
+    "data": {
+      "passenger_name": "John Doe",
+      "flight": "FL001",
+      "amount": 250.0,
+      "payment_method": "card",
+      "status": "completed",
+      "booking_ref": "SF0005",
+      "timestamp": "2026-01-18T13:51:13.396273Z"
+    }
+  },
+  {
+    "id": 5,
+    "type": "booking",
+    "timestamp": "2026-01-18T16:55:06.409497",
+    "data": {
+      "passenger_name": "John example",
+      "flight_number": "KQ500",
+      "from": "NBO",
+      "to": "MBA",
+      "amount": 86.25,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T13:55:06.408780Z"
+    }
+  },
+  {
+    "id": 6,
+    "type": "payment",
+    "timestamp": "2026-01-18T16:55:06.412092",
+    "data": {
+      "passenger_name": "John example",
+      "flight": "KQ500",
+      "amount": 86.25,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0002",
+      "timestamp": "2026-01-18T13:55:06.411248Z"
+    }
+  },
+  {
+    "id": 7,
+    "type": "booking",
+    "timestamp": "2026-01-18T21:09:19.974622",
+    "data": {
+      "passenger_name": "Julian Joy",
+      "flight_number": "KQ500",
+      "from": "NBO",
+      "to": "MBA",
+      "amount": 86.25,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T18:09:19.973789Z"
+    }
+  },
+  {
+    "id": 8,
+    "type": "payment",
+    "timestamp": "2026-01-18T21:09:19.983023",
+    "data": {
+      "passenger_name": "Julian Joy",
+      "flight": "KQ500",
+      "amount": 86.25,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0003",
+      "timestamp": "2026-01-18T18:09:19.981945Z"
+    }
+  },
+  {
+    "id": 9,
+    "type": "booking",
+    "timestamp": "2026-01-18T21:12:30.773441",
+    "data": {
+      "passenger_name": "Test User",
+      "flight_number": "KQ500",
+      "from": null,
+      "to": null,
+      "amount": 0,
+      "payment_method": "Card",
+      "timestamp": "2026-01-18T18:12:30.772130Z"
+    }
+  },
+  {
+    "id": 10,
+    "type": "payment",
+    "timestamp": "2026-01-18T21:12:30.780749",
+    "data": {
+      "passenger_name": "Test User",
+      "flight": "KQ500",
+      "amount": 0,
+      "payment_method": "Card",
+      "status": "completed",
+      "booking_ref": "SF0004",
+      "timestamp": "2026-01-18T18:12:30.779341Z"
+    }
+  },
+  {
+    "id": 11,
+    "type": "booking",
+    "timestamp": "2026-01-18T22:30:55.763790",
+    "data": {
+      "passenger_name": "Julian Joy",
+      "flight_number": "ET397",
+      "from": "NBO",
+      "to": "DEL",
+      "amount": 805,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T19:30:55.762825Z"
+    }
+  },
+  {
+    "id": 12,
+    "type": "payment",
+    "timestamp": "2026-01-18T22:30:55.768471",
+    "data": {
+      "passenger_name": "Julian Joy",
+      "flight": "ET397",
+      "amount": 805,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0001",
+      "timestamp": "2026-01-18T19:30:55.766841Z"
+    }
+  },
+  {
+    "id": 13,
+    "type": "booking",
+    "timestamp": "2026-01-18T22:31:44.121354",
+    "data": {
+      "passenger_name": "Julian Joy",
+      "flight_number": "FL002",
+      "from": "NBO",
+      "to": "ADD",
+      "amount": 322,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T19:31:44.120438Z"
+    }
+  },
+  {
+    "id": 14,
+    "type": "payment",
+    "timestamp": "2026-01-18T22:31:44.127362",
+    "data": {
+      "passenger_name": "Julian Joy",
+      "flight": "FL002",
+      "amount": 322,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0001",
+      "timestamp": "2026-01-18T19:31:44.126434Z"
+    }
+  },
+  {
+    "id": 15,
+    "type": "booking",
+    "timestamp": "2026-01-18T22:33:49.426599",
+    "data": {
+      "passenger_name": "example example",
+      "flight_number": "EK341",
+      "from": "NBO",
+      "to": "DEL",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T19:33:49.425588Z"
+    }
+  },
+  {
+    "id": 16,
+    "type": "payment",
+    "timestamp": "2026-01-18T22:33:49.433103",
+    "data": {
+      "passenger_name": "example example",
+      "flight": "EK341",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0001",
+      "timestamp": "2026-01-18T19:33:49.430703Z"
+    }
+  },
+  {
+    "id": 17,
+    "type": "booking",
+    "timestamp": "2026-01-18T23:06:01.071712",
+    "data": {
+      "passenger_name": "example example",
+      "flight_number": "EK341",
+      "from": "NBO",
+      "to": "DEL",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T20:06:01.070269Z"
+    }
+  },
+  {
+    "id": 18,
+    "type": "payment",
+    "timestamp": "2026-01-18T23:06:01.077625",
+    "data": {
+      "passenger_name": "example example",
+      "flight": "EK341",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0002",
+      "timestamp": "2026-01-18T20:06:01.076100Z"
+    }
+  },
+  {
+    "id": 19,
+    "type": "booking",
+    "timestamp": "2026-01-18T23:06:34.748017",
+    "data": {
+      "passenger_name": "example example",
+      "flight_number": "KQ500",
+      "from": "NBO",
+      "to": "DEL",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T20:06:34.747045Z"
+    }
+  },
+  {
+    "id": 20,
+    "type": "payment",
+    "timestamp": "2026-01-18T23:06:34.752824",
+    "data": {
+      "passenger_name": "example example",
+      "flight": "KQ500",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0005",
+      "timestamp": "2026-01-18T20:06:34.751974Z"
+    }
+  },
+  {
+    "id": 21,
+    "type": "booking",
+    "timestamp": "2026-01-18T23:13:05.769629",
+    "data": {
+      "passenger_name": "Test User 2",
+      "flight_number": "KQ500",
+      "from": null,
+      "to": null,
+      "amount": 0,
+      "payment_method": "Card",
+      "timestamp": "2026-01-18T20:13:05.768049Z"
+    }
+  },
+  {
+    "id": 22,
+    "type": "payment",
+    "timestamp": "2026-01-18T23:13:05.782428",
+    "data": {
+      "passenger_name": "Test User 2",
+      "flight": "KQ500",
+      "amount": 0,
+      "payment_method": "Card",
+      "status": "completed",
+      "booking_ref": "SF0006",
+      "timestamp": "2026-01-18T20:13:05.781316Z"
+    }
+  },
+  {
+    "id": 23,
+    "type": "booking",
+    "timestamp": "2026-01-18T23:13:56.538603",
+    "data": {
+      "passenger_name": "example example",
+      "flight_number": "KQ500",
+      "from": "NBO",
+      "to": "DEL",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T20:13:56.537751Z"
+    }
+  },
+  {
+    "id": 24,
+    "type": "payment",
+    "timestamp": "2026-01-18T23:13:56.543086",
+    "data": {
+      "passenger_name": "example example",
+      "flight": "KQ500",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0007",
+      "timestamp": "2026-01-18T20:13:56.542138Z"
+    }
+  },
+  {
+    "id": 25,
+    "type": "booking",
+    "timestamp": "2026-01-18T23:14:55.711151",
+    "data": {
+      "passenger_name": "Julian Joy",
+      "flight_number": "KQ500",
+      "from": "NBO",
+      "to": "DEL",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "timestamp": "2026-01-18T20:14:55.709854Z"
+    }
+  },
+  {
+    "id": 26,
+    "type": "payment",
+    "timestamp": "2026-01-18T23:14:55.723387",
+    "data": {
+      "passenger_name": "Julian Joy",
+      "flight": "KQ500",
+      "amount": 1581.25,
+      "payment_method": "mpesa",
+      "status": "completed",
+      "booking_ref": "SF0008",
+      "timestamp": "2026-01-18T20:14:55.722222Z"
+    }
   }
 ]
