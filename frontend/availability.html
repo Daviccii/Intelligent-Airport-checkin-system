@@ -549,7 +549,8 @@
 		const params = new URLSearchParams(window.location.search);
 		let from = params.get('from')?.split('(')[1]?.slice(0, -1) || 'NBO';
 		let to = params.get('to')?.split('(')[1]?.slice(0, -1) || 'MBA';
-		let departureDate = params.get('depart') || new Date(new Date().getTime() + 24*60*60*1000).toISOString().split('T')[0];
+		// Default to today's date or use provided date - will be updated to first available date when flights load
+		let departureDate = params.get('depart') || new Date().toISOString().split('T')[0];
 		let cabinClass = params.get('cabin') || 'economy';
 
 		// Load airports data
@@ -824,23 +825,41 @@
 			showOffers();
 			showAvailableDates();
 			
-			// Filter flights
+			// Filter flights for exact route and date match
 			const depDate = departureDate;
 			filteredFlights = allFlights.filter(f => {
 				const fDate = f.departure_time.split('T')[0];
 				return f.origin === from && f.destination === to && fDate === depDate;
 			});
 			
+			// If no exact match, try to find flights for this route on ANY date
+			let alternativeDateFlights = [];
+			if (filteredFlights.length === 0) {
+				alternativeDateFlights = allFlights.filter(f => {
+					return f.origin === from && f.destination === to;
+				});
+			}
+			
 			document.getElementById('loadingState').style.display = 'none';
 			
 			if (filteredFlights.length > 0) {
+				// Show flights for selected date
 				document.getElementById('noFlightsState').style.display = 'none';
 				document.getElementById('resultsCount').textContent = `${filteredFlights.length} flight${filteredFlights.length !== 1 ? 's' : ''} found for ${formatDate(depDate)}`;
 				document.getElementById('flightsContainer').innerHTML = filteredFlights.map(createFlightCard).join('');
-			} else {
-				// Show alternatives
+			} else if (alternativeDateFlights.length > 0) {
+				// Show no flights but with date alternatives
 				document.getElementById('noFlightsState').style.display = 'block';
-				document.getElementById('resultsCount').textContent = 'No Flights Found';
+				document.getElementById('resultsCount').textContent = 'No Flights on This Date';
+				document.getElementById('selectedRoute').textContent = `${from} → ${to}`;
+				document.getElementById('selectedDate').textContent = formatDate(depDate);
+				
+				showAlternativeDates();
+				showAlternativeRoutes();
+			} else {
+				// No flights for this route at all - show alternative routes
+				document.getElementById('noFlightsState').style.display = 'block';
+				document.getElementById('resultsCount').textContent = 'No Flights Found for This Route';
 				document.getElementById('selectedRoute').textContent = `${from} → ${to}`;
 				document.getElementById('selectedDate').textContent = formatDate(depDate);
 				
@@ -884,32 +903,29 @@
 		function showAlternativeRoutes() {
 			const routes = {};
 			
+			// Get all routes, not just those matching current date
 			allFlights.forEach(f => {
-				const fDate = f.departure_time.split('T')[0];
-				if (fDate === departureDate) {
-					const key = `${f.origin}-${f.destination}`;
-					if (!routes[key]) {
-						routes[key] = 0;
-					}
-					routes[key]++;
+				const key = `${f.origin}|${f.destination}`;
+				if (!routes[key]) {
+					routes[key] = { count: 0, origin: f.origin, destination: f.destination };
 				}
+				routes[key].count++;
 			});
 			
-			const alternatives = Object.entries(routes)
-				.filter(([key]) => !key.includes(from) || !key.includes(to))
+			// Filter to exclude the current route and prioritize by flight count
+			const alternatives = Object.values(routes)
+				.filter(r => !(r.origin === from && r.destination === to))
+				.sort((a, b) => b.count - a.count)
 				.slice(0, 6);
 			
 			if (alternatives.length > 0) {
 				document.getElementById('alternativeRoutesSection').style.display = 'block';
-				document.getElementById('alternativeRoutesGrid').innerHTML = alternatives.map(([route, count]) => {
-					const [o, d] = route.split('-');
-					return `
-						<div class="alternative-card" onclick="searchRoute('${o}', '${d}')">
-							<div class="alt-route">${o} → ${d}</div>
-							<div class="alt-count">${count} flight${count !== 1 ? 's' : ''}</div>
-						</div>
-					`;
-				}).join('');
+				document.getElementById('alternativeRoutesGrid').innerHTML = alternatives.map(alt => `
+					<div class="alternative-card" onclick="searchRoute('${alt.origin}', '${alt.destination}')">
+						<div class="alt-route">${alt.origin} → ${alt.destination}</div>
+						<div class="alt-count">${alt.count} flight${alt.count !== 1 ? 's' : ''}</div>
+					</div>
+				`).join('');
 			}
 		}
 

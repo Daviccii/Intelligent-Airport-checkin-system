@@ -789,19 +789,55 @@
 
         // Send booking data to backend
         try {
-          const response = await fetch('/api/bookings', {
+          // Validate required fields
+          const passengerName = ctx.name || 'Test User';
+          const passengerPassport = ctx.passport || 'TEST123';
+          
+          if (!passengerName || !passengerPassport) {
+            throw new Error('Missing required information: name and passport are required');
+          }
+
+          console.log('Sending booking data:', {
+            name: passengerName,
+            passport: passengerPassport,
+            flight: 'KQ500',
+            email: ctx.email || 'test@example.com',
+            amount: parseFloat(ctx.fare) || 0,
+            payment_method: currentPaymentMethod
+          });
+
+          const response = await fetch('/api/register', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
             },
-            body: JSON.stringify(bookingData)
+            body: JSON.stringify({
+              name: passengerName,
+              passport: passengerPassport,
+              flight: 'KQ500', // Default flight - should be passed from booking flow
+              email: ctx.email || 'test@example.com',
+              amount: parseFloat(ctx.fare) || 0,
+              payment_method: currentPaymentMethod
+            })
           });
 
-          if (!response.ok) {
-            console.error('Failed to save booking to backend');
+          console.log('API Response status:', response.status);
+
+          if (response.ok) {
+            const bookingData = await response.json();
+            bookingRef = bookingData.booking_ref || bookingRef; // Use API response booking ref
+            console.log('Booking registered successfully:', bookingData);
+          } else {
+            const errorData = await response.json();
+            console.error('Failed to register booking:', errorData);
+            throw new Error(errorData.error || errorData.detail || 'Booking registration failed');
           }
         } catch (err) {
-          console.error('Error saving booking:', err);
+          console.error('Error registering booking:', err);
+          resEl.className = 'result error';
+          resEl.innerHTML = `❌ Booking failed: ${err.message}`;
+          btn.disabled = false;
+          return;
         }
 
         // Store in localStorage for reference

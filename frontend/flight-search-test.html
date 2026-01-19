@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Search Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #f5f5f5; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 4px; }
+        .success { background: #d4edda; border-color: #28a745; color: #155724; }
+        .info { background: #d1ecf1; border-color: #17a2b8; color: #0c5460; }
+        button { background: #0a2463; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #1e3d59; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #0a2463; color: white; }
+        tr:hover { background: #f9f9f9; }
+        code { background: #f4f4f4; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✈️ Flight Search System Test</h1>
+        
+        <div class="test-section info">
+            <h2>Available Routes & Flights</h2>
+            <p>The system contains flights for the following routes:</p>
+            <table id="routesTable">
+                <thead>
+                    <tr>
+                        <th>Route</th>
+                        <th>Flight Count</th>
+                        <th>Available Dates</th>
+                        <th>Test</th>
+                    </tr>
+                </thead>
+                <tbody id="routesBody">
+                    <tr><td colspan="4">Loading...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="test-section">
+            <h2>Test Flight Search</h2>
+            <p>Click a button to test searching for that route:</p>
+            <div id="testButtons"></div>
+        </div>
+
+        <div class="test-section success" id="debugInfo" style="display:none;">
+            <h3>Debug Information</h3>
+            <pre id="debugText"></pre>
+        </div>
+    </div>
+
+    <script>
+        async function loadAndDisplayRoutes() {
+            try {
+                const response = await fetch('/api/flights');
+                const data = await response.json();
+                const flights = data.flights || [];
+                
+                console.log(`Loaded ${flights.length} flights from API`);
+                
+                // Group by route
+                const routes = {};
+                flights.forEach(f => {
+                    const key = `${f.origin}-${f.destination}`;
+                    if (!routes[key]) {
+                        routes[key] = { count: 0, dates: new Set(), origin: f.origin, destination: f.destination };
+                    }
+                    routes[key].count++;
+                    routes[key].dates.add(f.departure_time.split('T')[0]);
+                });
+                
+                // Display routes
+                const tbody = document.getElementById('routesBody');
+                tbody.innerHTML = '';
+                
+                Object.entries(routes)
+                    .sort((a, b) => a[0].localeCompare(b[0]))
+                    .forEach(([route, info]) => {
+                        const dates = Array.from(info.dates).sort().join(', ');
+                        const row = tbody.insertRow();
+                        row.innerHTML = `
+                            <td><strong>${route}</strong></td>
+                            <td>${info.count}</td>
+                            <td><code>${dates}</code></td>
+                            <td><button onclick="testRoute('${info.origin}', '${info.destination}')">Test</button></td>
+                        `;
+                    });
+                
+                // Create test buttons
+                const buttonContainer = document.getElementById('testButtons');
+                const topRoutes = Object.entries(routes)
+                    .sort((a, b) => b[1].count - a[1].count)
+                    .slice(0, 6);
+                
+                buttonContainer.innerHTML = topRoutes.map(([route, info]) => {
+                    const date = Array.from(info.dates)[0];
+                    return `<button onclick="testRoute('${info.origin}', '${info.destination}', '${date}')">${route} (${info.count} flights)</button>`;
+                }).join('');
+                
+                // Debug info
+                const debugDiv = document.getElementById('debugInfo');
+                const debugText = document.getElementById('debugText');
+                debugDiv.style.display = 'block';
+                debugText.textContent = `Total Flights: ${flights.length}
+Total Routes: ${Object.keys(routes).length}
+Airports: ${new Set([...flights.map(f => f.origin), ...flights.map(f => f.destination)]).size}
+Sample Flight:
+${JSON.stringify(flights[0], null, 2)}`;
+                
+            } catch (error) {
+                console.error('Error loading flights:', error);
+                document.getElementById('routesBody').innerHTML = `<tr><td colspan="4" style="color:red;">Error: ${error.message}</td></tr>`;
+            }
+        }
+        
+        function testRoute(origin, destination, date) {
+            const dateStr = date || new Date().toISOString().split('T')[0];
+            const url = `/availability.html?from=${origin}&to=${destination}&depart=${dateStr}`;
+            console.log(`Testing route: ${url}`);
+            window.location.href = url;
+        }
+        
+        // Load on page load
+        window.addEventListener('DOMContentLoaded', loadAndDisplayRoutes);
+    </script>
+</body>
+</html>

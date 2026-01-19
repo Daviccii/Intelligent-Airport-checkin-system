@@ -775,7 +775,9 @@
 
                 const raw = await response.json();
                 // Normalize backend booking payloads to the UI shape
-                allBookings = (raw || []).map(item => {
+                // Handle both response formats: {bookings: [...]} or [...]
+                const bookingsArray = raw.bookings || (Array.isArray(raw) ? raw : []);
+                allBookings = bookingsArray.map(item => {
                     const amount = Number(item.total_amount ?? item.amount ?? 0);
                     const method = (item.payment_method || '').toLowerCase();
                     const normalizedMethod = method.includes('card') ? 'card'

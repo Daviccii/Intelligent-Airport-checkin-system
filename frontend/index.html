@@ -1756,7 +1756,7 @@
                                                     const cabinClass = cabinClassEl?.value || 'economy';
 
                                                     if (!fromCode || fromCode.length !== 3 || !toCode || toCode.length !== 3) {
-                                                        alert('Please choose valid airports (IATA codes).');
+                                                        // Removed alert - auto-advancing will handle validation
                                                         return;
                                                     }
                                                     
@@ -2164,16 +2164,52 @@
                             if (fromEl.dataset.iata) fromEl.dataset.selected = 'true';
                             checkBothAirportsSelected();
                             updateFlightPrice();
-                            // Advance focus to Destination
-                            if (fromEl.dataset.iata) { try { document.getElementById('to')?.focus(); } catch(e) {} }
+                            // Advance focus to Destination immediately after selecting from
+                            setTimeout(() => {
+                                const toEl = document.getElementById('to');
+                                if (toEl) toEl.focus();
+                            }, 100);
+                        });
+                        // Also listen for input events to handle manual typing
+                        fromEl.addEventListener('input', function(){
+                            const iataMatch = fromEl.value.match(/\(([A-Z]{3})\)/);
+                            if (iataMatch) {
+                                fromEl.dataset.iata = iataMatch[1];
+                                fromEl.dataset.selected = 'true';
+                                checkBothAirportsSelected();
+                                updateFlightPrice();
+                                // Advance focus to Destination immediately after valid input
+                                setTimeout(() => {
+                                    const toEl = document.getElementById('to');
+                                    if (toEl) toEl.focus();
+                                }, 200);
+                            }
                         });
                         toEl.addEventListener('change', function(){
                             toEl.dataset.iata = toEl.dataset.iata || (toEl.value.match(/\(([A-Z]{3})\)/) || [])[1] || '';
                             if (toEl.dataset.iata) toEl.dataset.selected = 'true';
                             checkBothAirportsSelected();
                             updateFlightPrice();
-                            // Advance focus to Departure Date when destination set
-                            if (toEl.dataset.iata) { try { setTimeout(() => document.getElementById('departDate')?.focus(), 50); } catch(e) {} }
+                            // Advance focus to Departure Date immediately after selecting destination
+                            setTimeout(() => {
+                                const departEl = document.getElementById('departDate');
+                                if (departEl) departEl.focus();
+                            }, 100);
+                        });
+                        // Also listen for input events to handle manual typing
+                        toEl.addEventListener('input', function(){
+                            const iataMatch = toEl.value.match(/\(([A-Z]{3})\)/);
+                            if (iataMatch) {
+                                toEl.dataset.iata = iataMatch[1];
+                                toEl.dataset.selected = 'true';
+                                checkBothAirportsSelected();
+                                updateFlightPrice();
+                                // Advance focus to Departure Date immediately after valid input
+                                setTimeout(() => {
+                                    const departEl = document.getElementById('departDate');
+                                    if (departEl) departEl.focus();
+                                }, 200);
+                            }
                         });
                         
                         // Don't validate on blur - only on form submit to prevent interfering with dropdown

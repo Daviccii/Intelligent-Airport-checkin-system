@@ -162,7 +162,41 @@ async function showSelectedFlight(){
 }
 
 // Run on load
-document.addEventListener('DOMContentLoaded', ()=>{ showSelectedFlight(); });
+document.addEventListener('DOMContentLoaded', ()=>{ 
+  showSelectedFlight();
+  prefillFromDashboard();
+});
+
+// Prefill check-in form from dashboard booking info
+function prefillFromDashboard() {
+  const checkinBooking = sessionStorage.getItem('checkinBooking');
+  if (checkinBooking) {
+    try {
+      const booking = JSON.parse(checkinBooking);
+      
+      // Prefill the quick check-in form
+      const lastName = booking.passengerName.split(' ').pop(); // Get last name
+      document.getElementById('qcLast').value = lastName;
+      document.getElementById('qcPassport').value = booking.bookingRef || booking.passport;
+      
+      // Show a message that we're prefilled from booking
+      const banner = document.getElementById('selectedFlightBanner');
+      if (banner) {
+        banner.innerHTML = `<strong>Ready to check-in:</strong> ${booking.flight} ${booking.from} → ${booking.to} on ${booking.date}`;
+        banner.hidden = false;
+        banner.setAttribute('aria-hidden', 'false');
+      }
+      
+      // Auto-focus the check-in button
+      setTimeout(() => {
+        document.getElementById('quickCheckinBtn').focus();
+      }, 500);
+      
+    } catch (e) {
+      console.error('Error prefilling check-in form:', e);
+    }
+  }
+}
 
 // Parse booking params (from flight-results) and prefill booking/check-in context
 function parseBookingParams(){

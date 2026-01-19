@@ -4,12 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Payments Management — SmartFly Airlines</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💳</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     * { font-family: 'Inter', sans-serif; }
     body { background: #f0f4f8; color: #0f172a; }
@@ -143,7 +144,7 @@
       padding: 18px;
       margin-bottom: 14px;
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr 1fr auto;
+      grid-template-columns: 1fr 1fr 1fr 1fr auto auto;
       gap: 16px;
       align-items: center;
       transition: all 0.3s ease;
@@ -338,8 +339,23 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
+    console.log('🚀 Payments dashboard script loaded');
     let allTransactions = [];
     let revenueChart, statusChart, methodChart;
+
+    // Helper function to safely access localStorage (handles tracking prevention)
+    function getStorageItem(key) {
+      try {
+        if (typeof Storage === 'undefined') {
+          console.warn('⚠️ localStorage not supported');
+          return null;
+        }
+        return localStorage.getItem(key);
+      } catch (error) {
+        console.warn('⚠️ localStorage blocked by tracking prevention:', error.message);
+        return null;
+      }
+    }
 
     function seedSampleTransactions(){
       const now = Date.now();
@@ -356,17 +372,20 @@
       console.log('🔄 Loading payment data...');
       try {
         let transactions = [];
-        const token = localStorage.getItem('adminToken') || localStorage.getItem('session') || localStorage.getItem('auth_token') || '';
+        const token = getStorageItem('adminToken') || getStorageItem('session') || getStorageItem('auth_token') || '';
         console.log('🔑 Token:', token ? 'Found' : 'Not found');
         
         // Prefer admin activities payments endpoint (includes data logged from backend)
+        console.log('🌐 Making API call to /api/activities/payments');
         const response = await fetch('/api/activities/payments', {
           headers: token ? { 'Authorization': `Bearer ${token}` } : {}
         });
         console.log('📡 API Response status:', response.status);
 
         if (response.ok) {
+          console.log('✅ API call successful');
           const data = await response.json();
+          console.log('📦 Raw API data:', data);
           const payments = Array.isArray(data) ? data : (data.payments || data.activities || []);
           console.log('📦 Payments count:', payments.length);
           transactions = payments.map((p, idx) => {
@@ -382,6 +401,7 @@
               date: new Date(stamp)
             };
           }).filter(t => !Number.isNaN(t.amount));
+          console.log('🔄 Mapped transactions:', transactions.length, 'from API');
         }
 
         // Fallback to seeded data to avoid empty tables
@@ -399,6 +419,7 @@
         console.log('✨ Payment data loaded successfully!');
       } catch (error) {
         console.error('❌ Error loading payments:', error);
+        console.warn('🔄 Falling back to sample data due to error');
         const fallback = seedSampleTransactions();
         allTransactions = fallback;
         updateStats();
@@ -437,6 +458,14 @@
 
     function initCharts() {
       console.log('🎨 Initializing charts with', allTransactions.length, 'transactions');
+
+      // Check if Chart.js is available
+      if (typeof Chart === 'undefined') {
+        console.warn('⚠️ Chart.js not loaded, skipping chart initialization');
+        return;
+      }
+
+      try {
       const completed = allTransactions.filter(t => t.status === 'completed').length;
       const pending = allTransactions.filter(t => t.status === 'pending').length;
       const failed = allTransactions.filter(t => t.status === 'failed').length;
@@ -736,6 +765,14 @@
               ${statusIcons[t.status]} ${t.status.charAt(0).toUpperCase() + t.status.slice(1)}
             </span>
           </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn-secondary" onclick="editPayment('${t.id}')" style="padding: 6px 12px; font-size: 0.8rem;">
+              <i class="fas fa-edit"></i> Edit
+            </button>
+            <button class="btn-secondary" onclick="deletePayment('${t.id}')" style="padding: 6px 12px; font-size: 0.8rem; background: #ef4444; color: white;">
+              <i class="fas fa-trash"></i> Delete
+            </button>
+          </div>
         </div>
       `;
       }).join('');
@@ -779,6 +816,132 @@
       a.download = `payments_${new Date().toISOString().split('T')[0]}.csv`;
       a.click();
     }
-  </script>
+
+    function editPayment(paymentId) {
+      const transaction = allTransactions.find(t => t.id === paymentId);
+      if (!transaction) {
+        alert('Payment not found');
+        return;
+      }
+
+      // Create edit modal
+      const modal = document.createElement('div');
+      modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); display: flex; align-items: center;
+        justify-content: center; z-index: 1000;
+      `;
+
+      modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 12px; max-width: 500px; width: 90%;">
+          <h3 style="margin: 0 0 20px 0; color: #0f172a;">Edit Payment</h3>
+          <form id="editPaymentForm">
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Passenger Name</label>
+              <input type="text" id="editPassenger" value="${transaction.passenger}" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Amount</label>
+              <input type="number" id="editAmount" value="${transaction.amount}" step="0.01" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Status</label>
+              <select id="editStatus" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <option value="completed" ${transaction.status === 'completed' ? 'selected' : ''}>Completed</option>
+                <option value="pending" ${transaction.status === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="failed" ${transaction.status === 'failed' ? 'selected' : ''}>Failed</option>
+              </select>
+            </div>
+            <div style="margin-bottom: 15px;">
+              <label style="display: block; margin-bottom: 5px; font-weight: 600;">Payment Method</label>
+              <select id="editMethod" style="width: 100%; padding: 8px; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <option value="Card" ${transaction.method === 'Card' ? 'selected' : ''}>Card</option>
+                <option value="M-Pesa" ${transaction.method === 'M-Pesa' ? 'selected' : ''}>M-Pesa</option>
+                <option value="PayPal" ${transaction.method === 'PayPal' ? 'selected' : ''}>PayPal</option>
+                <option value="Bank Transfer" ${transaction.method === 'Bank Transfer' ? 'selected' : ''}>Bank Transfer</option>
+              </select>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+              <button type="button" onclick="this.closest('div').parentElement.remove()" style="padding: 8px 16px; background: #e2e8f0; border: none; border-radius: 6px; cursor: pointer;">Cancel</button>
+              <button type="submit" style="padding: 8px 16px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">Save Changes</button>
+            </div>
+          </form>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Handle form submission
+      document.getElementById('editPaymentForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const updatedData = {
+          passenger: document.getElementById('editPassenger').value,
+          amount: parseFloat(document.getElementById('editAmount').value),
+          status: document.getElementById('editStatus').value,
+          method: document.getElementById('editMethod').value
+        };
+
+        try {
+          const token = getStorageItem('adminToken') || getStorageItem('session') || getStorageItem('auth_token') || '';
+          const response = await fetch(`/api/admin/payments/${paymentId}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: JSON.stringify(updatedData)
+          });
+
+          if (response.ok) {
+            // Update local data
+            Object.assign(transaction, updatedData);
+            renderTransactions();
+            updateStats();
+            modal.remove();
+            alert('Payment updated successfully!');
+          } else {
+            const error = await response.json();
+            alert('Failed to update payment: ' + (error.error || 'Unknown error'));
+          }
+        } catch (error) {
+          console.error('Error updating payment:', error);
+          alert('Error updating payment: ' + error.message);
+        }
+      });
+    }
+
+    function deletePayment(paymentId) {
+      if (!confirm('Are you sure you want to delete this payment? This action cannot be undone.')) {
+        return;
+      }
+
+      // Call API to delete payment
+      const token = getStorageItem('adminToken') || getStorageItem('session') || getStorageItem('auth_token') || '';
+      fetch(`/api/admin/payments/${paymentId}`, {
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      })
+      .then(response => {
+        if (response.ok) {
+          // Remove from local data
+          const index = allTransactions.findIndex(t => t.id === paymentId);
+          if (index > -1) {
+            allTransactions.splice(index, 1);
+            renderTransactions();
+            updateStats();
+          }
+          alert('Payment deleted successfully!');
+        } else {
+          return response.json().then(error => {
+            throw new Error(error.error || 'Failed to delete payment');
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting payment:', error);
+        alert('Error deleting payment: ' + error.message);
+      });
+    }
 </body>
 </html>

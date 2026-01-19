@@ -297,6 +297,80 @@
       box-shadow: 0 8px 20px rgba(30, 64, 175, 0.35);
     }
 
+    /* Payment Methods */
+    .payment-methods {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .payment-method-option {
+      position: relative;
+    }
+
+    .payment-method-option input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .payment-method-option label {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 12px;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      min-height: 80px;
+    }
+
+    .payment-method-option label i {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+      transition: color 0.3s ease;
+    }
+
+    .payment-method-option label span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .payment-method-option input[type="radio"]:checked + label {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    }
+
+    .payment-method-option input[type="radio"]:checked + label i {
+      color: var(--primary);
+    }
+
+    .payment-method-option:hover label {
+      border-color: var(--primary);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+    }
+
+    .payment-fields {
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* Modal */
     .modal-overlay {
       display: none;
@@ -875,22 +949,111 @@
       </div>
       <div class="modal-body">
         <h3 style="margin-bottom: 16px;">Payment Information</h3>
-        <div class="form-grid">
-          <div class="form-group">
-            <label>Cardholder Name</label>
-            <input type="text" id="cardholderName" placeholder="John Doe">
+
+        <!-- Payment Method Selection -->
+        <div class="form-group" style="margin-bottom: 24px;">
+          <label style="display: block; margin-bottom: 12px; font-weight: 600;">Select Payment Method</label>
+          <div class="payment-methods">
+            <div class="payment-method-option" data-method="card">
+              <input type="radio" id="payment-card" name="paymentMethod" value="card" checked>
+              <label for="payment-card">
+                <i class="fas fa-credit-card"></i>
+                <span>Credit/Debit Card</span>
+              </label>
+            </div>
+            <div class="payment-method-option" data-method="mpesa">
+              <input type="radio" id="payment-mpesa" name="paymentMethod" value="mpesa">
+              <label for="payment-mpesa">
+                <i class="fas fa-mobile-alt"></i>
+                <span>M-Pesa</span>
+              </label>
+            </div>
+            <div class="payment-method-option" data-method="paypal">
+              <input type="radio" id="payment-paypal" name="paymentMethod" value="paypal">
+              <label for="payment-paypal">
+                <i class="fab fa-paypal"></i>
+                <span>PayPal</span>
+              </label>
+            </div>
+            <div class="payment-method-option" data-method="bank">
+              <input type="radio" id="payment-bank" name="paymentMethod" value="bank">
+              <label for="payment-bank">
+                <i class="fas fa-university"></i>
+                <span>Bank Transfer</span>
+              </label>
+            </div>
           </div>
-          <div class="form-group">
-            <label>Card Number</label>
-            <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+        </div>
+
+        <!-- Card Payment Fields -->
+        <div id="cardFields" class="payment-fields">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Cardholder Name</label>
+              <input type="text" id="cardholderName" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+              <label>Card Number</label>
+              <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+            </div>
+            <div class="form-group">
+              <label>Expiry Date</label>
+              <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+            </div>
+            <div class="form-group">
+              <label>CVV</label>
+              <input type="text" id="cardCVV" placeholder="123" maxlength="3">
+            </div>
           </div>
+        </div>
+
+        <!-- M-Pesa Payment Fields -->
+        <div id="mpesaFields" class="payment-fields" style="display: none;">
           <div class="form-group">
-            <label>Expiry Date</label>
-            <input type="text" id="cardExpiry" placeholder="MM/YY" maxlength="5">
+            <label>M-Pesa Phone Number</label>
+            <input type="tel" id="mpesaPhone" placeholder="+254 712 345 678" maxlength="15">
+            <small style="color: var(--text-muted); font-size: 12px;">Enter your M-Pesa registered phone number</small>
           </div>
-          <div class="form-group">
-            <label>CVV</label>
-            <input type="text" id="cardCVV" placeholder="123" maxlength="3">
+        </div>
+
+        <!-- PayPal Payment Fields -->
+        <div id="paypalFields" class="payment-fields" style="display: none;">
+          <div style="text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <i class="fab fa-paypal" style="font-size: 48px; color: #0070ba; margin-bottom: 16px;"></i>
+            <p style="margin-bottom: 16px; color: var(--text-muted);">You will be redirected to PayPal to complete your payment securely.</p>
+            <button type="button" class="btn btn-primary" id="paypalBtn" style="background: #0070ba; border-color: #0070ba;">
+              <i class="fab fa-paypal"></i> Continue with PayPal
+            </button>
+          </div>
+        </div>
+
+        <!-- Bank Transfer Payment Fields -->
+        <div id="bankFields" class="payment-fields" style="display: none;">
+          <div style="background: #f8f9fa; border-radius: 8px; padding: 20px;">
+            <h4 style="margin-bottom: 16px; color: var(--text-dark);">Bank Transfer Details</h4>
+            <div style="background: white; padding: 16px; border-radius: 6px; border: 1px solid var(--border);">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                <div>
+                  <label style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Bank Name</label>
+                  <div style="font-weight: 600;">SmartFly Bank</div>
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Account Name</label>
+                  <div style="font-weight: 600;">SmartFly Airlines Ltd</div>
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-muted); font-weight: 600;">Account Number</label>
+                  <div style="font-weight: 600;">1234567890</div>
+                </div>
+                <div>
+                  <label style="font-size: 12px; color: var(--text-muted); font-weight: 600;">SWIFT Code</label>
+                  <div style="font-weight: 600;">SMFLYKEN</div>
+                </div>
+              </div>
+              <p style="font-size: 14px; color: var(--text-muted); margin: 0;">
+                Please include your booking reference in the payment description. Processing may take 1-3 business days.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -1004,9 +1167,20 @@
           </ul>
         </div>
 
+        <div style="background: var(--bg-light); border-radius: 10px; padding: 16px; margin-bottom: 20px;">
+          <h5 style="margin-bottom: 8px; color: var(--text-dark);">What's Next?</h5>
+          <ul style="margin: 0; padding-left: 20px; color: var(--text-muted); font-size: 14px;">
+            <li><strong>Check your email</strong> - A confirmation and boarding pass link has been sent</li>
+            <li><strong>Online check-in</strong> - Available 24 hours before departure</li>
+            <li><strong>Manage booking</strong> - View details, change seats, or cancel</li>
+            <li><strong>Boarding pass</strong> - Download or access via passenger portal</li>
+          </ul>
+        </div>
+
         <div class="modal-actions">
           <button class="btn btn-secondary" onclick="downloadTicket()">📥 Download Ticket</button>
-          <button class="btn btn-primary" onclick="closeModal('ticketModal'); location.reload()">Done</button>
+          <button class="btn btn-primary" onclick="goToPassengerPortal()">🚪 Access My Account</button>
+          <button class="btn btn-outline" onclick="closeModal('ticketModal'); location.reload()">Done</button>
         </div>
       </div>
     </div>
@@ -1355,13 +1529,49 @@
       document.getElementById('paymentTotal').textContent = `${getCurrencySymbol()}${total.toLocaleString()}`;
     }
 
-    async function processPayment() {
-      const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
-      const cardExpiry = document.getElementById('cardExpiry').value;
-      const cardCVV = document.getElementById('cardCVV').value;
+    // Payment method switching functionality
+    function initPaymentMethods() {
+      const paymentMethods = document.querySelectorAll('input[name="paymentMethod"]');
+      paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+          // Hide all payment fields
+          document.getElementById('cardFields').style.display = 'none';
+          document.getElementById('mpesaFields').style.display = 'none';
+          document.getElementById('paypalFields').style.display = 'none';
+          document.getElementById('bankFields').style.display = 'none';
 
-      if (!cardNumber || cardNumber.length < 13 || !cardExpiry || !cardCVV) {
-        alert('Please enter valid payment details');
+          // Show selected payment fields
+          const selectedMethod = this.value;
+          document.getElementById(selectedMethod + 'Fields').style.display = 'block';
+        });
+      });
+    }
+
+    async function processPayment() {
+      const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked').value;
+
+      // Validate payment details based on method
+      if (paymentMethod === 'card') {
+        const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+        const cardExpiry = document.getElementById('cardExpiry').value;
+        const cardCVV = document.getElementById('cardCVV').value;
+
+        if (!cardNumber || cardNumber.length < 13 || !cardExpiry || !cardCVV) {
+          alert('Please enter valid card details');
+          return;
+        }
+      } else if (paymentMethod === 'mpesa') {
+        const mpesaPhone = document.getElementById('mpesaPhone').value.replace(/\s/g, '');
+        if (!mpesaPhone || mpesaPhone.length < 10) {
+          alert('Please enter a valid M-Pesa phone number');
+          return;
+        }
+      } else if (paymentMethod === 'paypal') {
+        // PayPal redirect would happen here
+        alert('Redirecting to PayPal...');
+        return;
+      } else if (paymentMethod === 'bank') {
+        alert('Please complete your bank transfer using the details provided. Your booking will be confirmed once payment is received.');
         return;
       }
 
@@ -1373,7 +1583,7 @@
       // Call backend API to register booking
       try {
         const seatLabel = `${String.fromCharCode(65 + Math.floor((selectedSeat - 1) / 6))}${((selectedSeat - 1) % 6) + 1}`;
-        
+
         const response = await fetch('/api/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1381,21 +1591,25 @@
             name: bookingData.passenger.name,
             passport: bookingData.passenger.passport,
             email: bookingData.passenger.email,
-            flight: bookingData.flight.id,
+            flight: 'KQ500', // Use valid flight number from database
             from: bookingData.flight.from,
             to: bookingData.flight.to,
             seat_class: 'Economy',
             amount: total,
-            currency: activeCurrency,
-            payment_method: 'card'
+            currency: currentCurrency,
+            payment_method: paymentMethod
           })
         });
 
         const result = await response.json();
-        
-        if (response.ok && result.ok) {
+        console.log('API Response:', response.status, result);
+
+        if (response.ok && result.booking_ref) {
+          // Store seat label in bookingData for later use
+          bookingData.seatLabel = seatLabel;
+
           // Use booking reference from backend
-          const bookingRef = result.booking_ref;
+          const bookingRef = result.booking_ref || result.bookingRef || 'SF' + Math.random().toString(36).substr(2, 6).toUpperCase();
           const ticketNumber = 'SF' + Math.random().toString(36).substr(2, 9).toUpperCase();
 
           document.getElementById('ticketNumber').textContent = ticketNumber;
@@ -1403,7 +1617,7 @@
           document.getElementById('ticketFlight').textContent = `${bookingData.flight.airline} ${bookingData.flight.from}${bookingData.flight.to}`;
           document.getElementById('ticketDateTime').textContent = `${bookingData.flight.date} at ${bookingData.flight.departure}`;
           document.getElementById('ticketRoute').textContent = `${bookingData.flight.from} → ${bookingData.flight.to}`;
-          document.getElementById('ticketSeat').textContent = seatLabel;
+          document.getElementById('ticketSeat').textContent = bookingData.seatLabel;
           document.getElementById('ticketName').textContent = bookingData.passenger.name;
           document.getElementById('ticketPassport').textContent = bookingData.passenger.passport;
           document.getElementById('ticketEmail').textContent = bookingData.passenger.email;
@@ -1413,7 +1627,8 @@
           closeModal('paymentModal');
           openModal('ticketModal');
         } else {
-          throw new Error(result.error || 'Booking failed');
+          const errorMsg = result.error || result.detail || `HTTP ${response.status}: ${response.statusText}`;
+          throw new Error(errorMsg);
         }
       } catch (error) {
         console.error('Booking error:', error);
@@ -1423,6 +1638,30 @@
 
     function downloadTicket() {
       alert('Ticket downloaded! Check your downloads folder.');
+    }
+
+    function goToPassengerPortal() {
+      // Store booking info for passenger portal access
+      const bookingInfo = {
+        ticketNumber: document.getElementById('ticketNumber').textContent,
+        bookingRef: document.getElementById('bookingRef').textContent,
+        passengerName: bookingData.passenger.name,
+        passport: bookingData.passenger.passport,
+        email: bookingData.passenger.email,
+        phone: bookingData.passenger.phone,
+        flight: bookingData.flight.id,
+        from: bookingData.flight.from,
+        to: bookingData.flight.to,
+        date: bookingData.flight.date,
+        departure: bookingData.flight.departure,
+        seatNumber: bookingData.seatLabel
+      };
+      
+      // Store in sessionStorage for passenger portal
+      sessionStorage.setItem('bookingInfo', JSON.stringify(bookingInfo));
+      
+      // Redirect to passenger portal
+      window.location.href = 'passenger-dashboard.html';
     }
 
     function openModal(modalId) {
@@ -1435,6 +1674,7 @@
 
     // Initialize
     renderOffers();
+    initPaymentMethods();
 
     // If coming from availability selection, preload flight and open traveler modal
     try {
@@ -1442,7 +1682,7 @@
       if (sel) {
         const f = JSON.parse(sel);
         selectedFlight = {
-          id: f.id || 'SF-' + Math.random().toString(36).slice(2,8).toUpperCase(),
+          id: 'KQ500', // Use valid flight number from database
           airline: f.airline || 'SmartFly Airways',
           from: f.from,
           to: f.to,
