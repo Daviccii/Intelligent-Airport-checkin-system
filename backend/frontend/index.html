@@ -1,521 +1,158 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Airport Checkin - Search</title>
-  <style>
-    body { font-family: Arial, Helvetica, sans-serif; margin: 16px; }
-    /* Mega navigation */
-    .mega-nav { display:flex; align-items:center; gap:18px; padding:12px 0 16px 0; border-bottom:1px solid #e6e9ef; flex-wrap:wrap; }
-    .mega-nav .brand { font-size:18px; font-weight:800; color:#0a2463; text-decoration:none; }
-    .mega-nav .menu { display:flex; gap:14px; flex-wrap:wrap; }
-    .mega-item { position:relative; }
-    .mega-trigger { display:inline-flex; align-items:center; gap:6px; padding:10px 14px; border-radius:10px; border:1px solid #d7dde5; background:#f6f8fb; color:#0f172a; font-weight:700; cursor:pointer; text-decoration:none; }
-    .mega-trigger:hover { background:#0a2463; color:#fff; border-color:#0a2463; }
-    .mega-menu { position:absolute; top:calc(100% + 6px); left:0; min-width:220px; background:#fff; border:1px solid #d7dde5; border-radius:12px; box-shadow:0 10px 32px rgba(0,0,0,0.12); padding:12px 0; display:none; z-index:999; }
-    .mega-item:hover .mega-menu, .mega-item:focus-within .mega-menu { display:block; }
-    .mega-menu a { display:block; padding:10px 16px; text-decoration:none; color:#0f172a; font-weight:600; }
-    .mega-menu a span { display:block; font-size:12px; color:#6b7280; font-weight:500; }
-    .mega-menu a:hover { background:#f6f8fb; color:#0a2463; }
-    @media (max-width: 720px) {
-      .mega-menu { position:static; display:block; width:100%; box-shadow:none; border:1px solid #e5e7eb; margin-top:8px; }
-    }
-    .search-row { display:flex; gap:12px; align-items:flex-end; margin-bottom:12px; flex-wrap:wrap; }
-    .field { display:flex; flex-direction:column; gap:6px; min-width:200px; }
-    .field.small { min-width:140px; width:160px; }
-    .field label { font-weight:600; font-size:14px; color:#0b2a4a; }
-    .field .hint { font-weight:500; color:#6b7280; font-size:12px; }
-    .search-row input { padding:10px; font-size:14px; border:1px solid #d7dde5; border-radius:8px; }
-    .search-row input:focus { outline:2px solid #0a7be0; border-color:#0a7be0; }
-    .search-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:12px 16px; font-weight:700; cursor:pointer; background:#0a2463; color:#fff; border:none; border-radius:10px; box-shadow:0 4px 12px rgba(0,0,0,0.12); }
-    .search-btn:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,0.18); }
-    .quick-tabs { display:flex; gap:10px; flex-wrap:wrap; margin:8px 0 16px 0; }
-    .pill { padding:8px 14px; border-radius:999px; text-decoration:none; border:1px solid #d7dde5; color:#0f172a; font-weight:600; background:#f6f8fb; transition:all 0.2s; }
-    .pill.primary { background:#0a2463; color:#fff; border-color:#0a2463; }
-    .pill:hover { transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,0.08); }
-    .offers { margin-top:16px; }
-    .airline-box { border:1px solid #ddd; padding:8px; margin-top:8px; border-radius:6px; background:#fff }
-    .dates-panel a { display:inline-block; margin:4px; padding:6px 8px; border-radius:6px; text-decoration:none; color:#111 }
-  </style>
-  <style>
-    /* Autocomplete suggestions */
-    .airport-sugg { position: absolute; background:#fff; border:1px solid #e6eef6; box-shadow:0 8px 20px rgba(3,10,25,0.08); border-radius:8px; overflow:auto; max-height:260px; z-index:9999; width:360px; }
-    .airport-sugg .item { padding:8px 10px; cursor:pointer; border-bottom:1px solid #f4f7fb; }
-    .airport-sugg .item:last-child { border-bottom:none }
-    .airport-sugg .item:hover, .airport-sugg .item.active { background:#f3fbff; }
-    .airport-field { position:relative; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFly Airways - Book Your Flight</title>
+    <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <nav class="mega-nav" aria-label="Main navigation">
-    <a class="brand" href="/">SmartFly</a>
-    <div class="menu">
-      <div class="mega-item">
-        <a class="mega-trigger" href="/flight-results.html">Explore ▾</a>
-        <div class="mega-menu">
-          <a href="/flight-results.html">Destinations <span>Search routes & fares</span></a>
-          <a href="/destinations.html">Top picks <span>Beach • Culture • Eco</span></a>
-          <a href="/plan.html">Travel guides <span>Weather • Visa tips</span></a>
+    <!-- Sticky Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="logo-bubble">
+                <span class="logo-icon">✈</span>
+            </div>
+            <nav class="nav-links">
+                <a href="#" class="nav-link active">Flights</a>
+                <a href="#" class="nav-link">Bookings</a>
+                <a href="#" class="nav-link">Manage</a>
+                <a href="#" class="nav-link">Check-in</a>
+                <a href="#" class="nav-link">Help</a>
+            </nav>
+            <div class="header-actions">
+                <button class="btn-secondary">Sign In</button>
+            </div>
         </div>
-      </div>
+    </header>
 
-      <div class="mega-item">
-        <a class="mega-trigger" href="/plan.html">Plan ▾</a>
-        <div class="mega-menu">
-          <a href="/plan.html">Trip planner <span>Itinerary & budget</span></a>
-          <a href="/extras.html">Extras <span>Seats • Bags • Meals</span></a>
-          <a href="/help.html">Travel requirements <span>Docs & vaccines</span></a>
+                            <label for="departDate" class="form-label">Depart</label>
+                            <input id="departDate" type="date" class="form-control" />
+                        </div>
+
+                        <div class="form-group" id="returnDateGroup" style="display: none;">
+                            <label for="returnDate" class="form-label">Return</label>
+                            <input id="returnDate" type="date" class="form-control" />
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="mega-item">
-        <a class="mega-trigger" href="/book.html">Book &amp; Manage ▾</a>
-        <div class="mega-menu">
-          <a href="/book.html">Book flights <span>Search & checkout</span></a>
-          <a href="/lookup.html">Manage booking <span>Changes • Refunds</span></a>
-          <a href="/checkin.html">Check-In <span>Get boarding pass</span></a>
+    <!-- Content Sections -->
+    <section class="content-section">
+        <div class="container">
+            <h2 class="section-title">Why Choose SmartFly</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">✓</div>
+                    <h3>Best Fares Guaranteed</h3>
+                    <p>Get the lowest prices or we'll match them</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure Booking</h3>
+                    <p>Industry-standard SSL encryption</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🌍</div>
+                    <h3>Global Destinations</h3>
+                    <p>Fly to 500+ destinations worldwide</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile First</h3>
+                    <p>Book on any device, anytime</p>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="mega-item">
-        <a class="mega-trigger" href="/experience.html">Experience ▾</a>
-        <div class="mega-menu">
-          <a href="/experience.html">Onboard experience <span>Cabins • Wi‑Fi • Dining</span></a>
-          <a href="/extras.html">Upgrades & seats <span>Choose seats • Legroom</span></a>
-          <a href="/baggage.html">Baggage <span>Allowances & tracking</span></a>
+    <!-- Additional Information -->
+    <section class="content-section alt-section">
+        <div class="container">
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">On-time performance</div>
+                    <div class="info-value">93%</div>
+                    <p>Smart operations with proactive rebooking and real-time alerts.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Global support</div>
+                    <div class="info-value">24/7</div>
+                    <p>Dedicated agents via chat, phone, and airport desks worldwide.</p>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Fleet comfort</div>
+                    <div class="info-value">Premium</div>
+                    <p>Quiet cabins, refreshed interiors, Wi‑Fi on key routes, and curated meals.</p>
+                </div>
+            </div>
+
+            <div class="deep-dive">
+                <div class="deep-card">
+                    <h3>Cabin experience</h3>
+                    <p>Ergonomic seating, generous legroom options, USB power, and mood lighting for better rest.</p>
+                </div>
+                <div class="deep-card">
+                    <h3>Seamless journeys</h3>
+                    <p>Priority lanes, digital boarding passes, and coordinated transfers at major hubs.</p>
+                </div>
+                <div class="deep-card">
+                    <h3>Loyalty rewards</h3>
+                    <p>Earn and redeem on every fare class with flexible upgrades and partner perks.</p>
+                </div>
+            </div>
         </div>
-      </div>
+    </section>
 
-      <div class="mega-item">
-        <a class="mega-trigger" href="/loyalty.html">Loyalty Program ▾</a>
-        <div class="mega-menu">
-          <a href="/loyalty.html">Earn & redeem <span>Points on every trip</span></a>
-          <a href="/membership.html">Membership tiers <span>Local & Premium</span></a>
-          <a href="/login.html">Member login <span>View balance</span></a>
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-top">
+                <div>
+                    <div class="logo">✈ SmartFly Airways</div>
+                    <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+                </div>
+                <div class="footer-columns">
+                    <div class="footer-col">
+                        <h4>Company</h4>
+                        <a href="#">About</a>
+                        <a href="#">Careers</a>
+                        <a href="#">Newsroom</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Support</h4>
+                        <a href="#">Help Center</a>
+                        <a href="#">Travel alerts</a>
+                        <a href="#">Baggage</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Travel</h4>
+                        <a href="#">Manage booking</a>
+                        <a href="#">Check-in</a>
+                        <a href="#">Loyalty</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Connect</h4>
+                        <a href="#">Twitter</a>
+                        <a href="#">Instagram</a>
+                        <a href="#">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Contact</a>
+                </div>
+            </div>
         </div>
-      </div>
+    </footer>
 
-      <div class="mega-item">
-        <a class="mega-trigger" href="/help.html">Help ▾</a>
-        <div class="mega-menu">
-          <a href="/help.html">Help center <span>FAQs & guides</span></a>
-          <a href="/contact.html">Contact us <span>Chat • Phone • Email</span></a>
-          <a href="/policy.html">Policies <span>Travel & refunds</span></a>
-        </div>
-      </div>
-    </div>
-  </nav>
-  <h1 style="margin-bottom:6px">Book &amp; Manage Your Trip</h1>
-  <p style="margin:0 0 12px;color:#4b5563">Use the FROM and TO fields to book flights. You can also jump to Check-In or Manage Booking.</p>
-
-  <div class="quick-tabs">
-    <span class="pill primary" aria-current="page">Book flight</span>
-    <a class="pill" href="/checkin.html">Check-In</a>
-    <a class="pill" href="/lookup.html">Manage booking</a>
-    <a class="pill" href="/flights.html">Flight status</a>
-    <a class="pill" href="/help.html">Help &amp; support</a>
-  </div>
-
-  <form id="searchForm" onsubmit="return false;">
-    <div class="search-row">
-      <div class="field" aria-label="From departure airport">
-        <label for="originInput">From (Departure)</label>
-        <span class="hint">City or airport code, e.g., NBO or JFK</span>
-        <input id="originInput" name="origin" placeholder="Type departure city/airport" />
-      </div>
-      <div class="field" aria-label="To arrival airport">
-        <label for="destInput">To (Arrival)</label>
-        <span class="hint">City or airport code, e.g., DXB or LHR</span>
-        <input id="destInput" name="dest" placeholder="Type arrival city/airport" />
-      </div>
-      <div class="field small">
-        <label for="startInput">Depart</label>
-        <input id="startInput" name="start" type="date" />
-      </div>
-      <div class="field small">
-        <label for="endInput">Return</label>
-        <input id="endInput" name="end" type="date" />
-      </div>
-      <div class="field" style="min-width:180px">
-        <label>&nbsp;</label>
-        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-          <button id="searchBtn" class="search-btn" title="Search flights" aria-label="Search flights">Search flights</button>
-          <a class="pill" href="/checkin.html" style="padding:10px 14px">Go to Check-In</a>
-        </div>
-      </div>
-    </div>
-  </form>
-
-  <div id="offers-container" class="offers"></div>
-
-  <div id="flights-container" class="offers"></div>
-
-  <script>
-  // Offers UI and fetch logic (uses /api/prices/offers)
-  function renderOffers(data) {
-    const c = document.getElementById('offers-container');
-    c.innerHTML = '';
-
-    const hdr = document.createElement('div');
-    hdr.innerHTML = `<strong>Route</strong>: ${data.from} → ${data.to} • Base ${data.currency} ${data.base}`;
-    c.appendChild(hdr);
-
-    // If alternatives exist, render those exclusively and skip the per-airline flights list
-    if (data.alternatives && data.alternatives.length) {
-      try {
-        c.innerHTML = '';
-        const tabs = document.createElement('div');
-        tabs.style.display = 'flex';
-        tabs.style.flexWrap = 'wrap';
-        tabs.style.gap = '12px';
-        tabs.style.marginTop = '12px';
-
-        data.alternatives.forEach(a => {
-          const card = document.createElement('a');
-          const href = (a.booking_url_template ? a.booking_url_template.replace('{date}', encodeURIComponent(Object.keys(data.days || {})[0] || '')) : (a.booking_url || '#'));
-          card.href = href;
-          card.target = '_blank';
-          card.className = 'alt-card';
-          card.style.display = 'flex';
-          card.style.flexDirection = 'column';
-          card.style.justifyContent = 'flex-end';
-          card.style.width = '280px';
-          card.style.height = '140px';
-          card.style.borderRadius = '8px';
-          card.style.overflow = 'hidden';
-          card.style.position = 'relative';
-          card.style.color = '#fff';
-          card.style.textDecoration = 'none';
-          card.style.boxShadow = '0 6px 20px rgba(0,0,0,0.12)';
-
-          const bg = a.logo_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(a.airline || '')}&size=512`;
-          try { card.style.backgroundImage = `linear-gradient(to top, rgba(0,0,0,0.56), rgba(0,0,0,0.18)), url('${bg}')`; card.style.backgroundSize = 'cover'; card.style.backgroundPosition = 'center'; } catch(e) { card.style.backgroundColor = '#2b6cb0'; }
-
-          const txt = document.createElement('div');
-          txt.style.padding = '12px';
-          txt.style.zIndex = '2';
-          txt.innerHTML = `<div style="font-weight:700;font-size:18px;text-shadow:0 1px 2px rgba(0,0,0,0.6)">${a.airline || 'Airline'}</div><div style="margin-top:6px;font-weight:600;text-shadow:0 1px 2px rgba(0,0,0,0.6)">${data.currency || '$'} ${a.price || '-'}</div>`;
-
-          const bookBtn = document.createElement('button');
-          bookBtn.type = 'button';
-          bookBtn.textContent = 'Book';
-          bookBtn.className = 'btn';
-          bookBtn.style.position = 'absolute';
-          bookBtn.style.right = '12px';
-          bookBtn.style.top = '12px';
-          bookBtn.style.zIndex = '3';
-          bookBtn.style.background = 'rgba(255,255,255,0.95)';
-          bookBtn.style.color = '#111';
-          bookBtn.style.border = 'none';
-          bookBtn.style.padding = '6px 10px';
-          bookBtn.style.borderRadius = '6px';
-          bookBtn.addEventListener('click', (ev) => { ev.preventDefault(); ev.stopPropagation(); if (href && href !== '#') window.open(href, '_blank'); });
-
-          card.appendChild(txt);
-          card.appendChild(bookBtn);
-          tabs.appendChild(card);
-        });
-
-        c.appendChild(tabs);
-        return;
-      } catch (err) { c.innerText = 'Failed to render alternatives.'; }
-    }
-
-    if (data.airlines && data.airlines.length) {
-      data.airlines.forEach(a => {
-        const airlineBox = document.createElement('div');
-        airlineBox.className = 'airline-box';
-
-        const title = document.createElement('div');
-        title.style.display = 'flex';
-        title.style.alignItems = 'center';
-
-        const logoImg = document.createElement('img');
-        logoImg.src = (a.flights && a.flights[0] && a.flights[0].logo_url) || `https://ui-avatars.com/api/?name=${encodeURIComponent(a.airline)}&size=48`;
-        logoImg.width = 48; logoImg.height = 48; logoImg.style.marginRight = '8px';
-        title.appendChild(logoImg);
-
-        const ttxt = document.createElement('div');
-        ttxt.innerHTML = `<strong>${a.airline}</strong>`;
-        title.appendChild(ttxt);
-
-        airlineBox.appendChild(title);
-
-        // flights table
-        const table = document.createElement('table');
-        table.style.width = '100%';
-        table.style.borderCollapse = 'collapse';
-        table.style.marginTop = '8px';
-        const thead = document.createElement('thead');
-        thead.innerHTML = '<tr><th style="text-align:left">Flight</th><th style="text-align:left">Time</th><th style="text-align:left">Aircraft</th><th style="text-align:left">Price</th><th></th></tr>';
-        table.appendChild(thead);
-
-        const tbody = document.createElement('tbody');
-        (a.flights || []).forEach(f => {
-          const tr = document.createElement('tr');
-          tr.style.borderTop = '1px solid #f0f0f0';
-          tr.innerHTML = `
-            <td style="padding:8px 4px">${f.flight}</td>
-            <td style="padding:8px 4px">${f.time || 'N/A'}</td>
-            <td style="padding:8px 4px">${f.aircraft || '—'}</td>
-            <td style="padding:8px 4px">${data.currency} ${f.price}</td>
-            <td style="padding:8px 4px"><button type="button" class="show-dates-btn" data-flight='${encodeURIComponent(JSON.stringify(f))}'>Dates</button></td>
-          `;
-          tbody.appendChild(tr);
-        });
-        table.appendChild(tbody);
-        airlineBox.appendChild(table);
-
-        const datesPanel = document.createElement('div');
-        datesPanel.className = 'dates-panel';
-        datesPanel.style.marginTop = '8px';
-        airlineBox.appendChild(datesPanel);
-
-        c.appendChild(airlineBox);
-      });
-
-      // attach handlers for Dates buttons
-      c.querySelectorAll('.show-dates-btn').forEach(btn => {
-        btn.addEventListener('click', (ev) => {
-          const raw = decodeURIComponent(btn.getAttribute('data-flight') || '{}');
-          let flightObj = {};
-          try { flightObj = JSON.parse(raw); } catch(e) { flightObj = {}; }
-          const parent = btn.closest('.airline-box');
-          const panel = parent.querySelector('.dates-panel');
-          panel.innerHTML = '';
-
-          const dateOffers = flightObj.date_offers || {};
-          if (!dateOffers || Object.keys(dateOffers).length === 0) {
-            panel.innerText = 'No date offers available for this flight.';
-            return;
-          }
-
-          const grid = document.createElement('div');
-          grid.style.display = 'flex';
-          grid.style.flexWrap = 'wrap';
-          Object.keys(dateOffers).slice(0, 60).forEach(d => {
-            const v = dateOffers[d];
-            const tile = document.createElement('a');
-            tile.href = v.booking_url || (flightObj.booking_url_template ? flightObj.booking_url_template.replace('{date}', encodeURIComponent(d)) : '#');
-            tile.target = '_blank';
-            tile.style.display = 'inline-block';
-            tile.style.margin = '4px';
-            tile.style.padding = '6px 8px';
-            tile.style.borderRadius = '6px';
-            tile.style.background = v.available ? '#e6ffed' : '#fff5f5';
-            tile.style.textDecoration = 'none';
-            tile.style.color = '#111';
-            tile.innerText = `${d}: ${data.currency} ${v.price}${v.available ? '' : ' (sold)'} `;
-            grid.appendChild(tile);
-          });
-          panel.appendChild(grid);
-        });
-      });
-    } else {
-      c.innerText = 'No offers available for this route.';
-    }
-  }
-
-  // Simple flights list using /api/flights for consistency
-  async function loadAllFlights(origin, dest, date){
-    const params = new URLSearchParams();
-    if (origin) params.set('origin', origin.toUpperCase());
-    if (dest) params.set('destination', dest.toUpperCase());
-    if (date) params.set('date', date);
-    const res = await fetch('/api/flights?' + params.toString());
-    if (!res.ok) throw new Error('Flights request failed: ' + res.status);
-    return res.json();
-  }
-
-  function renderFlights(data){
-    const c = document.getElementById('flights-container');
-    c.innerHTML = '<h3>Available flights</h3>';
-    const flights = (data && data.flights) ? data.flights : [];
-    if (!flights.length){ c.innerHTML += '<div>No flights found.</div>'; return; }
-    const tbl = document.createElement('table'); tbl.style.width='100%'; tbl.style.borderCollapse='collapse';
-    const thead = document.createElement('thead'); thead.innerHTML = '<tr><th align="left">Flight</th><th align="left">Airline</th><th align="left">Route</th><th align="left">Date</th><th align="left">Depart</th><th align="left">Classes</th></tr>';
-    const tbody = document.createElement('tbody');
-    flights.forEach(f => {
-      const depart = (f.departure_time||'').replace('T',' ').replace('Z','');
-      const classes = (f.classes||[]).map(c => `${c.name} $${c.price}`).join(', ');
-      const tr = document.createElement('tr'); tr.innerHTML = `<td>${f.flight}</td><td>${f.airline||''}</td><td>${f.origin} → ${f.destination}</td><td>${f.date||''}</td><td>${depart}</td><td>${classes}</td>`;
-      tbody.appendChild(tr);
-    });
-    tbl.appendChild(thead); tbl.appendChild(tbody);
-    c.appendChild(tbl);
-  }
-
-  async function fetchOffers(origin, dest, start, end) {
-    const params = new URLSearchParams();
-    params.set('from', origin);
-    params.set('to', dest);
-    if (start) params.set('start', start);
-    if (end) params.set('end', end);
-    const url = '/api/prices/offers?' + params.toString();
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Offers request failed: ' + res.status);
-    return res.json();
-  }
-
-  function attachSearchHandler() {
-    const btn = document.getElementById('searchBtn');
-    if (!btn) return;
-    btn.addEventListener('click', async (e) => {
-      e.preventDefault();
-      const origin = (document.getElementById('originInput') || {}).value || '';
-      const dest = (document.getElementById('destInput') || {}).value || '';
-      const start = (document.getElementById('startInput') || {}).value || '';
-      const end = (document.getElementById('endInput') || {}).value || '';
-      if (!origin || !dest) {
-        alert('Please enter origin and destination codes.');
-        return;
-      }
-      const cont = document.getElementById('offers-container');
-      cont.innerHTML = 'Loading offers…';
-      try {
-        const data = await fetchOffers(origin, dest, start, end);
-        renderOffers(data);
-        // Load flights list alongside offers
-        const flightsData = await loadAllFlights(origin, dest, start || '');
-        renderFlights(flightsData);
-      } catch (err) {
-        cont.innerText = 'Failed to load offers: ' + (err.message || err);
-      }
-    });
-  }
-  // --- Autocomplete: load airports.json and provide suggestions for origin/dest inputs
-  let __airports = null;
-  async function loadAirports(){
-    if (__airports) return __airports;
-    try{
-      const res = await fetch('/assets/data/airports.json');
-      if (!res.ok) throw new Error('Failed to fetch airports');
-      const data = await res.json();
-      // normalize to objects with name, city, iata
-      __airports = (Array.isArray(data) ? data : []).map(a=>({ name: a.name||a.airport||'', city: a.city||'', iata: (a.iata||a.code||'').toUpperCase() })).filter(x=>x.iata || x.name);
-      return __airports;
-    }catch(e){ console.debug('airports load failed', e); __airports = []; return __airports; }
-  }
-
-  function buildSuggEl(){ const el = document.createElement('div'); el.className='airport-sugg'; el.setAttribute('role','listbox'); el.style.display='none'; return el; }
-
-  function renderSuggestions(container, items){
-    container.innerHTML = '';
-    if (!items || !items.length){ container.style.display='none'; return; }
-    items.slice(0,50).forEach(it=>{
-      const div = document.createElement('div'); div.className='item'; div.setAttribute('role','option');
-      div.textContent = (it.city ? (it.city + ' ') : '') + (it.name ? (' — ' + it.name) : '') + (it.iata ? (' ('+it.iata+')') : '');
-      div.dataset.iata = it.iata || '';
-      div.dataset.display = div.textContent;
-      container.appendChild(div);
-    });
-    container.style.display = 'block';
-  }
-
-  function filterAirports(q){
-    try{
-      if (!__airports) return [];
-      const qq = (q||'').toString().trim().toLowerCase();
-      if (!qq) return __airports.slice(0,20);
-      const byIata = __airports.filter(a => (a.iata||'').toLowerCase().indexOf(qq) === 0);
-      const byCity = __airports.filter(a => (a.city||'').toLowerCase().indexOf(qq) !== -1 && (!byIata.includes(a)));
-      const byName = __airports.filter(a => (a.name||'').toLowerCase().indexOf(qq) !== -1 && (!byIata.includes(a)) && (!byCity.includes(a)));
-      return byIata.concat(byCity).concat(byName).slice(0,50);
-    }catch(e){ return []; }
-  }
-
-  function attachAutocomplete(inputId){
-    const input = document.getElementById(inputId);
-    if (!input) return;
-    // wrap input to allow absolute-positioned dropdown
-    if (!input.classList.contains('airport-field')) input.classList.add('airport-field');
-    const container = buildSuggEl();
-    input.parentNode.insertBefore(container, input.nextSibling);
-
-    let items = [];
-    let selectedIndex = -1;
-
-    async function refresh(q){
-      await loadAirports();
-      items = filterAirports(q);
-      renderSuggestions(container, items);
-      selectedIndex = -1;
-    }
-
-    input.addEventListener('focus', function(){ refresh(input.value || ''); });
-    input.addEventListener('input', function(){ refresh(input.value || ''); });
-    input.addEventListener('blur', function(){ setTimeout(()=>{ container.style.display='none'; }, 72000); });
-
-    input.addEventListener('keydown', function(ev){
-      if (container.style.display === 'none') return;
-      const nodes = Array.from(container.querySelectorAll('.item'));
-      if (ev.key === 'ArrowDown'){
-        ev.preventDefault(); selectedIndex = Math.min(nodes.length-1, selectedIndex+1);
-        nodes.forEach(n=>n.classList.remove('active')); if (nodes[selectedIndex]) nodes[selectedIndex].classList.add('active');
-      } else if (ev.key === 'ArrowUp'){
-        ev.preventDefault(); selectedIndex = Math.max(0, selectedIndex-1);
-        nodes.forEach(n=>n.classList.remove('active')); if (nodes[selectedIndex]) nodes[selectedIndex].classList.add('active');
-      } else if (ev.key === 'Enter'){
-        if (selectedIndex >=0){ ev.preventDefault(); const n = nodes[selectedIndex]; if (n) { input.value = n.dataset.iata || n.dataset.display || n.textContent; input.dataset.selected = 'true'; input.dataset.iata = (n.dataset.iata||''); container.style.display='none'; } }
-      } else if (ev.key === 'Escape'){
-        container.style.display='none';
-      }
-    });
-
-    container.addEventListener('mousedown', function(ev){ // use mousedown so it fires before blur
-      const it = ev.target.closest('.item'); if (!it) return; ev.preventDefault(); input.value = it.dataset.iata || it.dataset.display || it.textContent; input.dataset.selected='true'; input.dataset.iata = (it.dataset.iata||''); container.style.display='none'; input.focus();
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    attachSearchHandler();
-    // wire autocomplete for origin and destination
-    // attachAutocomplete('originInput'); // DISABLED: old dropdown
-    // attachAutocomplete('destInput'); // DISABLED: old dropdown
-  });
-
-  // TEMP DEBUG OVERLAY: shows airports load status and suggestion elements
-  (function(){
-    function makeOverlay(){
-      const o = document.createElement('div');
-      o.id = 'smf-debug-overlay';
-      o.style.position = 'fixed';
-      o.style.right = '12px';
-      o.style.bottom = '12px';
-      o.style.zIndex = '99999';
-      o.style.background = 'rgba(4,18,30,0.92)';
-      o.style.color = '#fff';
-      o.style.padding = '10px 12px';
-      o.style.borderRadius = '8px';
-      o.style.fontSize = '13px';
-      o.style.fontFamily = 'Arial,Helvetica,sans-serif';
-      o.style.maxWidth = '320px';
-      o.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)';
-      o.innerHTML = '<div style="font-weight:700;margin-bottom:6px">SMF Debug</div><div id="smf-debug-body">initializing…</div><div style="margin-top:8px;text-align:right"><button id="smf-debug-close" style="background:#fff;border:none;padding:6px 8px;border-radius:6px;cursor:pointer">Close</button></div>';
-      document.body.appendChild(o);
-      document.getElementById('smf-debug-close').addEventListener('click', ()=>{ o.parentNode && o.parentNode.removeChild(o); });
-      return o;
-    }
-    async function updateOverlay(o){
-      try{
-        const body = o.querySelector('#smf-debug-body');
-        body.textContent = 'loading airports...';
-        let count = 0; try{ const a = await (await fetch('/assets/data/airports.json')).json(); if (Array.isArray(a)) count = a.length; }catch(e){ body.textContent = 'airports fetch failed: '+(e && e.message?e.message:'err'); }
-        const suggs = document.querySelectorAll('.airport-sugg');
-        const info = [];
-        info.push('airports: ' + count);
-        info.push('suggestion elements: ' + suggs.length);
-        if (suggs.length){ suggs.forEach((s,i)=>{ const disp = window.getComputedStyle(s).display; info.push('sugg['+i+'] display='+disp+' items='+s.querySelectorAll('.item').length); }); }
-        // also check origin/dest inputs
-        const oIn = document.getElementById('originInput'); const dIn = document.getElementById('destInput');
-        info.push('origin value="' + (oIn?oIn.value:'(missing)') + '"');
-        info.push('dest value="' + (dIn?dIn.value:'(missing)') + '"');
-        body.innerHTML = info.map(i=>'&middot; '+i).join('<br>');
-      }catch(e){ try{ o.querySelector('#smf-debug-body').textContent = 'overlay error: '+e.message; }catch(_){}}
-    }
-    window.addEventListener('load', function(){ try{ const ov = makeOverlay(); setTimeout(()=>updateOverlay(ov), 300); setTimeout(()=>updateOverlay(ov), 1200); }catch(e){} });
-  })();
-  </script>
+    <script src="/script.js"></script>
 </body>
 </html>

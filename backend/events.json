@@ -1221,5 +1221,94 @@
     "role": "admin",
     "username": "Riley Gabi",
     "timestamp": "2026-01-18T20:27:17.851189Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "TEST123",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-27T12:11:45.360796Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "TEST123",
+    "booking_ref": "SF0009",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-27T12:11:46.638651Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "TEST123",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-27T12:11:54.734501Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "TEST123",
+    "booking_ref": "SF0010",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-27T12:11:54.794134Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "TEST123",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-27T12:11:57.010140Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "TEST123",
+    "booking_ref": "SF0011",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-27T12:11:57.056323Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "TEST123",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-27T12:41:59.093160Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "TEST123",
+    "booking_ref": "SF0012",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-27T12:41:59.165877Z"
+  },
+  {
+    "type": "email_queue_failed",
+    "passport": "TEST123",
+    "error": "name 'RQ_QUEUE' is not defined",
+    "timestamp": "2026-01-27T12:45:50.279425Z"
+  },
+  {
+    "type": "booking_email_enqueue_failed",
+    "passport": "TEST123",
+    "booking_ref": "SF0013",
+    "error": "Queue.enqueue() missing 1 required positional argument: 'f'",
+    "timestamp": "2026-01-27T12:45:50.356376Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-27T12:51:19.456286Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-27T13:34:19.299078Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-28T05:05:22.976565Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-28T07:09:07.703135Z"
   }
 ]

@@ -151,6 +151,9 @@ def _create_session(username, role='staff', ttl_seconds=86400):
     _save_json_file(SESSIONS_FILE, sessions)
     return token, session_entry
 
+# Register booking endpoints after helper functions are defined
+register_booking_endpoints(app, _require_session)
+
 # ---------------------------------------------------------------------------
 # Helper: minimal admin session check for protected admin HTML pages.
 # Accepts either the session cookie set by the frontend login flow or a Bearer

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Passenger Details - SmartFly Airways</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #f5f5f5;
+            color: #212121;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            padding: 20px 0;
+            border-bottom: 1px solid #e0e0e0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #c8102e;
+        }
+
+        .header-title {
+            font-size: 16px;
+            color: #757575;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 900px;
+            margin: 32px auto;
+            padding: 0 24px;
+        }
+
+        /* Flight Summary Box */
+        .flight-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .flight-summary-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .flight-summary-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #757575;
+            text-transform: uppercase;
+        }
+
+        .summary-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #212121;
+        }
+
+        .summary-value.price {
+            color: #c8102e;
+            font-size: 24px;
+        }
+
+        /* Form Section */
+        .form-section {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .form-section h2 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #212121;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #212121;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #c8102e;
+            box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            gap: 16px;
+            padding-top: 24px;
+            border-top: 1px solid #eeeeee;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #c8102e;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #9e0c24;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #212121;
+            border: 2px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            border-color: #c8102e;
+            color: #c8102e;
+        }
+
+        /* Loading State */
+        .loading-message {
+            text-align: center;
+            padding: 40px;
+            color: #757575;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #eeeeee;
+            border-top-color: #c8102e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">✈ SmartFly Airways</div>
+            <div class="header-title">Passenger Details</div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Flight Summary -->
+        <div class="flight-summary" id="flightSummary">
+            <div class="flight-summary-row">
+                <div class="summary-item">
+                    <div class="summary-label">Route</div>
+                    <div class="summary-value" id="summaryRoute">—</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Departure</div>
+                    <div class="summary-value" id="summaryDate">—</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Cabin Class</div>
+                    <div class="summary-value" id="summaryClass">—</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Total Price</div>
+                    <div class="summary-value price" id="summaryPrice">$0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passenger Form -->
+        <div class="form-section" id="passengerForm">
+            <h2>Passenger Information</h2>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" required placeholder="John">
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" required placeholder="Doe">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="email">Email Address *</label>
+                    <input type="email" id="email" required placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="phone">Phone Number *</label>
+                    <input type="tel" id="phone" required placeholder="+1 (555) 123-4567">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="dateOfBirth">Date of Birth *</label>
+                    <input type="date" id="dateOfBirth" required>
+                </div>
+                <div class="form-group">
+                    <label for="nationality">Nationality *</label>
+                    <select id="nationality" required>
+                        <option value="">Select nationality</option>
+                        <option value="KE">Kenya</option>
+                        <option value="US">United States</option>
+                        <option value="GB">United Kingdom</option>
+                        <option value="CA">Canada</option>
+                        <option value="AU">Australia</option>
+                        <option value="NZ">New Zealand</option>
+                        <option value="IN">India</option>
+                        <option value="ZA">South Africa</option>
+                        <option value="NG">Nigeria</option>
+                        <option value="GH">Ghana</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="passportNumber">Passport Number *</label>
+                    <input type="text" id="passportNumber" required placeholder="A00123456">
+                </div>
+                <div class="form-group">
+                    <label for="passportExpiry">Passport Expiry *</label>
+                    <input type="date" id="passportExpiry" required>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()">Back</button>
+                <button type="submit" class="btn btn-primary" onclick="submitPassengerDetails()">Continue to Payment</button>
+            </div>
+        </div>
+
+        <!-- Loading State (hidden by default) -->
+        <div class="loading-message" id="loadingMessage" style="display: none;">
+            <div class="spinner"></div>
+            <p>Processing your booking...</p>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            return {
+                from: params.get('from'),
+                to: params.get('to'),
+                date: params.get('date'),
+                fare: params.get('fare'),
+                price: params.get('price')
+            };
+        }
+
+        // Get selected flight from sessionStorage
+        function getSelectedFlight() {
+            const stored = sessionStorage.getItem('selectedFlight');
+            return stored ? JSON.parse(stored) : null;
+        }
+
+        // Format date for display
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
+        }
+
+        // Initialize page
+        function initializePage() {
+            const params = getUrlParams();
+            const flight = getSelectedFlight();
+
+            if (!params.from || !params.to || !params.price) {
+                document.getElementById('passengerForm').style.display = 'none';
+                document.getElementById('flightSummary').innerHTML = '<p style="color: #c8102e; padding: 24px;">Flight details not found. <a href="/availability.html">Go back to search</a></p>';
+                return;
+            }
+
+            // Update summary
+            document.getElementById('summaryRoute').textContent = `${params.from} → ${params.to}`;
+            document.getElementById('summaryDate').textContent = formatDate(params.date);
+            document.getElementById('summaryClass').textContent = params.fare.charAt(0).toUpperCase() + params.fare.slice(1);
+            document.getElementById('summaryPrice').textContent = `$${params.price}`;
+
+            console.log('🎫 Passenger Details Loaded:', params);
+        }
+
+        // Submit passenger details
+        function submitPassengerDetails() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const dateOfBirth = document.getElementById('dateOfBirth').value;
+            const nationality = document.getElementById('nationality').value;
+            const passportNumber = document.getElementById('passportNumber').value.trim();
+            const passportExpiry = document.getElementById('passportExpiry').value;
+
+            // Validation
+            if (!firstName || !lastName || !email || !phone || !dateOfBirth || !nationality || !passportNumber || !passportExpiry) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            if (!email.includes('@')) {
+                alert('Please enter a valid email address');
+                return;
+            }
+
+            // Store passenger details
+            const passengerDetails = {
+                firstName,
+                lastName,
+                email,
+                phone,
+                dateOfBirth,
+                nationality,
+                passportNumber,
+                passportExpiry
+            };
+
+            console.log('👤 Passenger Details Submitted:', passengerDetails);
+            sessionStorage.setItem('passengerDetails', JSON.stringify(passengerDetails));
+
+            // Show loading state
+            document.getElementById('passengerForm').style.display = 'none';
+            document.getElementById('loadingMessage').style.display = 'block';
+
+            // Simulate processing and redirect
+            setTimeout(() => {
+                const params = getUrlParams();
+                window.location.href = `/payment.html?from=${params.from}&to=${params.to}&price=${params.price}&fare=${params.fare}`;
+            }, 1500);
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

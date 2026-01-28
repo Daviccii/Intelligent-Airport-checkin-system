@@ -11,6 +11,8 @@ from integration_module import (
     get_flight_occupancy,
     get_revenue_summary
 )
+from activity_tracker import log_activity, get_payments_log
+from activity_tracker import log_activity, get_payments_log
 
 
 def register_booking_endpoints(app, _require_session):
@@ -63,6 +65,20 @@ def register_booking_endpoints(app, _require_session):
             
             if not success:
                 return jsonify({'error': message}), 400
+            
+            # Log payment activity for admin dashboard
+            log_activity('payment', {
+                'booking_ref': booking_id,
+                'passenger_name': name,
+                'passport': passport,
+                'email': email,
+                'flight': flight,
+                'amount': amount,
+                'currency': currency,
+                'payment_method': payment_method,
+                'status': 'completed',
+                'payment_status': 'completed'
+            })
             
             return jsonify({
                 'ok': True,
@@ -178,6 +194,50 @@ def register_booking_endpoints(app, _require_session):
             return jsonify({'error': str(e)}), 500
     
     
+    @app.route('/api/activities/payments', methods=['GET'])
+    def api_get_payments():
+        """
+        Get all payment activities for admin dashboard.
+        
+        Response: [{ id, type, timestamp, data: {...} }, ...]
+        """
+        try:
+            payments = get_payments_log()
+            return jsonify(payments), 200
+        except Exception as e:
+            return jsonify({'error': str(e), 'payments': []}), 200
+    
+    
+    @app.route('/api/activities/log', methods=['POST'])
+    def api_log_activity():
+        """
+        Log an activity (booking, payment, checkin, etc.) for admin/staff tracking.
+        
+        Request body:
+        {
+            "type": "payment|booking|checkin|flight_status",
+            "data": { ... activity-specific data ... }
+        }
+        
+        Response: { ok: bool, activity: {...} }
+        """
+        try:
+            data = request.get_json(silent=True) or {}
+            activity_type = data.get('type', 'unknown')
+            activity_data = data.get('data', {})
+            
+            # Log the activity
+            activity = log_activity(activity_type, activity_data)
+            
+            if activity:
+                return jsonify({'ok': True, 'activity': activity}), 200
+            else:
+                return jsonify({'ok': False, 'error': 'Failed to log activity'}), 500
+                
+        except Exception as e:
+            return jsonify({'ok': False, 'error': str(e)}), 500
+    
+    
     @app.route('/api/revenue/summary', methods=['GET'])
     def api_get_revenue_summary():
         """
@@ -196,3 +256,133 @@ def register_booking_endpoints(app, _require_session):
             
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+    
+    
+    @app.route('/api/booking/lookup', methods=['GET'])
+    def api_lookup_booking():
+        """
+        Lookup booking details by reference number and email.
+        Query params: ref (booking reference), email (passenger email)
+        Response: { ok: bool, booking: {...} }
+        """
+        try:
+            import json
+            import os
+            
+            booking_ref = request.args.get('ref', '').strip()
+            email = request.args.get('email', '').strip()
+            
+            if not booking_ref:
+                return jsonify({'error': 'Booking reference is required'}), 400
+            
+            # Load bookings from file
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            bookings_file = os.path.join(base_dir, 'bookings.json')
+            
+            if not os.path.exists(bookings_file):
+                return jsonify({'error': 'No bookings found'}), 404
+            
+            with open(bookings_file, 'r') as f:
+                bookings = json.load(f)
+            
+            # Find matching booking - check both booking_ref and booking_reference
+            for booking in bookings:
+                ref_value = booking.get('booking_ref') or booking.get('booking_reference')
+                if ref_value == booking_ref:
+                    # If email provided, verify it matches
+                    if email and booking.get('email', '').lower() != email.lower():
+                        return jsonify({'error': 'Booking reference and email do not match'}), 403
+                    
+                    return jsonify({
+                        'ok': True,
+                        'booking': booking
+                    }), 200
+            
+            return jsonify({'error': 'Booking not found'}), 404
+            
+        except Exception as e:
+            return jsonify({'error': f'Lookup failed: {str(e)}'}), 500
+    
+    
+    @app.route('/api/booking/search-by-passport', methods=['GET'])
+    def api_search_booking_by_passport():
+        """
+        Search for booking by passport number and/or email/name.
+        Query params: passport (optional), email (optional)
+        Response: { ok: bool, bookings: [...] } - list of matching bookings
+        """
+        try:
+            import json
+            import os
+            
+            passport = request.args.get('passport', '').strip()
+            email = request.args.get('email', '').strip().lower()
+            name = request.args.get('name', '').strip().lower()
+            
+            if not passport and not email and not name:
+                return jsonify({'error': 'At least one search parameter (passport, email, or name) is required'}), 400
+            
+            # Load bookings from file
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            bookings_file = os.path.join(base_dir, 'bookings.json')
+            
+            if not os.path.exists(bookings_file):
+                return jsonify({'error': 'No bookings found'}), 404
+            
+            with open(bookings_file, 'r') as f:
+                bookings = json.load(f)
+            
+            # Find all matching bookings
+            matching_bookings = []
+            for booking in bookings:
+                match = False
+                
+                # Check passport if provided
+                if passport:
+                    booking_passport = (booking.get('passport') or '').strip()
+                    if booking_passport.upper() == passport.upper():
+                        match = True
+                
+                # Check email if provided
+                if email:
+                    booking_email = (booking.get('email') or '').strip().lower()
+                    if booking_email == email:
+                        match = True
+                    # Reset if we're looking for both and first didn't match
+                    elif passport:
+                        match = False
+                
+                # Check name if provided
+                if name:
+                    booking_name = (booking.get('passenger_name') or '').strip().lower()
+                    if name in booking_name or booking_name in name:
+                        # If other criteria were provided, ensure they match too
+                        if email:
+                            booking_email = (booking.get('email') or '').strip().lower()
+                            if booking_email == email:
+                                match = True
+                            else:
+                                match = False
+                        elif passport:
+                            booking_passport = (booking.get('passport') or '').strip()
+                            if booking_passport.upper() == passport.upper():
+                                match = True
+                            else:
+                                match = False
+                        else:
+                            match = True
+                
+                if match:
+                    matching_bookings.append(booking)
+            
+            if not matching_bookings:
+                return jsonify({'error': 'No bookings found matching the provided information'}), 404
+            
+            return jsonify({
+                'ok': True,
+                'count': len(matching_bookings),
+                'bookings': matching_bookings
+            }), 200
+            
+        except Exception as e:
+            return jsonify({'error': f'Search failed: {str(e)}'}), 500
