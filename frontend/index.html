@@ -14,14 +14,28 @@
                 <span class="logo-icon">✈</span>
             </div>
             <nav class="nav-links">
-                <a href="#" class="nav-link active">Flights</a>
-                <a href="#" class="nav-link">Bookings</a>
-                <a href="#" class="nav-link">Manage</a>
-                <a href="#" class="nav-link">Check-in</a>
-                <a href="#" class="nav-link">Help</a>
+                <a href="/" class="nav-link active">Flights</a>
+                <a href="/book.html" class="nav-link">Bookings</a>
+                <a href="/lookup.html" class="nav-link">My Booking</a>
+                <a href="/book-manage.html" class="nav-link">Manage</a>
+                <a href="/checkin.html" class="nav-link">Check-in</a>
+                <a href="/help.html" class="nav-link">Help</a>
             </nav>
             <div class="header-actions">
-                <button class="btn-secondary">Sign In</button>
+                <div class="user-menu">
+                    <a class="btn-secondary user-menu-trigger" href="#" aria-haspopup="true" aria-expanded="false">
+                        Sign in
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M5 7l5 6 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </a>
+                    <div class="user-menu-dropdown" role="menu">
+                        <a href="/login.html" role="menuitem">Member sign in</a>
+                        <a href="/admin-login.html" role="menuitem">Admin</a>
+                        <a href="/staff-login.html" role="menuitem">Staff</a>
+                    </div>
+                </div>
+                <a class="btn-primary" href="/book.html">Book a flight</a>
             </div>
         </div>
     </header>
@@ -41,11 +55,18 @@
 
         <!-- Hero content container -->
         <div class="hero-content">
-            <h1 class="hero-title">Book Your Next Flight</h1>
-            <p class="hero-subtitle">Find the best fares and fly with confidence</p>
+            <div class="hero-chip">Flight booking</div>
+            <h1 class="hero-title">Book smarter, breeze through every checkpoint</h1>
+            <p class="hero-subtitle">Real-time availability, smart seat selection, and passport validation—built to keep your trip moving forward.</p>
 
-            <!-- Booking Card -->
+            <!-- Booking Card (restored without the previous heading statement) -->
             <div class="booking-card">
+                <div class="booking-card-header">
+                    <div>
+                        <span class="booking-status">Live availability</span>
+                        <span class="booking-steps">Search → Seats → Pay</span>
+                    </div>
+                </div>
                 <form id="flightSearchForm" class="booking-form">
                     <!-- Row 1: Trip Type, From, To, Search -->
                     <div class="form-row">
@@ -116,8 +137,45 @@
                     </div>
                 </form>
             </div>
+
         </div>
     </section>
+    <div class="container">
+        <div class="row-cards">
+            <div class="card-checkin">
+                <div class="card-icon">
+                    <i></i>
+                </div>
+                <div class="card-title">
+                    <h2>Check in</h2>
+                </div>
+            </div>
+            <div class="card-checkin">
+                <div class="card-icon">
+
+                </div>
+                <div class="card-title">
+                    <h2>Manage Booking</h2>
+                </div>
+            </div>
+            <div class="card-checkin">
+                <div class="card-icon">
+
+                </div>
+                <div class="card-title">
+                    <h2>Flight Schedule</h2>
+                </div>
+            </div>
+            <div class="card-checkin">
+                <div class="card-icon">
+
+                </div>
+                <div class="card-title">
+                    <h2>Flight Status</h2>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Content Sections -->
     <section class="content-section">

@@ -404,10 +404,11 @@
             document.getElementById('passengerForm').style.display = 'none';
             document.getElementById('loadingMessage').style.display = 'block';
 
-            // Simulate processing and redirect
+            // Simulate processing and redirect with all required parameters
             setTimeout(() => {
                 const params = getUrlParams();
-                window.location.href = `/payment.html?from=${params.from}&to=${params.to}&price=${params.price}&fare=${params.fare}`;
+                const fullName = `${firstName} ${lastName}`;
+                window.location.href = `/payment.html?from=${params.from}&to=${params.to}&price=${params.price}&fare=${params.fare}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&passport=${encodeURIComponent(passportNumber)}&phone=${encodeURIComponent(phone)}`;
             }, 1500);
         }
 

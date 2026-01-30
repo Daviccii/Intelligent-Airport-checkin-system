@@ -608,17 +608,31 @@
     }
 
     // Get booking context from URL params
+    const rawPrice = getParam('price');
+    const rawFare = getParam('fare');
+    
+    // Parse price - prefer price parameter, fallback to fare if it's numeric
+    let finalPrice = 0;
+    if (rawPrice && !isNaN(parseFloat(rawPrice))) {
+      finalPrice = parseFloat(rawPrice);
+    } else if (rawFare && !isNaN(parseFloat(rawFare))) {
+      finalPrice = parseFloat(rawFare);
+    }
+    
+    console.log('Payment page debug:', { rawPrice, rawFare, finalPrice });
+    
     const ctx = {
       from: getParam('from'),
       to: getParam('to'),
       depart: getParam('depart'),
       ret: getParam('return'),
-      cls: getParam('class'),
-      fare: getParam('fare'),
+      cls: getParam('class') || rawFare, // fare might be class type like 'business'
+      fare: finalPrice,
       name: getParam('name'),
       email: getParam('email'),
       passport: getParam('passport'),
-      phone: getParam('phone')
+      phone: getParam('phone'),
+      currency: getParam('currency') || 'USD'
     };
 
     // Extract airport codes from full airport strings
@@ -642,7 +656,11 @@
     document.getElementById('classInfo').textContent = ctx.cls || '—';
     document.getElementById('emailInfo').textContent = ctx.email || '—';
     document.getElementById('phoneInfo').textContent = ctx.phone || '—';
-    document.getElementById('totalAmount').textContent = ctx.fare ? fmtCurrency(ctx.fare) : '$0.00';
+    
+    // Display total with fallback
+    const displayAmount = ctx.fare > 0 ? fmtCurrency(ctx.fare) : '$0.00';
+    document.getElementById('totalAmount').textContent = displayAmount;
+    console.log('Total amount set to:', displayAmount);
 
     // Payment method selection and form switching
     let currentPaymentMethod = 'card';
@@ -766,7 +784,7 @@
 
       // Simulate payment processing
       setTimeout(async () => {
-        const bookingRef = 'BK' + Math.random().toString(36).slice(2, 9).toUpperCase();
+        let bookingRef = 'BK' + Math.random().toString(36).slice(2, 9).toUpperCase();
         
         // Prepare booking data to send to backend
         const bookingData = {
@@ -814,10 +832,14 @@
             body: JSON.stringify({
               name: passengerName,
               passport: passengerPassport,
-              flight: 'KQ500', // Default flight - should be passed from booking flow
+              flight: ctx.from && ctx.to ? `${ctx.from}-${ctx.to}` : 'KQ500',
+              from: ctx.from || 'NBO',
+              to: ctx.to || 'LHR',
               email: ctx.email || 'test@example.com',
+              seat_class: ctx.cls || 'Economy',
               amount: parseFloat(ctx.fare) || 0,
-              payment_method: currentPaymentMethod
+              payment_method: currentPaymentMethod,
+              currency: 'USD'
             })
           });
 

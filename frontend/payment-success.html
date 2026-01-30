@@ -230,6 +230,28 @@
       document.getElementById('bookingRef').textContent = ref;
     }
 
+    // Store booking data in sessionStorage for booking-view.html
+    const bookingData = {
+      ref: ref,
+      ctx: {
+        name: params.get('name'),
+        email: params.get('email'),
+        passport: params.get('passport'),
+        phone: params.get('phone'),
+        from: params.get('from'),
+        to: params.get('to'),
+        depart: params.get('depart'),
+        ret: params.get('return'),
+        cls: params.get('class') || 'Economy',
+        fare: params.get('fare')
+      },
+      paymentMethod: params.get('method')
+    };
+    
+    // Save to both sessionStorage and localStorage
+    sessionStorage.setItem('lastBooking', JSON.stringify(bookingData));
+    localStorage.setItem('lastBooking', JSON.stringify(bookingData));
+
     // Display booking details
     const details = [
       { label: 'Passenger Name', value: params.get('name') },
@@ -263,7 +285,12 @@
     }
 
     function goBooking() {
-      window.location.href = '/booking.html';
+      const ref = params.get('ref');
+      if (ref) {
+        window.location.href = `/booking-view.html?ref=${ref}`;
+      } else {
+        window.location.href = '/booking.html';
+      }
     }
   </script>
 </body>

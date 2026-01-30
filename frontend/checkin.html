@@ -31,6 +31,24 @@
           <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:#6366f1;display:inline-block;"></span> Opens boarding pass immediately when a single match is found.</div>
         </div>
         <div id="quickCheckinResult" style="margin-top:6px;"></div>
+        <!-- Baggage and Payment Section -->
+        <div id="baggagePaymentSection" style="display:none;margin-top:18px;padding:18px 12px 10px 12px;border-radius:12px;background:#f8fafc;border:1.5px solid #e0e7ef;">
+          <div style="font-weight:600;font-size:16px;margin-bottom:8px;">Baggage Details & Payment</div>
+          <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
+            <label>Baggage Count:
+              <input id="baggageCount" type="number" min="0" max="10" value="0" style="width:60px;margin-left:8px;padding:6px 8px;border-radius:7px;border:1.5px solid #cbd5e1;" />
+            </label>
+            <label>Baggage Details:
+              <input id="baggageDetails" type="text" placeholder="e.g. 1 large, 1 small" style="width:180px;margin-left:8px;padding:6px 8px;border-radius:7px;border:1.5px solid #cbd5e1;" />
+            </label>
+            <button id="calcBaggageFeeBtn" class="btn secondary" type="button">Calculate Fee</button>
+          </div>
+          <div id="baggageFeeMsg" style="margin-top:10px;font-size:15px;color:#374151;"></div>
+          <div id="baggagePaySection" style="margin-top:10px;display:none;">
+            <button id="payBaggageBtn" class="btn primary" type="button">Pay Baggage Fee</button>
+            <span id="baggagePaidMsg" style="margin-left:12px;font-weight:600;color:#16a34a;"></span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -271,33 +289,123 @@ async function runQuickCheckin(){
       const p = matches[0];
       // Auto-fill OTP email if passenger has one
       if(p.email){ try{ document.getElementById('otpEmail').value = p.email; }catch(e){} }
+      // Show baggage/payment section for this passenger
+      showBaggagePayment(p);
       
-      // Call backend check-in API
-      try {
-        const checkinRes = await fetch('/api/checkin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            passport: p.passport,
-            flight: p.flight
-          })
-        });
-        
-        const checkinData = await checkinRes.json();
-        
-        if (checkinRes.ok && checkinData.ok) {
-          renderQuickCheckinResult(`Found <strong>${p.name}</strong> on flight <strong>${p.flight||'n/a'}</strong>. Checked in! Seat: <strong>${checkinData.seat}</strong>. Opening boarding pass...`, 'success');
-          console.log('Check-in successful:', checkinData);
-        } else {
-          renderQuickCheckinResult(`Found <strong>${p.name}</strong> on flight <strong>${p.flight||'n/a'}</strong>. Opening boarding pass...`, 'success');
+      // Wait for baggage/payment before check-in
+      // (Check-in and redirect will be handled after payment)
+      // --- Baggage and Payment Logic ---
+      function showBaggagePayment(passenger) {
+        const section = document.getElementById('baggagePaymentSection');
+        if (!section) return;
+        section.style.display = '';
+        const baggageCount = document.getElementById('baggageCount');
+        const baggageDetails = document.getElementById('baggageDetails');
+        const calcBtn = document.getElementById('calcBaggageFeeBtn');
+        const feeMsg = document.getElementById('baggageFeeMsg');
+        const paySection = document.getElementById('baggagePaySection');
+        const payBtn = document.getElementById('payBaggageBtn');
+        const paidMsg = document.getElementById('baggagePaidMsg');
+        let baggageFee = 0;
+        let paid = false;
+
+        function updateFeeMsg(msg, color) {
+          feeMsg.textContent = msg;
+          if (color) feeMsg.style.color = color; else feeMsg.style.color = '#374151';
         }
-      } catch (checkinErr) {
-        console.error('Check-in API error:', checkinErr);
-        renderQuickCheckinResult(`Found <strong>${p.name}</strong> on flight <strong>${p.flight||'n/a'}</strong>. Opening boarding pass...`, 'success');
+
+        calcBtn.onclick = async function() {
+          const count = parseInt(baggageCount.value, 10) || 0;
+          // Simulate fee calculation (or fetch from backend if needed)
+          try {
+            // Call check-in API with baggage info to get fee
+            const res = await fetch('/api/checkin', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                passengers: [{
+                  name: passenger.name,
+                  passport: passenger.passport,
+                  flight: passenger.flight,
+                  baggage_count: count,
+                  baggage_details: baggageDetails.value
+                }],
+                flight: passenger.flight
+              })
+            });
+            const data = await res.json();
+            if (data && data.results && data.results[0]) {
+              baggageFee = data.results[0].baggage_fee || 0;
+              paid = data.results[0].baggage_paid || false;
+              updateFeeMsg('Baggage fee: $' + baggageFee, '#374151');
+              paySection.style.display = baggageFee > 0 && !paid ? '' : 'none';
+              paidMsg.textContent = paid ? 'Paid' : '';
+            } else {
+              updateFeeMsg('Could not calculate baggage fee.', '#e74c3c');
+              paySection.style.display = 'none';
+            }
+          } catch (e) {
+            updateFeeMsg('Error calculating baggage fee.', '#e74c3c');
+            paySection.style.display = 'none';
+          }
+        };
+
+        payBtn.onclick = async function() {
+          if (!baggageFee || paid) return;
+          try {
+            const res = await fetch('/api/baggage/pay', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                passport: passenger.passport,
+                amount: baggageFee
+              })
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'paid') {
+              paid = true;
+              paidMsg.textContent = 'Paid';
+              updateFeeMsg('Baggage fee paid. Proceeding to check-in...', '#16a34a');
+              // Now check-in and redirect to boarding pass
+              setTimeout(async () => {
+                await doFinalCheckin(passenger, baggageCount.value, baggageDetails.value);
+              }, 1000);
+            } else {
+              updateFeeMsg('Payment failed.', '#e74c3c');
+            }
+          } catch (e) {
+            updateFeeMsg('Payment error.', '#e74c3c');
+          }
+        };
       }
-      
-      try{ sessionStorage.setItem('checkin_intent','1'); }catch(e){}
-      setTimeout(()=>{ window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(p.passport); }, 1000);
+
+      async function doFinalCheckin(passenger, baggageCount, baggageDetails) {
+        try {
+          const res = await fetch('/api/checkin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              passengers: [{
+                name: passenger.name,
+                passport: passenger.passport,
+                flight: passenger.flight,
+                baggage_count: baggageCount,
+                baggage_details: baggageDetails
+              }],
+              flight: passenger.flight
+            })
+          });
+          const data = await res.json();
+          if (res.ok && data.results && data.results[0] && data.results[0].status === 'ok') {
+            renderQuickCheckinResult(`Checked in! Seat: <strong>${data.results[0].seat||'—'}</strong>. Opening boarding pass...`, 'success');
+            setTimeout(()=>{ window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(passenger.passport); }, 1200);
+          } else {
+            renderQuickCheckinResult('Check-in failed. Please try again.', 'error');
+          }
+        } catch (e) {
+          renderQuickCheckinResult('Check-in error. Please try again.', 'error');
+        }
+      }
       return;
     }
     const cards = matches.slice(0,5).map(p=>{

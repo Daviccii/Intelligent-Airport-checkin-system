@@ -1090,13 +1090,168 @@
                 const bookingsBadge = card.querySelector('.bookings-badge');
         return `
           <div class="flight-card" data-flight-id="${flight.flight}" onclick="openFlightActions('${flight.flight.replace(/'/g, "\\'")}'
+                ', true)">
+                      <div class="flight-card-header">
+                        <div class="airline-logo">
+                        <img src="${logoUrl}" alt="${flight.airline}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23667eea%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-weight=%22bold%22 font-size=%2224%22%3E${flight.airline.substring(0, 2).toUpperCase()}%3C/text%3E%3C/svg%3E'">
+                        </div>
+                        <div class="flight-info-header">
+                        <h6 class="mb-0">${flight.airline || 'Unknown Airline'}</h6>
+                        <p class="text-muted mb-0">${flight.flight}</p>
+                        </div>
+                        <div class="flight-status">
+                        ${flight.checkin_enabled ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-warning">Inactive</span>'}
+                        </div>
+                      </div>
+
+                      <div class="flight-card-body">
+                        <div class="route-display">
+                        <div class="airport">
+                          <div class="airport-code">${flight.origin || 'N/A'}</div>
+                          <div class="airport-time">${formattedTime}</div>
+                        </div>
+                        <div class="route-line">
+                          <span class="route-duration">${formattedDate}</span>
+                        </div>
+                        <div class="airport">
+                          <div class="airport-code">${flight.destination || 'N/A'}</div>
+                          <div class="airport-time">${formattedArrival}</div>
+                        </div>
+                        </div>
+
+                        <div class="flight-stats">
+                        <div class="stat">
+                          <span class="stat-label">Capacity</span>
+                          <span class="stat-value">${flight.capacity || 0}</span>
+                        </div>
+                        <div class="stat">
+                          <span class="stat-label">Booked</span>
+                          <span class="stat-value">${flight.bookings || 0}</span>
+                        </div>
+                        <div class="stat">
+                          <span class="stat-label">Available</span>
+                          <span class="stat-value">${(flight.capacity || 0) - (flight.bookings || 0)}</span>
+                        </div>
+                        <div class="stat">
+                          <span class="stat-label">Gate</span>
+                          <span class="stat-value">${gate}</span>
+                        </div>
+                        </div>
+
+                        <div class="occupancy-bar">
+                        <div class="occupancy-fill" style="width: ${occupancyPercent}%"></div>
+                        <span class="occupancy-text">${occupancyPercent}% Full</span>
+                        </div>
+                        <div class="flight-stats-mini" style="display: flex; gap: 10px; margin-top: 8px; font-size: 0.85rem;">
+                        <span class="bookings-badge" style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px;">${flight.bookings || 0} Bookings</span>
+                        <span class="checked-in-badge" style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px;">${flight.checked_in || 0} Checked In</span>
+                        </div>
+                      </div>
+                      </div>
+                <div class="flight-card-header">
+                  <div class="airline-logo">
+                    <img src="${logoUrl}" alt="${flight.airline}" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ccircle cx=%2250%22 cy=%2250%22 r=%2250%22 fill=%22%23667eea%22/%3E%3Ctext x=%2250%22 y=%2255%22 text-anchor=%22middle%22 fill=%22white%22 font-weight=%22bold%22 font-size=%2224%22%3E${flight.airline.substring(0, 2).toUpperCase()}%3C/text%3E%3C/svg%3E'">
+                  </div>
+                  <div class="flight-info-header">
+                    <h6 class="mb-0">${flight.airline || 'Unknown Airline'}</h6>
+                    <p class="text-muted mb-0">${flight.flight}</p>
+                  </div>
+                  <div class="flight-status">
+                    ${flight.checkin_enabled ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-warning">Inactive</span>'}
+                  </div>
+                </div>
+
+                <div class="flight-card-body">
+                  <div class="route-display">
+                    <div class="airport">
+                      <div class="airport-code">${flight.origin || 'N/A'}</div>
+                      <div class="airport-time">${formattedTime}</div>
+                    </div>
+                    <div class="route-line">
+                      <span class="route-duration">${formattedDate}</span>
+                    </div>
+                    <div class="airport">
+                      <div class="airport-code">${flight.destination || 'N/A'}</div>
+                      <div class="airport-time">${formattedArrival}</div>
+                    </div>
+                  </div>
+
+                  <div class="flight-stats">
+                    <div class="stat">
+                      <span class="stat-label">Capacity</span>
+                      <span class="stat-value">${flight.capacity || 0}</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Booked</span>
+                      <span class="stat-value">${flight.bookings || 0}</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Available</span>
+                      <span class="stat-value">${(flight.capacity || 0) - (flight.bookings || 0)}</span>
+                    </div>
+                    <div class="stat">
+                      <span class="stat-label">Gate</span>
+                      <span class="stat-value">${gate}</span>
+                    </div>
+                  </div>
+
+                  <div class="occupancy-bar">
+                    <div class="occupancy-fill" style="width: ${occupancyPercent}%"></div>
+                    <span class="occupancy-text">${occupancyPercent}% Full</span>
+                  </div>
+                  <div class="flight-stats-mini" style="display: flex; gap: 10px; margin-top: 8px; font-size: 0.85rem;">
+                    <span class="bookings-badge" style="background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px;">${flight.bookings || 0} Bookings</span>
+                    <span class="checked-in-badge" style="background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px;">${flight.checked_in || 0} Checked In</span>
+                  </div>
+                </div>
+                </div>
+                const checkedInBadge = card.querySelector('.checked-in-badge');
                 if (occupancyBar) occupancyBar.style.width = `${occupancy.occupancy_percent}%`;
+                if (occupancyText) occupancyText.textContent = `${occupancy.occupancy_percent}% Full`;
+                if (bookingsBadge) bookingsBadge.textContent = `${occupancy.booked} Bookings`;
+                if (checkedInBadge) checkedInBadge.textContent = `${occupancy.checked_in} Checked In`;
+                }
+              }
+              });
+            }
+
+            const departRaw = flight.departure_time || flight.time || flight.departure || flight.depart || '';
+            const departDate = departRaw ? new Date(departRaw) : null;
+            const hasValidDate = departDate && !isNaN(departDate);
+            const formattedDate = hasValidDate ? departDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'TBD';
+            const formattedTime = hasValidDate ? departDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+
+            const arrivalRaw = flight.arrival_time || flight.arrival || '';
+            const arrivalDate = arrivalRaw ? new Date(arrivalRaw) : null;
+            const formattedArrival = arrivalDate && !isNaN(arrivalDate) ? arrivalDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+            const gate = flight.gate || 'TBD';
+
+            return `
+              <div class="flight-card" data-flight-id="${flight.flight}" onclick="openFlightActions('${flight.flight.replace(/'/g, "\\'")}', '${(flight.airline||'').replace(/'/g, "\\'")}', '${flight.origin}', '${flight.destination}', '${departRaw}', '${arrivalRaw}', '${gate}', ${flight.capacity}, ${flight.bookings}, ${flight.checkin_enabled ? 'true' : 'false'})">
                 if (occupancyText) occupancyText.textContent = `${occupancy.occupancy_percent}% Full`;
                 if (bookingsBadge) bookingsBadge.textContent = `${occupancy.booked} Bookings`;
                 if (checkedInBadge) checkedInBadge.textContent = `${occupancy.checked_in} Checked In`;
               }
             }
-          });
+            });
+            }).join('');
+          }
+          }).catch(err => {
+          console.error('Error rendering flights:', err);
+          container.innerHTML = `
+            <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h4>Unable to display flights</h4>
+            <p>Please try refreshing the page.</p>
+            <button class="btn btn-outline-secondary" onclick="loadFlights()">
+              <i class="fas fa-sync-alt"></i> Retry
+            </button>
+            </div>
+          `;
+            });
+          }
         }
 
         const departRaw = flight.departure_time || flight.time || flight.departure || flight.depart || '';

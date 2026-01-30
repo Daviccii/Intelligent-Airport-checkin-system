@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Booking - SmartFly Airways</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.95;
+        }
+
+        .booking-ref-banner {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .booking-ref-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #999;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .booking-ref-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+            margin-bottom: 8px;
+        }
+
+        .booking-status {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: #d1e7dd;
+            color: #0f5132;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .card h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #222;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .flight-route {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8eef5 100%);
+            border-radius: 12px;
+        }
+
+        .airport {
+            text-align: center;
+            flex: 1;
+        }
+
+        .airport-code {
+            font-size: 32px;
+            font-weight: 800;
+            color: #667eea;
+        }
+
+        .airport-name {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .route-arrow {
+            font-size: 24px;
+            color: #667eea;
+            margin: 0 20px;
+        }
+
+        .info-box {
+            background: #e8f4fd;
+            border-left: 4px solid #3b82f6;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .info-box strong {
+            color: #1e40af;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .warning-box strong {
+            color: #92400e;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .loading::before {
+            content: "⏳";
+            font-size: 48px;
+            display: block;
+            margin-bottom: 20px;
+        }
+
+        .qr-code-container {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            margin-top: 24px;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        }
+
+        .qr-code-wrapper {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            display: inline-block;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+        }
+
+        .qr-code {
+            width: 220px;
+            height: 220px;
+            margin: 0 auto;
+        }
+
+        .qr-instructions {
+            color: white;
+            font-size: 14px;
+            margin-top: 20px;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .qr-instructions i {
+            font-size: 20px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .payment-summary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            padding: 24px;
+            border-radius: 12px;
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .payment-summary h3 {
+            margin: 0 0 16px 0;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .payment-amount {
+            font-size: 36px;
+            font-weight: 800;
+            margin: 8px 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .payment-success-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .payment-details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .payment-detail-card {
+            background: rgba(255,255,255,0.15);
+            padding: 16px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .payment-detail-label {
+            font-size: 12px;
+            opacity: 0.9;
+            margin-bottom: 6px;
+        }
+
+        .payment-detail-value {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .transaction-timeline {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #10b981;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            color: #333;
+        }
+
+        .timeline-icon {
+            width: 32px;
+            height: 32px;
+            background: #10b981;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .timeline-text {
+            flex: 1;
+            font-size: 14px;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>✈️ My Booking Details</h1>
+            <p>View and manage your flight reservation</p>
+        </div>
+
+        <div id="loadingState" class="loading">
+            Loading your booking details...
+        </div>
+
+        <div id="bookingContent" style="display: none;">
+            <!-- Booking Reference Banner -->
+            <div class="booking-ref-banner">
+                <div class="booking-ref-label">Booking Reference</div>
+                <div class="booking-ref-value" id="bookingRef">---</div>
+                <div class="booking-status" id="bookingStatus">Confirmed</div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="grid-2">
+                <!-- Flight Information -->
+                <div class="card">
+                    <h2>✈️ Flight Information</h2>
+                    
+                    <div class="flight-route">
+                        <div class="airport">
+                            <div class="airport-code" id="fromCode">---</div>
+                            <div class="airport-name" id="fromName">Departure</div>
+                        </div>
+                        <div class="route-arrow">→</div>
+                        <div class="airport">
+                            <div class="airport-code" id="toCode">---</div>
+                            <div class="airport-name" id="toName">Arrival</div>
+                        </div>
+                    </div>
+
+                    <div class="detail-row">
+                        <span class="detail-label">Flight Number</span>
+                        <span class="detail-value" id="flightNumber">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Departure Date</span>
+                        <span class="detail-value" id="departDate">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Return Date</span>
+                        <span class="detail-value" id="returnDate">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Travel Class</span>
+                        <span class="detail-value" id="travelClass">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Booking Date</span>
+                        <span class="detail-value" id="bookingDate">---</span>
+                    </div>
+                </div>
+
+                <!-- Passenger Information -->
+                <div class="card">
+                    <h2>👤 Passenger Information</h2>
+                    <div class="detail-row">
+                        <span class="detail-label">Name</span>
+                        <span class="detail-value" id="passengerName">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email</span>
+                        <span class="detail-value" id="passengerEmail">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone</span>
+                        <span class="detail-value" id="passengerPhone">---</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Passport Number</span>
+                        <span class="detail-value" id="passportNumber">---</span>
+                    </div>
+
+                    <div class="info-box">
+                        <strong>📧 Confirmation Sent</strong><br>
+                        A confirmation email with your e-ticket has been sent to your registered email address.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Information -->
+            <div class="card">
+                <h2><i class="fas fa-credit-card"></i> Payment Information</h2>
+                
+                <div class="payment-summary">
+                    <h3><i class="fas fa-check-circle"></i> Payment Successful</h3>
+                    <div class="payment-amount" id="amountPaidLarge">$0.00</div>
+                    <div class="payment-success-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Securely Processed</span>
+                    </div>
+
+                    <div class="payment-details-grid">
+                        <div class="payment-detail-card">
+                            <div class="payment-detail-label">Payment Method</div>
+                            <div class="payment-detail-value" id="paymentMethodCard">
+                                <i class="fas fa-credit-card"></i> <span id="paymentMethod">---</span>
+                            </div>
+                        </div>
+                        <div class="payment-detail-card">
+                            <div class="payment-detail-label">Transaction ID</div>
+                            <div class="payment-detail-value" id="transactionId" style="font-size: 14px; font-family: monospace;">---</div>
+                        </div>
+                        <div class="payment-detail-card">
+                            <div class="payment-detail-label">Payment Date</div>
+                            <div class="payment-detail-value" id="paymentDate">---</div>
+                        </div>
+                        <div class="payment-detail-card">
+                            <div class="payment-detail-label">Status</div>
+                            <div class="payment-detail-value" id="paymentStatus">
+                                <i class="fas fa-check-circle"></i> Completed
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="transaction-timeline">
+                    <h4 style="margin: 0 0 16px 0; color: #333; font-size: 16px;">
+                        <i class="fas fa-history"></i> Transaction Timeline
+                    </h4>
+                    <div class="timeline-item">
+                        <div class="timeline-icon"><i class="fas fa-shopping-cart"></i></div>
+                        <div class="timeline-text"><strong>Booking Initiated</strong><br>Flight selection and passenger details</div>
+                        <div class="timeline-time" id="timelineBooking">Just now</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon"><i class="fas fa-credit-card"></i></div>
+                        <div class="timeline-text"><strong>Payment Processed</strong><br>Transaction completed successfully</div>
+                        <div class="timeline-time" id="timelinePayment">Just now</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-icon"><i class="fas fa-envelope"></i></div>
+                        <div class="timeline-text"><strong>Confirmation Sent</strong><br>E-ticket delivered to email</div>
+                        <div class="timeline-time" id="timelineConfirmation">Just now</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Check-in Information -->
+            <div class="card">
+                <h2><i class="fas fa-qrcode"></i> Digital Boarding Pass</h2>
+                <div class="warning-box">
+                    <strong>⏰ Check-in Reminder</strong><br>
+                    Online check-in opens 24 hours before departure. Please arrive at the airport at least 2 hours before your scheduled departure time for international flights.
+                </div>
+
+                <div class="qr-code-container">
+                    <div class="qr-instructions">
+                        <i class="fas fa-mobile-alt"></i>
+                        <strong>Quick Airport Check-in</strong>
+                    </div>
+                    <div class="qr-code-wrapper">
+                        <div class="qr-code" id="qrCode">
+                            <!-- QR Code will be generated here -->
+                        </div>
+                    </div>
+                    <div class="qr-instructions" style="margin-top: 16px;">
+                        Scan this QR code at airport kiosks or show to staff for instant check-in
+                    </div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <h2>🎬 Quick Actions</h2>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="window.print()">🖨️ Print Booking</button>
+                    <a href="/checkin.html" class="btn btn-secondary">✅ Online Check-in</a>
+                    <a href="/book-manage.html" class="btn btn-secondary">✏️ Manage Booking</a>
+                    <a href="/" class="btn btn-secondary">🏠 Back to Home</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>🔒 SmartFly Airways © 2026 • Your booking is secure and confirmed</p>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const params = new URLSearchParams(window.location.search);
+        const bookingRef = params.get('ref');
+
+        // Airport codes mapping
+        const airportNames = {
+            'NBO': 'Nairobi Jomo Kenyatta',
+            'LHR': 'London Heathrow',
+            'JFK': 'New York JFK',
+            'DXB': 'Dubai International',
+            'JNB': 'Johannesburg OR Tambo',
+            'MBA': 'Mombasa Moi',
+            'KIS': 'Kisumu International',
+            'CPT': 'Cape Town International'
+        };
+
+        function formatDate(dateString) {
+            if (!dateString || dateString === 'N/A') return 'Not specified';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+            } catch (e) {
+                return dateString;
+            }
+        }
+
+        function formatCurrency(amount) {
+            if (!amount) return '$0.00';
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD'
+            }).format(parseFloat(amount));
+        }
+
+        function generateQRCode(text) {
+            // Clear any existing QR code
+            const qrDiv = document.getElementById('qrCode');
+            qrDiv.innerHTML = '';
+            
+            // Generate QR code using QRCode.js library
+            try {
+                new QRCode(qrDiv, {
+                    text: text,
+                    width: 220,
+                    height: 220,
+                    colorDark: "#667eea",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            } catch (error) {
+                console.error('QR Code generation failed:', error);
+                // Fallback to simple SVG if library fails
+                qrDiv.innerHTML = `
+                    <svg width="220" height="220" viewBox="0 0 220 220">
+                        <rect width="220" height="220" fill="white"/>
+                        <text x="110" y="100" text-anchor="middle" font-size="16" fill="#667eea" font-weight="bold">
+                            ${text}
+                        </text>
+                        <text x="110" y="130" text-anchor="middle" font-size="12" fill="#666">
+                            Booking Reference
+                        </text>
+                    </svg>
+                `;
+            }
+        }
+
+        async function loadBookingDetails() {
+            try {
+                // Try to fetch from API first
+                if (bookingRef) {
+                    try {
+                        const apiRes = await fetch(`/api/booking/lookup?ref=${encodeURIComponent(bookingRef)}`);
+                        const apiData = await apiRes.json();
+                        
+                        if (apiRes.ok && apiData.ok && apiData.booking) {
+                            const booking = apiData.booking;
+                            
+                            // Map API booking data to display format
+                            const ctx = {
+                                name: booking.passenger_name || booking.name,
+                                email: booking.email,
+                                passport: booking.passport || 'N/A',
+                                phone: booking.phone || 'N/A',
+                                from: booking.origin || booking.from,
+                                to: booking.destination || booking.to,
+                                depart: booking.departure_date || booking.depart,
+                                ret: booking.return_date || booking.ret || 'N/A',
+                                cls: booking.seat_class || booking.cls || 'Economy',
+                                fare: booking.total_amount || booking.fare
+                            };
+                            
+                            const bookingData = {
+                                ref: booking.booking_reference || booking.booking_ref || bookingRef,
+                                ctx: ctx,
+                                paymentMethod: booking.payment_method || 'card'
+                            };
+                            
+                            displayBookingData(bookingData);
+                            return;
+                        }
+                    } catch (apiError) {
+                        console.warn('API fetch failed, trying local storage:', apiError);
+                    }
+                }
+                
+                // Try to load from sessionStorage/localStorage
+                const lastBooking = sessionStorage.getItem('lastBooking') || localStorage.getItem('lastBooking');
+                
+                let bookingData = null;
+                
+                if (lastBooking) {
+                    bookingData = JSON.parse(lastBooking);
+                } else {
+                    // Fallback to URL params
+                    bookingData = {
+                        ref: bookingRef,
+                        ctx: {
+                            name: params.get('name'),
+                            email: params.get('email'),
+                            passport: params.get('passport'),
+                            phone: params.get('phone'),
+                            from: params.get('from'),
+                            to: params.get('to'),
+                            depart: params.get('depart'),
+                            ret: params.get('return'),
+                            cls: params.get('class') || 'Economy',
+                            fare: params.get('fare')
+                        },
+                        paymentMethod: params.get('method')
+                    };
+                }
+
+                displayBookingData(bookingData);
+
+            } catch (error) {
+                console.error('Error loading booking:', error);
+                document.getElementById('loadingState').innerHTML = `
+                    <div style="color: white;">
+                        ❌ Error loading booking details<br>
+                        <small>${error.message}</small><br><br>
+                        <a href="/" style="color: white; text-decoration: underline;">Return to Home</a>
+                    </div>
+                `;
+            }
+        }
+
+        function displayBookingData(bookingData) {
+            const ctx = bookingData.ctx || {};
+            
+            document.getElementById('bookingRef').textContent = bookingData.ref || bookingRef || 'N/A';
+            document.getElementById('fromCode').textContent = ctx.from || 'N/A';
+            document.getElementById('fromName').textContent = airportNames[ctx.from] || 'Departure Airport';
+            document.getElementById('toCode').textContent = ctx.to || 'N/A';
+            document.getElementById('toName').textContent = airportNames[ctx.to] || 'Arrival Airport';
+            document.getElementById('flightNumber').textContent = ctx.flight || `SF-${ctx.from}${ctx.to}` || 'N/A';
+            document.getElementById('departDate').textContent = formatDate(ctx.depart);
+            document.getElementById('returnDate').textContent = formatDate(ctx.ret);
+            document.getElementById('travelClass').textContent = (ctx.cls || 'Economy').toUpperCase();
+            document.getElementById('bookingDate').textContent = formatDate(new Date().toISOString());
+            
+            document.getElementById('passengerName').textContent = ctx.name || 'N/A';
+            document.getElementById('passengerEmail').textContent = ctx.email || 'N/A';
+            document.getElementById('passengerPhone').textContent = ctx.phone || 'N/A';
+            document.getElementById('passportNumber').textContent = ctx.passport || 'N/A';
+            
+            // Payment information
+            const amount = formatCurrency(ctx.fare);
+            const paymentMethodText = (bookingData.paymentMethod || 'Card').toUpperCase();
+            const paymentIcon = paymentMethodText.includes('CARD') ? 'fa-credit-card' : 
+                                paymentMethodText.includes('PAYPAL') ? 'fa-paypal' : 
+                                paymentMethodText.includes('MPESA') ? 'fa-mobile-alt' : 'fa-wallet';
+            
+            document.getElementById('paymentMethod').innerHTML = paymentMethodText;
+            document.getElementById('paymentMethodCard').innerHTML = `<i class="fas ${paymentIcon}"></i> <span>${paymentMethodText}</span>`;
+            document.getElementById('amountPaidLarge').textContent = amount;
+            document.getElementById('transactionId').textContent = `TXN-${bookingData.ref || bookingRef || 'UNKNOWN'}`;
+            document.getElementById('paymentDate').textContent = new Date().toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            // Timeline timestamps
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('timelineBooking').textContent = timeStr;
+            document.getElementById('timelinePayment').textContent = timeStr;
+            document.getElementById('timelineConfirmation').textContent = timeStr;
+
+            // Generate QR code with booking reference
+            const qrData = JSON.stringify({
+                ref: bookingData.ref || bookingRef,
+                name: ctx.name,
+                flight: ctx.flight || `SF-${ctx.from}${ctx.to}`,
+                from: ctx.from,
+                to: ctx.to,
+                date: ctx.depart,
+                class: ctx.cls
+            });
+            generateQRCode(qrData);
+
+            // Log activity to backend for admin/staff dashboard
+            logBookingActivity(bookingData, ctx, amount);
+
+            // Show content
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('bookingContent').style.display = 'block';
+        }
+
+        async function logBookingActivity(bookingData, ctx, amount) {
+            // Log payment activity to backend for admin/staff tracking
+            try {
+                const paymentData = {
+                    booking_ref: bookingData.ref || bookingRef,
+                    passenger_name: ctx.name,
+                    flight: ctx.flight || `SF-${ctx.from}${ctx.to}`,
+                    amount: ctx.fare,
+                    payment_method: bookingData.paymentMethod || 'card',
+                    status: 'completed',
+                    timestamp: new Date().toISOString()
+                };
+
+                await fetch('/api/activities/log', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type: 'payment',
+                        data: paymentData
+                    })
+                });
+
+                console.log('Payment activity logged successfully');
+            } catch (error) {
+                console.warn('Failed to log payment activity:', error);
+            }
+        }
+
+        // Load booking details on page load
+        loadBookingDetails();
+    </script>
+</body>
+</html>

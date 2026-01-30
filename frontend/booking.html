@@ -378,6 +378,13 @@
       <form id="bookingForm">
         <div id="msg"></div>
 
+        <!-- Seat Selection Section -->
+        <div class="form-section" id="seatSection" style="display:none;">
+          <div class="section-subtitle">Seat Selection <span style="color:#888;font-weight:400;font-size:12px;">(Choose your seat)</span></div>
+          <div id="seatMap" style="margin-bottom:16px;"></div>
+          <div id="seatSelectionMsg" style="color:#e74c3c;font-size:13px;margin-bottom:8px;"></div>
+        </div>
+
         <!-- Personal Information Section -->
         <div class="form-section">
           <div class="section-subtitle">Personal Information</div>
@@ -643,6 +650,59 @@
       seatsDisplay.textContent = ctx.seats.replace(/,/g, ', ');
     }
 
+    // --- Seat Selection Logic ---
+    const seatSection = document.getElementById('seatSection');
+    const seatMapDiv = document.getElementById('seatMap');
+    const seatSelectionMsg = document.getElementById('seatSelectionMsg');
+    let selectedSeat = '';
+    let availableSeats = [];
+    let flightId = getParam('flight') || getParam('flight_id') || '';
+    if (!flightId && ctx.from && ctx.to && ctx.depart) {
+      // Try to infer flightId from params (if available)
+      flightId = sessionStorage.getItem('selectedFlight') || '';
+    }
+
+    function renderSeatMap(seats) {
+      if (!Array.isArray(seats) || !seats.length) {
+        seatMapDiv.innerHTML = '<div style="color:#888">No seat map available for this flight.</div>';
+        return;
+      }
+      let html = '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+      seats.forEach(seat => {
+        const taken = seat.status !== 'available';
+        html += `<button type="button" class="seat-btn" data-seat="${seat.seat}" style="min-width:44px;padding:8px 0;margin:2px;border-radius:7px;border:1.5px solid ${taken ? '#bbb' : '#667eea'};background:${taken ? '#f3f4f6' : '#fff'};color:${taken ? '#bbb' : '#222'};font-weight:600;cursor:${taken ? 'not-allowed' : 'pointer'};${selectedSeat===seat.seat?'background:#667eea;color:#fff;':''}" ${taken ? 'disabled' : ''}>${seat.seat}</button>`;
+      });
+      html += '</div>';
+      seatMapDiv.innerHTML = html;
+      // Add click listeners
+      seatMapDiv.querySelectorAll('.seat-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          selectedSeat = btn.getAttribute('data-seat');
+          renderSeatMap(availableSeats);
+          seatSelectionMsg.textContent = `Selected seat: ${selectedSeat}`;
+        });
+      });
+    }
+
+    async function fetchSeatsAndShow() {
+      if (!flightId) return;
+      try {
+        const res = await fetch(`/api/flights/${encodeURIComponent(flightId)}/seats`);
+        const data = await res.json();
+        if (data && Array.isArray(data.seats)) {
+          availableSeats = data.seats;
+          seatSection.style.display = '';
+          renderSeatMap(availableSeats);
+        }
+      } catch (e) {
+        seatSection.style.display = 'none';
+      }
+    }
+
+    if (flightId) {
+      fetchSeatsAndShow();
+    }
+
     // Form validation and submission
     const form = document.getElementById('bookingForm');
     const msgEl = document.getElementById('msg');
@@ -867,6 +927,31 @@
       if (!phone) { showError('Please enter your phone number'); return; }
       if (!validatePhone(country, phone)) { showError('Please enter a valid phone number for the selected country'); return; }
 
+      // Seat selection required
+      if (seatSection && seatSection.style.display !== 'none' && !selectedSeat) {
+        seatSelectionMsg.textContent = 'Please select a seat to continue.';
+        return;
+      }
+
+      // Reserve seat via backend if selected
+      async function reserveSeat() {
+        if (!flightId || !selectedSeat || !passport) return true;
+        try {
+          const res = await fetch(`/api/flights/${encodeURIComponent(flightId)}/seats/select`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ seat: selectedSeat, passport })
+          });
+          const data = await res.json();
+          if (res.ok && data.status === 'ok') return true;
+          seatSelectionMsg.textContent = data.error || 'Seat selection failed.';
+          return false;
+        } catch (e) {
+          seatSelectionMsg.textContent = 'Seat selection failed.';
+          return false;
+        }
+      }
+
       // Build params for payment page
       const params = new URLSearchParams();
       if(ctx.from) params.set('from', ctx.from);
@@ -875,12 +960,21 @@
       if(ctx.ret) params.set('return', ctx.ret);
       if(ctx.cls) params.set('class', ctx.cls);
       if(ctx.fare) params.set('fare', ctx.fare);
+      if(flightId) params.set('flight', flightId);
       params.set('name', name);
       params.set('email', email);
       params.set('passport', passport);
       params.set('phone', country + phone);
+      if (selectedSeat) params.set('seat', selectedSeat);
 
-      window.location.href = '/payment.html?' + params.toString();
+      // Reserve seat then proceed
+      if (seatSection && seatSection.style.display !== 'none') {
+        reserveSeat().then(ok => {
+          if (ok) window.location.href = '/payment.html?' + params.toString();
+        });
+      } else {
+        window.location.href = '/payment.html?' + params.toString();
+      }
     });
 
     // Update phone prefix display when country is selected

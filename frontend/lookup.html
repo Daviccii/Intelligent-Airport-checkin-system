@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>SmartFly — Flight Status & Booking Lookup</title>
   <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     /* Professional styling for lookup page */
@@ -359,11 +360,42 @@
 </head>
 <body>
   <!-- Hero Header -->
-  <header class="hero-header">
+  <!-- <header class="hero-header">
     <div class="hero-icon">✈️</div>
     <h1>Flight Status & Booking Lookup</h1>
     <p>Check your flight status, manage bookings, or check in for your upcoming flight</p>
-  </header>
+  </header> -->
+  <header class="header">
+        <div class="header-container">
+            <div class="logo-bubble">
+                <span class="logo-icon">✈</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/" class="nav-link">Flights</a>
+                <a href="/book.html" class="nav-link">Bookings</a>
+                <a href="/lookup.html" class="nav-link active">My Booking</a>
+                <a href="/book-manage.html" class="nav-link">Manage</a>
+                <a href="/checkin.html" class="nav-link">Check-in</a>
+                <a href="/help.html" class="nav-link">Help</a>
+            </nav>
+            <div class="header-actions">
+                <div class="user-menu">
+                    <a class="btn-secondary user-menu-trigger" href="#" aria-haspopup="true" aria-expanded="false">
+                        Sign in
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M5 7l5 6 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                        </svg>
+                    </a>
+                    <div class="user-menu-dropdown" role="menu">
+                        <a href="/login.html" role="menuitem">Member sign in</a>
+                        <a href="/admin-login.html" role="menuitem">Admin</a>
+                        <a href="/staff-login.html" role="menuitem">Staff</a>
+                    </div>
+                </div>
+                <a class="btn-primary" href="/book.html">Book a flight</a>
+            </div>
+        </div>
+    </header>
 
   <main class="container">
     <div class="lookup-grid">
@@ -382,30 +414,33 @@
         </div>
 
         <!-- Passenger Form -->
-        <form id="lookupForm">
+        <form id="lookupForm" onsubmit="return false;">
           <div class="form-group">
             <label><i class="fas fa-search"></i> Lookup Method</label>
             <select id="lookupMethod" aria-label="Lookup method">
               <option value="pnr">PNR / Booking Reference</option>
-              <option value="passport">Passport / ID + Last Name</option>
+              <option value="passport">Email Address</option>
             </select>
           </div>
 
           <div id="pnrFields">
             <div class="form-group">
               <label><i class="fas fa-ticket-alt"></i> PNR / Booking Reference</label>
-              <input type="text" id="pnr" name="pnr" placeholder="e.g., ABC123, BK-2024-00001" autocomplete="off">
+              <input type="text" id="pnr" placeholder="e.g., ABC123, BK-2024-00001" autocomplete="off">
             </div>
           </div>
 
           <div id="passportFields" hidden aria-hidden="true">
             <div class="form-group">
-              <label><i class="fas fa-passport"></i> Passport / ID Number</label>
-              <input type="text" id="passport" name="passport" placeholder="Enter your passport or ID number">
+              <label><i class="fas fa-envelope"></i> Email Address</label>
+              <input type="email" id="passportEmail" placeholder="Enter your email address" autocomplete="off">
             </div>
             <div class="form-group">
-              <label><i class="fas fa-user"></i> Last Name</label>
-              <input type="text" id="lname" name="lname" placeholder="Enter your family name">
+              <label><i class="fas fa-user"></i> Full Name (Optional)</label>
+              <input type="text" id="passportName" placeholder="Enter your full name to narrow results" autocomplete="off">
+            </div>
+            <div class="info-box" style="font-size: 13px; margin-top: 12px;">
+              <i class="fas fa-info-circle"></i> Don't have your booking reference? Search using your email address or name instead.
             </div>
           </div>
 
@@ -453,6 +488,14 @@
             <li>Complete online check-in</li>
             <li>Download your boarding pass</li>
           </ul>
+
+          <div class="info-box" style="background: #d1f7e7; border-left-color: #10b981; margin-top: 20px;">
+            <strong style="color: #065f46;">🔑 Lookup Methods</strong><br>
+            <div style="font-size: 13px; color: #047857; margin-top: 8px; line-height: 1.6;">
+              <strong>By Booking Reference:</strong> Fastest if you have your confirmation code<br><br>
+              <strong>By Passport:</strong> Use this if you can't find your booking reference. Your passport alone is enough!
+            </div>
+          </div>
 
           <div class="flight-result">
             <strong>SF 452</strong> &middot; LAX → JFK<br>
@@ -769,122 +812,198 @@
       const pl = document.createElement('div'); pl.id='planeLoader'; pl.className='plane-loader'; pl.innerHTML = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="url(#g)" d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#1A73E8"/><stop offset="1" stop-color="#00a6ff"/></linearGradient></defs></svg>`;
       document.body.appendChild(pl);
     })();
-    // Elements
-    const btnPassenger = document.getElementById('btnPassenger');
-    const btnAdmin = document.getElementById('btnAdmin');
-    const lookupForm = document.getElementById('lookupForm');
-    const adminForm = document.getElementById('adminForm');
-    const lookupMethod = document.getElementById('lookupMethod');
-    const pnrFields = document.getElementById('pnrFields');
-    const passportFields = document.getElementById('passportFields');
-    const message = document.getElementById('message');
+    
+    // Initialize when DOM is ready
+    function initPageWhenReady() {
+      // Elements
+      const btnPassenger = document.getElementById('btnPassenger');
+      const btnAdmin = document.getElementById('btnAdmin');
+      const lookupForm = document.getElementById('lookupForm');
+      const adminForm = document.getElementById('adminForm');
+      const lookupMethod = document.getElementById('lookupMethod');
+      const pnrFields = document.getElementById('pnrFields');
+      const passportFields = document.getElementById('passportFields');
+      const message = document.getElementById('message');
 
-    function setMode(mode){
-      const isAdmin = mode === 'admin';
-      btnPassenger.classList.toggle('active', !isAdmin);
-      btnAdmin.classList.toggle('active', isAdmin);
-      btnPassenger.setAttribute('aria-selected', String(!isAdmin));
-      btnAdmin.setAttribute('aria-selected', String(isAdmin));
-      try{ lookupForm.hidden = isAdmin; lookupForm.setAttribute('aria-hidden', String(isAdmin)); }catch(e){}
-      try{ adminForm.hidden = !isAdmin; adminForm.setAttribute('aria-hidden', String(!isAdmin)); }catch(e){}
-      message.innerHTML = '';
-    }
+      // Debug: Check if elements exist
+      console.log('=== initPageWhenReady STARTING ===');
+      console.log('btnPassenger:', btnPassenger);
+      console.log('btnAdmin:', btnAdmin);
+      console.log('lookupForm:', lookupForm);
+      console.log('message:', message);
+      console.log('lookupMethod:', lookupMethod);
 
-    btnPassenger.addEventListener('click', () => setMode('passenger'));
-    btnAdmin.addEventListener('click', () => setMode('admin'));
-
-    lookupMethod.addEventListener('change', (e) => {
-      if (e.target.value === 'pnr'){
-        try{ pnrFields.hidden = false; pnrFields.setAttribute('aria-hidden','false'); }catch(e){}
-        try{ passportFields.hidden = true; passportFields.setAttribute('aria-hidden','true'); }catch(e){}
-      } else {
-        try{ pnrFields.hidden = true; pnrFields.setAttribute('aria-hidden','true'); }catch(e){}
-        try{ passportFields.hidden = false; passportFields.setAttribute('aria-hidden','false'); }catch(e){}
-      }
-    });
-
-    // Helper to post JSON and return parsed JSON or throw
-    async function postJson(url, body, extraHeaders={}){
-      const headers = Object.assign({'Content-Type':'application/json'}, extraHeaders);
-      const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), credentials: 'same-origin' });
-      const j = await res.json().catch(()=> ({}));
-      if (!res.ok) throw Object.assign(new Error('Request failed'), { status: res.status, body: j });
-      return j;
-    }
-
-    // Passenger lookup/login submit
-    lookupForm.addEventListener('submit', async (ev) => {
-      ev.preventDefault();
-      message.innerHTML = '<p>Searching for booking...</p>';
-      const method = lookupMethod.value;
-      let payload = { role: 'passenger' };
-      if (method === 'pnr'){
-        const pnr = document.getElementById('pnr').value.trim();
-        if (!pnr){ message.innerHTML = '<p class="error">Please enter a PNR.</p>'; return; }
-        payload.pnr = pnr;
-      } else {
-        const passport = document.getElementById('passport').value.trim();
-        const lname = document.getElementById('lname').value.trim();
-        if (!passport || !lname){ message.innerHTML = '<p class="error">Please enter passport and last name.</p>'; return; }
-        payload.passport = passport; payload.name = lname;
+      // Exit early if critical elements don't exist
+      if (!lookupForm || !message || !lookupMethod) {
+        console.error('Critical form elements missing!');
+        return;
       }
 
-      try {
-        const data = await postJson('/api/login', payload);
-        // store session token if returned
-        if (data.token){ localStorage.setItem('session', data.token); document.cookie = `session=${data.token};path=/`; }
+      function setMode(mode){
+        console.log('setMode called with:', mode);
+        const isAdmin = mode === 'admin';
+        if (btnPassenger) btnPassenger.classList.toggle('active', !isAdmin);
+        if (btnAdmin) btnAdmin.classList.toggle('active', isAdmin);
+        if (btnPassenger) btnPassenger.setAttribute('aria-selected', String(!isAdmin));
+        if (btnAdmin) btnAdmin.setAttribute('aria-selected', String(isAdmin));
+        try{ lookupForm.hidden = isAdmin; lookupForm.setAttribute('aria-hidden', String(isAdmin)); }catch(e){}
+        try{ adminForm.hidden = !isAdmin; adminForm.setAttribute('aria-hidden', String(!isAdmin)); }catch(e){}
+        message.innerHTML = '';
+      }
 
-        // If passport path, lookup passenger records and begin flow
-        if (payload.passport){
-          try{
-            const hdr = data.token ? { 'X-SESSION': data.token, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' };
-            const lres = await fetch('/api/lookup', { method: 'POST', headers: hdr, body: JSON.stringify({ passport: payload.passport }), credentials: 'same-origin' });
-            const lj = await lres.json().catch(()=>({}));
-            const found = (lj.results && lj.results.length) ? lj.results[0] : null;
-            if (found){
-              message.innerHTML = '<p>Booking found — starting check-in flow...</p>';
-              beginPassengerFlow({ name: found.name || payload.name || '', passport: found.passport || payload.passport });
+      if (btnPassenger) btnPassenger.addEventListener('click', () => setMode('passenger'));
+      if (btnAdmin) btnAdmin.addEventListener('click', () => setMode('admin'));
+
+      if (lookupMethod) {
+        lookupMethod.addEventListener('change', (e) => {
+          if (e.target.value === 'pnr'){
+            try{ pnrFields.hidden = false; pnrFields.setAttribute('aria-hidden','false'); }catch(e){}
+            try{ passportFields.hidden = true; passportFields.setAttribute('aria-hidden','true'); }catch(e){}
+          } else {
+            try{ pnrFields.hidden = true; pnrFields.setAttribute('aria-hidden','true'); }catch(e){}
+            try{ passportFields.hidden = false; passportFields.setAttribute('aria-hidden','false'); }catch(e){}
+          }
+        });
+      }
+
+      // Helper to post JSON and return parsed JSON or throw
+      async function postJson(url, body, extraHeaders={}){
+        const headers = Object.assign({'Content-Type':'application/json'}, extraHeaders);
+        const res = await fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(body), credentials: 'same-origin' });
+        const j = await res.json().catch(()=> ({}));
+        if (!res.ok) throw Object.assign(new Error('Request failed'), { status: res.status, body: j });
+        return j;
+      }
+
+      // Passenger lookup/login submit
+      if (!lookupForm) {
+        console.error('lookupForm element not found!');
+      } else {
+        console.log('Adding submit listener to lookupForm');
+        lookupForm.addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          console.log('Form submitted!');
+          console.log('Form hidden state:', lookupForm.hidden);
+          message.innerHTML = '<p>Searching for booking...</p>';
+          const method = lookupMethod.value;
+          console.log('Lookup method:', method);
+          
+          if (method === 'pnr'){
+            const pnr = document.getElementById('pnr').value.trim();
+            if (!pnr){ message.innerHTML = '<p class="error">Please enter a PNR.</p>'; return; }
+            
+            // First try booking lookup API
+            try {
+              const lookupRes = await fetch(`/api/booking/lookup?ref=${encodeURIComponent(pnr)}`);
+              const lookupData = await lookupRes.json();
+              
+              if (lookupRes.ok && lookupData.ok && lookupData.booking) {
+                message.innerHTML = '<p class="success">Booking found! Redirecting to your booking details...</p>';
+                // Redirect to booking view with booking reference
+                setTimeout(() => {
+                  window.location.href = `/booking-view.html?ref=${encodeURIComponent(pnr)}`;
+                }, 800);
+                return;
+              }
+            } catch (lookupErr) {
+              console.warn('Booking lookup failed:', lookupErr);
+              message.innerHTML = '<p class="error">Booking not found. Please check your booking reference.</p>';
               return;
             }
-            // fallback: begin flow with minimal passenger info
-            message.innerHTML = '<p>Booking created — starting check-in flow...</p>';
-            beginPassengerFlow({ name: payload.name || 'Guest', passport: payload.passport });
-            return;
-          }catch(e){
-            console.warn('lookup failed', e);
-            message.innerHTML = '<p class="error">Failed to load booking details for check-in.</p>';
-            return;
+            
+          } else if (method === 'passport') {
+            const email = document.getElementById('passportEmail').value.trim().toLowerCase();
+            const name = document.getElementById('passportName').value.trim().toLowerCase();
+            
+            console.log('Searching by email:', email);
+            
+            if (!email){ message.innerHTML = '<p class="error">Please enter your email address.</p>'; return; }
+            
+            // Try email/name-based search API
+            try {
+              let searchUrl = `/api/booking/search-by-passport?email=${encodeURIComponent(email)}`;
+              if (name) {
+                searchUrl += `&name=${encodeURIComponent(name)}`;
+              }
+              
+              console.log('Fetching:', searchUrl);
+              const searchRes = await fetch(searchUrl);
+              const searchData = await searchRes.json();
+              
+              console.log('Search response:', searchRes.status, searchData);
+              
+              if (searchRes.ok && searchData.ok && searchData.bookings && searchData.bookings.length > 0) {
+                const bookings = searchData.bookings;
+                console.log('Found bookings:', bookings.length);
+                
+                // If only one booking found, redirect directly to booking view
+                if (bookings.length === 1) {
+                  const booking = bookings[0];
+                  const ref = booking.booking_reference || booking.booking_ref;
+                  message.innerHTML = '<p class="success">Booking found! Redirecting to your booking details...</p>';
+                  setTimeout(() => {
+                    window.location.href = `/booking-view.html?ref=${encodeURIComponent(ref)}`;
+                  }, 800);
+                  return;
+                }
+                
+                // Multiple bookings found - redirect to results page
+                message.innerHTML = '<p class="success">Found your bookings! Redirecting to results page...</p>';
+                const bookingsJson = encodeURIComponent(JSON.stringify(bookings));
+                setTimeout(() => {
+                  window.location.href = `/booking-results.html?bookings=${bookingsJson}&type=email&search=${encodeURIComponent(email)}`;
+                }, 800);
+                return;
+              } else {
+                const errMsg = searchData.error || 'No bookings found';
+                message.innerHTML = `<p class="error">${errMsg}</p>`;
+                return;
+              }
+            } catch (searchErr) {
+              console.warn('Booking search failed:', searchErr);
+              message.innerHTML = '<p class="error">Error searching bookings. Please try again.</p>';
+              return;
+            }
           }
-        }
-        // PNR path or other fallbacks
-        message.innerHTML = '<p>Found booking — redirecting to passenger dashboard (PNR path).</p>';
-        setTimeout(()=> window.location = '/passenger.html', 800);
-      } catch (err){
-        const body = err && err.body ? err.body : {};
-        message.innerHTML = `<p class="error">Lookup failed: ${body.error || body.detail || err.message}</p>`;
+        });
       }
-    });
 
-    // Admin login
-    adminForm.addEventListener('submit', async (ev) => {
-      ev.preventDefault();
-      message.innerHTML = '<p>Signing in as admin...</p>';
-      const user = document.getElementById('adminUser').value.trim();
-      const pass = document.getElementById('adminPass').value;
-      if (!user || !pass){ message.innerHTML = '<p class="error">Enter username and password.</p>'; return; }
-      try {
-        const data = await postJson('/api/admin/login', { username: user, password: pass });
-        if (data.token){ localStorage.setItem('session', data.token); document.cookie = `session=${data.token};path=/`; }
-        message.innerHTML = '<p>Welcome, admin — redirecting to admin dashboard...</p>';
-        setTimeout(()=> window.location = '/admin.html', 600);
-      } catch (err){
-        const body = err && err.body ? err.body : {};
-        message.innerHTML = `<p class="error">Admin login failed: ${body.error || err.message}</p>`;
+      // Admin login
+      if (adminForm) {
+        adminForm.addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          message.innerHTML = '<p>Signing in as admin...</p>';
+          const user = document.getElementById('adminUser').value.trim();
+          const pass = document.getElementById('adminPass').value;
+          if (!user || !pass){ message.innerHTML = '<p class="error">Enter username and password.</p>'; return; }
+          try {
+            const data = await postJson('/api/admin/login', { username: user, password: pass });
+            if (data.token){ localStorage.setItem('session', data.token); document.cookie = `session=${data.token};path=/`; }
+            message.innerHTML = '<p>Welcome, admin — redirecting to admin dashboard...</p>';
+            setTimeout(()=> window.location = '/admin.html', 600);
+          } catch (err){
+            const body = err && err.body ? err.body : {};
+            message.innerHTML = `<p class="error">Admin login failed: ${body.error || err.message}</p>`;
+          }
+        });
       }
-    });
 
-    // initialize
-    setMode('passenger');
+      // Initialize passenger mode
+      console.log('=== Calling setMode(passenger) ===');
+      setMode('passenger');
+      console.log('=== initPageWhenReady COMPLETE ===');
+    } // End of initPageWhenReady function
+
+    // Call init function when page loads
+    console.log('Script loaded, document.readyState:', document.readyState);
+    if (document.readyState === 'loading') {
+      console.log('DOM still loading, adding DOMContentLoaded listener');
+      document.addEventListener('DOMContentLoaded', initPageWhenReady);
+    } else {
+      console.log('DOM already loaded, calling initPageWhenReady immediately');
+      initPageWhenReady();
+    }
+
     // --- Multi-step checkin flow handlers ---
     const checkinArea = document.getElementById('checkinArea');
     const flightList = document.getElementById('flightList');

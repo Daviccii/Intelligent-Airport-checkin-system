@@ -1,0 +1,45 @@
+{
+  "total": 4477.0,
+  "by_date": {
+    "2026-01-28": {
+      "total": 2881.0,
+      "count": 2
+    },
+    "2026-01-29": {
+      "total": 1596.0,
+      "count": 1
+    }
+  },
+  "transactions": [
+    {
+      "id": "R-ORY1769577112",
+      "passenger": "Test User",
+      "passport": "TEST123",
+      "flight": "LHR-ORY",
+      "amount": 544.0,
+      "currency": "USD",
+      "type": "booking",
+      "timestamp": "2026-01-28T05:11:52.934695Z"
+    },
+    {
+      "id": "O-CDG1769584618",
+      "passenger": "example example",
+      "passport": "EX54321",
+      "flight": "NBO-CDG",
+      "amount": 2337.0,
+      "currency": "USD",
+      "type": "booking",
+      "timestamp": "2026-01-28T07:16:58.809383Z"
+    },
+    {
+      "id": "O-BLR1769679624",
+      "passenger": "antony Mativu",
+      "passport": "EX54321",
+      "flight": "NBO-BLR",
+      "amount": 1596.0,
+      "currency": "USD",
+      "type": "booking",
+      "timestamp": "2026-01-29T09:40:24.771709Z"
+    }
+  ]
+}

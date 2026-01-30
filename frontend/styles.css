@@ -116,6 +116,50 @@ button {
     gap: 12px;
 }
 
+.user-menu {
+    position: relative;
+}
+
+.user-menu-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+}
+
+.user-menu-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+    min-width: 180px;
+    display: none;
+    flex-direction: column;
+    padding: 8px 0;
+    z-index: 1200;
+}
+
+.user-menu:hover .user-menu-dropdown,
+.user-menu:focus-within .user-menu-dropdown {
+    display: flex;
+}
+
+.user-menu-dropdown a {
+    padding: 10px 14px;
+    color: #0f172a;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.user-menu-dropdown a:hover {
+    background: #f8fafc;
+    color: #c8102e;
+}
+
 .btn-secondary {
     padding: 10px 20px;
     border-radius: 8px;
@@ -141,6 +185,9 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
+    transform: none;
+    filter: none;
+    perspective: none;
 }
 
 /* Slideshow Background */
@@ -152,6 +199,12 @@ button {
     height: 100%;
     z-index: 1;
     overflow: hidden;
+    pointer-events: none;
+}
+
+.hero-bg,
+.hero-overlay,
+.hero-slideshow {
     pointer-events: none;
 }
 
@@ -217,6 +270,19 @@ button {
     color: white;
 }
 
+.hero-chip {
+    display: inline-block;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
 .hero-title {
     font-size: 48px;
     font-weight: 800;
@@ -241,6 +307,35 @@ button {
     border: 1px solid rgba(255, 255, 255, 0.1);
     width: 100%;
     max-width: 1050px;
+    transform: none;
+    filter: none;
+    perspective: none;
+}
+
+.booking-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    color: #e2e8f0;
+}
+
+.booking-status {
+    background: rgba(200, 16, 46, 0.2);
+    border: 1px solid rgba(200, 16, 46, 0.5);
+    color: #ffe5ea;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+}
+
+.booking-steps {
+    font-size: 12px;
+    opacity: 0.85;
 }
 
 .booking-form {
@@ -329,6 +424,10 @@ button {
     left: 0;
     pointer-events: auto !important;
     cursor: pointer;
+}
+
+.autocomplete-dropdown {
+    pointer-events: auto;
 }
 
 .dropdown-menu.visible {
@@ -819,4 +918,27 @@ button {
 
 .dropdown-menu::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
+}
+.row-cards{
+    margin-top: 40px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    align-content: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+.card-checkin{
+    width: 48%;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    padding: 20px;
+    margin-right: 20px;
+    display: flex;
+    flex-direction: row;
+}
+.card-checkin:hover{
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    transform: translateY(-4px);
 }

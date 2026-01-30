@@ -1310,5 +1310,37 @@
     "role": "admin",
     "username": "Riley Gabi",
     "timestamp": "2026-01-28T07:09:07.703135Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-29T09:45:33.512737Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-30T05:56:44.708872Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-30T05:57:12.168203+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-01-30T06:18:02.561822Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "Antigen",
+    "staff_id": "7e6c926212eec636",
+    "timestamp": "2026-01-30T12:38:46.411696+00:00Z"
   }
 ]

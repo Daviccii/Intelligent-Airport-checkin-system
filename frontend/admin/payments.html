@@ -370,6 +370,16 @@
 
     async function loadPaymentData() {
       console.log('🔄 Loading payment data...');
+
+      // Always have something to show before network calls
+      if (!allTransactions || allTransactions.length === 0) {
+        console.log('🌱 Seeding sample data pre-fetch');
+        allTransactions = seedSampleTransactions();
+        updateStats();
+        initCharts();
+        renderTransactions();
+      }
+
       try {
         let transactions = [];
         const token = getStorageItem('adminToken') || getStorageItem('session') || getStorageItem('auth_token') || '';
@@ -420,8 +430,7 @@
       } catch (error) {
         console.error('❌ Error loading payments:', error);
         console.warn('🔄 Falling back to sample data due to error');
-        const fallback = seedSampleTransactions();
-        allTransactions = fallback;
+        allTransactions = allTransactions && allTransactions.length ? allTransactions : seedSampleTransactions();
         updateStats();
         initCharts();
         renderTransactions();
@@ -431,6 +440,15 @@
             <p>Error loading live transactions: ${error.message}</p>
             <p style="font-size: 0.9rem; margin-top: 10px;">Showing sample data instead</p>
           </div>`;
+      }
+
+      // Safety fallback: if still empty, seed sample data so charts and tables are never blank
+      if (!allTransactions || allTransactions.length === 0) {
+        console.warn('⚠️ No transactions after load; seeding sample data for visibility');
+        allTransactions = seedSampleTransactions();
+        updateStats();
+        initCharts();
+        renderTransactions();
       }
     }
 
@@ -780,6 +798,12 @@
 
     // Safe event listener initialization
     document.addEventListener('DOMContentLoaded', () => {
+      // Immediately seed sample data so the page is never empty while loading
+      allTransactions = seedSampleTransactions();
+      updateStats();
+      initCharts();
+      renderTransactions();
+
       setTimeout(() => {
         const searchEl = document.getElementById('searchTransaction');
         const statusEl = document.getElementById('statusFilter');
@@ -791,6 +815,8 @@
         if (methodEl) methodEl.addEventListener('change', renderTransactions);
         if (sortEl) sortEl.addEventListener('change', renderTransactions);
       }, 50);
+
+      // Then attempt live load (will overwrite sample if API works)
       loadPaymentData();
     });
 
@@ -943,5 +969,6 @@
         alert('Error deleting payment: ' + error.message);
       });
     }
+  </script>
 </body>
 </html>

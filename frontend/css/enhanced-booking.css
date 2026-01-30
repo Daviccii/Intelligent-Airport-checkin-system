@@ -1,0 +1,2006 @@
+/* ========== HERO TABS STYLING ========== */
+
+.booking-container {
+    background: rgba(255, 255, 255, 0.95) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+.hero-tabs {
+    display: flex !important;
+    justify-content: flex-start !important;
+    align-items: center !important;
+    border-bottom: 2px solid #e6e9ef !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 0 auto !important;
+    width: 100% !important;
+}
+
+.hero-tab {
+    padding: 14px 20px !important;
+    text-decoration: none !important;
+    color: #666 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    white-space: nowrap !important;
+    border: none !important;
+    background: transparent !important;
+    cursor: pointer !important;
+    transition: all 0.25s !important;
+    border-bottom: 4px solid transparent !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    margin: 0 !important;
+    position: relative !important;
+    height: auto !important;
+}
+
+.hero-tab:hover {
+    color: #073067 !important;
+    border-bottom-color: #ccc !important;
+}
+
+.hero-tab.active,
+.hero-tab[href="/"] {
+    color: #073067 !important;
+    border-bottom-color: #b3001b !important;
+}
+
+/* ========== COMPACT HERO BOOKING FORM ========== */
+
+.hero-section.hero-kenya {
+    position: relative;
+    min-height: 68vh;
+    background: linear-gradient(135deg, rgba(7, 48, 103, 0.65), rgba(179, 0, 27, 0.5)),
+        url('https://images.unsplash.com/photo-1489515217757-5fd1be406fef?auto=format&fit=crop&w=1600&q=80') center/cover no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.hero-overlay {
+    width: 100%;
+    height: 100%;
+    padding: 64px 24px 72px;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.08), transparent 35%),
+        radial-gradient(circle at 80% 0%, rgba(255, 255, 255, 0.06), transparent 35%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero-inner {
+    width: min(1180px, 94vw);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    color: #f8fbff;
+}
+
+.hero-copy h2 {
+    font-size: 36px;
+    font-weight: 800;
+    margin: 0 0 6px;
+    letter-spacing: 0.4px;
+}
+
+.hero-copy .lead {
+    margin: 0;
+    font-size: 16px;
+    color: #e6edf5;
+}
+
+.hero-search-shell {
+    background: rgba(15, 23, 42, 0.78);
+    border-radius: 18px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+    padding: 18px 20px;
+    backdrop-filter: blur(6px);
+    width: 100%;
+}
+
+.hero-search-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.hero-search-row {
+    display: grid;
+    grid-template-columns: 1.1fr 2fr 2fr auto;
+    gap: 12px;
+    align-items: end;
+    width: 100%;
+}
+
+.hero-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+}
+
+.hero-field .field-label {
+    font-size: 12px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: #c4d1e5;
+    font-weight: 700;
+}
+
+.hero-input-shell {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #d8dde5;
+    padding: 0 12px;
+    height: 56px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease;
+}
+
+.hero-input-shell:focus-within {
+    border-color: #b3001b;
+    box-shadow: 0 10px 24px rgba(179, 0, 27, 0.18);
+}
+
+.hero-input-shell input,
+.hero-select {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    font-size: 15px;
+    color: #1f2937;
+}
+
+.hero-select {
+    appearance: none;
+    padding-right: 18px;
+    cursor: pointer;
+}
+
+.hero-caret {
+    color: #b3001b;
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.btn-hero-search {
+    height: 56px;
+    padding: 0 26px;
+    background: linear-gradient(135deg, #b3001b, #8f0015);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    cursor: pointer;
+    box-shadow: 0 14px 32px rgba(179, 0, 27, 0.35);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+    white-space: nowrap;
+}
+
+.btn-hero-search:hover {
+    background: linear-gradient(135deg, #8f0015, #6f0010);
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(179, 0, 27, 0.4);
+}
+
+.airport-dropdown {
+    position: fixed;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+    padding: 6px;
+    min-width: 320px;
+    display: none;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 9999;
+}
+
+.airport-dropdown.open {
+    display: block;
+}
+
+.airport-option {
+    width: 100%;
+    border: none;
+    background: transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.airport-option:hover {
+    background: #f3f4f6;
+}
+
+.ao-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: flex-start;
+}
+
+.ao-title {
+    font-weight: 700;
+    color: #111827;
+}
+
+.ao-meta {
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.ao-code {
+    font-weight: 800;
+    color: #b3001b;
+    font-size: 13px;
+    background: #fff4f4;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+
+.hero-date-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 6px;
+}
+
+.hero-calendar {
+    position: absolute;
+    background: #ffffff;
+    border-radius: 14px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 24px 60px rgba(15,23,42,0.28);
+    padding: 14px;
+    width: 320px;
+    display: none;
+    z-index: 20;
+}
+
+.hero-calendar.open {
+    display: block;
+}
+
+.cal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.cal-month {
+    font-weight: 700;
+    color: #111827;
+}
+
+.cal-nav {
+    border: none;
+    background: #f3f4f6;
+    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    color: #111827;
+}
+
+.cal-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-size: 12px;
+    color: #6b7280;
+    margin-bottom: 6px;
+}
+
+.cal-row {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 4px;
+}
+
+.cal-cell {
+    border: none;
+    background: #f9fafb;
+    border-radius: 10px;
+    height: 38px;
+    cursor: pointer;
+    color: #111827;
+    transition: all 0.15s ease;
+}
+
+.cal-cell:hover {
+    background: #f1f5f9;
+}
+
+.cal-cell.selected {
+    background: #b3001b;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.cal-cell.selected.return {
+    background: #8f0015;
+}
+
+.cal-cell.disabled {
+    background: #f8f9fb;
+    color: #cbd5e1;
+    cursor: not-allowed;
+}
+
+.cal-cell.muted {
+    color: #cbd5e1;
+}
+
+@media (max-width: 1024px) {
+    .hero-inner {
+        width: min(1040px, 94vw);
+    }
+    .hero-search-row {
+        grid-template-columns: 1fr 1.6fr 1.6fr auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section.hero-kenya {
+        min-height: 78vh;
+        padding-top: 16px;
+    }
+    .hero-inner {
+        width: 100%;
+        gap: 12px;
+    }
+    .hero-copy h2 {
+        font-size: 30px;
+    }
+    .hero-search-shell {
+        padding: 16px;
+    }
+    .hero-search-row {
+        grid-template-columns: 1fr;
+    }
+    .btn-hero-search {
+        width: 100%;
+    }
+}
+
+/* Availability date strip */
+.date-strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(140px, 1fr);
+    gap: 10px;
+    overflow-x: auto;
+    padding: 8px 6px;
+    scroll-snap-type: x mandatory;
+}
+
+.date-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    cursor: pointer;
+    scroll-snap-align: start;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    min-width: 140px;
+}
+
+.date-card:hover {
+    border-color: #d1d5db;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+    transform: translateY(-1px);
+}
+
+.date-card.active {
+    border-color: #b3001b;
+    box-shadow: 0 10px 26px rgba(179, 0, 27, 0.16);
+}
+
+.date-card.disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
+    border-style: dashed;
+}
+
+.date-card .day {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #6b7280;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+
+.date-card .date-num {
+    font-size: 20px;
+    font-weight: 800;
+    color: #111827;
+}
+
+.date-card .price {
+    font-size: 13px;
+    color: #073067;
+    font-weight: 700;
+}
+
+.date-card .na {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.flight-search {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 1 1 auto !important;
+}
+
+.search-card-inner.compact-hero {
+    padding: 20px 24px !important;
+    gap: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.search-row-compact {
+    display: grid;
+    grid-template-columns: 1.5fr auto 1.5fr auto;
+    gap: 14px;
+    align-items: flex-end;
+    width: 100%;
+}
+
+.search-field.compact {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.search-field.compact .field-label-enhanced {
+    font-size: 12px;
+    font-weight: 600;
+    color: #4b5563;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.airport-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    height: 48px;
+    padding: 0 12px;
+    transition: all 0.3s ease;
+}
+
+.airport-field:focus-within {
+    border-color: #b3001b;
+    box-shadow: 0 0 0 3px rgba(179, 0, 27, 0.08);
+}
+
+.airport-field input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #1f2937;
+    background: transparent;
+    padding: 0 6px;
+}
+
+.airport-field input::placeholder {
+    color: #9ca3af;
+}
+
+.input-icon {
+    width: 18px;
+    height: 18px;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.input-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.airport-caret {
+    color: #b3001b;
+    font-size: 11px;
+    margin-left: 6px;
+    flex-shrink: 0;
+}
+
+/* Swap Button - Compact */
+.swap-btn-compact {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    color: #b3001b;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    margin-bottom: 1px;
+    padding: 0;
+}
+
+.swap-btn-compact:hover {
+    background: #b3001b;
+    color: #ffffff;
+    border-color: #b3001b;
+    transform: rotate(180deg);
+}
+
+/* Search Button - Compact */
+.search-btn-compact {
+    height: 48px;
+    padding: 0 24px;
+    background: linear-gradient(135deg, #b3001b, #8f0015);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.7px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(179, 0, 27, 0.2);
+    align-self: flex-end;
+    margin-bottom: 1px;
+    white-space: nowrap;
+    min-width: 100px;
+}
+
+.search-btn-compact:hover {
+    background: linear-gradient(135deg, #8f0015, #6f0010);
+    box-shadow: 0 6px 16px rgba(179, 0, 27, 0.3);
+    transform: translateY(-2px);
+}
+
+/* ========== EXPANDED FIELDS (shown after From/To filled) ========== */
+.expanded-fields {
+    border-top: 2px solid #e5e7eb;
+    padding-top: 16px;
+}
+
+.search-row-expanded {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    align-items: flex-end;
+    width: 100%;
+}
+
+.search-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.field-label-enhanced {
+    font-weight: 600;
+    color: #4b5563;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+}
+
+/* Date Fields */
+.date-field-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    height: 48px;
+    padding: 0 12px;
+    transition: all 0.3s ease;
+}
+
+.date-field-wrapper:has(input:focus) {
+    border-color: #b3001b;
+    box-shadow: 0 0 0 3px rgba(179, 0, 27, 0.08);
+}
+
+.date-picker {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #1f2937;
+    background: transparent;
+    padding: 0 6px;
+    cursor: pointer;
+}
+
+.date-picker::placeholder {
+    color: #9ca3af;
+}
+
+.date-icon {
+    width: 16px;
+    height: 16px;
+    color: #b3001b;
+    flex-shrink: 0;
+}
+
+.date-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+/* Trip Type Select */
+.trip-type-select {
+    width: 100%;
+    height: 48px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 32px;
+}
+
+.trip-type-select:focus {
+    outline: none;
+    border-color: #b3001b;
+    box-shadow: 0 0 0 3px rgba(179, 0, 27, 0.08);
+}
+
+/* Passenger Selector */
+.passenger-selector {
+    position: relative;
+    width: 100%;
+}
+
+.passenger-trigger {
+    width: 100%;
+    height: 48px;
+    padding: 0 12px;
+    font-size: 14px;
+    color: #1f2937;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+}
+
+.passenger-trigger:hover {
+    border-color: #b3001b;
+}
+
+.passenger-trigger:focus {
+    outline: none;
+    border-color: #b3001b;
+    box-shadow: 0 0 0 3px rgba(179, 0, 27, 0.08);
+}
+
+.ps-icon {
+    width: 16px;
+    height: 16px;
+    color: #6b7280;
+    flex-shrink: 0;
+}
+
+.ps-label {
+    flex: 1;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.ps-caret {
+    font-size: 11px;
+    color: #b3001b;
+    flex-shrink: 0;
+}
+
+/* Passenger Dropdown */
+.passenger-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-top: 6px;
+    z-index: 1001;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+    display: none;
+    padding: 14px;
+    min-width: 280px;
+}
+
+.passenger-dropdown.active {
+    display: block;
+}
+
+.passenger-type {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.passenger-type:last-child {
+    border-bottom: none;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+}
+
+.passenger-type-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.passenger-type-label .main {
+    font-weight: 600;
+    font-size: 13px;
+    color: #1f2937;
+}
+
+.passenger-type-label .sub {
+    font-size: 11px;
+    color: #9ca3af;
+}
+
+.number-input {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f9fafb;
+    border-radius: 6px;
+    padding: 3px 6px;
+}
+
+.number-input button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: #ffffff;
+    border-radius: 4px;
+    color: #b3001b;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.number-input button:hover:not(:disabled) {
+    background: #b3001b;
+    color: #ffffff;
+}
+
+.number-input input {
+    width: 28px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 13px;
+    color: #1f2937;
+}
+
+.passenger-dropdown-footer {
+    padding-top: 10px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.btn-done {
+    width: 100%;
+    padding: 8px 12px;
+    background: #b3001b;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-done:hover {
+    background: #8f0015;
+}
+
+/* Cabin Class Select */
+.cabin-select {
+    width: 100%;
+    height: 48px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1f2937;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 32px;
+}
+
+.cabin-select:focus {
+    outline: none;
+    border-color: #b3001b;
+    box-shadow: 0 0 0 3px rgba(179, 0, 27, 0.08);
+}
+
+/* Error Messages */
+.field-error-text {
+    color: #b3001b;
+    font-size: 12px;
+    font-weight: 500;
+    display: none;
+    margin-top: -8px;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
+    .search-row-expanded {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .search-row-compact {
+        grid-template-columns: 1fr auto 1fr;
+        gap: 10px;
+    }
+    
+    .search-btn-compact {
+        grid-column: 1 / -1;
+        width: 100%;
+        min-width: unset;
+    }
+    
+    .search-row-expanded {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .airport-field,
+    .date-field-wrapper,
+    .trip-type-select,
+    .cabin-select,
+    .passenger-trigger {
+        height: 44px;
+        font-size: 13px;
+    }
+    
+    .field-label-enhanced {
+        font-size: 11px;
+    }
+}
+
+
+/* ========== AIRPORT INPUT FIELDS ========== */
+.airport-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    height: 56px;
+    padding: 0 14px;
+    transition: all 0.3s ease;
+}
+
+.airport-field:focus-within {
+    border-color: #b3001b;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08);
+}
+
+.airport-field input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    color: #1f2937;
+    background: transparent;
+    padding: 0 8px;
+}
+
+.airport-field input::placeholder {
+    color: #9ca3af;
+}
+
+.input-icon {
+    width: 20px;
+    height: 20px;
+    color: #6b7280;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+.airport-caret {
+    color: #b3001b;
+    font-size: 12px;
+    margin-left: 8px;
+    flex-shrink: 0;
+}
+
+/* ========== SWAP BUTTON ========== */
+.swap-btn-enhanced {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    color: #b3001b;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    margin-bottom: 3px;
+    padding: 0;
+}
+
+.swap-btn-enhanced:hover {
+    background: #b3001b;
+    color: #ffffff;
+    border-color: #b3001b;
+    transform: rotate(180deg);
+}
+
+/* ========== TRIP TYPE SELECT ========== */
+.trip-type-select {
+    width: 100%;
+    height: 56px;
+    padding: 0 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1f2937;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.trip-type-select:hover {
+    border-color: #b3001b;
+}
+
+.trip-type-select:focus {
+    outline: none;
+    border-color: #b3001b;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08);
+}
+
+/* ========== BOTTOM ROW: DATES, PASSENGERS, CLASS, SEARCH ========== */
+.search-row-bottom {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr auto;
+    gap: 16px;
+    align-items: flex-end;
+    width: 100%;
+}
+
+.search-field-date {
+    min-width: 0;
+}
+
+/* Disabled Field State */
+.field-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.field-disabled .field-label-enhanced {
+    color: #9ca3af;
+}
+
+/* ========== DATE PICKER ========== */
+.date-field-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    height: 56px;
+    padding: 0 14px;
+    transition: all 0.3s ease;
+}
+
+.date-field-wrapper:has(input:focus) {
+    border-color: #b3001b;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08);
+}
+
+.date-picker {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 15px;
+    color: #1f2937;
+    background: transparent;
+    padding: 0 8px;
+    cursor: pointer;
+}
+
+.date-picker::placeholder {
+    color: #9ca3af;
+}
+
+.date-picker:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.date-icon {
+    width: 18px;
+    height: 18px;
+    color: #b3001b;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.date-icon svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+}
+
+/* ========== PASSENGER SELECTOR ========== */
+.passenger-selector {
+    position: relative;
+    width: 100%;
+}
+
+.passenger-trigger {
+    width: 100%;
+    height: 56px;
+    padding: 0 14px;
+    font-size: 15px;
+    color: #1f2937;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.passenger-trigger:hover:not(:disabled) {
+    border-color: #b3001b;
+}
+
+.passenger-trigger:focus {
+    outline: none;
+    border-color: #b3001b;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08);
+}
+
+.passenger-trigger:disabled {
+    background: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    border-color: #d1d5db;
+}
+
+.ps-icon {
+    width: 18px;
+    height: 18px;
+    color: #6b7280;
+}
+
+.ps-label {
+    flex: 1;
+    text-align: left;
+}
+
+.ps-caret {
+    font-size: 12px;
+    color: #b3001b;
+}
+
+/* Passenger Dropdown */
+.passenger-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-top: 8px;
+    z-index: 1001;
+    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.12);
+    display: none;
+    padding: 16px;
+    min-width: 300px;
+    animation: slideDown 0.2s ease;
+}
+
+.passenger-dropdown.active {
+    display: block;
+}
+
+.passenger-type {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.passenger-type:last-child {
+    border-bottom: none;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.passenger-type-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.passenger-type-label .main {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.passenger-type-label .sub {
+    font-size: 12px;
+    color: #9ca3af;
+}
+
+.number-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f9fafb;
+    border-radius: 6px;
+    padding: 4px 8px;
+}
+
+.number-input button {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: #ffffff;
+    border-radius: 4px;
+    color: #b3001b;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.number-input button:hover:not(:disabled) {
+    background: #b3001b;
+    color: #ffffff;
+}
+
+.number-input button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.number-input input {
+    width: 32px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    font-size: 14px;
+    color: #1f2937;
+}
+
+.passenger-dropdown-footer {
+    padding-top: 12px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.btn-done {
+    width: 100%;
+    padding: 10px 16px;
+    background: #b3001b;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-done:hover {
+    background: #8f0015;
+}
+
+/* ========== CABIN CLASS SELECT ========== */
+.cabin-select {
+    width: 100%;
+    height: 56px;
+    padding: 0 14px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #1f2937;
+    background: #ffffff;
+    border: 2px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+}
+
+.cabin-select:hover {
+    border-color: #b3001b;
+}
+
+.cabin-select:focus {
+    outline: none;
+    border-color: #b3001b;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08);
+}
+
+.cabin-select:disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+    border-color: #d1d5db;
+}
+
+/* ========== SEARCH BUTTON ========== */
+.search-btn-enhanced {
+    height: 56px;
+    padding: 0 36px;
+    background: linear-gradient(135deg, #b3001b, #8f0015);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 16px rgba(179, 0, 27, 0.2);
+    align-self: flex-end;
+    margin-bottom: 3px;
+    white-space: nowrap;
+}
+
+.search-btn-enhanced:hover:not(:disabled) {
+    background: linear-gradient(135deg, #8f0015, #6f0010);
+    box-shadow: 0 6px 20px rgba(179, 0, 27, 0.3);
+    transform: translateY(-2px);
+}
+
+.search-btn-enhanced:disabled {
+    background: #d1d5db;
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ========== ERROR MESSAGES ========== */
+.field-error-text {
+    color: #b3001b;
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+    margin-top: -12px;
+}
+
+.field-error-text.show {
+    display: block;
+}
+
+/* ========== RESPONSIVE ADJUSTMENTS ========== */
+@media (max-width: 1200px) {
+    .search-row-top {
+        grid-template-columns: 1fr auto 1fr 180px;
+        gap: 12px;
+    }
+    
+    .search-row-bottom {
+        gap: 12px;
+    }
+    
+    .search-btn-enhanced {
+        padding: 0 24px;
+        min-width: 100px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .search-card-inner {
+        padding: 28px 24px;
+        gap: 20px;
+    }
+    
+    .search-row-top {
+        grid-template-columns: 1fr auto 1fr 160px;
+        gap: 10px;
+    }
+    
+    .search-row-bottom {
+        gap: 10px;
+    }
+    
+    .swap-btn-enhanced {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .airport-field,
+    .date-field-wrapper,
+    .trip-type-select,
+    .cabin-select,
+    .passenger-trigger,
+    .search-btn-enhanced {
+        height: 48px;
+        font-size: 14px;
+    }
+    
+    .field-label-enhanced {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 900px) {
+    .search-card-inner {
+        padding: 24px 20px;
+    }
+    
+    .search-row-top,
+    .search-row-bottom {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .swap-btn-enhanced {
+        display: none;
+    }
+    
+    .search-field-triptype {
+        width: 100%;
+    }
+    
+    .search-btn-enhanced {
+        width: 100%;
+        align-self: stretch;
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .search-card-inner {
+        padding: 20px 16px;
+    }
+    
+    .airport-field,
+    .date-field-wrapper,
+    .trip-type-select,
+    .cabin-select,
+    .passenger-trigger,
+    .search-btn-enhanced {
+        height: 48px;
+        font-size: 13px;
+    }
+    
+    .input-icon,
+    .date-icon,
+    .ps-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .field-label-enhanced {
+        font-size: 11px;
+    }
+    
+    .airport-dropdown {
+        max-height: 280px;
+    }
+    
+    .passenger-dropdown {
+        max-height: 320px;
+        min-width: 280px;
+    }
+}
+.airport-caret {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: #b3001b;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.airport-field input:focus ~ .airport-caret {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Enhanced Date Picker Styling */
+.date-field-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.date-field-wrapper input {
+    width: 100%;
+    padding: 16px 45px 16px 52px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    transition: all 0.3s ease !important;
+    height: 58px !important;
+    color: #1f2937 !important;
+    cursor: pointer !important;
+}
+
+.date-field-wrapper input:focus {
+    border-color: #b3001b !important;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08) !important;
+}
+
+.date-field-wrapper .date-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2;
+    pointer-events: none;
+}
+
+.date-field-wrapper .date-icon svg {
+    width: 20px;
+    height: 20px;
+    fill: #6b7280;
+}
+
+/* Enhanced Passenger Selector */
+.passenger-selector {
+    position: relative;
+    width: 100%;
+}
+
+.passenger-trigger {
+    width: 100%;
+    padding: 16px 45px 16px 52px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    transition: all 0.3s ease !important;
+    height: 58px !important;
+    color: #1f2937 !important;
+    cursor: pointer !important;
+    text-align: left !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+}
+
+.passenger-trigger:hover {
+    border-color: #d1d5db !important;
+}
+
+.passenger-trigger:focus,
+.passenger-selector.active .passenger-trigger {
+    border-color: #b3001b !important;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08) !important;
+}
+
+.passenger-trigger .ps-icon {
+    width: 20px;
+    height: 20px;
+    fill: #6b7280;
+    flex-shrink: 0;
+}
+
+.passenger-trigger .ps-label {
+    flex: 1;
+    text-align: left;
+}
+
+.passenger-trigger .ps-caret {
+    font-size: 14px;
+    color: #9ca3af;
+    transition: transform 0.3s ease;
+}
+
+.passenger-selector.active .ps-caret {
+    transform: rotate(180deg);
+}
+
+.passenger-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.08);
+    z-index: 1200;
+    display: none;
+    padding: 20px;
+    min-width: 340px;
+}
+
+.passenger-selector.active .passenger-dropdown {
+    display: block;
+    animation: slideDown 0.2s ease-out;
+}
+
+.passenger-type {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.passenger-type:last-child {
+    border-bottom: none;
+}
+
+.passenger-type-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.passenger-type-label .main {
+    font-size: 15px;
+    font-weight: 600;
+    color: #111827;
+}
+
+.passenger-type-label .sub {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 400;
+}
+
+.number-input {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f9fafb;
+    border-radius: 10px;
+    padding: 4px;
+}
+
+.number-input button {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #374151;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.number-input button:hover:not(:disabled) {
+    background: #b3001b;
+    color: #ffffff;
+    border-color: #b3001b;
+}
+
+.number-input button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.number-input input {
+    width: 50px;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: #111827;
+    border: none;
+    background: transparent;
+    pointer-events: none;
+}
+
+.passenger-dropdown-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.passenger-dropdown-footer button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.passenger-dropdown-footer .btn-done {
+    background: #b3001b;
+    color: #ffffff;
+    border: none;
+}
+
+.passenger-dropdown-footer .btn-done:hover {
+    background: #8f0015;
+}
+
+/* Enhanced Cabin Class Select */
+select.cabin-select {
+    width: 100%;
+    padding: 16px 45px 16px 18px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    transition: all 0.3s ease !important;
+    height: 58px !important;
+    color: #1f2937 !important;
+    cursor: pointer !important;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 18px center !important;
+}
+
+select.cabin-select:focus {
+    border-color: #b3001b !important;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08) !important;
+}
+
+/* Enhanced Trip Type Select */
+select.trip-type-select {
+    width: 100%;
+    padding: 16px 45px 16px 18px !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    border: 2px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    background: #ffffff !important;
+    transition: all 0.3s ease !important;
+    height: 58px !important;
+    color: #1f2937 !important;
+    cursor: pointer !important;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 9L1 4h10z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 18px center !important;
+}
+
+select.trip-type-select:focus {
+    border-color: #b3001b !important;
+    box-shadow: 0 0 0 4px rgba(179, 0, 27, 0.08) !important;
+}
+
+/* Field Labels */
+.field-label-enhanced {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 10px;
+    display: block;
+    font-size: 14px;
+    letter-spacing: 0.3px;
+}
+
+/* Disabled Field State */
+.field-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.field-disabled .field-label-enhanced {
+    color: #9ca3af;
+}
+
+.date-field-wrapper input:disabled,
+.passenger-trigger:disabled,
+.cabin-select:disabled,
+.search-btn-enhanced:disabled {
+    background: #f3f4f6 !important;
+    color: #9ca3af !important;
+    cursor: not-allowed !important;
+    border-color: #e5e7eb !important;
+}
+
+.passenger-trigger:disabled {
+    opacity: 0.6;
+}
+
+.search-btn-enhanced:disabled {
+    background: #d1d5db !important;
+    box-shadow: none !important;
+    cursor: not-allowed !important;
+}
+
+.search-btn-enhanced:disabled:hover {
+    transform: none !important;
+    background: #d1d5db !important;
+}
+
+/* Swap Button Enhanced */
+.swap-btn-enhanced {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    color: #b3001b;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    margin-bottom: 5px;
+}
+
+.swap-btn-enhanced:hover {
+    background: #b3001b;
+    color: #ffffff;
+    border-color: #b3001b;
+    transform: rotate(180deg);
+}
+
+/* Search Button Enhanced */
+.search-btn-enhanced {
+    padding: 17px 40px !important;
+    height: 58px !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    background: linear-gradient(135deg, #b3001b, #8f0015) !important;
+    color: #ffffff !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    box-shadow: 0 8px 20px rgba(179, 0, 27, 0.25) !important;
+    align-self: flex-end;
+    margin-bottom: 5px;
+}
+
+.search-btn-enhanced:hover {
+    background: linear-gradient(135deg, #8f0015, #6f0010) !important;
+    box-shadow: 0 12px 28px rgba(179, 0, 27, 0.35) !important;
+    transform: translateY(-2px);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+    .input-row:first-child {
+        grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr) 180px !important;
+    }
+    
+    .search-btn-enhanced {
+        padding: 0 24px !important;
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .airport-suggestions {
+        min-width: 100%;
+        max-width: 100%;
+    }
+    
+    .search-card-inner {
+        padding: 0 16px !important;
+    }
+    
+    .input-row {
+        gap: 10px !important;
+    }
+    
+    .input-row:first-child {
+        grid-template-columns: minmax(0, 1fr) 40px minmax(0, 1fr) 160px !important;
+    }
+    
+    .input-row:nth-child(2) {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) auto !important;
+    }
+    
+    .search-btn-enhanced {
+        padding: 0 20px !important;
+        min-width: 100px;
+        font-size: 15px !important;
+    }
+    
+    .swap-btn-enhanced {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 900px) {
+    .search-card-inner {
+        gap: 16px !important;
+    }
+    
+    .input-row:first-child,
+    .input-row:nth-child(2) {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+    }
+    
+    .swap-btn-enhanced {
+        display: none !important;
+    }
+    
+    .airport-field,
+    .date-field-wrapper,
+    .passenger-selector,
+    .cabin-select,
+    .trip-type-select {
+        width: 100%;
+    }
+    
+    .search-btn-enhanced {
+        width: 100%;
+        min-width: unset;
+        padding: 0 32px !important;
+        align-self: stretch;
+        margin-bottom: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .airport-field input,
+    .date-field-wrapper input,
+    .passenger-trigger,
+    select.cabin-select,
+    select.trip-type-select,
+    .search-btn-enhanced {
+        height: 52px !important;
+        font-size: 15px !important;
+    }
+    
+    .airport-field input,
+    .date-field-wrapper input {
+        padding: 14px 40px 14px 48px !important;
+    }
+    
+    select.cabin-select,
+    select.trip-type-select {
+        padding: 14px 45px 14px 18px !important;
+    }
+    
+    .swap-btn-enhanced {
+        width: 44px !important;
+        height: 44px !important;
+    }
+    
+    .input-icon svg,
+    .date-icon svg,
+    .ps-icon {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .airport-dropdown {
+        max-height: 280px;
+    }
+    
+    .passenger-dropdown {
+        max-height: 320px;
+    }
+    
+    .field-label-enhanced {
+        font-size: 12px;
+    }
+}
+

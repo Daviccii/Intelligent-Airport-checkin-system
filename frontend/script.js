@@ -97,7 +97,7 @@ class AirportDropdown {
         // Create new dropdown at body level
         dropdownEl = document.createElement('div');
         dropdownEl.id = `dropdown-${inputId}`;
-        dropdownEl.className = 'dropdown-menu';
+        dropdownEl.className = 'dropdown-menu autocomplete-dropdown';
         dropdownEl.role = 'listbox';
         dropdownEl.setAttribute('data-input', inputId);
         
@@ -107,6 +107,7 @@ class AirportDropdown {
         
         // Add click logger for debugging
         dropdownEl.addEventListener('click', (e) => {
+            console.log('Dropdown clicked');
             console.log('🖱️ Dropdown clicked!', {
                 target: e.target,
                 inputId: inputId,
@@ -133,7 +134,6 @@ class AirportDropdown {
         
         // Store the airports data in the dropdown element for event delegation
         dropdownEl.dataset.airports = JSON.stringify(filteredAirports);
-        dropdownEl.dataset.inputId = inputId;
         
         filteredAirports.forEach((airport, index) => {
             const item = document.createElement('div');
@@ -148,6 +148,14 @@ class AirportDropdown {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log(`✈️ CLICKED: ${airport.iata} for ${inputId}`);
+                this.selectAirport(airport, inputId);
+            };
+            
+            // Add mousedown handler for better reliability (fires before blur)
+            item.onmousedown = (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log(`🖱️ MOUSEDOWN: ${airport.iata} for ${inputId}`);
                 this.selectAirport(airport, inputId);
             };
             
@@ -334,7 +342,7 @@ class AirportDropdown {
         input.addEventListener('blur', () => {
             setTimeout(() => {
                 this.closeDropdown(inputId);
-            }, 200);
+            }, 300);
         });
         
         input.addEventListener('keydown', (e) => {
