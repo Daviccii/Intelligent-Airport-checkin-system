@@ -5,49 +5,849 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartFly Airways - Book Your Flight</title>
     <link rel="stylesheet" href="/styles.css">
+    <style>
+        /* Hide initially */
+        .kq-date-wrapper {
+          display: none;
+          background: #fff;
+          border-radius: 18px;
+          padding: 24px;
+          width: 760px; /* ⬅ LARGE */
+          box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+          margin-top: 12px;
+        }
+
+        /* Header */
+        .kq-calendar-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 20px;
+        }
+
+        .month-labels {
+          display: flex;
+          gap: 120px;
+          font-size: 18px;
+          font-weight: 600;
+        }
+
+        /* Navigation buttons */
+        .nav-btn {
+          background: none;
+          border: none;
+          font-size: 22px;
+          cursor: pointer;
+        }
+
+        /* Calendar grid */
+        .kq-calendar-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 40px;
+        }
+
+        /* Calendar */
+        .calendar {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 10px;
+        }
+
+        /* Date cell */
+        .calendar-day {
+          height: 64px;
+          border-radius: 12px;
+          text-align: center;
+          padding-top: 8px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+
+        .calendar-day:hover {
+          background: rgba(30, 58, 138, 0.08);
+        }
+
+        /* Price */
+        .day-price {
+          font-size: 12px;
+          color: #6b7280;
+        }
+
+        /* Cheapest price highlight */
+        .cheapest {
+          background: #e6f7ee;
+          color: #047857;
+        }
+
+        /* Done button */
+        .kq-done-btn {
+          margin-top: 24px;
+          background: #e11d2e;
+          color: #fff;
+          border: none;
+          padding: 14px 28px;
+          border-radius: 12px;
+          font-size: 16px;
+          cursor: pointer;
+        }
+
+        .kq-form-row {
+          overflow: visible !important;
+        }
+
+        .booking-card-kq {
+          overflow: visible;
+        }
+    /* ========================= */
+    /* BLUE-THEMED HEADER STYLES */
+    /* ========================= */
+
+    /* KQ COMPACT DROPDOWN STYLES */
+    .kq-dropdown-compact {
+      position: relative;
+      width: 220px;
+      font-family: "Segoe UI", system-ui, sans-serif;
+    }
+
+    .kq-dropdown-btn-compact {
+      width: 100%;
+      height: 56px;
+      padding: 10px 16px;
+      background: #ffffff;
+      border: 1px solid #d0d7e2;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .kq-dropdown-btn-compact.active {
+      border-color: #1e3a8a;
+      box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.15);
+    }
+
+    .kq-label {
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .kq-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0f172a;
+      margin-left: auto;
+    }
+
+    .kq-arrow {
+      font-size: 14px;
+      transition: transform 0.25s ease;
+    }
+
+    .kq-dropdown-btn-compact.active .kq-arrow {
+      transform: rotate(180deg);
+    }
+
+    .kq-dropdown-menu-compact {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 14px;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.12);
+      padding: 6px 0;
+      z-index: 1000;
+    }
+
+    .kq-dropdown-menu-compact li {
+      list-style: none;
+      padding: 16px 20px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .kq-dropdown-menu-compact li:hover {
+      background: rgba(30, 58, 138, 0.08);
+    }
+    .header {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      background: linear-gradient(120deg, #1e3a8a 0%, #2563eb 50%, #1e40af 100%);
+      box-shadow: 0 6px 20px rgba(30, 64, 175, 0.3), 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1000;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 32px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    /* Logo Bubble */
+    .logo-bubble {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+      text-decoration: none;
+    }
+
+    .logo-bubble:hover {
+      transform: scale(1.05) rotate(5deg);
+    }
+
+    .logo-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.15));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      color: #ffffff;
+      border: 3px solid rgba(255, 255, 255, 0.4);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 2px 6px rgba(255, 255, 255, 0.3);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .logo-bubble:hover .logo-icon {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.25));
+      transform: rotate(360deg) scale(1.1);
+      border-color: rgba(255, 255, 255, 0.6);
+      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.4), inset 0 2px 8px rgba(255, 255, 255, 0.4);
+    }
+
+    .logo-text {
+      margin-left: 8px;
+      font-weight: 800;
+      color: white;
+      font-size: 22px;
+      letter-spacing: 0.8px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Navigation Links */
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .nav-item {
+      position: relative;
+    }
+
+    .nav-link {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      position: relative;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: 2px;
+      transform: translateX(-50%);
+      width: 0%;
+      height: 2px;
+      background: #ffffff;
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 80%;
+    }
+
+    .nav-link:hover {
+      transform: scale(1.05);
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Mega-menu Dropdown */
+    .mega-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+      padding: 16px 20px;
+      border-radius: 12px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 220px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      z-index: 999;
+      margin-top: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+    }
+
+    .nav-item:hover .mega-menu {
+      display: flex;
+      animation: slideDown 0.3s ease;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mega-menu .nav-link {
+      color: #ffffff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .mega-menu .nav-link::after {
+      display: none;
+    }
+
+    .mega-menu .nav-link:hover {
+      background: rgba(255,255,255,0.15);
+      transform: translateX(4px);
+    }
+
+    /* Header Buttons */
+    .header-buttons {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      padding: 12px 28px;
+      border-radius: 24px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 15px;
+      border: 2px solid #ffffff;
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+      color: #1e40af;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-primary:hover {
+      background: #ffffff;
+      color: #1e40af;
+      border-color: #ffffff;
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 20px rgba(255,255,255,0.4), 0 0 0 4px rgba(255, 255, 255, 0.2);
+    }
+
+    /* Mobile Menu Button */
+    .mobile-menu-button {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 28px;
+      cursor: pointer;
+      color: #ffffff;
+      padding: 8px;
+      transition: transform 0.3s ease;
+    }
+
+    .mobile-menu-button:hover {
+      transform: scale(1.1);
+    }
+
+    .mobile-menu-button.active {
+      transform: rotate(90deg);
+    }
+
+    /* ========================= */
+    /* RESPONSIVE DESIGN         */
+    /* ========================= */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        background: #1e3a8a;
+        position: absolute;
+        top: 70px;
+        right: 0;
+        width: 240px;
+        padding: 20px;
+        border-radius: 0 0 8px 8px;
+        gap: 16px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        align-items: stretch;
+      }
+
+      .nav-links.show {
+        display: flex;
+      }
+
+      .nav-item {
+        width: 100%;
+      }
+
+      .nav-link {
+        width: 100%;
+        text-align: left;
+      }
+
+      .mega-menu {
+        position: static;
+        background: rgba(255,255,255,0.1);
+        padding: 10px;
+        border-radius: 6px;
+        box-shadow: none;
+        margin-top: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: none;
+      }
+
+      .mega-menu.show {
+        display: flex;
+      }
+
+      .mega-menu .nav-link {
+        color: #ffffff;
+      }
+
+      .header-buttons {
+        gap: 8px;
+      }
+
+      .btn-primary {
+        padding: 10px 20px;
+        font-size: 13px;
+      }
+
+      .mobile-menu-button {
+        display: block;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .header-container {
+        height: 68px;
+      }
+
+      .logo-text {
+        font-size: 16px;
+      }
+
+      .logo-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+      }
+
+      .btn-primary span {
+        display: none;
+      }
+
+      .btn-primary::after {
+        content: '→';
+      }
+    }
+
+    /* ========================= */
+    /* FOOTER SIGN IN DROPDOWN   */
+    /* ========================= */
+    .footer-signin-section {
+      position: relative;
+    }
+
+    .signin-dropdown-container {
+      margin-top: 12px;
+    }
+
+    .signin-dropdown-btn {
+      width: 100%;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+    }
+
+    .signin-dropdown-btn:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
+    }
+
+    .dropdown-arrow {
+      font-size: 10px;
+      transition: transform 0.3s ease;
+    }
+
+    .signin-dropdown-btn.active .dropdown-arrow {
+      transform: rotate(180deg);
+    }
+
+    .signin-dropdown-menu {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+      border-radius: 12px;
+      padding: 8px;
+      margin-bottom: 8px;
+      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      display: none !important;
+      flex-direction: column;
+      gap: 4px;
+      z-index: 100;
+    }
+
+    .signin-dropdown-menu.active {
+      display: flex !important;
+      animation: slideUp 0.3s ease;
+    }
+
+    /* ========================= */
+    /* DESTINATIONS GALLERY      */
+    /* ========================= */
+    .destinations-section {
+      padding: 60px 20px;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 100%);
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 36px;
+      font-weight: 700;
+      color: #1e40af;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      text-align: center;
+      font-size: 18px;
+      color: #64748b;
+      margin-bottom: 48px;
+    }
+
+    .destinations-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .destination-card {
+      position: relative;
+      height: 320px;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .destination-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .destination-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: transform 0.5s ease;
+    }
+
+    .destination-card:hover .destination-image {
+      transform: scale(1.1);
+    }
+
+    .destination-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.3) 70%, transparent 100%);
+      padding: 32px 24px 24px;
+      transition: padding 0.3s ease;
+    }
+
+    .destination-card:hover .destination-overlay {
+      padding: 40px 24px 24px;
+    }
+
+    .destination-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 8px 0;
+    }
+
+    .destination-description {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.9);
+      margin: 0 0 16px 0;
+    }
+
+    .destination-button {
+      display: inline-block;
+      padding: 10px 24px;
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 8px;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .destination-button:hover {
+      background: rgba(255, 255, 255, 0.95);
+      color: #1e40af;
+      transform: translateX(4px);
+      border-color: #ffffff;
+    }
+
+    @media (max-width: 768px) {
+      .destinations-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .destination-card {
+        height: 280px;
+      }
+
+      .section-title {
+        font-size: 28px;
+      }
+    }
+
+    /* ========================= */
+    /* QUICK ACTIONS CARDS       */
+    /* ========================= */
+    .quick-actions-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      margin: 0 0 80px 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .quick-action-card.simple {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      text-decoration: none;
+      color: #1e3a8a;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      border: 1px solid rgba(30, 64, 175, 0.1);
+    }
+
+    .quick-action-card.simple h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .quick-action-card.simple:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(30, 64, 175, 0.15);
+      border-color: rgba(30, 64, 175, 0.2);
+      background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%);
+    }
+
+    @media (max-width: 768px) {
+      .quick-actions-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        margin: 0 0 60px 0;
+      }
+
+      .quick-action-card.simple {
+        padding: 32px 16px;
+      }
+
+      .quick-action-card.simple h3 {
+        font-size: 16px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .quick-actions-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .quick-action-card.simple {
+        padding: 28px 16px;
+      }
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .signin-option {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .signin-option:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateX(4px);
+    }
+
+    .option-icon {
+      font-size: 20px;
+    }
+
+    .option-text {
+      flex: 1;
+    }
+    </style>
 </head>
 <body>
-    <!-- Sticky Header -->
-    <header class="header">
-        <div class="header-container">
-            <div class="logo-bubble">
-                <span class="logo-icon">✈</span>
-            </div>
-            <nav class="nav-links">
-                <a href="/" class="nav-link active">Flights</a>
-                <a href="/book.html" class="nav-link">Bookings</a>
-                <a href="/lookup.html" class="nav-link">My Booking</a>
-                <a href="/book-manage.html" class="nav-link">Manage</a>
-                <a href="/checkin.html" class="nav-link">Check-in</a>
-                <a href="/help.html" class="nav-link">Help</a>
-            </nav>
-            <div class="header-actions">
-                <div class="user-menu">
-                    <a class="btn-secondary user-menu-trigger" href="#" aria-haspopup="true" aria-expanded="false">
-                        Sign in
-                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                            <path d="M5 7l5 6 5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </a>
-                    <div class="user-menu-dropdown" role="menu">
-                        <a href="/login.html" role="menuitem">Member sign in</a>
-                        <a href="/admin-login.html" role="menuitem">Admin</a>
-                        <a href="/staff-login.html" role="menuitem">Staff</a>
-                    </div>
-                </div>
-                <a class="btn-primary" href="/book.html">Book a flight</a>
-            </div>
+
+<!-- ========================= -->
+<!-- BLUE-THEMED HEADER        -->
+<!-- ========================= -->
+<header class="header">
+  <div class="header-container">
+
+    <!-- Logo -->
+    <a href="/" class="logo-bubble">
+      <span class="logo-icon">✈</span>
+      <span class="logo-text">SmartFly Airways</span>
+    </a>
+
+    <!-- Navigation -->
+    <nav class="nav-links">
+      <div class="nav-item">
+        <a href="#" class="nav-link">Explore ▾</a>
+        <div class="mega-menu">
+          <a href="/destinations.html" class="nav-link">Destinations</a>
+          <a href="/explore.html" class="nav-link">Travel Inspiration</a>
+          <a href="/destinations-beach.html" class="nav-link">Beach Getaways</a>
+          <a href="/destinations-culture.html" class="nav-link">Cultural Experiences</a>
         </div>
-    </header>
+      </div>
+
+      <div class="nav-item">
+        <a href="#" class="nav-link">Plan ▾</a>
+        <div class="mega-menu">
+          <a href="/availability.html" class="nav-link">Flight Schedules</a>
+          <a href="/plan.html" class="nav-link">Trip Planning</a>
+          <a href="/baggage.html" class="nav-link">Baggage Info</a>
+          <a href="/policy.html" class="nav-link">Travel Policies</a>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <a href="#" class="nav-link">Book & Manage ▾</a>
+        <div class="mega-menu">
+          <a href="/booking.html" class="nav-link">Book Flight</a>
+          <a href="/book-manage.html" class="nav-link">Manage Booking</a>
+          <a href="/seat-selection.html" class="nav-link">Seat Selection</a>
+          <a href="/checkin.html" class="nav-link">Online Check-in</a>
+        </div>
+      </div>
+
+      <div class="nav-item">
+        <a href="#" class="nav-link">Experience ▾</a>
+        <div class="mega-menu">
+          <a href="/experience.html" class="nav-link">Cabin Classes</a>
+          <a href="/loyalty.html" class="nav-link">Loyalty Program</a>
+          <a href="/membership.html" class="nav-link">Membership Tiers</a>
+          <a href="/extras.html" class="nav-link">Premium Services</a>
+        </div>
+      </div>
+
+      <a href="/help.html" class="nav-link">Help</a>
+    </nav>
+
+    <!-- Buttons -->
+    <div class="header-buttons">
+      <button class="btn-primary" onclick="window.location.href='/booking.html'"><span>Book Now</span></button>
+    </div>
+
+    <!-- Mobile Hamburger -->
+    <button class="mobile-menu-button">☰</button>
+
+  </div>
+</header>
+
 
     <!-- Hero Section with Image Slideshow -->
     <section class="hero">
         <!-- Image slideshow background -->
         <div class="hero-slideshow">
-            <div class="hero-slide" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);"></div>
-            <div class="hero-slide" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);"></div>
-            <div class="hero-slide" style="background: linear-gradient(135deg, #164e63 0%, #0f172a 100%);"></div>
-            <div class="hero-slide" style="background: linear-gradient(135deg, #0f172a 0%, #164e63 100%);"></div>
+            <div class="hero-slide active" style="background-image: url('/assets/images/heroes/hero-1.jpg');"></div>
+            <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-2.jpg');"></div>
+            <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-3.jpg');"></div>
+            <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-4.jpg');"></div>
         </div>
 
         <!-- Hero overlay gradient -->
@@ -59,121 +859,157 @@
             <h1 class="hero-title">Book smarter, breeze through every checkpoint</h1>
             <p class="hero-subtitle">Real-time availability, smart seat selection, and passport validation—built to keep your trip moving forward.</p>
 
-            <!-- Booking Card (restored without the previous heading statement) -->
-            <div class="booking-card">
-                <div class="booking-card-header">
-                    <div>
-                        <span class="booking-status">Live availability</span>
-                        <span class="booking-steps">Search → Seats → Pay</span>
-                    </div>
-                </div>
-                <form id="flightSearchForm" class="booking-form">
-                    <!-- Row 1: Trip Type, From, To, Search -->
-                    <div class="form-row">
+            <!-- Booking Card - KQ Compact Style -->
+            <div class="booking-card-kq">
+                <form id="flightSearchForm" class="booking-form-kq">
+                    <!-- Single Row: All fields inline -->
+                    <div class="kq-form-row">
                         <!-- Trip Type Dropdown -->
-                        <div class="form-group trip-type-group">
-                            <label for="tripType" class="form-label">Trip Type</label>
-                            <select id="tripType" class="form-control">
-                                <option value="return">Return</option>
-                                <option value="oneway">One-way</option>
-                            </select>
+                        <div class="kq-field">
+                            <label class="kq-label">Trip</label>
+                            <div class="kq-dropdown compact" id="tripTypeDropdown">
+                                <button type="button" class="kq-dropdown-btn-compact">
+                                    <span class="kq-value">Return</span>
+                                    <span class="kq-arrow">▾</span>
+                                </button>
+                                <ul class="kq-dropdown-menu-compact">
+                                  <li data-value="return">Return</li>
+                                  <li data-value="oneway">One-way</li>
+                                  <li data-value="roundtrip">Round Trip</li>
+                                </ul>
+                            </div>
+                            <input type="hidden" id="tripType" name="tripType" value="return">
                         </div>
 
-                        <!-- From Airport -->
-                        <div class="form-group airport-group">
-                            <label for="fromInput" class="form-label">Where from?</label>
-                            <div class="input-wrapper">
-                                <input 
-                                    id="fromInput" 
-                                    type="text" 
-                                    class="form-control" 
-                                    placeholder="City or airport"
-                                    autocomplete="off"
-                                    aria-haspopup="listbox"
-                                    aria-expanded="false"
-                                />
-                            </div>
+                        <!-- From Input -->
+                        <div class="kq-field kq-field-route flight-field">
+                          <label for="fromInput" class="kq-label">From</label>
+                          <input 
+                            id="fromInput" 
+                            type="text" 
+                            class="kq-input" 
+                            placeholder="City or airport"
+                            autocomplete="off"
+                            readonly
+                          />
                         </div>
 
                         <!-- Swap Button -->
-                        <button id="swapBtn" type="button" class="btn-swap" title="Swap airports" aria-label="Swap from and to airports">
-                            ⇄
+                        <button type="button" class="swap-btn" id="swapBtn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M7 16V4M7 4L3 8M7 4L11 8"></path>
+                                <path d="M17 8V20M17 20L21 16M17 20L13 16"></path>
+                            </svg>
                         </button>
 
-                        <!-- To Airport -->
-                        <div class="form-group airport-group">
-                            <label for="toInput" class="form-label">Where to?</label>
-                            <div class="input-wrapper">
-                                <input 
-                                    id="toInput" 
-                                    type="text" 
-                                    class="form-control" 
-                                    placeholder="City or airport"
-                                    autocomplete="off"
-                                    aria-haspopup="listbox"
-                                    aria-expanded="false"
-                                    disabled
-                                />
+                        <!-- To Input -->
+                        <div class="kq-field kq-field-route">
+                            <label for="toInput" class="kq-label">To</label>
+                            <input 
+                                id="toInput" 
+                                type="text" 
+                                class="kq-input" 
+                                placeholder="City or airport"
+                                autocomplete="off"
+                            />
+                        </div>
+
+                        <!-- Passengers Dropdown -->
+                        <div class="kq-field">
+                            <label class="kq-label">Passengers</label>
+                            <div class="kq-dropdown compact" id="passengersDropdown">
+                                <button type="button" class="kq-dropdown-btn-compact">
+                                    <span class="kq-value">1</span>
+                                    <span class="kq-arrow">▾</span>
+                                </button>
+                                <ul class="kq-dropdown-menu-compact">
+                                    <li data-value="1">1 Passenger</li>
+                                    <li data-value="2">2 Passengers</li>
+                                    <li data-value="3">3 Passengers</li>
+                                    <li data-value="4">4 Passengers</li>
+                                    <li data-value="5">5 Passengers</li>
+                                    <li data-value="6">6+ Passengers</li>
+                                </ul>
                             </div>
+                            <input type="hidden" id="passengers" name="passengers" value="1">
+                        </div>
+
+                        <!-- Class Dropdown -->
+                        <div class="kq-field">
+                            <label class="kq-label">Class</label>
+                            <div class="kq-dropdown compact" id="classDropdown">
+                                <button type="button" class="kq-dropdown-btn-compact">
+                                    <span class="kq-value">Economy</span>
+                                    <span class="kq-arrow">▾</span>
+                                </button>
+                                <ul class="kq-dropdown-menu-compact">
+                                    <li data-value="economy">Economy</li>
+                                    <li data-value="premium">Premium Economy</li>
+                                    <li data-value="business">Business</li>
+                                    <li data-value="first">First Class</li>
+                                </ul>
+                            </div>
+                            <input type="hidden" id="class" name="class" value="economy">
                         </div>
 
                         <!-- Search Button -->
-                        <button id="searchBtn" type="submit" class="btn-primary">
-                            Search
+                        <button id="searchBtn" type="submit" class="kq-search-btn">
+                            <span>Search Flights</span>
                         </button>
                     </div>
 
-                    <!-- Row 2: Date Fields (hidden by default) -->
-                    <div class="form-row dates-row" id="datesRow" style="display: none;">
-                        <div class="form-group">
-                            <label for="departDate" class="form-label">Depart</label>
-                            <input id="departDate" type="date" class="form-control" />
+                    <!-- Calendar Row -->
+                    <div class="kq-date-wrapper" id="datePickerWrapper">
+                        <div class="kq-calendar-header">
+                            <button class="nav-btn" id="prevMonth">‹</button>
+                            <div class="month-labels">
+                                <span id="monthLeft"></span>
+                                <span id="monthRight"></span>
+                            </div>
+                            <button class="nav-btn" id="nextMonth">›</button>
                         </div>
 
-                        <div class="form-group" id="returnDateGroup" style="display: none;">
-                            <label for="returnDate" class="form-label">Return</label>
-                            <input id="returnDate" type="date" class="form-control" />
+                        <div class="kq-calendar-grid">
+                            <div class="calendar-column">
+                                <div class="calendar-date-label">Departure Date <span id="selectedDepartLabel"></span></div>
+                                <div class="calendar-weekdays">
+                                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                                </div>
+                                <div class="calendar" id="calendarLeft"></div>
+                            </div>
+                            <div class="calendar-column">
+                                <div class="calendar-date-label">Return Date <span id="selectedReturnLabel"></span></div>
+                                <div class="calendar-weekdays">
+                                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                                </div>
+                                <div class="calendar" id="calendarRight"></div>
+                            </div>
                         </div>
+
+                        <button class="kq-done-btn">Done</button>
                     </div>
+
+                    <input type="hidden" id="departDate" name="departDate" value="">
+                    <input type="hidden" id="returnDate" name="returnDate" value="">
                 </form>
             </div>
 
         </div>
     </section>
     <div class="container">
-        <div class="row-cards">
-            <div class="card-checkin">
-                <div class="card-icon">
-                    <i></i>
-                </div>
-                <div class="card-title">
-                    <h2>Check in</h2>
-                </div>
-            </div>
-            <div class="card-checkin">
-                <div class="card-icon">
-
-                </div>
-                <div class="card-title">
-                    <h2>Manage Booking</h2>
-                </div>
-            </div>
-            <div class="card-checkin">
-                <div class="card-icon">
-
-                </div>
-                <div class="card-title">
-                    <h2>Flight Schedule</h2>
-                </div>
-            </div>
-            <div class="card-checkin">
-                <div class="card-icon">
-
-                </div>
-                <div class="card-title">
-                    <h2>Flight Status</h2>
-                </div>
-            </div>
+        <div class="quick-actions-grid">
+            <a href="/checkin.html" class="quick-action-card simple">
+                <h3>Check In</h3>
+            </a>
+            <a href="/book-manage.html" class="quick-action-card simple">
+                <h3>Manage Booking</h3>
+            </a>
+            <a href="/availability.html" class="quick-action-card simple">
+                <h3>Flight Schedule</h3>
+            </a>
+            <a href="/lookup.html" class="quick-action-card simple">
+                <h3>Flight Status</h3>
+            </a>
         </div>
     </div>
 
@@ -201,6 +1037,70 @@
                     <div class="feature-icon">📱</div>
                     <h3>Mobile First</h3>
                     <p>Book on any device, anytime</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Popular Destinations Gallery -->
+    <section class="content-section destinations-section">
+        <div class="container">
+            <h2 class="section-title">Explore Popular Destinations</h2>
+            <p class="section-subtitle">Discover amazing places around the world</p>
+            
+            <div class="destinations-grid">
+                <div class="destination-card">
+                    <img src="/assets/images/destinations/destination-1.jpg" alt="Exotic Destination" class="destination-image">
+                    <div class="destination-overlay">
+                        <h3 class="destination-title">Paradise Island</h3>
+                        <p class="destination-description">Crystal-clear waters and pristine beaches</p>
+                        <a href="/destinations.html" class="destination-button">Explore →</a>
+                    </div>
+                </div>
+                
+                <div class="destination-card">
+                    <img src="/assets/images/destinations/destination-2.jpg" alt="Mountain Retreat" class="destination-image">
+                    <div class="destination-overlay">
+                        <h3 class="destination-title">Mountain Escape</h3>
+                        <p class="destination-description">Breathtaking peaks and natural beauty</p>
+                        <a href="/destinations.html" class="destination-button">Explore →</a>
+                    </div>
+                </div>
+                
+                <div class="destination-card">
+                    <img src="/assets/images/destinations/destination-3.jpg" alt="City Lights" class="destination-image">
+                    <div class="destination-overlay">
+                        <h3 class="destination-title">Urban Adventure</h3>
+                        <p class="destination-description">Vibrant cities and cultural experiences</p>
+                        <a href="/destinations.html" class="destination-button">Explore →</a>
+                    </div>
+                </div>
+                
+                <div class="destination-card">
+                    <img src="/assets/images/destinations/destination-4.jpg" alt="Coastal Beauty" class="destination-image">
+                    <div class="destination-overlay">
+                        <h3 class="destination-title">Coastal Wonder</h3>
+                        <p class="destination-description">Stunning coastlines and seaside charm</p>
+                        <a href="/destinations.html" class="destination-button">Explore →</a>
+                    </div>
+                </div>
+                
+                <div class="destination-card">
+                    <img src="/assets/images/destinations/destination-5.jpg" alt="Scenic Landscape" class="destination-image">
+                    <div class="destination-overlay">
+                        <h3 class="destination-title">Nature's Canvas</h3>
+                        <p class="destination-description">Unforgettable landscapes and views</p>
+                        <a href="/destinations.html" class="destination-button">Explore →</a>
+                    </div>
+                </div>
+                
+                <div class="destination-card">
+                    <img src="/assets/images/aircraft/aircraft-1.jpg" alt="Flight Experience" class="destination-image">
+                    <div class="destination-overlay">
+                        <h3 class="destination-title">Premium Travel</h3>
+                        <p class="destination-description">Comfort and luxury in every flight</p>
+                        <a href="/experience.html" class="destination-button">Explore →</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -277,6 +1177,29 @@
                         <a href="#">Instagram</a>
                         <a href="#">LinkedIn</a>
                     </div>
+                    <div class="footer-col footer-signin-section">
+                        <h4>Account Access</h4>
+                        <div class="signin-dropdown-container">
+                            <button class="signin-dropdown-btn" id="signinDropdownBtn">
+                                <span>Sign In</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </button>
+                            <div class="signin-dropdown-menu" id="signinDropdownMenu">
+                                <a href="/login.html?type=member" class="signin-option">
+                                    <span class="option-icon">👤</span>
+                                    <span class="option-text">Member Login</span>
+                                </a>
+                                <a href="/login.html?type=staff" class="signin-option">
+                                    <span class="option-icon">✈️</span>
+                                    <span class="option-text">Staff Login</span>
+                                </a>
+                                <a href="/admin-login.html" class="signin-option">
+                                    <span class="option-icon">🔐</span>
+                                    <span class="option-text">Admin Login</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="footer-bottom">
@@ -290,6 +1213,345 @@
         </div>
     </footer>
 
+    <!-- Airport Selector Modal -->
+    <div id="airportModal" class="airport-modal">
+        <input 
+            type="text" 
+            id="airportSearch"
+            class="airport-search"
+            placeholder="Search city or airport"
+        />
+
+        <ul class="airport-list">
+            <li data-value="DXB">Dubai, United Arab Emirates <span>DXB</span></li>
+            <li data-value="DZA">Dzaoudzi, Mayotte <span>DZA</span></li>
+            <li data-value="EBB">Entebbe, Uganda <span>EBB</span></li>
+            <li data-value="FBM">Lubumbashi, DR Congo <span>FBM</span></li>
+            <li data-value="FIH">Kinshasa, DR Congo <span>FIH</span></li>
+        </ul>
+    </div>
+
+    <script>
+    const fromInput = document.getElementById("fromInput");
+    const airportModal = document.getElementById("airportModal");
+    const airportBackdrop = document.getElementById("airportBackdrop");
+    const closeAirportModal = document.getElementById("closeAirportModal");
+
+    let activeInput = null;
+
+    // Open modal
+    function openAirportModal(input) {
+        activeInput = input;
+        airportModal.style.display = "block";
+        airportBackdrop.style.display = "block";
+        document.getElementById("airportSearch").focus();
+    }
+
+    // Close modal
+    function closeModal() {
+        airportModal.style.display = "none";
+        airportBackdrop.style.display = "none";
+        activeInput = null;
+    }
+
+    // Input click handlers
+    fromInput.addEventListener("click", () => openAirportModal(fromInput));
+    document.getElementById("toInput").addEventListener("click", (e) => {
+        openAirportModal(e.target);
+    });
+
+    // Close actions
+    airportBackdrop.addEventListener("click", closeModal);
+    closeAirportModal.addEventListener("click", closeModal);
+
+    // Select airport
+    document.querySelectorAll(".airport-list li").forEach(item => {
+        item.addEventListener("click", () => {
+            if (activeInput) {
+                activeInput.value = item.textContent.trim();
+            }
+            closeModal();
+        });
+    });
+    </script>
+
+
+
+    <div id="airportBackdrop" class="airport-backdrop"></div>
+    <div id="airportModal" class="airport-modal" aria-hidden="true">
+      <input
+        type="text"
+        id="airportSearch"
+        class="airport-search"
+        placeholder="Search city or airport"
+        autocomplete="off"
+      />
+      <ul id="airportList" class="airport-list"></ul>
+    </div>
+
     <script src="/script.js"></script>
+    <script>
+        // ============================================
+        // SHOW DATE PICKER WHEN ROUTE SELECTED
+        // ============================================
+        const fromInput = document.getElementById("fromInput");
+        const toInput = document.getElementById("toInput");
+        const datePicker = document.getElementById("datePickerWrapper");
+
+        function checkRouteSelected() {
+          if (fromInput.value.trim() !== "" && toInput.value.trim() !== "") {
+            datePicker.style.display = "block";
+          } else {
+            datePicker.style.display = "none";
+          }
+        }
+
+        fromInput.addEventListener("input", checkRouteSelected);
+        toInput.addEventListener("input", checkRouteSelected);
+
+        function generateCalendar(containerId, prices = {}) {
+          const container = document.getElementById(containerId);
+          container.innerHTML = "";
+
+          for (let day = 1; day <= 30; day++) {
+            const cell = document.createElement("div");
+            cell.className = "calendar-day";
+
+            const price = prices[day];
+
+            cell.innerHTML = `
+              <div>${day}</div>
+              <div class="day-price">${price ? price + "K" : ""}</div>
+            `;
+
+            if (price && price <= 122) {
+              cell.classList.add("cheapest");
+            }
+
+            container.appendChild(cell);
+          }
+        }
+
+        /* Example prices */
+        generateCalendar("calendarLeft", {
+          26: 122,
+          28: 122,
+          29: 122,
+          30: 122
+        });
+        generateCalendar("calendarRight", {
+          1: 173,
+          2: 156,
+          3: 298
+        });
+    // ============================================
+    // MOBILE MENU TOGGLE
+    // ============================================
+    const mobileBtn = document.querySelector('.mobile-menu-button');
+    const navLinks = document.querySelector('.nav-links');
+    
+    mobileBtn.addEventListener('click', () => {
+      navLinks.classList.toggle('show');
+      mobileBtn.classList.toggle('active');
+      
+      // Update icon
+      if (navLinks.classList.contains('show')) {
+        mobileBtn.innerHTML = '✕';
+      } else {
+        mobileBtn.innerHTML = '☰';
+      }
+    });
+
+    // ============================================
+    // MOBILE MEGA-MENU DROPDOWN TOGGLE
+    // ============================================
+    const navItems = document.querySelectorAll('.nav-item > .nav-link');
+    
+    navItems.forEach(link => {
+      link.addEventListener('click', e => {
+        if(window.innerWidth <= 768) {
+          e.preventDefault();
+          const mega = link.nextElementSibling;
+          
+          // Close other mega menus
+          document.querySelectorAll('.mega-menu').forEach(m => {
+            if (m !== mega) {
+              m.classList.remove('show');
+            }
+          });
+          
+          // Toggle current mega menu
+          mega.classList.toggle('show');
+        }
+      });
+    });
+
+    // ============================================
+    // CLOSE MENUS ON RESIZE
+    // ============================================
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if(window.innerWidth > 768) {
+          navLinks.classList.remove('show');
+          mobileBtn.classList.remove('active');
+          mobileBtn.innerHTML = '☰';
+          document.querySelectorAll('.mega-menu').forEach(m => m.classList.remove('show'));
+        }
+      }, 250);
+    });
+
+    // ============================================
+    // CLOSE MOBILE MENU WHEN CLICKING MEGA-MENU LINKS
+    // ============================================
+    const megaMenuLinks = document.querySelectorAll('.mega-menu .nav-link');
+    
+    megaMenuLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (window.innerWidth <= 768) {
+          navLinks.classList.remove('show');
+          mobileBtn.classList.remove('active');
+          mobileBtn.innerHTML = '☰';
+          document.querySelectorAll('.mega-menu').forEach(m => m.classList.remove('show'));
+        }
+      });
+    });
+
+    // ============================================
+    // FOOTER SIGN IN DROPDOWN
+    // ============================================
+    const signinBtn = document.getElementById('signinDropdownBtn');
+    const signinMenu = document.getElementById('signinDropdownMenu');
+
+    if (signinBtn && signinMenu) {
+      console.log('✅ Sign-in dropdown elements found');
+      
+      signinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        console.log('🖱️ Sign-in button clicked');
+        signinBtn.classList.toggle('active');
+        signinMenu.classList.toggle('active');
+        console.log('Menu active:', signinMenu.classList.contains('active'));
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!signinBtn.contains(e.target) && !signinMenu.contains(e.target)) {
+          signinBtn.classList.remove('active');
+          signinMenu.classList.remove('active');
+        }
+      });
+    } else {
+      console.error('❌ Sign-in dropdown elements not found', { signinBtn, signinMenu });
+    }
+
+    // ============================================
+    // KQ COMPACT DROPDOWNS (TRIP TYPE, PASSENGERS, CLASS)
+    // ============================================
+    function initKQDropdown(dropdownId, hiddenInputId, displayFormat) {
+      const dropdown = document.getElementById(dropdownId);
+      if (!dropdown) return;
+      
+      const btn = dropdown.querySelector('.kq-dropdown-btn-compact');
+      const menu = dropdown.querySelector('.kq-dropdown-menu-compact');
+      const valueSpan = btn.querySelector('.kq-value');
+      const hiddenInput = document.getElementById(hiddenInputId);
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isVisible = menu.style.display === 'block';
+        
+        // Close all other dropdowns
+        document.querySelectorAll('.kq-dropdown-menu-compact').forEach(m => {
+          if (m !== menu) m.style.display = 'none';
+        });
+        document.querySelectorAll('.kq-dropdown-btn-compact').forEach(b => {
+          if (b !== btn) b.classList.remove('active');
+        });
+        
+        menu.style.display = isVisible ? 'none' : 'block';
+        btn.classList.toggle('active', !isVisible);
+      });
+
+      menu.querySelectorAll('li').forEach(item => {
+        item.addEventListener('click', () => {
+          const value = item.getAttribute('data-value');
+          const text = item.textContent;
+          const displayText = displayFormat ? displayFormat(value, text) : text;
+          valueSpan.textContent = displayText;
+          hiddenInput.value = value;
+          menu.style.display = 'none';
+          btn.classList.remove('active');
+          
+          // Handle trip type change - show/hide return date
+          if (hiddenInputId === 'tripType') {
+            const returnField = document.getElementById('returnDateField');
+            if (returnField) {
+              const isReturnTrip = value === 'return' || value === 'roundtrip';
+              returnField.style.display = isReturnTrip ? 'flex' : 'none';
+            }
+          }
+        });
+      });
+
+      document.addEventListener('click', e => {
+        if (!dropdown.contains(e.target)) {
+          menu.style.display = 'none';
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    // Initialize dropdowns
+    initKQDropdown('tripTypeDropdown', 'tripType');
+    initKQDropdown('passengersDropdown', 'passengers', (value) =>
+      value === '1' ? '1' : value + ' pax'
+    );
+    initKQDropdown('classDropdown', 'class');
+
+    // ============================================
+    // SHOW/HIDE DATE FIELDS BASED ON FROM/TO
+    // ============================================
+    const fromInput = document.getElementById('fromInput');
+    const toInput = document.getElementById('toInput');
+    const departDateField = document.getElementById('departDateField');
+    const returnDateField = document.getElementById('returnDateField');
+    const tripTypeInput = document.getElementById('tripType');
+    const datePickerWrapper = document.getElementById('datePickerWrapper');
+
+    function updateDateFieldsVisibility() {
+      const fromSelected = fromInput && fromInput.dataset.selected === 'true';
+      const toSelected = toInput && toInput.dataset.selected === 'true';
+      const bothSelected = fromSelected && toSelected;
+      
+      if (departDateField) {
+        departDateField.style.display = bothSelected ? 'flex' : 'none';
+      }
+
+      if (datePickerWrapper) {
+        datePickerWrapper.style.display = bothSelected ? 'block' : 'none';
+      }
+      
+      if (returnDateField && tripTypeInput) {
+        const isReturn = tripTypeInput.value === 'return' || tripTypeInput.value === 'roundtrip';
+        returnDateField.style.display = (bothSelected && isReturn) ? 'flex' : 'none';
+      }
+    }
+
+    // Listen to input changes
+    if (fromInput) {
+      fromInput.addEventListener('input', updateDateFieldsVisibility);
+      fromInput.addEventListener('change', updateDateFieldsVisibility);
+    }
+    
+    if (toInput) {
+      toInput.addEventListener('input', updateDateFieldsVisibility);
+      toInput.addEventListener('change', updateDateFieldsVisibility);
+    }
+
+    // Initial check
+    updateDateFieldsVisibility();
+    </script>
 </body>
 </html>

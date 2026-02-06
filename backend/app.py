@@ -20,9 +20,21 @@ from email.message import EmailMessage
 import urllib.parse
 import qrcode
 import secrets
+import time
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Try to initialize RQ queue for background jobs (optional)
+RQ_QUEUE = None
+try:
+    import redis
+    from rq import Queue
+    redis_conn = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'), port=int(os.getenv('REDIS_PORT', 6379)), db=0)
+    RQ_QUEUE = Queue(connection=redis_conn)
+except Exception:
+    # RQ/Redis not available; will fall back to threading
+    pass
 
 # Basic file/directory configuration (safe defaults)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
@@ -4528,8 +4540,8 @@ def create_boarding_pass_image(p):
     return bg
 
 
-def send_booking_confirmation_email(passenger, booking_ref, flight_details):
-    """Send booking confirmation email to passenger"""
+    def send_booking_confirmation_email(passenger, booking_ref, flight_details):
+      """Send booking confirmation email to passenger"""
     # SMTP configuration via env vars
     smtp_host = os.getenv('SMTP_HOST')
     smtp_port = int(os.getenv('SMTP_PORT') or 0)
@@ -4623,6 +4635,100 @@ SmartFly Airlines Team
         raise
 
 
+def send_boarding_pass_email(passenger):
+    """Send boarding pass email with attached image to passenger"""
+    # SMTP configuration via env vars
+    smtp_host = os.getenv('SMTP_HOST')
+    smtp_port = int(os.getenv('SMTP_PORT') or 0)
+    smtp_user = os.getenv('SMTP_USER')
+    smtp_pass = os.getenv('SMTP_PASS')
+    smtp_from = os.getenv('SMTP_FROM') or smtp_user
+    use_ssl = os.getenv('SMTP_USE_SSL', 'false').lower() in ('1','true','yes')
+
+    if not (smtp_host and smtp_port and smtp_from):
+        # SMTP not configured - just log
+        log_event({
+            'type': 'boarding_pass_email_not_configured',
+            'passport': passenger.get('passport'),
+            'timestamp': datetime.utcnow().isoformat() + 'Z'
+        })
+        return False
+
+    # Create boarding pass image
+    img = create_boarding_pass_image(passenger)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+
+    # Compose email
+    msg = EmailMessage()
+    msg['Subject'] = f"Your Boarding Pass - Flight {passenger.get('flight')}"
+    msg['From'] = smtp_from
+    msg['To'] = passenger.get('email')
+    
+    body = f"""Hello {passenger.get('name')},
+
+Your boarding pass for flight {passenger.get('flight')} is attached.
+
+Flight: {passenger.get('flight')}
+Seat: {passenger.get('seat')}
+Passenger: {passenger.get('name')}
+Passport: {passenger.get('passport')}
+
+Please arrive at the airport at least 2 hours before departure and proceed to the gate shown on your boarding pass.
+
+Safe travels with SmartFly!
+
+Best regards,
+SmartFly Airlines Team
+"""
+    msg.set_content(body)
+
+    # Attach boarding pass image
+    img_bytes = buf.getvalue()
+    msg.add_attachment(img_bytes, maintype='image', subtype='png', filename=f"boardingpass_{passenger.get('passport')}.png")
+
+    # Log attempt
+    log_event({
+        'type': 'boarding_pass_email_send_attempt',
+        'passport': passenger.get('passport'),
+        'to': passenger.get('email'),
+        'timestamp': datetime.utcnow().isoformat() + 'Z'
+    })
+
+    try:
+        # Send email
+        if use_ssl:
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+        else:
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+            server.ehlo()
+            if os.getenv('SMTP_STARTTLS', 'false').lower() in ('1','true','yes'):
+                server.starttls()
+                server.ehlo()
+        
+        if smtp_user and smtp_pass:
+            server.login(smtp_user, smtp_pass)
+        
+        server.send_message(msg)
+        server.quit()
+        
+        log_event({
+            'type': 'boarding_pass_email_sent',
+            'passport': passenger.get('passport'),
+            'to': passenger.get('email'),
+            'timestamp': datetime.utcnow().isoformat() + 'Z'
+        })
+        return True
+    except Exception as e:
+        log_event({
+            'type': 'boarding_pass_email_send_failed',
+            'passport': passenger.get('passport'),
+            'error': str(e),
+            'timestamp': datetime.utcnow().isoformat() + 'Z'
+        })
+        raise
+
 def enqueue_booking_confirmation_email(passenger, booking_ref, flight_details):
     """Enqueue sending booking confirmation email."""
     try:
@@ -4637,7 +4743,7 @@ def enqueue_booking_confirmation_email(passenger, booking_ref, flight_details):
             log_event({'type': 'booking_email_rq_enqueued', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
         else:
             # No RQ, send synchronously (not recommended for production)
-            send_booking_confirmation_email(passenger, booking_ref, flight_details)
+          send_booking_confirmation_email(passenger, booking_ref, flight_details)
     except Exception as e:
         log_event({'type': 'booking_email_enqueue_failed', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     # SMTP configuration via env vars

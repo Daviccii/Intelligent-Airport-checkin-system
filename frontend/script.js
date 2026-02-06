@@ -6,6 +6,11 @@ class AirportDropdown {
         this.debounceTimer = null;
         this.currentDropdown = null;
         this.highlightedIndex = -1;
+        this.isPointerDownOnDropdown = false;
+        this.modalEl = null;
+        this.backdropEl = null;
+        this.searchEl = null;
+        this.listEl = null;
     }
 
     async loadAirports() {
@@ -58,7 +63,15 @@ class AirportDropdown {
         if (!this.airports || this.airports.length === 0) return [];
         
         const q = (query || '').toLowerCase().trim();
-        if (!q) return this.airports.slice(0, 20);
+        if (!q) {
+            const priorityCountries = ['Kenya', 'Uganda', 'Tanzania', 'Rwanda', 'Ethiopia', 'South Africa'];
+            const priorityCities = ['Nairobi', 'Mombasa', 'Kisumu', 'Eldoret'];
+            const priority = this.airports.filter(a =>
+                priorityCountries.includes(a.country) || priorityCities.includes(a.city)
+            );
+            const rest = this.airports.filter(a => !priority.includes(a));
+            return priority.concat(rest).slice(0, 30);
+        }
         
         // Prioritize IATA codes, then cities, then names
         const byCode = this.airports.filter(a => 
@@ -76,6 +89,114 @@ class AirportDropdown {
         return byCode.concat(byCity).concat(byName).slice(0, 50);
     }
 
+    initModal() {
+        if (this.modalEl) return;
+
+        this.modalEl = document.getElementById('airportModal');
+        this.backdropEl = document.getElementById('airportBackdrop');
+        this.searchEl = document.getElementById('airportSearch');
+        this.listEl = document.getElementById('airportList');
+
+        if (!this.modalEl || !this.backdropEl || !this.searchEl || !this.listEl) {
+            return;
+        }
+
+        this.backdropEl.addEventListener('click', () => this.closeModal());
+        this.modalEl.addEventListener('click', (e) => e.stopPropagation());
+
+        this.searchEl.addEventListener('input', async () => {
+            await this.loadAirports();
+            const filtered = this.filterAirports(this.searchEl.value);
+            this.renderDropdown(filtered, this.currentDropdown);
+        });
+
+        this.searchEl.addEventListener('keydown', (e) => {
+            const items = this.listEl.querySelectorAll('.airport-item');
+            if (!items.length) return;
+
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    this.highlightedIndex = Math.min(this.highlightedIndex + 1, items.length - 1);
+                    this.highlightItem(this.highlightedIndex);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
+                    this.highlightItem(this.highlightedIndex);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (this.selectHighlightedAirport()) {
+                        return;
+                    }
+                    break;
+                case 'Escape':
+                    e.preventDefault();
+                    this.closeModal();
+                    break;
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+            }
+        });
+    }
+
+    async openModal(inputId) {
+        this.initModal();
+
+        const inputEl = document.getElementById(inputId);
+        if (!inputEl || !this.modalEl || !this.backdropEl || !this.searchEl || !this.listEl) {
+            return;
+        }
+
+        this.activeInput = inputEl;
+        this.currentDropdown = inputId;
+
+        await this.loadAirports();
+        this.searchEl.value = '';
+        const filtered = this.filterAirports('');
+        this.renderDropdown(filtered, inputId);
+
+        const rect = inputEl.getBoundingClientRect();
+        const row = inputEl.closest('.kq-form-row');
+        const rowRect = row ? row.getBoundingClientRect() : rect;
+
+        const minWidth = 420;
+        const maxWidth = 520;
+        const width = Math.min(Math.max(rowRect.width, minWidth), maxWidth);
+
+        let left = rect.left;
+        if (left + width > window.innerWidth - 16) {
+            left = window.innerWidth - width - 16;
+        }
+        if (left < 16) {
+            left = 16;
+        }
+
+        this.modalEl.style.width = `${width}px`;
+        this.modalEl.style.left = `${left}px`;
+        this.modalEl.style.top = `${rect.bottom + 10}px`;
+        this.modalEl.style.transform = 'none';
+
+        this.modalEl.style.display = 'block';
+        this.backdropEl.style.display = 'block';
+        this.modalEl.setAttribute('aria-hidden', 'false');
+
+        setTimeout(() => this.searchEl.focus(), 0);
+    }
+
+    closeModal() {
+        if (!this.modalEl || !this.backdropEl) return;
+        this.modalEl.style.display = 'none';
+        this.backdropEl.style.display = 'none';
+        this.modalEl.setAttribute('aria-hidden', 'true');
+        this.highlightedIndex = -1;
+    }
+
     positionDropdown(inputId) {
         const inputEl = document.getElementById(inputId);
         const dropdownEl = document.getElementById(`dropdown-${inputId}`);
@@ -86,7 +207,8 @@ class AirportDropdown {
         dropdownEl.style.position = 'absolute';
         dropdownEl.style.top = (rect.bottom + window.scrollY + 8) + 'px';
         dropdownEl.style.left = (rect.left + window.scrollX) + 'px';
-        dropdownEl.style.width = rect.width + 'px';
+        const minWidth = 420;
+        dropdownEl.style.width = Math.max(rect.width, minWidth) + 'px';
     }
 
     createDropdownElement(inputId) {
@@ -121,44 +243,40 @@ class AirportDropdown {
     }
 
     renderDropdown(filteredAirports, inputId) {
-        const dropdownEl = this.createDropdownElement(inputId);
-        dropdownEl.innerHTML = '';
+        if (!this.listEl) return;
+
+        this.listEl.innerHTML = '';
         this.highlightedIndex = -1;
-        
+
         if (!filteredAirports || filteredAirports.length === 0) {
-            dropdownEl.classList.remove('visible');
+            this.listEl.innerHTML = '<li class="no-results">No airports found</li>';
             return;
         }
-        
+
         console.log(`📋 Rendering ${filteredAirports.length} airports for ${inputId}`);
-        
-        // Store the airports data in the dropdown element for event delegation
-        dropdownEl.dataset.airports = JSON.stringify(filteredAirports);
-        
+
+        this.listEl.dataset.airports = JSON.stringify(filteredAirports);
+
         filteredAirports.forEach((airport, index) => {
-            const item = document.createElement('div');
-            item.className = 'dropdown-item';
+            const item = document.createElement('li');
+            item.className = 'airport-item';
             item.setAttribute('role', 'option');
             item.setAttribute('data-index', index);
             item.setAttribute('data-iata', airport.iata);
             item.setAttribute('data-airport-json', JSON.stringify(airport));
-            
-            // Add inline click handler as backup
+
             item.onclick = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log(`✈️ CLICKED: ${airport.iata} for ${inputId}`);
                 this.selectAirport(airport, inputId);
             };
-            
-            // Add mousedown handler for better reliability (fires before blur)
+
             item.onmousedown = (e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log(`🖱️ MOUSEDOWN: ${airport.iata} for ${inputId}`);
                 this.selectAirport(airport, inputId);
             };
-            
+
             item.innerHTML = `
                 <div class="airport-info">
                     <div class="airport-name">${airport.name}</div>
@@ -166,23 +284,19 @@ class AirportDropdown {
                 </div>
                 <div class="airport-code">${airport.iata}</div>
             `;
-            
-            dropdownEl.appendChild(item);
+
+            this.listEl.appendChild(item);
         });
-        
-        this.positionDropdown(inputId);
-        dropdownEl.classList.add('visible');
+
         this.currentDropdown = inputId;
-        console.log(`✅ Dropdown visible at body level`);
     }
 
     highlightItem(index) {
-        const dropdownEl2 = document.getElementById(`dropdown-${this.currentDropdown}`);
-        if (!dropdownEl2) return;
-        
-        const items = dropdownEl2.querySelectorAll('.dropdown-item');
+        if (!this.listEl) return;
+
+        const items = this.listEl.querySelectorAll('.airport-item');
         items.forEach(item => item.classList.remove('active'));
-        
+
         if (index >= 0 && index < items.length) {
             items[index].classList.add('active');
             items[index].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -191,14 +305,11 @@ class AirportDropdown {
     }
 
     selectHighlightedAirport() {
-        if (this.highlightedIndex < 0) return false;
-        
-        const dropdownEl3 = document.getElementById(`dropdown-${this.currentDropdown}`);
-        if (!dropdownEl3) return false;
-        
-        const items = dropdownEl3.querySelectorAll('.dropdown-item');
+        if (this.highlightedIndex < 0 || !this.listEl || !this.currentDropdown) return false;
+
+        const items = this.listEl.querySelectorAll('.airport-item');
         const item = items[this.highlightedIndex];
-        
+
         if (item) {
             const airportJson = item.getAttribute('data-airport-json');
             if (airportJson) {
@@ -228,8 +339,11 @@ class AirportDropdown {
         
         console.log(`✅ Value set: ${inputEl.value}`);
         
-        // Close dropdown
-        this.closeDropdown(inputId);
+        if (this.listEl) {
+            this.listEl.innerHTML = '';
+        }
+
+        this.closeModal();
         
         // Handle flow: From → To → Dates
         if (inputId === 'fromInput') {
@@ -243,8 +357,8 @@ class AirportDropdown {
                 }, 150);
             }
         } else if (inputId === 'toInput') {
-            // After selecting "To", check if both are selected and reveal dates
-            console.log(`📅 Revealing date fields`);
+            // After selecting "To", check if both are selected and reveal calendar
+            console.log(`📅 Revealing calendar`);
             setTimeout(() => {
                 this.checkAndShowDateFields();
                 // Focus on departure date after dates are revealed
@@ -256,25 +370,16 @@ class AirportDropdown {
         }
     }
 
-    closeDropdown(inputId) {
-        const dropdownEl4 = document.getElementById(`dropdown-${inputId}`);
-        if (dropdownEl4) {
-            dropdownEl4.classList.remove('visible');
-            // Remove from DOM after transition
-            setTimeout(() => {
-                if (dropdownEl4 && dropdownEl4.parentNode) {
-                    dropdownEl4.remove();
-                }
-            }, 300);
-        }
-        this.highlightedIndex = -1;
+    closeDropdown() {
+        this.closeModal();
     }
 
     checkAndShowDateFields() {
         const fromInput = document.getElementById('fromInput');
         const toInput = document.getElementById('toInput');
-        const datesRow = document.getElementById('datesRow');
-        const returnDateGroup = document.getElementById('returnDateGroup');
+        const departDateField = document.getElementById('departDateField');
+        const returnDateField = document.getElementById('returnDateField');
+        const datePickerWrapper = document.getElementById('datePickerWrapper');
         const tripType = document.getElementById('tripType');
         
         const fromSelected = fromInput && fromInput.dataset.selected === 'true';
@@ -282,26 +387,27 @@ class AirportDropdown {
         
         // Only show dates when BOTH airports are selected
         if (fromSelected && toSelected) {
-            // Smooth reveal with CSS transition
-            datesRow.style.display = 'grid';
-            setTimeout(() => {
-                datesRow.classList.add('visible');
-            }, 10);
-            
-            // Show/hide return date based on trip type
-            if (tripType && tripType.value === 'oneway') {
-                returnDateGroup.style.display = 'none';
-            } else {
-                returnDateGroup.style.display = 'block';
+            if (departDateField) {
+                departDateField.style.display = 'flex';
+            }
+            if (returnDateField) {
+                const isReturnTrip = tripType && (tripType.value === 'return' || tripType.value === 'roundtrip');
+                returnDateField.style.display = isReturnTrip ? 'flex' : 'none';
+            }
+            if (datePickerWrapper) {
+                datePickerWrapper.style.display = 'block';
             }
         } else {
             // Hide dates if either airport is not selected
-            datesRow.classList.remove('visible');
-            setTimeout(() => {
-                if (!fromSelected || !toSelected) {
-                    datesRow.style.display = 'none';
-                }
-            }, 300);
+            if (departDateField) {
+                departDateField.style.display = 'none';
+            }
+            if (returnDateField) {
+                returnDateField.style.display = 'none';
+            }
+            if (datePickerWrapper) {
+                datePickerWrapper.style.display = 'none';
+            }
         }
     }
 
@@ -310,82 +416,22 @@ class AirportDropdown {
         if (!input) return;
         
         input.addEventListener('focus', async () => {
-            this.activeInput = input;
-            this.currentDropdown = inputId;
-            
-            // Clear previous selection when focusing
             if (input.dataset.selected === 'true') {
                 input.value = '';
                 input.dataset.selected = 'false';
                 delete input.dataset.code;
             }
-            
-            await this.loadAirports();
-            const filtered = this.filterAirports(input.value);
-            this.renderDropdown(filtered, inputId);
+            await this.openModal(inputId);
         });
-        
-        input.addEventListener('input', async () => {
-            this.activeInput = input;
-            this.currentDropdown = inputId;
-            input.dataset.selected = 'false';
-            
-            await this.loadAirports();
-            
-            clearTimeout(this.debounceTimer);
-            this.debounceTimer = setTimeout(() => {
-                const filtered = this.filterAirports(input.value);
-                this.renderDropdown(filtered, inputId);
-            }, 150);
+
+        input.addEventListener('click', async () => {
+            await this.openModal(inputId);
         });
-        
-        input.addEventListener('blur', () => {
-            setTimeout(() => {
-                this.closeDropdown(inputId);
-            }, 300);
-        });
-        
-        input.addEventListener('keydown', (e) => {
-            const dropdownEl5 = document.getElementById(`dropdown-${inputId}`);
-            if (!dropdownEl5 || !dropdownEl5.classList.contains('visible')) {
-                return;
-            }
-            
-            const items = dropdownEl5.querySelectorAll('.dropdown-item');
-            
-            switch(e.key) {
-                case 'ArrowDown':
-                    e.preventDefault();
-                    this.highlightedIndex = Math.min(this.highlightedIndex + 1, items.length - 1);
-                    this.highlightItem(this.highlightedIndex);
-                    break;
-                    
-                case 'ArrowUp':
-                    e.preventDefault();
-                    this.highlightedIndex = Math.max(this.highlightedIndex - 1, 0);
-                    this.highlightItem(this.highlightedIndex);
-                    break;
-                    
-                case 'Enter':
-                    e.preventDefault();
-                    if (this.selectHighlightedAirport()) {
-                        // Successfully selected
-                    } else if (items.length > 0) {
-                        // Select first item if none highlighted
-                        const firstItem = items[0];
-                        const airportJson = firstItem.getAttribute('data-airport-json');
-                        if (airportJson) {
-                            const airport = JSON.parse(airportJson);
-                            this.selectAirport(airport, inputId);
-                        }
-                    }
-                    break;
-                    
-                case 'Escape':
-                    e.preventDefault();
-                    this.closeDropdown(inputId);
-                    input.blur();
-                    break;
+
+        input.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter' || e.key === 'ArrowDown') {
+                e.preventDefault();
+                await this.openModal(inputId);
             }
         });
     }
@@ -447,7 +493,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            if (tripType.value === 'return' && !returnDate.value) {
+            if ((tripType.value === 'return' || tripType.value === 'roundtrip') && !returnDate.value) {
                 alert('Please select a return date for round trip');
                 return;
             }
@@ -462,7 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 tripType: tripType.value
             });
             
-            if (tripType.value === 'return' && returnDate.value) {
+            if ((tripType.value === 'return' || tripType.value === 'roundtrip') && returnDate.value) {
                 params.append('returnDate', returnDate.value);
             }
             
@@ -473,59 +519,233 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    // Close dropdowns when clicking outside and handle dropdown item clicks
-    document.addEventListener('click', (e) => {
-        console.log('🖱️ Click detected:', e.target.className);
+    airportDropdown.initModal();
+    
+    // ========== CALENDAR FUNCTIONALITY ==========
+    
+    // Calendar state
+    let currentMonthOffset = 0; // 0 = current month, 1 = next month
+    let selectedDepartDate = null;
+    let selectedReturnDate = null;
+    
+    // Get month data with prices
+    function getCurrentMonthData(monthOffset) {
+        const now = new Date();
+        const targetDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+        const year = targetDate.getFullYear();
+        const month = targetDate.getMonth();
+        const monthName = targetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
         
-        const isInput = e.target.closest('.input-wrapper');
-        const isDropdown = e.target.closest('.dropdown-menu');
-        const isDropdownItem = e.target.closest('.dropdown-item');
-        
-        // Handle dropdown item clicks with event delegation
-        if (isDropdownItem && isDropdown) {
-            console.log('✅ Dropdown item click detected via delegation');
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const inputId = isDropdown.getAttribute('data-input');
-            const airportJson = isDropdownItem.getAttribute('data-airport-json');
-            
-            console.log(`Input ID: ${inputId}, Has JSON: ${!!airportJson}`);
-            
-            if (airportJson && inputId) {
-                try {
-                    const airport = JSON.parse(airportJson);
-                    console.log(`Parsed airport: ${airport.iata}`);
-                    airportDropdown.selectAirport(airport, inputId);
-                } catch (error) {
-                    console.error('Error parsing airport JSON:', error);
-                }
-            }
-            return;
+        // Generate sample prices for the month
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const prices = {};
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            prices[dateStr] = Math.floor(Math.random() * 200) + 100;
         }
         
-        // Close dropdowns when clicking outside
-        if (!isInput && !isDropdown) {
-            document.querySelectorAll('.dropdown-menu.visible').forEach(dropdown => {
-                const inputId = dropdown.getAttribute('data-input');
-                airportDropdown.closeDropdown(inputId);
+        return { year, month, monthName, prices };
+    }
+    
+    // Generate calendar with prices
+    function generateCalendar(containerId, prices) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        
+        const dates = Object.keys(prices).sort();
+        if (dates.length === 0) return;
+        
+        // Find cheapest price
+        const minPrice = Math.min(...Object.values(prices));
+        
+        dates.forEach(dateStr => {
+            const price = prices[dateStr];
+            const dateObj = new Date(dateStr);
+            const day = dateObj.getDate();
+            
+            const dayCell = document.createElement('div');
+            dayCell.className = 'calendar-day';
+            dayCell.dataset.date = dateStr;
+            
+            if (price === minPrice) {
+                dayCell.classList.add('cheapest');
+            }
+            
+            dayCell.innerHTML = `
+                <div class="calendar-date">${day}</div>
+                <div class="calendar-price">KES ${price.toLocaleString()}</div>
+            `;
+            
+            // Add click handler for date selection
+            dayCell.addEventListener('click', function() {
+                selectCalendarDate(dateStr);
+            });
+            
+            container.appendChild(dayCell);
+        });
+    }
+    
+    // Handle calendar date selection
+    function selectCalendarDate(dateStr) {
+        const departInput = document.getElementById('departDate');
+        const returnInput = document.getElementById('returnDate');
+        const departLabel = document.getElementById('selectedDepartLabel');
+        const returnLabel = document.getElementById('selectedReturnLabel');
+        const tripTypeBtn = document.querySelector('#tripTypeDropdown .kq-dropdown-btn');
+        const isOneWay = tripTypeBtn && tripTypeBtn.textContent.trim().includes('One Way');
+        
+        // Determine if selecting depart or return date
+        if (!selectedDepartDate || (selectedDepartDate && selectedReturnDate)) {
+            // First selection or reset - set depart date
+            selectedDepartDate = dateStr;
+            selectedReturnDate = null;
+            departInput.value = dateStr;
+            returnInput.value = '';
+            
+            // Update labels
+            const dateObj = new Date(dateStr);
+            departLabel.textContent = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            returnLabel.textContent = '';
+            
+            // Highlight selected depart date
+            document.querySelectorAll('.calendar-day').forEach(cell => {
+                cell.classList.remove('selected-depart', 'selected-return');
+                if (cell.dataset.date === dateStr) {
+                    cell.classList.add('selected-depart');
+                }
+            });
+            
+            // If one-way, we're done
+            if (isOneWay) {
+                selectedReturnDate = null;
+            }
+        } else if (selectedDepartDate && !selectedReturnDate) {
+            // Second selection - set return date
+            const departTime = new Date(selectedDepartDate).getTime();
+            const returnTime = new Date(dateStr).getTime();
+            
+            if (returnTime < departTime) {
+                // Return date before depart date - swap them
+                selectedReturnDate = selectedDepartDate;
+                selectedDepartDate = dateStr;
+                departInput.value = dateStr;
+                returnInput.value = selectedReturnDate;
+                
+                // Update labels
+                const departObj = new Date(dateStr);
+                const returnObj = new Date(selectedReturnDate);
+                departLabel.textContent = departObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                returnLabel.textContent = returnObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            } else {
+                selectedReturnDate = dateStr;
+                returnInput.value = dateStr;
+                
+                // Update label
+                const returnObj = new Date(dateStr);
+                returnLabel.textContent = returnObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+            
+            // Highlight both dates
+            document.querySelectorAll('.calendar-day').forEach(cell => {
+                cell.classList.remove('selected-depart', 'selected-return');
+                if (cell.dataset.date === selectedDepartDate) {
+                    cell.classList.add('selected-depart');
+                }
+                if (cell.dataset.date === selectedReturnDate) {
+                    cell.classList.add('selected-return');
+                }
             });
         }
-    });
+    }
     
-    // Handle mouseenter for hover highlighting
-    document.addEventListener('mouseenter', (e) => {
-        const dropdownItem = e.target.closest('.dropdown-item');
-        if (dropdownItem) {
-            const dropdown = dropdownItem.closest('.dropdown-menu');
-            if (dropdown) {
-                const index = parseInt(dropdownItem.getAttribute('data-index'));
-                airportDropdown.highlightedIndex = index;
-                dropdown.querySelectorAll('.dropdown-item').forEach(item => {
-                    item.classList.remove('active');
-                });
-                dropdownItem.classList.add('active');
-            }
+    // Update both calendars
+    function updateCalendars() {
+        const leftData = getCurrentMonthData(currentMonthOffset);
+        const rightData = getCurrentMonthData(currentMonthOffset + 1);
+        
+        // Update month labels
+        const monthLeftEl = document.getElementById('monthLeft');
+        const monthRightEl = document.getElementById('monthRight');
+        if (monthLeftEl) monthLeftEl.textContent = leftData.monthName;
+        if (monthRightEl) monthRightEl.textContent = rightData.monthName;
+        
+        // Clear and regenerate calendars
+        const calendarLeft = document.getElementById('calendarLeft');
+        const calendarRight = document.getElementById('calendarRight');
+        if (calendarLeft) calendarLeft.innerHTML = '';
+        if (calendarRight) calendarRight.innerHTML = '';
+        
+        generateCalendar('calendarLeft', leftData.prices);
+        generateCalendar('calendarRight', rightData.prices);
+        
+        // Restore selections
+        if (selectedDepartDate || selectedReturnDate) {
+            document.querySelectorAll('.calendar-day').forEach(cell => {
+                if (cell.dataset.date === selectedDepartDate) {
+                    cell.classList.add('selected-depart');
+                }
+                if (cell.dataset.date === selectedReturnDate) {
+                    cell.classList.add('selected-return');
+                }
+            });
         }
-    }, true);
+    }
+    
+    // Initialize calendars
+    updateCalendars();
+    
+    // Month navigation
+    const prevBtn = document.getElementById('prevMonth');
+    const nextBtn = document.getElementById('nextMonth');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function() {
+            if (currentMonthOffset > 0) {
+                currentMonthOffset--;
+                updateCalendars();
+            }
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function() {
+            currentMonthOffset++;
+            updateCalendars();
+        });
+    }
+    
+    // Done button
+    const doneBtn = document.querySelector('.kq-done-btn');
+    if (doneBtn) {
+        doneBtn.addEventListener('click', function() {
+            const departInput = document.getElementById('departDate');
+            const tripTypeBtn = document.querySelector('#tripTypeDropdown .kq-dropdown-btn');
+            const isOneWay = tripTypeBtn && tripTypeBtn.textContent.trim().includes('One Way');
+            
+            // Validate: must have depart date
+            if (!departInput.value) {
+                alert('Please select a departure date');
+                return;
+            }
+            
+            // For return trips, must have return date
+            const returnInput = document.getElementById('returnDate');
+            if (!isOneWay && !returnInput.value) {
+                alert('Please select a return date');
+                return;
+            }
+            
+            // Hide calendar
+            const datePickerWrapper = document.getElementById('datePickerWrapper');
+            if (datePickerWrapper) {
+                datePickerWrapper.style.display = 'none';
+            }
+            
+            // Trigger search
+            const searchForm = document.getElementById('flightSearchForm');
+            if (searchForm) {
+                searchForm.dispatchEvent(new Event('submit'));
+            }
+        });
+    }
 });

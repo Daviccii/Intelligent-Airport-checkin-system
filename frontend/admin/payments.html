@@ -664,6 +664,9 @@
           }
         }
       });
+      } catch (error) {
+        console.error('❌ Error initializing charts:', error);
+      }
     }
 
     function renderTransactions() {
