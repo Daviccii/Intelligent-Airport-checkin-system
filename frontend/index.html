@@ -883,6 +883,7 @@
 
                         <!-- From Input -->
                         <div class="kq-field kq-field-route flight-field">
+                          
                           <label for="fromInput" class="kq-label">From</label>
                           <input 
                             id="fromInput" 
@@ -891,7 +892,8 @@
                             placeholder="City or airport"
                             autocomplete="off"
                             readonly
-                          />
+                          />      
+                          <div class="kq-airport-dropdown" id="fromDropdown"></div>                 
                         </div>
 
                         <!-- Swap Button -->
@@ -912,6 +914,7 @@
                                 placeholder="City or airport"
                                 autocomplete="off"
                             />
+                            <div class="kq-airport-dropdown" id="toDropdown"></div>
                         </div>
 
                         <!-- Passengers Dropdown -->
@@ -1213,70 +1216,7 @@
         </div>
     </footer>
 
-    <!-- Airport Selector Modal -->
-    <div id="airportModal" class="airport-modal">
-        <input 
-            type="text" 
-            id="airportSearch"
-            class="airport-search"
-            placeholder="Search city or airport"
-        />
-
-        <ul class="airport-list">
-            <li data-value="DXB">Dubai, United Arab Emirates <span>DXB</span></li>
-            <li data-value="DZA">Dzaoudzi, Mayotte <span>DZA</span></li>
-            <li data-value="EBB">Entebbe, Uganda <span>EBB</span></li>
-            <li data-value="FBM">Lubumbashi, DR Congo <span>FBM</span></li>
-            <li data-value="FIH">Kinshasa, DR Congo <span>FIH</span></li>
-        </ul>
-    </div>
-
-    <script>
-    const fromInput = document.getElementById("fromInput");
-    const airportModal = document.getElementById("airportModal");
-    const airportBackdrop = document.getElementById("airportBackdrop");
-    const closeAirportModal = document.getElementById("closeAirportModal");
-
-    let activeInput = null;
-
-    // Open modal
-    function openAirportModal(input) {
-        activeInput = input;
-        airportModal.style.display = "block";
-        airportBackdrop.style.display = "block";
-        document.getElementById("airportSearch").focus();
-    }
-
-    // Close modal
-    function closeModal() {
-        airportModal.style.display = "none";
-        airportBackdrop.style.display = "none";
-        activeInput = null;
-    }
-
-    // Input click handlers
-    fromInput.addEventListener("click", () => openAirportModal(fromInput));
-    document.getElementById("toInput").addEventListener("click", (e) => {
-        openAirportModal(e.target);
-    });
-
-    // Close actions
-    airportBackdrop.addEventListener("click", closeModal);
-    closeAirportModal.addEventListener("click", closeModal);
-
-    // Select airport
-    document.querySelectorAll(".airport-list li").forEach(item => {
-        item.addEventListener("click", () => {
-            if (activeInput) {
-                activeInput.value = item.textContent.trim();
-            }
-            closeModal();
-        });
-    });
-    </script>
-
-
-
+    <!-- KQ-Style Airport Dropdown -->
     <div id="airportBackdrop" class="airport-backdrop"></div>
     <div id="airportModal" class="airport-modal" aria-hidden="true">
       <input
@@ -1513,8 +1453,6 @@
     // ============================================
     // SHOW/HIDE DATE FIELDS BASED ON FROM/TO
     // ============================================
-    const fromInput = document.getElementById('fromInput');
-    const toInput = document.getElementById('toInput');
     const departDateField = document.getElementById('departDateField');
     const returnDateField = document.getElementById('returnDateField');
     const tripTypeInput = document.getElementById('tripType');
