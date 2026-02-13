@@ -118,5 +118,20 @@
     "role": "staff",
     "passport": "Antigen",
     "expires": "2026-01-30T20:38:46.398840Z"
+  },
+  "6660c7d2c7f04c80b0a3c4eb9f8a09ff": {
+    "role": "admin",
+    "passport": null,
+    "expires": "2026-02-12T14:52:05.702741Z"
+  },
+  "75a1a8a86446475c91d2dda2eddd0955": {
+    "role": "admin",
+    "passport": null,
+    "expires": "2026-02-13T11:19:56.479320Z"
+  },
+  "836e1b433da7436b8462cce05b393a15": {
+    "role": "staff",
+    "passport": "Antigen",
+    "expires": "2026-02-13T18:20:35.020038Z"
   }
 }

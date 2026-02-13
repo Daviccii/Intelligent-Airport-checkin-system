@@ -1,3 +1,36 @@
+// Define domestic and international airports
+const DOMESTIC_AIRPORTS = ['NBO', 'MBA', 'KIS', 'EDL', 'WIL']; // Kenya only
+const INTERNATIONAL_AIRPORTS = ['LHR', 'CDG', 'DXB', 'JFK', 'SIN', 'JNB', 'CPT', 'EBB', 'CMN', 'BLR'];
+
+// Domestic aircraft (suitable for short-haul)
+const DOMESTIC_AIRCRAFT = [
+    { name: 'Boeing 737-700', type: 'Narrow-body', capacity: 120 },
+    { name: 'Embraer E190', type: 'Regional Jet', capacity: 100 },
+    { name: 'Airbus A320', type: 'Narrow-body', capacity: 130 },
+    { name: 'Boeing 737-800', type: 'Narrow-body', capacity: 125 }
+];
+
+// International aircraft (suitable for long-haul)
+const INTERNATIONAL_AIRCRAFT = [
+    { name: 'Boeing 787-8', type: 'Wide-body', capacity: 242 },
+    { name: 'Airbus A350-900', type: 'Wide-body', capacity: 300 },
+    { name: 'Boeing 777-300ER', type: 'Wide-body', capacity: 350 },
+    { name: 'Airbus A380', type: 'Wide-body', capacity: 555 }
+];
+
+// Determine if route is domestic or international
+function isRouteDomestic(origin, destination) {
+    return DOMESTIC_AIRPORTS.includes(origin) && DOMESTIC_AIRPORTS.includes(destination);
+}
+
+// Generate terminal assignments
+function assignTerminal(origin, destination, isDomestic) {
+    if (origin === 'NBO') {
+        return isDomestic ? 'Terminal 1' : 'Terminal 3'; // Nairobi domestic vs international
+    }
+    return isDomestic ? 'Terminal 1' : 'Terminal 2'; // Default assignments
+}
+
 // Parse URL parameters
 function getSearchParams() {
     const params = new URLSearchParams(window.location.search);
@@ -37,42 +70,62 @@ function generateFlights(from, to, date) {
         { name: 'Ethiopian Airlines', code: 'ET', logo: '✈️' }
     ];
 
+    const isDomestic = isRouteDomestic(from, to);
+    const aircraftPool = isDomestic ? DOMESTIC_AIRCRAFT : INTERNATIONAL_AIRCRAFT;
+    const numFlights = isDomestic ? 6 + Math.floor(Math.random() * 4) : 8 + Math.floor(Math.random() * 5); // Fewer domestic flights
+
     const flights = [];
-    const numFlights = 8 + Math.floor(Math.random() * 5); // 8-12 flights
 
     for (let i = 0; i < numFlights; i++) {
         const airline = airlines[Math.floor(Math.random() * airlines.length)];
-        const departHour = 6 + Math.floor(Math.random() * 18); // 6am - 11pm
+        const aircraft = aircraftPool[Math.floor(Math.random() * aircraftPool.length)];
+        
+        // Domestic: 1-2 hours, International: 8-15 hours
+        let durationHours, durationMins;
+        if (isDomestic) {
+            durationHours = 1 + Math.floor(Math.random() * 2); // 1-2 hours
+            durationMins = Math.random() > 0.5 ? 0 : 30;
+        } else {
+            durationHours = 8 + Math.floor(Math.random() * 7); // 8-14 hours
+            durationMins = Math.random() > 0.5 ? 0 : 30;
+        }
+        
+        const departHour = isDomestic ? (6 + Math.floor(Math.random() * 16)) : (6 + Math.floor(Math.random() * 18)); // 6am-10pm domestic, 6am-11pm intl
         const departMin = Math.random() > 0.5 ? '00' : '30';
-        const durationHours = 8 + Math.floor(Math.random() * 6); // 8-13 hours
-        const durationMins = Math.random() > 0.5 ? 0 : 30;
         
         const departTime = `${departHour.toString().padStart(2, '0')}:${departMin}`;
         const arriveHour = (departHour + durationHours + (departMin === '30' && durationMins === 30 ? 1 : 0)) % 24;
         const arriveMins = (departMin === '30' && durationMins === 30) ? '00' : (durationMins === 30 ? '30' : departMin);
         const arriveTime = `${arriveHour.toString().padStart(2, '0')}:${arriveMins}`;
 
-        const stops = Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 2);
+        // Domestic: mostly nonstop; International: can have stops
+        const stops = isDomestic ? (Math.random() > 0.8 ? 0 : 1) : (Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 2));
         const stopText = stops === 0 ? 'Nonstop' : `${stops} stop${stops > 1 ? 's' : ''}`;
         
-        const basePrice = 450 + Math.floor(Math.random() * 550); // $450-$1000
-        const economyPrice = basePrice + (stops * 50);
-        const businessPrice = Math.floor(economyPrice * (2.5 + Math.random() * 0.5));
+        // Pricing: Domestic cheaper, International more expensive
+        const basePrice = isDomestic ? (150 + Math.floor(Math.random() * 250)) : (450 + Math.floor(Math.random() * 550));
+        const economyPrice = basePrice + (stops * (isDomestic ? 20 : 50));
+        const businessPrice = Math.floor(economyPrice * (isDomestic ? 1.8 : (2.5 + Math.random() * 0.5)));
+
+        const terminal = assignTerminal(from, to, isDomestic);
 
         flights.push({
             airline: airline.name,
             airlineCode: airline.code,
             airlineLogo: airline.logo,
+            aircraft: aircraft.name,
+            aircraftType: aircraft.type,
             departTime,
             arriveTime,
             duration: `${durationHours}h ${durationMins}m`,
             durationMinutes: durationHours * 60 + durationMins,
             stops,
             stopText,
-            terminal: `Terminal ${Math.floor(Math.random() * 3) + 1}`,
+            terminal,
             economyPrice,
             businessPrice,
-            seatsLeft: Math.floor(Math.random() * 5) + 3
+            seatsLeft: Math.floor(Math.random() * 5) + 3,
+            isDomestic: isDomestic
         });
     }
 
@@ -153,8 +206,14 @@ function renderFlights(flights) {
     
     flights.forEach(flight => {
         const card = document.createElement('div');
-        card.className = 'flight-card';
+        card.className = `flight-card ${flight.isDomestic ? 'domestic' : 'international'}`;
+        const routeType = flight.isDomestic ? 'DOMESTIC' : 'INTERNATIONAL';
+        const routeBadgeColor = flight.isDomestic ? '#4CAF50' : '#2196F3';
+        
         card.innerHTML = `
+            <div class="flight-route-badge" style="background: ${routeBadgeColor}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block; margin-bottom: 8px;">
+                ${routeType}
+            </div>
             <div class="flight-times">
                 <div class="time-row">
                     <div class="time-info">
@@ -164,7 +223,7 @@ function renderFlights(flights) {
                 </div>
                 <div class="stop-info">
                     <span class="stop-badge ${flight.stops === 0 ? 'nonstop' : ''}">${flight.stopText}</span>
-                    <span class="terminal-info">${flight.terminal}</span>
+                    <span class="aircraft-info">${flight.aircraft}</span>
                 </div>
             </div>
             

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Member Center - SmartFly Airways</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .page-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    .page-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .page-subtitle {
+      color: #64748b;
+      font-size: 16px;
+      margin-bottom: 28px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .info-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .info-card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #0f172a;
+    }
+    .info-card p {
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .info-card a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #2563eb;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-container">
+      <a href="/" class="logo-bubble">
+        <span class="logo-icon">✈</span>
+        <span class="logo-text">SmartFly Airways</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/membership.html" class="nav-link">Membership</a>
+        <a href="/loyalty.html" class="nav-link">Loyalty</a>
+        <a href="/help.html" class="nav-link">Help</a>
+      </nav>
+      <div class="header-buttons">
+        <button class="btn-primary" onclick="window.location.href='/index.html'"><span>Home</span></button>
+      </div>
+      <button class="mobile-menu-button">☰</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <h1 class="page-title">Member Center</h1>
+    <p class="page-subtitle">Manage your account, track rewards, and explore member exclusives.</p>
+
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>Member Login</h3>
+        <p>Access your profile, bookings, and loyalty status.</p>
+        <a href="/members-login.html">Go to Member Login →</a>
+      </div>
+      <div class="info-card">
+        <h3>Member Registration</h3>
+        <p>Create a new account and start earning rewards.</p>
+        <a href="/members-register.html">Create an Account →</a>
+      </div>
+      <div class="info-card">
+        <h3>Member Dashboard</h3>
+        <p>View points, status tier, and personalized offers.</p>
+        <a href="/members-dashboard.html">Open Dashboard →</a>
+      </div>
+      <div class="info-card">
+        <h3>Exclusive Benefits</h3>
+        <p>Explore lounge access, upgrades, and partner perks.</p>
+        <a href="/members-exclusive.html">View Exclusives →</a>
+      </div>
+      <div class="info-card">
+        <h3>Membership Tiers</h3>
+        <p>Compare local and premium membership options.</p>
+        <a href="/membership.html">Compare Tiers →</a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

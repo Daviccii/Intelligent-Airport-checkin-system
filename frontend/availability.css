@@ -374,6 +374,25 @@ body {
     color: #2e7d32;
 }
 
+.aircraft-info {
+    font-size: 12px;
+    color: var(--gray-600);
+    font-weight: 500;
+}
+
+.flight-route-badge {
+    margin-bottom: 12px;
+    display: inline-block;
+}
+
+.flight-card.domestic {
+    border-left: 4px solid #4CAF50;
+}
+
+.flight-card.international {
+    border-left: 4px solid #2196F3;
+}
+
 .terminal-info {
     font-size: 12px;
     color: var(--gray-600);

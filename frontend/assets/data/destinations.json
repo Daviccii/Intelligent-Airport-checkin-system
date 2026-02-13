@@ -1,48 +1,48 @@
 {
   "interests": {
     "golf": [
-      { "name": "Scottsdale", "img": "https://images.unsplash.com/photo-1519866335949-5d11905ae25c?auto=format&fit=crop&w=1200&q=60", "blurb": "Desert greens and 300+ days of sun", "to": "flight-results.html?city=PHX&theme=golf" },
-      { "name": "St Andrews", "img": "https://images.unsplash.com/photo-1520975916090-3105956dac38?auto=format&fit=crop&w=1200&q=60", "blurb": "The home of golf", "to": "flight-results.html?city=EDI&theme=golf" },
-      { "name": "Dubai", "img": "https://images.unsplash.com/photo-1504805572947-34fad45aed93?auto=format&fit=crop&w=1200&q=60", "blurb": "Championship courses by the gulf", "to": "flight-results.html?city=DXB&theme=golf" }
+      { "name": "Scottsdale", "img": "/assets/images/destinations/destination-5.jpg", "blurb": "Desert greens and 300+ days of sun", "to": "flight-results.html?city=PHX&theme=golf" },
+      { "name": "St Andrews", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "The home of golf", "to": "flight-results.html?city=EDI&theme=golf" },
+      { "name": "Dubai", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Championship courses by the gulf", "to": "flight-results.html?city=DXB&theme=golf" }
     ],
     "beach": [
-      { "name": "Maldives", "img": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=60", "blurb": "Turquoise lagoons and villas", "to": "flight-results.html?city=MLE&theme=beach" },
-      { "name": "Zanzibar", "img": "https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=1200&q=60", "blurb": "Spice island shores", "to": "flight-results.html?city=ZNZ&theme=beach" },
-      { "name": "Phuket", "img": "https://images.unsplash.com/photo-1519121785383-3229633bb0a0?auto=format&fit=crop&w=1200&q=60", "blurb": "Thailand’s famous sands", "to": "flight-results.html?city=HKT&theme=beach" }
+      { "name": "Maldives", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "Turquoise lagoons and villas", "to": "flight-results.html?city=MLE&theme=beach" },
+      { "name": "Zanzibar", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "Spice island shores", "to": "flight-results.html?city=ZNZ&theme=beach" },
+      { "name": "Phuket", "img": "/assets/images/destinations/destination-2.jpg", "blurb": "Thailand's famous sands", "to": "flight-results.html?city=HKT&theme=beach" }
     ],
     "heritage": [
-      { "name": "Rome", "img": "https://images.unsplash.com/photo-1544989164-31dc3c645987?auto=format&fit=crop&w=1200&q=60", "blurb": "Ancient wonders and museums", "to": "flight-results.html?city=ROM&theme=heritage" },
-      { "name": "Kyoto", "img": "https://images.unsplash.com/photo-1504870712357-65ea720d6078?auto=format&fit=crop&w=1200&q=60", "blurb": "Shrines and tea houses", "to": "flight-results.html?city=OSA&theme=heritage" },
-      { "name": "Cusco", "img": "https://images.unsplash.com/photo-1543352634-87392b6d5a8d?auto=format&fit=crop&w=1200&q=60", "blurb": "Gateway to Machu Picchu", "to": "flight-results.html?city=CUZ&theme=heritage" }
+      { "name": "Rome", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Ancient wonders and museums", "to": "flight-results.html?city=ROM&theme=heritage" },
+      { "name": "Kyoto", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Shrines and tea houses", "to": "flight-results.html?city=OSA&theme=heritage" },
+      { "name": "Cusco", "img": "/assets/images/destinations/destination-5.jpg", "blurb": "Gateway to Machu Picchu", "to": "flight-results.html?city=CUZ&theme=heritage" }
     ],
     "dive": [
-      { "name": "Belize", "img": "https://images.unsplash.com/photo-1544550282-3246f6b0b3ed?auto=format&fit=crop&w=1200&q=60", "blurb": "Blue Hole adventures", "to": "flight-results.html?city=BZE&theme=dive" },
-      { "name": "Great Barrier Reef", "img": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=60", "blurb": "World-class reefs", "to": "flight-results.html?city=CNS&theme=dive" },
-      { "name": "Sharm El-Sheikh", "img": "https://images.unsplash.com/photo-1493558103817-58b2924bce98?auto=format&fit=crop&w=1200&q=60", "blurb": "Red Sea corals", "to": "flight-results.html?city=SSH&theme=dive" }
+      { "name": "Belize", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "Blue Hole adventures", "to": "flight-results.html?city=BZE&theme=dive" },
+      { "name": "Great Barrier Reef", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "World-class reefs", "to": "flight-results.html?city=CNS&theme=dive" },
+      { "name": "Sharm El-Sheikh", "img": "/assets/images/destinations/destination-2.jpg", "blurb": "Red Sea corals", "to": "flight-results.html?city=SSH&theme=dive" }
     ],
     "ecotourism": [
-      { "name": "Costa Rica", "img": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60", "blurb": "Rainforests and wildlife", "to": "flight-results.html?city=SJO&theme=eco" },
-      { "name": "Iceland", "img": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60", "blurb": "Glaciers and geysers", "to": "flight-results.html?city=REK&theme=eco" },
-      { "name": "Kenya", "img": "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=60", "blurb": "Safaris and savannas", "to": "flight-results.html?city=NBO&theme=eco" }
+      { "name": "Costa Rica", "img": "/assets/images/destinations/destination-3.jpg", "blurb": "Rainforests and wildlife", "to": "flight-results.html?city=SJO&theme=eco" },
+      { "name": "Iceland", "img": "/assets/images/destinations/destination-5.jpg", "blurb": "Glaciers and geysers", "to": "flight-results.html?city=REK&theme=eco" },
+      { "name": "Kenya", "img": "/assets/images/destinations/destination-3.jpg", "blurb": "Safaris and savannas", "to": "flight-results.html?city=NBO&theme=eco" }
     ],
     "culture": [
-      { "name": "Paris", "img": "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?auto=format&fit=crop&w=1200&q=60", "blurb": "Art, cafés and couture", "to": "flight-results.html?city=PAR&theme=culture" },
-      { "name": "Istanbul", "img": "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60", "blurb": "East meets West", "to": "flight-results.html?city=IST&theme=culture" },
-      { "name": "Marrakesh", "img": "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=60", "blurb": "Souks and riads", "to": "flight-results.html?city=RAK&theme=culture" }
+      { "name": "Paris", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Art, cafés and couture", "to": "flight-results.html?city=PAR&theme=culture" },
+      { "name": "Istanbul", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "East meets West", "to": "flight-results.html?city=IST&theme=culture" },
+      { "name": "Marrakesh", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Souks and riads", "to": "flight-results.html?city=RAK&theme=culture" }
     ]
   },
   "deals": {
     "beach-escape": [
-      { "name": "Boracay", "img": "https://images.unsplash.com/photo-1483683804023-6ccdb62f86ef?auto=format&fit=crop&w=1200&q=60", "blurb": "White sands special", "to": "flight-results.html?city=MPH&deal=beach-escape" },
-      { "name": "Bali", "img": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=60", "blurb": "Uluwatu to Ubud", "to": "flight-results.html?city=DPS&deal=beach-escape" }
+      { "name": "Boracay", "img": "/assets/images/destinations/destination-2.jpg", "blurb": "White sands special", "to": "flight-results.html?city=MPH&deal=beach-escape" },
+      { "name": "Bali", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "Uluwatu to Ubud", "to": "flight-results.html?city=DPS&deal=beach-escape" }
     ],
     "city-break": [
-      { "name": "Barcelona", "img": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=60", "blurb": "Tapas and Gaudí", "to": "flight-results.html?city=BCN&deal=city-break" },
-      { "name": "Seoul", "img": "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=60", "blurb": "Food and fashion", "to": "flight-results.html?city=SEL&deal=city-break" }
+      { "name": "Barcelona", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Tapas and Gaudí", "to": "flight-results.html?city=BCN&deal=city-break" },
+      { "name": "Seoul", "img": "/assets/images/destinations/destination-3.jpg", "blurb": "Food and fashion", "to": "flight-results.html?city=SEL&deal=city-break" }
     ],
     "mountain-retreat": [
-      { "name": "Zermatt", "img": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60", "blurb": "Matterhorn magic", "to": "flight-results.html?city=ZRH&deal=mountain-retreat" },
-      { "name": "Banff", "img": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1200&q=60", "blurb": "Lakes and trails", "to": "flight-results.html?city=YYC&deal=mountain-retreat" }
+      { "name": "Zermatt", "img": "/assets/images/destinations/destination-5.jpg", "blurb": "Matterhorn magic", "to": "flight-results.html?city=ZRH&deal=mountain-retreat" },
+      { "name": "Banff", "img": "/assets/images/destinations/destination-3.jpg", "blurb": "Lakes and trails", "to": "flight-results.html?city=YYC&deal=mountain-retreat" }
     ]
   }
 }

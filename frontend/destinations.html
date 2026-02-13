@@ -310,12 +310,12 @@
                     gtitle.textContent = 'Top Picks';
                     gsub.textContent = 'Explore our travelers\' favorite destinations';
                     allItems = [
-                        { name:'Mombasa', region:'africa', img:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=80', blurb:'Pristine beaches and historic charm', to:'/book.html?to=MBA' },
-                        { name:'Nairobi', region:'africa', img:'https://images.unsplash.com/photo-1611348524140-53c9a25263d6?auto=format&fit=crop&w=800&q=80', blurb:'Gateway to East African adventures', to:'/book.html?to=NBO' },
-                        { name:'Johannesburg', region:'africa', img:'https://images.unsplash.com/photo-1577948000111-9c970dfe3743?auto=format&fit=crop&w=800&q=80', blurb:'Vibrant city with rich history', to:'/book.html?to=JNB' },
-                        { name:'Zanzibar', region:'africa', img:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=800&q=80', blurb:'Tropical paradise and spice island', to:'/book.html?to=ZNZ' },
-                        { name:'Entebbe', region:'africa', img:'https://images.unsplash.com/photo-1489392191049-fc10c97e64b6?auto=format&fit=crop&w=800&q=80', blurb:'Gateway to Uganda\'s natural wonders', to:'/book.html?to=EBB' },
-                        { name:'Cape Town', region:'africa', img:'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?auto=format&fit=crop&w=800&q=80', blurb:'Stunning scenery and diverse culture', to:'/book.html?to=CPT' }
+                        { name:'Mombasa', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Pristine beaches and historic charm', to:'/book.html?to=MBA' },
+                        { name:'Nairobi', region:'africa', img:'/assets/images/destinations/destination-3.jpg', blurb:'Gateway to East African adventures', to:'/book.html?to=NBO' },
+                        { name:'Johannesburg', region:'africa', img:'/assets/images/destinations/destination-4.jpg', blurb:'Vibrant city with rich history', to:'/book.html?to=JNB' },
+                        { name:'Zanzibar', region:'africa', img:'/assets/images/destinations/destination-1.jpg', blurb:'Tropical paradise and spice island', to:'/book.html?to=ZNZ' },
+                        { name:'Entebbe', region:'africa', img:'/assets/images/destinations/destination-5.jpg', blurb:'Gateway to Uganda\'s natural wonders', to:'/book.html?to=EBB' },
+                        { name:'Cape Town', region:'africa', img:'/assets/images/destinations/destination-3.jpg', blurb:'Stunning scenery and diverse culture', to:'/book.html?to=CPT' }
                     ];
                 } else if (type === 'longhaul') {
                     badge.textContent = 'Long-Haul';
@@ -324,12 +324,12 @@
                     gtitle.textContent = 'Intercontinental Travel';
                     gsub.textContent = 'Direct and connecting flights to global destinations';
                     allItems = [
-                        { name:'New York', region:'americas', img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80', blurb:'The city that never sleeps', to:'/book.html?to=JFK' },
-                        { name:'Dubai', region:'middle-east', img:'https://images.unsplash.com/photo-1512453459498-46bbf73fdfc8?auto=format&fit=crop&w=800&q=80', blurb:'Luxury shopping and modern marvels', to:'/book.html?to=DXB' },
-                        { name:'London', region:'europe', img:'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?auto=format&fit=crop&w=800&q=80', blurb:'Historic capital with royal heritage', to:'/book.html?to=LHR' },
-                        { name:'Paris', region:'europe', img:'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=800&q=80', blurb:'City of lights and romance', to:'/book.html?to=CDG' },
-                        { name:'Amsterdam', region:'europe', img:'https://images.unsplash.com/photo-1534351590666-13e3e96b5017?auto=format&fit=crop&w=800&q=80', blurb:'Canals, culture, and cosmopolitan charm', to:'/book.html?to=AMS' },
-                        { name:'Singapore', region:'asia', img:'https://images.unsplash.com/photo-1493384671275-8fb4ee6d56bb?auto=format&fit=crop&w=800&q=80', blurb:'Garden city with futuristic skyline', to:'/book.html?to=SIN' }
+                        { name:'New York', region:'americas', img:'/assets/images/destinations/destination-3.jpg', blurb:'The city that never sleeps', to:'/book.html?to=JFK' },
+                        { name:'Dubai', region:'middle-east', img:'/assets/images/destinations/destination-4.jpg', blurb:'Luxury shopping and modern marvels', to:'/book.html?to=DXB' },
+                        { name:'London', region:'europe', img:'/assets/images/destinations/destination-5.jpg', blurb:'Historic capital with royal heritage', to:'/book.html?to=LHR' },
+                        { name:'Paris', region:'europe', img:'/assets/images/destinations/destination-1.jpg', blurb:'City of lights and romance', to:'/book.html?to=CDG' },
+                        { name:'Amsterdam', region:'europe', img:'/assets/images/destinations/destination-2.jpg', blurb:'Canals, culture, and cosmopolitan charm', to:'/book.html?to=AMS' },
+                        { name:'Singapore', region:'asia', img:'/assets/images/destinations/destination-3.jpg', blurb:'Garden city with futuristic skyline', to:'/book.html?to=SIN' }
                     ];
                     document.querySelector('.filters').style.display = 'none';
                 } else if (interest && catalog.interests && catalog.interests[interest]) {
@@ -354,10 +354,10 @@
                     gtitle.textContent = 'Popular Destinations';
                     gsub.textContent = 'Choose a region to discover flights and special offers';
                     allItems = [
-                        { name:'Europe', region:'europe', img:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=60', blurb:'History, art, and modernity converge', to:'flight-results.html?region=europe' },
-                        { name:'Africa', region:'africa', img:'https://images.unsplash.com/photo-1516426122078-c23e76319801?auto=format&fit=crop&w=1200&q=60', blurb:'Vast landscapes and vibrant culture', to:'flight-results.html?region=africa' },
-                        { name:'Asia', region:'asia', img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=60', blurb:'Ancient traditions and tech hubs', to:'flight-results.html?region=asia' },
-                        { name:'Americas', region:'americas', img:'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=60', blurb:'Dynamic cities and natural wonders', to:'flight-results.html?region=americas' }
+                        { name:'Europe', region:'europe', img:'/assets/images/destinations/destination-4.jpg', blurb:'History, art, and modernity converge', to:'flight-results.html?region=europe' },
+                        { name:'Africa', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Vast landscapes and vibrant culture', to:'flight-results.html?region=africa' },
+                        { name:'Asia', region:'asia', img:'/assets/images/destinations/destination-3.jpg', blurb:'Ancient traditions and tech hubs', to:'flight-results.html?region=asia' },
+                        { name:'Americas', region:'americas', img:'/assets/images/destinations/destination-5.jpg', blurb:'Dynamic cities and natural wonders', to:'flight-results.html?region=americas' }
                     ];
                 }
                 

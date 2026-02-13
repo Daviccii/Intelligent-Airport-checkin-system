@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Staff Center - SmartFly Airways</title>
+  <link rel="stylesheet" href="/styles.css" />
+  <style>
+    .page-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    .page-title {
+      font-size: 32px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-bottom: 8px;
+    }
+    .page-subtitle {
+      color: #64748b;
+      font-size: 16px;
+      margin-bottom: 28px;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .info-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      border: 1px solid #e2e8f0;
+    }
+    .info-card h3 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #0f172a;
+    }
+    .info-card p {
+      color: #64748b;
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+    .info-card a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #2563eb;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="header-container">
+      <a href="/" class="logo-bubble">
+        <span class="logo-icon">✈</span>
+        <span class="logo-text">SmartFly Airways</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/booking.html" class="nav-link">Book</a>
+        <a href="/checkin.html" class="nav-link">Check-in</a>
+        <a href="/help.html" class="nav-link">Help</a>
+      </nav>
+      <div class="header-buttons">
+        <button class="btn-primary" onclick="window.location.href='/index.html'"><span>Home</span></button>
+      </div>
+      <button class="mobile-menu-button">☰</button>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <h1 class="page-title">Staff Center</h1>
+    <p class="page-subtitle">Access staff tools, portals, and operations dashboards.</p>
+
+    <div class="card-grid">
+      <div class="info-card">
+        <h3>Staff Login</h3>
+        <p>Secure access for ground crew, check-in teams, and supervisors.</p>
+        <a href="/staff/staff-login.html">Go to Staff Login →</a>
+      </div>
+      <div class="info-card">
+        <h3>Staff Portal</h3>
+        <p>Manage passenger flows, baggage routing, and check-in operations.</p>
+        <a href="/staff/staff-portal.html">Open Staff Portal →</a>
+      </div>
+      <div class="info-card">
+        <h3>Admin Staff Management</h3>
+        <p>Manage staff accounts, permissions, and duty assignments.</p>
+        <a href="/admin/staff.html">Go to Staff Management →</a>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

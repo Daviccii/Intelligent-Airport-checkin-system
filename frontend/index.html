@@ -1188,11 +1188,11 @@
                                 <span class="dropdown-arrow">▼</span>
                             </button>
                             <div class="signin-dropdown-menu" id="signinDropdownMenu">
-                                <a href="/login.html?type=member" class="signin-option">
+                                <a href="/members-login.html" class="signin-option">
                                     <span class="option-icon">👤</span>
                                     <span class="option-text">Member Login</span>
                                 </a>
-                                <a href="/login.html?type=staff" class="signin-option">
+                                <a href="/staff-login.html" class="signin-option">
                                     <span class="option-icon">✈️</span>
                                     <span class="option-text">Staff Login</span>
                                 </a>
@@ -1232,6 +1232,45 @@
     <script src="/script.js"></script>
     <script>
         // ============================================
+        // ROUTE DISTANCE & PRICING CONFIGURATION
+        // ============================================
+        // Approximate distances in km and base prices for routes
+        const routePricing = {
+            // Domestic routes (Kenya)
+            'NBO-MBA': { distance: 500, basePrice: 250 },
+            'MBA-NBO': { distance: 500, basePrice: 250 },
+            'NBO-KIS': { distance: 350, basePrice: 200 },
+            'KIS-NBO': { distance: 350, basePrice: 200 },
+            'NBO-ELD': { distance: 300, basePrice: 180 },
+            'ELD-NBO': { distance: 300, basePrice: 180 },
+            'MBA-KIS': { distance: 700, basePrice: 300 },
+            'KIS-MBA': { distance: 700, basePrice: 300 },
+            
+            // Regional routes (East Africa)
+            'NBO-EBB': { distance: 700, basePrice: 350 },
+            'EBB-NBO': { distance: 700, basePrice: 350 },
+            'NBO-DAR': { distance: 400, basePrice: 250 },
+            'DAR-NBO': { distance: 400, basePrice: 250 },
+            
+            // Long-haul international routes
+            'NBO-LHR': { distance: 7200, basePrice: 650 },
+            'LHR-NBO': { distance: 7200, basePrice: 650 },
+            'NBO-CDG': { distance: 7500, basePrice: 680 },
+            'CDG-NBO': { distance: 7500, basePrice: 680 },
+            'NBO-DXB': { distance: 4200, basePrice: 450 },
+            'DXB-NBO': { distance: 4200, basePrice: 450 },
+            'NBO-JFK': { distance: 8900, basePrice: 750 },
+            'JFK-NBO': { distance: 8900, basePrice: 750 },
+            'NBO-SIN': { distance: 9000, basePrice: 800 },
+            'SIN-NBO': { distance: 9000, basePrice: 800 }
+        };
+
+        function getRoutePricing(from, to) {
+            const routeKey = `${from}-${to}`;
+            return routePricing[routeKey] || { distance: 5000, basePrice: 500 }; // Default for unknown routes
+        }
+
+        // ============================================
         // SHOW DATE PICKER WHEN ROUTE SELECTED
         // ============================================
         const fromInput = document.getElementById("fromInput");
@@ -1249,41 +1288,108 @@
         fromInput.addEventListener("input", checkRouteSelected);
         toInput.addEventListener("input", checkRouteSelected);
 
-        function generateCalendar(containerId, prices = {}) {
+        // Generate dynamic prices for calendar dates based on route distance
+        function generatePricesForMonth(startDate, fromCode, toCode) {
+          const prices = {};
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          const routeInfo = getRoutePricing(fromCode, toCode);
+          const basePrice = routeInfo.basePrice;
+          
+          for (let day = 1; day <= 31; day++) {
+            const date = new Date(startDate.getFullYear(), startDate.getMonth(), day);
+            
+            // Only generate prices for valid dates in this month
+            if (date.getMonth() === startDate.getMonth()) {
+              const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+              const weekendSurge = isWeekend ? (basePrice * 0.25) : 0; // 25% weekend premium
+              const dayVariation = Math.floor(Math.random() * (basePrice * 0.2)) - (basePrice * 0.1); // ±10%
+              const finalPrice = Math.max(basePrice * 0.7, basePrice + weekendSurge + dayVariation);
+              prices[day] = Math.round(finalPrice);
+            }
+          }
+          return prices;
+        }
+
+        function generateCalendar(containerId, calendarMonth, isReturnCalendar = false) {
           const container = document.getElementById(containerId);
           container.innerHTML = "";
+          
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          
+          // Get airport codes from input values
+          const fromCode = fromInput.value ? fromInput.value.split(',')[0].trim().toUpperCase() : 'NBO';
+          const toCode = toInput.value ? toInput.value.split(',')[0].trim().toUpperCase() : 'LHR';
+          
+          // Start from the date passed in (could be today or a specific date in next month)
+          const startDay = calendarMonth.getDate();
+          const prices = generatePricesForMonth(calendarMonth, fromCode, toCode);
 
-          for (let day = 1; day <= 30; day++) {
+          for (let day = startDay; day <= 31; day++) {
+            const currentDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
+            
+            // Stop at end of month
+            if (currentDate.getMonth() !== calendarMonth.getMonth()) break;
+            
             const cell = document.createElement("div");
             cell.className = "calendar-day";
-
+            
             const price = prices[day];
+            const isPastDate = currentDate < today;
+            const isToday = currentDate.getTime() === today.getTime();
+            
+            // Disable past dates (except if return and past is allowed)
+            if (isPastDate && !isReturnCalendar) {
+              cell.style.opacity = "0.4";
+              cell.style.cursor = "not-allowed";
+              cell.style.pointerEvents = "none";
+              cell.classList.add("disabled");
+            } else if (isToday) {
+              cell.classList.add("today");
+            }
 
             cell.innerHTML = `
               <div>${day}</div>
-              <div class="day-price">${price ? price + "K" : ""}</div>
+              <div class="day-price">$${price}</div>
             `;
 
-            if (price && price <= 122) {
+            // Highlight cheapest dates (lowest 20% of prices)
+            const routeInfo = getRoutePricing(fromCode, toCode);
+            const cheapThreshold = routeInfo.basePrice * 0.85;
+            if (price && price <= cheapThreshold) {
               cell.classList.add("cheapest");
+            }
+
+            // Add click handler for date selection
+            if (!isPastDate || isReturnCalendar) {
+              cell.addEventListener("click", () => {
+                const dateStr = currentDate.toISOString().split('T')[0];
+                const formattedDate = currentDate.toLocaleDateString('en-US', { 
+                  month: 'short', 
+                  day: 'numeric', 
+                  year: 'numeric' 
+                });
+                console.log(`Selected date: ${dateStr} (${formattedDate}) - Price: $${price}`);
+              });
             }
 
             container.appendChild(cell);
           }
         }
 
-        /* Example prices */
-        generateCalendar("calendarLeft", {
-          26: 122,
-          28: 122,
-          29: 122,
-          30: 122
-        });
-        generateCalendar("calendarRight", {
-          1: 173,
-          2: 156,
-          3: 298
-        });
+        // Generate calendars for current month and next month
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        // Start from today's date for the first calendar
+        const currentMonth = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        // Next month calendar starts from today's date in next month
+        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+        
+        generateCalendar("calendarLeft", currentMonth, false); // Departure calendar
+        generateCalendar("calendarRight", nextMonth, true);    // Return calendar
     // ============================================
     // MOBILE MENU TOGGLE
     // ============================================
