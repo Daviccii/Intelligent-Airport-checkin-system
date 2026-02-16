@@ -133,5 +133,10 @@
     "role": "staff",
     "passport": "Antigen",
     "expires": "2026-02-13T18:20:35.020038Z"
+  },
+  "92539fbc99d1419ca79a68f49a3841ff": {
+    "role": "admin",
+    "passport": null,
+    "expires": "2026-02-16T07:49:38.210060Z"
   }
 }

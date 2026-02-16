@@ -1,48 +1,48 @@
 {
   "interests": {
     "golf": [
-      { "name": "Scottsdale", "img": "/assets/images/destinations/destination-5.jpg", "blurb": "Desert greens and 300+ days of sun", "to": "flight-results.html?city=PHX&theme=golf" },
-      { "name": "St Andrews", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "The home of golf", "to": "flight-results.html?city=EDI&theme=golf" },
-      { "name": "Dubai", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Championship courses by the gulf", "to": "flight-results.html?city=DXB&theme=golf" }
+      { "name": "Scottsdale", "img": "", "blurb": "Desert greens and 300+ days of sun", "to": "flight-schedule.html" },
+      { "name": "St Andrews", "img": "", "blurb": "The home of golf", "to": "flight-schedule.html" },
+      { "name": "Dubai", "img": "", "blurb": "Championship courses by the gulf", "to": "flight-schedule.html" }
     ],
     "beach": [
-      { "name": "Maldives", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "Turquoise lagoons and villas", "to": "flight-results.html?city=MLE&theme=beach" },
-      { "name": "Zanzibar", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "Spice island shores", "to": "flight-results.html?city=ZNZ&theme=beach" },
-      { "name": "Phuket", "img": "/assets/images/destinations/destination-2.jpg", "blurb": "Thailand's famous sands", "to": "flight-results.html?city=HKT&theme=beach" }
+      { "name": "Maldives", "img": "", "blurb": "Turquoise lagoons and villas", "to": "flight-schedule.html" },
+      { "name": "Zanzibar", "img": "", "blurb": "Spice island shores", "to": "flight-schedule.html" },
+      { "name": "Phuket", "img": "", "blurb": "Thailand's famous sands", "to": "flight-schedule.html" }
     ],
     "heritage": [
-      { "name": "Rome", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Ancient wonders and museums", "to": "flight-results.html?city=ROM&theme=heritage" },
-      { "name": "Kyoto", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Shrines and tea houses", "to": "flight-results.html?city=OSA&theme=heritage" },
-      { "name": "Cusco", "img": "/assets/images/destinations/destination-5.jpg", "blurb": "Gateway to Machu Picchu", "to": "flight-results.html?city=CUZ&theme=heritage" }
+      { "name": "Rome", "img": "", "blurb": "Ancient wonders and museums", "to": "flight-schedule.html" },
+      { "name": "Kyoto", "img": "", "blurb": "Shrines and tea houses", "to": "flight-schedule.html" },
+      { "name": "Cusco", "img": "", "blurb": "Gateway to Machu Picchu", "to": "flight-schedule.html" }
     ],
     "dive": [
-      { "name": "Belize", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "Blue Hole adventures", "to": "flight-results.html?city=BZE&theme=dive" },
-      { "name": "Great Barrier Reef", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "World-class reefs", "to": "flight-results.html?city=CNS&theme=dive" },
-      { "name": "Sharm El-Sheikh", "img": "/assets/images/destinations/destination-2.jpg", "blurb": "Red Sea corals", "to": "flight-results.html?city=SSH&theme=dive" }
+      { "name": "Belize", "img": "", "blurb": "Blue Hole adventures", "to": "flight-schedule.html" },
+      { "name": "Great Barrier Reef", "img": "", "blurb": "World-class reefs", "to": "flight-schedule.html" },
+      { "name": "Sharm El-Sheikh", "img": "", "blurb": "Red Sea corals", "to": "flight-schedule.html" }
     ],
     "ecotourism": [
-      { "name": "Costa Rica", "img": "/assets/images/destinations/destination-3.jpg", "blurb": "Rainforests and wildlife", "to": "flight-results.html?city=SJO&theme=eco" },
-      { "name": "Iceland", "img": "/assets/images/destinations/destination-5.jpg", "blurb": "Glaciers and geysers", "to": "flight-results.html?city=REK&theme=eco" },
-      { "name": "Kenya", "img": "/assets/images/destinations/destination-3.jpg", "blurb": "Safaris and savannas", "to": "flight-results.html?city=NBO&theme=eco" }
+      { "name": "Costa Rica", "img": "", "blurb": "Rainforests and wildlife", "to": "flight-schedule.html" },
+      { "name": "Iceland", "img": "", "blurb": "Glaciers and geysers", "to": "flight-schedule.html" },
+      { "name": "Kenya", "img": "", "blurb": "Safaris and savannas", "to": "flight-schedule.html" }
     ],
     "culture": [
-      { "name": "Paris", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Art, cafés and couture", "to": "flight-results.html?city=PAR&theme=culture" },
-      { "name": "Istanbul", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "East meets West", "to": "flight-results.html?city=IST&theme=culture" },
-      { "name": "Marrakesh", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Souks and riads", "to": "flight-results.html?city=RAK&theme=culture" }
+      { "name": "Paris", "img": "", "blurb": "Art, cafés and couture", "to": "flight-schedule.html" },
+      { "name": "Istanbul", "img": "", "blurb": "East meets West", "to": "flight-schedule.html" },
+      { "name": "Marrakesh", "img": "", "blurb": "Souks and riads", "to": "flight-schedule.html" }
     ]
   },
   "deals": {
     "beach-escape": [
-      { "name": "Boracay", "img": "/assets/images/destinations/destination-2.jpg", "blurb": "White sands special", "to": "flight-results.html?city=MPH&deal=beach-escape" },
-      { "name": "Bali", "img": "/assets/images/destinations/destination-1.jpg", "blurb": "Uluwatu to Ubud", "to": "flight-results.html?city=DPS&deal=beach-escape" }
+      { "name": "Boracay", "img": "", "blurb": "White sands special", "to": "flight-schedule.html" },
+      { "name": "Bali", "img": "", "blurb": "Uluwatu to Ubud", "to": "flight-schedule.html" }
     ],
     "city-break": [
-      { "name": "Barcelona", "img": "/assets/images/destinations/destination-4.jpg", "blurb": "Tapas and Gaudí", "to": "flight-results.html?city=BCN&deal=city-break" },
-      { "name": "Seoul", "img": "/assets/images/destinations/destination-3.jpg", "blurb": "Food and fashion", "to": "flight-results.html?city=SEL&deal=city-break" }
+      { "name": "Barcelona", "img": "", "blurb": "Tapas and Gaudí", "to": "flight-schedule.html" },
+      { "name": "Seoul", "img": "", "blurb": "Food and fashion", "to": "flight-schedule.html" }
     ],
     "mountain-retreat": [
-      { "name": "Zermatt", "img": "/assets/images/destinations/destination-5.jpg", "blurb": "Matterhorn magic", "to": "flight-results.html?city=ZRH&deal=mountain-retreat" },
-      { "name": "Banff", "img": "/assets/images/destinations/destination-3.jpg", "blurb": "Lakes and trails", "to": "flight-results.html?city=YYC&deal=mountain-retreat" }
+      { "name": "Zermatt", "img": "", "blurb": "Matterhorn magic", "to": "flight-schedule.html" },
+      { "name": "Banff", "img": "", "blurb": "Lakes and trails", "to": "flight-schedule.html" }
     ]
   }
 }

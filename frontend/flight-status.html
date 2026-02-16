@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Status - SmartFly Airways</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .status-hero {
+            background: linear-gradient(135deg, #ff003c 0%, #c8102e 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .status-hero h1 {
+            font-size: 2.8em;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+        }
+
+        .status-hero p {
+            font-size: 1.1em;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .status-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .search-section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .search-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-group label {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 0.95em;
+        }
+
+        .search-group input {
+            padding: 10px 14px;
+            border: 1.5px solid #d0d7e2;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .search-group input:focus {
+            outline: none;
+            border-color: #ff003c;
+            box-shadow: 0 0 0 3px rgba(255, 0, 60, 0.1);
+        }
+
+        .search-btn {
+            background: #ff003c;
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 40px;
+        }
+
+        .search-btn:hover {
+            background: #c8102e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .flight-details {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .flight-header {
+            background: linear-gradient(135deg, #ff003c 0%, #c8102e 100%);
+            color: white;
+            padding: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .flight-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+            font-family: monospace;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.95em;
+        }
+
+        .status-on-time {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-delayed {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-boarding {
+            background: #bfdbfe;
+            color: #1e3a8a;
+        }
+
+        .flight-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            padding: 30px;
+        }
+
+        .info-card {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ff003c;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-size: 0.9em;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .info-value {
+            color: #1f2937;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .info-subtext {
+            color: #6b7280;
+            font-size: 0.85em;
+        }
+
+        .timeline {
+            padding: 30px;
+            background: #f9fafb;
+        }
+
+        .timeline-title {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            background: #ff003c;
+            border-radius: 50%;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-time {
+            font-weight: 700;
+            color: #1f2937;
+            font-family: monospace;
+        }
+
+        .timeline-desc {
+            color: #6b7280;
+            font-size: 0.95em;
+            margin-top: 4px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .no-results h3 {
+            font-size: 1.5em;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .route-badge {
+            display: inline-block;
+            background: #f0f1f3;
+            color: #1f2937;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .domestic-badge {
+            background: #e6f7ee;
+            color: #047857;
+        }
+
+        .international-badge {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        @media (max-width: 768px) {
+            .flight-header {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+
+            .flight-info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .status-hero h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <div class="container nav-container">
+            <div class="logo-container">
+                <div class="logo" aria-hidden="true"></div>
+                <h2 class="logo-text">SmartFly</h2>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/book.html">Book</a>
+                <a href="/flight-schedule.html">Schedule</a>
+                <a href="/flight-status.html">Status</a>
+                <a href="/help-center.html">Help</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="status-hero">
+        <div class="container">
+            <h1>Flight Status</h1>
+            <p>Real-time updates on your flight</p>
+        </div>
+    </section>
+
+    <section class="status-container">
+        <div class="search-section">
+            <div class="search-form">
+                <div class="search-group">
+                    <label for="flightNumber">Flight Number</label>
+                    <input type="text" id="flightNumber" placeholder="e.g., KQ123" value="">
+                </div>
+                <button class="search-btn">Search Status</button>
+            </div>
+        </div>
+
+        <div id="statusContent">
+            <!-- Flight status will be populated here -->
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p style="text-align: center; padding: 24px 0; color: #e7eefc;">&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const domesticAirports = {
+            'NBO': 'Nairobi (Jomo Kenyatta)',
+            'MBA': 'Mombasa (Moi International)',
+            'KIS': 'Kisumu (Kisumu International)',
+            'ELD': 'Eldoret (Eldoret International)',
+            'WIL': 'Willy (Wilson) Airport'
+        };
+        
+        const internationalAirports = {
+            'LHR': 'London (Heathrow)',
+            'CDG': 'Paris (Charles de Gaulle)',
+            'DXB': 'Dubai (International)',
+            'JFK': 'New York (JFK)',
+            'SIN': 'Singapore (Changi)',
+            'AMS': 'Amsterdam (Schiphol)',
+            'BKK': 'Bangkok (Suvarnabhumi)',
+            'HND': 'Tokyo (Haneda)',
+            'AUS': 'Austin (Bergstrom)',
+            'ORD': 'Chicago (O\'Hare)'
+        };
+
+        const statuses = ['On Time', 'Delayed', 'Boarding', 'Departed', 'Landed'];
+        const statusColors = {
+            'On Time': 'status-on-time',
+            'Delayed': 'status-delayed',
+            'Boarding': 'status-boarding',
+            'Departed': 'status-on-time',
+            'Landed': 'status-on-time',
+            'Cancelled': 'status-cancelled'
+        };
+
+        function generateFlightDetails(flightNumber) {
+            const allAirports = { ...domesticAirports, ...internationalAirports };
+            const airportCodes = Object.keys(allAirports);
+            
+            const from = airportCodes[Math.floor(Math.random() * airportCodes.length)];
+            let to = airportCodes[Math.floor(Math.random() * airportCodes.length)];
+            
+            while (to === from) {
+                to = airportCodes[Math.floor(Math.random() * airportCodes.length)];
+            }
+
+            const isDomestic = !Object.keys(internationalAirports).includes(from) || 
+                              !Object.keys(internationalAirports).includes(to);
+            
+            const now = new Date();
+            const departureTime = new Date(now);
+            departureTime.setHours(8 + Math.floor(Math.random() * 12), Math.floor(Math.random() * 60), 0);
+            
+            const duration = isDomestic ? 2 : 8;
+            const arrivalTime = new Date(departureTime.getTime() + duration * 60 * 60 * 1000);
+            
+            const status = statuses[Math.floor(Math.random() * statuses.length)];
+            const gate = String.fromCharCode(65 + Math.floor(Math.random() * 20));
+            const seat = `${Math.floor(Math.random() * 30) + 1}${String.fromCharCode(65 + Math.floor(Math.random() * 6))}`;
+            
+            return {
+                flightNumber,
+                from,
+                to,
+                fromName: allAirports[from],
+                toName: allAirports[to],
+                departure: departureTime,
+                arrival: arrivalTime,
+                status,
+                isDomestic,
+                gate,
+                terminal: isDomestic ? 'T1' : 'T3',
+                seat,
+                aircraft: isDomestic ? 'Boeing 737' : 'Boeing 787 Dreamliner',
+                airline: 'Kenya Airways'
+            };
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        function formatDate(date) {
+            return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+        }
+
+        function renderFlightStatus(flight) {
+            const content = document.getElementById('statusContent');
+            
+            const timeline = [
+                { time: formatTime(flight.departure), desc: 'Scheduled Departure' },
+                { time: formatTime(new Date(flight.departure.getTime() + 15 * 60000)), desc: 'Boarding Complete' },
+                { time: formatTime(new Date(flight.departure.getTime() + 30 * 60000)), desc: 'Ready for Takeoff' }
+            ];
+
+            const html = `
+                <div class="flight-details">
+                    <div class="flight-header">
+                        <div>
+                            <h2>${flight.flightNumber}</h2>
+                            <div style="font-size: 0.95em; margin-top: 8px;">${flight.fromName} → ${flight.toName}</div>
+                        </div>
+                        <span class="status-badge ${statusColors[flight.status]}">${flight.status}</span>
+                    </div>
+
+                    <div class="flight-info-grid">
+                        <div class="info-card">
+                            <div class="info-label">From</div>
+                            <div class="info-value">${flight.from}</div>
+                            <div class="info-subtext">${flight.fromName}</div>
+                            <div class="info-subtext">Terminal: ${flight.terminal}</div>
+                            <div class="info-subtext">Gate: ${flight.gate}</div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-label">Departure</div>
+                            <div class="info-value">${formatTime(flight.departure)}</div>
+                            <div class="info-subtext">${formatDate(flight.departure)}</div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-label">To</div>
+                            <div class="info-value">${flight.to}</div>
+                            <div class="info-subtext">${flight.toName}</div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-label">Arrival</div>
+                            <div class="info-value">${formatTime(flight.arrival)}</div>
+                            <div class="info-subtext">${formatDate(flight.arrival)}</div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-label">Aircraft</div>
+                            <div class="info-value">${flight.aircraft}</div>
+                            <div class="info-subtext">Seat: ${flight.seat}</div>
+                        </div>
+
+                        <div class="info-card">
+                            <div class="info-label">Route Type</div>
+                            <div class="route-badge ${flight.isDomestic ? 'domestic-badge' : 'international-badge'}">
+                                ${flight.isDomestic ? 'Domestic' : 'International'}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline">
+                        <div class="timeline-title">Flight Timeline</div>
+                        ${timeline.map(item => `
+                            <div class="timeline-item">
+                                <div class="timeline-dot"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-time">${item.time}</div>
+                                    <div class="timeline-desc">${item.desc}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+
+        function renderNoResults(flightNumber) {
+            const content = document.getElementById('statusContent');
+            content.innerHTML = `
+                <div class="no-results">
+                    <h3>Flight Not Found</h3>
+                    <p>We couldn't find a flight matching "${flightNumber}"</p>
+                    <p style="margin-top: 20px; font-size: 0.95em;">Try checking the flight number and try again.</p>
+                </div>
+            `;
+        }
+
+        function searchFlight() {
+            const flightNumber = document.getElementById('flightNumber').value.toUpperCase().trim();
+            
+            if (!flightNumber) {
+                renderNoResults('No flight number entered');
+                return;
+            }
+
+            // Simulate flight lookup
+            if (flightNumber.startsWith('KQ') && flightNumber.length === 5) {
+                const flight = generateFlightDetails(flightNumber);
+                renderFlightStatus(flight);
+            } else {
+                renderNoResults(flightNumber);
+            }
+        }
+
+        // Check URL for flight parameter
+        const params = new URLSearchParams(window.location.search);
+        const flightFromURL = params.get('flight');
+        
+        if (flightFromURL) {
+            document.getElementById('flightNumber').value = flightFromURL;
+            searchFlight();
+        }
+
+        // Event listeners
+        document.querySelector('.search-btn').addEventListener('click', searchFlight);
+        document.getElementById('flightNumber').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchFlight();
+        });
+    </script>
+</body>
+</html>

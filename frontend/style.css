@@ -60,6 +60,12 @@ body.dark {
 body{margin:0;background:var(--bg);color:var(--text-dark);min-height:100vh;line-height:1.6}
 .container{max-width:var(--maxw);margin:0 auto;padding:0 24px}
 
+/* Header logo (SmartFly) */
+.logo-container{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}
+.logo{width:44px;height:44px;background:url('/assets/logos/smartfly-logo.svg') no-repeat center/contain;display:inline-block}
+.logo svg{display:none}
+.logo-text{margin:0;font-weight:800;letter-spacing:-0.4px;color:inherit}
+
 /* Section scaffolding - Professional Airport Style */
 .section-head { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; margin: 24px 0 16px; border-bottom: 2px solid rgba(243, 156, 18, 0.15); padding-bottom: 12px }
 .section-head h3 { margin:0; font-size:26px; letter-spacing:.2px; color: var(--primary-color); font-weight: 700; position: relative }

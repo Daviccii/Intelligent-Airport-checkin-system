@@ -245,6 +245,27 @@
             const gsub = document.getElementById('grid-sub');
             const filterButtons = document.querySelectorAll('.filter-btn');
             
+            // Image mapping by category/interest type
+            const imageMap = {
+                beach: '/assets/images/destinations/destination-2.jpg',
+                dive: '/assets/images/destinations/destination-1.jpg',
+                heritage: '/assets/images/destinations/destination-4.jpg',
+                culture: '/assets/images/destinations/destination-4.jpg',
+                golf: '/assets/images/destinations/destination-5.jpg',
+                ecotourism: '/assets/images/destinations/destination-3.jpg',
+                'beach-escape': '/assets/images/destinations/destination-2.jpg',
+                'city-break': '/assets/images/destinations/destination-4.jpg',
+                'mountain-retreat': '/assets/images/destinations/destination-5.jpg'
+            };
+            
+            // Assign correct images based on interest/deal type
+            function getCorrectImage(item, category) {
+                // If item already has correct image, keep it
+                if (item.img && !item.img.includes('undefined')) return item.img;
+                // Use category map to get appropriate image
+                return imageMap[category] || '/assets/images/destinations/destination-3.jpg';
+            }
+            
             let allItems = [];
             let currentFilter = 'all';
 
@@ -313,9 +334,9 @@
                         { name:'Mombasa', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Pristine beaches and historic charm', to:'/book.html?to=MBA' },
                         { name:'Nairobi', region:'africa', img:'/assets/images/destinations/destination-3.jpg', blurb:'Gateway to East African adventures', to:'/book.html?to=NBO' },
                         { name:'Johannesburg', region:'africa', img:'/assets/images/destinations/destination-4.jpg', blurb:'Vibrant city with rich history', to:'/book.html?to=JNB' },
-                        { name:'Zanzibar', region:'africa', img:'/assets/images/destinations/destination-1.jpg', blurb:'Tropical paradise and spice island', to:'/book.html?to=ZNZ' },
-                        { name:'Entebbe', region:'africa', img:'/assets/images/destinations/destination-5.jpg', blurb:'Gateway to Uganda\'s natural wonders', to:'/book.html?to=EBB' },
-                        { name:'Cape Town', region:'africa', img:'/assets/images/destinations/destination-3.jpg', blurb:'Stunning scenery and diverse culture', to:'/book.html?to=CPT' }
+                        { name:'Zanzibar', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Tropical paradise and spice island', to:'/book.html?to=ZNZ' },
+                        { name:'Entebbe', region:'africa', img:'/assets/images/destinations/destination-3.jpg', blurb:'Gateway to Uganda\'s natural wonders', to:'/book.html?to=EBB' },
+                        { name:'Cape Town', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Stunning scenery and diverse culture', to:'/book.html?to=CPT' }
                     ];
                 } else if (type === 'longhaul') {
                     badge.textContent = 'Long-Haul';
@@ -324,11 +345,11 @@
                     gtitle.textContent = 'Intercontinental Travel';
                     gsub.textContent = 'Direct and connecting flights to global destinations';
                     allItems = [
-                        { name:'New York', region:'americas', img:'/assets/images/destinations/destination-3.jpg', blurb:'The city that never sleeps', to:'/book.html?to=JFK' },
-                        { name:'Dubai', region:'middle-east', img:'/assets/images/destinations/destination-4.jpg', blurb:'Luxury shopping and modern marvels', to:'/book.html?to=DXB' },
-                        { name:'London', region:'europe', img:'/assets/images/destinations/destination-5.jpg', blurb:'Historic capital with royal heritage', to:'/book.html?to=LHR' },
-                        { name:'Paris', region:'europe', img:'/assets/images/destinations/destination-1.jpg', blurb:'City of lights and romance', to:'/book.html?to=CDG' },
-                        { name:'Amsterdam', region:'europe', img:'/assets/images/destinations/destination-2.jpg', blurb:'Canals, culture, and cosmopolitan charm', to:'/book.html?to=AMS' },
+                        { name:'New York', region:'americas', img:'/assets/images/destinations/destination-4.jpg', blurb:'The city that never sleeps', to:'/book.html?to=JFK' },
+                        { name:'Dubai', region:'middle-east', img:'/assets/images/destinations/destination-5.jpg', blurb:'Luxury shopping and modern marvels', to:'/book.html?to=DXB' },
+                        { name:'London', region:'europe', img:'/assets/images/destinations/destination-4.jpg', blurb:'Historic capital with royal heritage', to:'/book.html?to=LHR' },
+                        { name:'Paris', region:'europe', img:'/assets/images/destinations/destination-4.jpg', blurb:'City of lights and romance', to:'/book.html?to=CDG' },
+                        { name:'Amsterdam', region:'europe', img:'/assets/images/destinations/destination-4.jpg', blurb:'Canals, culture, and cosmopolitan charm', to:'/book.html?to=AMS' },
                         { name:'Singapore', region:'asia', img:'/assets/images/destinations/destination-3.jpg', blurb:'Garden city with futuristic skyline', to:'/book.html?to=SIN' }
                     ];
                     document.querySelector('.filters').style.display = 'none';
@@ -338,14 +359,20 @@
                     descEl.textContent = 'Top picks for ' + interest + ' lovers.';
                     gtitle.textContent = 'Popular ' + interest + ' spots';
                     gsub.textContent = 'Tap a card to see flights and availability.';
-                    allItems = catalog.interests[interest];
+                    allItems = catalog.interests[interest].map(item => ({
+                        ...item,
+                        img: getCorrectImage(item, interest)
+                    }));
                 } else if (deal && catalog.deals && catalog.deals[deal]) {
                     badge.textContent = 'Deal';
                     titleEl.textContent = deal.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
                     descEl.textContent = 'Limited-time offers and packages.';
                     gtitle.textContent = 'Deal highlights';
                     gsub.textContent = 'Hurry—availability may be limited.';
-                    allItems = catalog.deals[deal];
+                    allItems = catalog.deals[deal].map(item => ({
+                        ...item,
+                        img: getCorrectImage(item, deal)
+                    }));
                     document.querySelector('.filters').style.display = 'none';
                 } else {
                     badge.textContent = 'Discover';

@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flight Schedule - SmartFly Airways</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .schedule-hero {
+            background: linear-gradient(135deg, #ff003c 0%, #c8102e 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .schedule-hero h1 {
+            font-size: 2.8em;
+            margin: 0 0 16px 0;
+            font-weight: 700;
+        }
+
+        .schedule-hero p {
+            font-size: 1.1em;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        .schedule-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .schedule-filters {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-size: 0.95em;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            padding: 10px 14px;
+            border: 1.5px solid #d0d7e2;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #ff003c;
+            box-shadow: 0 0 0 3px rgba(255, 0, 60, 0.1);
+        }
+
+        .search-btn {
+            background: #ff003c;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .search-btn:hover {
+            background: #c8102e;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .schedule-table thead {
+            background: #f3f4f6;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .schedule-table th {
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 0.95em;
+        }
+
+        .schedule-table td {
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #6b7280;
+        }
+
+        .schedule-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .schedule-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .flight-number {
+            font-weight: 700;
+            color: #ff003c;
+            font-family: monospace;
+        }
+
+        .time-cell {
+            font-weight: 600;
+            color: #1f2937;
+            font-family: monospace;
+        }
+
+        .route-badge {
+            display: inline-block;
+            background: #f0f1f3;
+            color: #1f2937;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .domestic-badge {
+            background: #e6f7ee;
+            color: #047857;
+        }
+
+        .international-badge {
+            background: #eff6ff;
+            color: #1e40af;
+        }
+
+        .aircraft-info {
+            font-size: 0.9em;
+            color: #6b7280;
+        }
+
+        .view-details-btn {
+            background: #f0f1f3;
+            color: #1f2937;
+            border: 1px solid #d0d7e2;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.2s ease;
+        }
+
+        .view-details-btn:hover {
+            background: #ff003c;
+            color: white;
+            border-color: #ff003c;
+        }
+
+        .no-flights {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .no-flights h3 {
+            font-size: 1.5em;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .schedule-filters {
+                flex-direction: column;
+            }
+
+            .schedule-table {
+                font-size: 0.9em;
+            }
+
+            .schedule-table th,
+            .schedule-table td {
+                padding: 12px;
+            }
+
+            .schedule-hero h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="main-nav">
+        <div class="container nav-container">
+            <div class="logo-container">
+                <div class="logo" aria-hidden="true"></div>
+                <h2 class="logo-text">SmartFly</h2>
+            </div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/book.html">Book</a>
+                <a href="/flight-schedule.html">Schedule</a>
+                <a href="/flight-status.html">Status</a>
+                <a href="/help-center.html">Help</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="schedule-hero">
+        <div class="container">
+            <h1>Flight Schedule</h1>
+            <p>View upcoming departures and arrivals</p>
+        </div>
+    </section>
+
+    <section class="schedule-container">
+        <div class="schedule-filters">
+            <div class="filter-group">
+                <label for="scheduleDate">Date</label>
+                <input type="date" id="scheduleDate">
+            </div>
+            <div class="filter-group">
+                <label for="scheduleType">Type</label>
+                <select id="scheduleType">
+                    <option value="all">All Flights</option>
+                    <option value="departures">Departures</option>
+                    <option value="arrivals">Arrivals</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="routeType">Route Type</label>
+                <select id="routeType">
+                    <option value="all">All Routes</option>
+                    <option value="domestic">Domestic</option>
+                    <option value="international">International</option>
+                </select>
+            </div>
+            <button class="search-btn">Search</button>
+        </div>
+
+        <div id="scheduleContent">
+            <!-- Schedule table will be populated here -->
+        </div>
+    </section>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p style="text-align: center; padding: 24px 0; color: #e7eefc;">&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const domesticAirports = ['NBO', 'MBA', 'KIS', 'ELD', 'WIL'];
+        const internationalAirports = ['LHR', 'CDG', 'DXB', 'JFK', 'SIN', 'AMS', 'BKK', 'HND', 'AUS', 'ORD'];
+        
+        const domesticAircraft = [
+            'Boeing 737', 'Embraer E190', 'Airbus A320',
+            'Boeing 737-800', 'Airbus A319'
+        ];
+        
+        const internationalAircraft = [
+            'Boeing 787 Dreamliner', 'Airbus A350', 'Boeing 777-300',
+            'Airbus A380', 'Boeing 787-9'
+        ];
+
+        function isRouteDomestic(from, to) {
+            return domesticAirports.includes(from) && domesticAirports.includes(to);
+        }
+
+        function getRandomAircraft(isDomestic) {
+            const fleet = isDomestic ? domesticAircraft : internationalAircraft;
+            return fleet[Math.floor(Math.random() * fleet.length)];
+        }
+
+        function generateSchedule(date, type, routeType) {
+            const schedule = [];
+            const dateObj = new Date(date);
+            
+            for (let i = 0; i < 12; i++) {
+                const from = domesticAirports[Math.floor(Math.random() * domesticAirports.length)];
+                let to;
+                
+                if (routeType === 'domestic') {
+                    to = domesticAirports[Math.floor(Math.random() * domesticAirports.length)];
+                } else if (routeType === 'international') {
+                    to = internationalAirports[Math.floor(Math.random() * internationalAirports.length)];
+                } else {
+                    to = Math.random() > 0.5 
+                        ? domesticAirports[Math.floor(Math.random() * domesticAirports.length)]
+                        : internationalAirports[Math.floor(Math.random() * internationalAirports.length)];
+                }
+                
+                if (from === to) continue;
+                
+                const isDomestic = isRouteDomestic(from, to);
+                const departureTime = new Date(dateObj);
+                departureTime.setHours(6 + Math.floor(Math.random() * 16), Math.floor(Math.random() * 60), 0);
+                
+                const duration = isDomestic ? (2 + Math.random() * 2) : (8 + Math.random() * 6);
+                const arrivalTime = new Date(departureTime.getTime() + duration * 60 * 60 * 1000);
+                
+                const flightNumber = `KQ${String(Math.floor(100 + Math.random() * 900)).padStart(3, '0')}`;
+                
+                schedule.push({
+                    flightNumber,
+                    from,
+                    to,
+                    departure: departureTime,
+                    arrival: arrivalTime,
+                    aircraft: getRandomAircraft(isDomestic),
+                    isDomestic,
+                    gate: String.fromCharCode(65 + Math.floor(Math.random() * 20)),
+                    terminal: isDomestic ? 'T1' : 'T3'
+                });
+            }
+            
+            // Filter by type
+            if (type === 'departures') {
+                return schedule.filter(f => f.departure.getDate() === dateObj.getDate());
+            } else if (type === 'arrivals') {
+                return schedule.filter(f => f.arrival.getDate() === dateObj.getDate());
+            }
+            
+            return schedule;
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        function renderSchedule(flights, type) {
+            const content = document.getElementById('scheduleContent');
+            
+            if (flights.length === 0) {
+                content.innerHTML = `
+                    <div class="no-flights">
+                        <h3>No ${type} found</h3>
+                        <p>Try adjusting your search filters</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const tableHTML = `
+                <table class="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Flight</th>
+                            <th>Route</th>
+                            <th>Departure</th>
+                            <th>Arrival</th>
+                            <th>Aircraft</th>
+                            <th>Gate</th>
+                            <th>Terminal</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${flights.map(flight => `
+                            <tr>
+                                <td><span class="flight-number">${flight.flightNumber}</span></td>
+                                <td>
+                                    <div>${flight.from} → ${flight.to}</div>
+                                    <span class="route-badge ${flight.isDomestic ? 'domestic-badge' : 'international-badge'}">
+                                        ${flight.isDomestic ? 'Domestic' : 'International'}
+                                    </span>
+                                </td>
+                                <td><span class="time-cell">${formatTime(flight.departure)}</span></td>
+                                <td><span class="time-cell">${formatTime(flight.arrival)}</span></td>
+                                <td><span class="aircraft-info">${flight.aircraft}</span></td>
+                                <td><strong>${flight.gate}</strong></td>
+                                <td><strong>${flight.terminal}</strong></td>
+                                <td><button class="view-details-btn" onclick="viewFlightDetails('${flight.flightNumber}')">View</button></td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            content.innerHTML = tableHTML;
+        }
+
+        function viewFlightDetails(flightNumber) {
+            window.location.href = `/flight-status.html?flight=${flightNumber}`;
+        }
+
+        function performSearch() {
+            const date = document.getElementById('scheduleDate').value || new Date().toISOString().split('T')[0];
+            const type = document.getElementById('scheduleType').value;
+            const routeType = document.getElementById('routeType').value;
+            
+            const flights = generateSchedule(date, type, routeType);
+            const typeLabel = type === 'all' ? 'flights' : type;
+            renderSchedule(flights, typeLabel);
+        }
+
+        // Initialize
+        document.getElementById('scheduleDate').valueAsDate = new Date();
+        document.querySelector('.search-btn').addEventListener('click', performSearch);
+        
+        // Load initial data
+        performSearch();
+    </script>
+</body>
+</html>

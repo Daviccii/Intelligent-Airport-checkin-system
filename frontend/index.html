@@ -533,14 +533,14 @@
       margin-bottom: 8px;
       box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
       border: 2px solid rgba(255, 255, 255, 0.15);
-      display: none !important;
+      display: none;
       flex-direction: column;
       gap: 4px;
       z-index: 100;
     }
 
     .signin-dropdown-menu.active {
-      display: flex !important;
+      display: flex;
       animation: slideUp 0.3s ease;
     }
 
@@ -771,72 +771,152 @@
 </head>
 <body>
 
-<!-- ========================= -->
-<!-- BLUE-THEMED HEADER        -->
-<!-- ========================= -->
-<header class="header">
-  <div class="header-container">
+<header class="main-header">
+    <div class="header-container">
 
-    <!-- Logo -->
-    <a href="/" class="logo-bubble">
-      <span class="logo-icon">✈</span>
-      <span class="logo-text">SmartFly Airways</span>
-    </a>
-
-    <!-- Navigation -->
-    <nav class="nav-links">
-      <div class="nav-item">
-        <a href="#" class="nav-link">Explore ▾</a>
-        <div class="mega-menu">
-          <a href="/destinations.html" class="nav-link">Destinations</a>
-          <a href="/explore.html" class="nav-link">Travel Inspiration</a>
-          <a href="/destinations-beach.html" class="nav-link">Beach Getaways</a>
-          <a href="/destinations-culture.html" class="nav-link">Cultural Experiences</a>
+        <div class="logo-section">
+            <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
+            <span class="brand-name">SmartFly</span>
         </div>
-      </div>
 
-      <div class="nav-item">
-        <a href="#" class="nav-link">Plan ▾</a>
-        <div class="mega-menu">
-          <a href="/availability.html" class="nav-link">Flight Schedules</a>
-          <a href="/plan.html" class="nav-link">Trip Planning</a>
-          <a href="/baggage.html" class="nav-link">Baggage Info</a>
-          <a href="/policy.html" class="nav-link">Travel Policies</a>
+        <nav class="nav-menu">
+          <div class="nav-item mega-parent">
+            <a href="/explore.html">Explore</a>
+            <div class="mega-menu">
+              <div class="mega-content">
+                <div class="mega-column">
+                  <h4>Destinations</h4>
+                  <a href="/destinations.html">All Destinations</a>
+                  <a href="/destinations-beach.html">Beach Getaways</a>
+                  <a href="/destinations-culture.html">Cultural Experiences</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Inspiration</h4>
+                  <a href="/explore.html">Travel Inspiration</a>
+                  <a href="/experience.html">Cabin Classes</a>
+                  <a href="/extras.html">Premium Services</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Specials</h4>
+                  <a href="/blog-post.html">Travel Stories</a>
+                  <a href="/plan.html">Trip Planning</a>
+                  <a href="/help.html">Travel Help</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item mega-parent">
+            <a href="/plan.html">Plan</a>
+            <div class="mega-menu">
+              <div class="mega-content">
+                <div class="mega-column">
+                  <h4>Flights</h4>
+                  <a href="/flight-schedule.html">Schedules</a>
+                  <a href="/flight-status.html">Flight Status</a>
+                  <a href="/availability.html">Availability</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Baggage</h4>
+                  <a href="/baggage.html">Allowance</a>
+                  <a href="/baggage.html#restricted">Restricted Items</a>
+                  <a href="/baggage.html#lost">Lost Baggage</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Assistance</h4>
+                  <a href="/special-care.html">Medical</a>
+                  <a href="/special-care.html#minor">Unaccompanied Minor</a>
+                  <a href="/special-care.html#mobility">Mobility Support</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item mega-parent">
+            <a href="/booking.html">Book &amp; Manage</a>
+            <div class="mega-menu">
+              <div class="mega-content">
+                <div class="mega-column">
+                  <h4>Book</h4>
+                  <a href="/booking.html">Book Flight</a>
+                  <a href="/book.html">Book a Flight</a>
+                  <a href="/seat-selection.html">Seat Selection</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Manage</h4>
+                  <a href="/book-manage.html">Manage Booking</a>
+                  <a href="/lookup.html">My Booking</a>
+                  <a href="/checkin.html">Online Check-in</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Extras</h4>
+                  <a href="/extras.html">Premium Services</a>
+                  <a href="/membership.html">Membership Tiers</a>
+                  <a href="/loyalty.html">Loyalty Program</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item mega-parent">
+            <a href="/experience.html">Experience</a>
+            <div class="mega-menu">
+              <div class="mega-content">
+                <div class="mega-column">
+                  <h4>Onboard</h4>
+                  <a href="/experience.html">Cabin Classes</a>
+                  <a href="/extras.html">Premium Services</a>
+                  <a href="/loyalty.html">Loyalty Program</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Airport</h4>
+                  <a href="/checkin.html">Online Check-in</a>
+                  <a href="/baggage.html">Baggage Info</a>
+                  <a href="/special-care.html">Special Care</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Support</h4>
+                  <a href="/help.html">Help Center</a>
+                  <a href="/policy.html">Travel Policies</a>
+                  <a href="/contact.html">Contact Us</a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="nav-item mega-parent">
+            <a href="/loyalty.html">Loyalty Program</a>
+            <div class="mega-menu">
+              <div class="mega-content">
+                <div class="mega-column">
+                  <h4>Program</h4>
+                  <a href="/loyalty.html">Overview</a>
+                  <a href="/membership.html">Membership Tiers</a>
+                  <a href="/membership-premium.html">Premium</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Benefits</h4>
+                  <a href="/membership-local.html">Local Benefits</a>
+                  <a href="/extras.html">Partner Offers</a>
+                  <a href="/experience.html">Onboard Benefits</a>
+                </div>
+                <div class="mega-column">
+                  <h4>Account</h4>
+                  <a href="/login.html">Member Sign In</a>
+                  <a href="/membership.html">Join Now</a>
+                  <a href="/help.html">Support</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nav>
+
+        <div class="header-right">
+            <span>+254 700 000 000</span>
+            <span>EN | KE</span>
         </div>
-      </div>
 
-      <div class="nav-item">
-        <a href="#" class="nav-link">Book & Manage ▾</a>
-        <div class="mega-menu">
-          <a href="/booking.html" class="nav-link">Book Flight</a>
-          <a href="/book-manage.html" class="nav-link">Manage Booking</a>
-          <a href="/seat-selection.html" class="nav-link">Seat Selection</a>
-          <a href="/checkin.html" class="nav-link">Online Check-in</a>
-        </div>
-      </div>
-
-      <div class="nav-item">
-        <a href="#" class="nav-link">Experience ▾</a>
-        <div class="mega-menu">
-          <a href="/experience.html" class="nav-link">Cabin Classes</a>
-          <a href="/loyalty.html" class="nav-link">Loyalty Program</a>
-          <a href="/membership.html" class="nav-link">Membership Tiers</a>
-          <a href="/extras.html" class="nav-link">Premium Services</a>
-        </div>
-      </div>
-
-      <a href="/help.html" class="nav-link">Help</a>
-    </nav>
-
-    <!-- Buttons -->
-    <div class="header-buttons">
-      <button class="btn-primary" onclick="window.location.href='/booking.html'"><span>Book Now</span></button>
     </div>
-
-    <!-- Mobile Hamburger -->
-    <button class="mobile-menu-button">☰</button>
-
-  </div>
 </header>
 
 
