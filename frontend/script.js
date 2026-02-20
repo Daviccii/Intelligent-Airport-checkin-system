@@ -441,6 +441,35 @@ class AirportDropdown {
 const airportDropdown = new AirportDropdown();
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Header mega-menu: open only on click
+    const megaParents = Array.from(document.querySelectorAll('.nav-menu .mega-parent'));
+    megaParents.forEach(parent => {
+        const link = parent.querySelector('a');
+        if (!link) return;
+
+        link.addEventListener('click', (event) => {
+            const isOpen = parent.classList.contains('open');
+            megaParents.forEach(p => p.classList.remove('open'));
+
+            if (!isOpen) {
+                event.preventDefault();
+                parent.classList.add('open');
+            }
+        });
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!event.target.closest('.nav-menu')) {
+            megaParents.forEach(p => p.classList.remove('open'));
+        }
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+            megaParents.forEach(p => p.classList.remove('open'));
+        }
+    });
+
     // Attach airport autocomplete
     airportDropdown.attachAutocomplete('fromInput');
     airportDropdown.attachAutocomplete('toInput');
@@ -557,30 +586,40 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Find cheapest price
         const minPrice = Math.min(...Object.values(prices));
-        
+
+        const today = new Date();
+        today.setHours(0,0,0,0);
+
         dates.forEach(dateStr => {
             const price = prices[dateStr];
             const dateObj = new Date(dateStr);
+            dateObj.setHours(0,0,0,0);
             const day = dateObj.getDate();
-            
+
             const dayCell = document.createElement('div');
             dayCell.className = 'calendar-day';
             dayCell.dataset.date = dateStr;
-            
+
             if (price === minPrice) {
                 dayCell.classList.add('cheapest');
             }
-            
+
+            // Disable past dates
+            if (dateObj < today) {
+                dayCell.classList.add('disabled');
+                dayCell.title = 'Past dates cannot be selected';
+            } else {
+                // Add click handler for date selection
+                dayCell.addEventListener('click', function() {
+                    selectCalendarDate(dateStr);
+                });
+            }
+
             dayCell.innerHTML = `
                 <div class="calendar-date">${day}</div>
                 <div class="calendar-price">KES ${price.toLocaleString()}</div>
             `;
-            
-            // Add click handler for date selection
-            dayCell.addEventListener('click', function() {
-                selectCalendarDate(dateStr);
-            });
-            
+
             container.appendChild(dayCell);
         });
     }

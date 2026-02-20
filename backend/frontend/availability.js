@@ -134,7 +134,7 @@ function renderDateSlider(dates, onDateSelect) {
         card.innerHTML = `
             <div class="date-card-day">${dateData.dayName}</div>
             <div class="date-card-date">${dateData.monthName} ${dateData.dayNum}</div>
-            <div class="date-card-price">$${dateData.price}</div>
+            <div class="date-card-price">Ksh ${dateData.price}</div>
         `;
         card.addEventListener('click', () => onDateSelect(dateData.date));
         slider.appendChild(card);
@@ -189,14 +189,14 @@ function renderFlights(flights) {
             <div class="flight-fares" style="grid-column: 1 / -1;">
                 <div class="fare-card" onclick="selectFlight('economy', ${flight.economyPrice})">
                     <div class="fare-class">Economy</div>
-                    <div class="fare-price">$${flight.economyPrice}</div>
-                    <div class="fare-currency">USD</div>
+                    <div class="fare-price">Ksh ${flight.economyPrice}</div>
+                    <div class="fare-currency">KES</div>
                 </div>
                 <div class="fare-card business" onclick="selectFlight('business', ${flight.businessPrice})">
                     ${flight.seatsLeft <= 5 ? `<span class="seats-left-badge">${flight.seatsLeft} seats left</span>` : ''}
                     <div class="fare-class">Business</div>
-                    <div class="fare-price">$${flight.businessPrice}</div>
-                    <div class="fare-currency">USD</div>
+                    <div class="fare-price">Ksh ${flight.businessPrice}</div>
+                    <div class="fare-currency">KES</div>
                 </div>
             </div>
         `;

@@ -12,7 +12,8 @@
           background: #fff;
           border-radius: 18px;
           padding: 24px;
-          width: 760px; /* ⬅ LARGE */
+          width: 100%;
+          max-width: 1200px;
           box-shadow: 0 20px 50px rgba(0,0,0,0.15);
           margin-top: 12px;
         }
@@ -310,7 +311,7 @@
       backdrop-filter: blur(10px);
     }
 
-    .nav-item:hover .mega-menu {
+    .mega-parent.open .mega-menu {
       display: flex;
       animation: slideDown 0.3s ease;
     }
@@ -935,12 +936,8 @@
 
         <!-- Hero content container -->
         <div class="hero-content">
-            <div class="hero-chip">Flight booking</div>
-            <h1 class="hero-title">Book smarter, breeze through every checkpoint</h1>
-            <p class="hero-subtitle">Real-time availability, smart seat selection, and passport validation—built to keep your trip moving forward.</p>
-
-            <!-- Booking Card - KQ Compact Style -->
-            <div class="booking-card-kq">
+          <!-- Booking Card - KQ Compact Style -->
+          <div class="booking-card-kq">
                 <form id="flightSearchForm" class="booking-form-kq">
                     <!-- Single Row: All fields inline -->
                     <div class="kq-form-row">
@@ -1075,7 +1072,11 @@
                     <input type="hidden" id="departDate" name="departDate" value="">
                     <input type="hidden" id="returnDate" name="returnDate" value="">
                 </form>
-            </div>
+              </div>
+
+              <div class="hero-chip">Flight booking</div>
+              <h1 class="hero-title">Book smarter, breeze through every checkpoint</h1>
+              <p class="hero-subtitle">Real-time availability, smart seat selection, and passport validation—built to keep your trip moving forward.</p>
 
         </div>
     </section>
@@ -1379,13 +1380,14 @@
           
           for (let day = 1; day <= 31; day++) {
             const date = new Date(startDate.getFullYear(), startDate.getMonth(), day);
-            
             // Only generate prices for valid dates in this month
             if (date.getMonth() === startDate.getMonth()) {
               const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-              const weekendSurge = isWeekend ? (basePrice * 0.25) : 0; // 25% weekend premium
-              const dayVariation = Math.floor(Math.random() * (basePrice * 0.2)) - (basePrice * 0.1); // ±10%
-              const finalPrice = Math.max(basePrice * 0.7, basePrice + weekendSurge + dayVariation);
+              const weekendSurge = isWeekend ? (basePrice * 0.15) : 0; // 15% weekend premium
+              // Only a small random variation, ±5%
+              const dayVariation = Math.floor(Math.random() * (basePrice * 0.1)) - (basePrice * 0.05);
+              // Never go below 90% of base price
+              const finalPrice = Math.max(basePrice * 0.9, basePrice + weekendSurge + dayVariation);
               prices[day] = Math.round(finalPrice);
             }
           }
@@ -1432,7 +1434,7 @@
 
             cell.innerHTML = `
               <div>${day}</div>
-              <div class="day-price">$${price}</div>
+              <div class="day-price">Ksh ${price}</div>
             `;
 
             // Highlight cheapest dates (lowest 20% of prices)
@@ -1451,7 +1453,7 @@
                   day: 'numeric', 
                   year: 'numeric' 
                 });
-                console.log(`Selected date: ${dateStr} (${formattedDate}) - Price: $${price}`);
+                console.log(`Selected date: ${dateStr} (${formattedDate}) - Price: Ksh ${price}`);
               });
             }
 
