@@ -5,36 +5,166 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hand Baggage - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .baggage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .baggage-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .baggage-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .baggage-card .size-info { background: #eff6ff; padding: 12px; border-radius: 6px; margin: 10px 0; font-weight: 600; color: #1e40af; }
+    .allowed-items { list-style: none; padding: 0; margin: 10px 0; }
+    .allowed-items li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .allowed-items li:before { content: '✓ '; color: #10b981; font-weight: bold; margin-right: 8px; }
+    .forbidden-items { list-style: none; padding: 0; margin: 10px 0; }
+    .forbidden-items li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #fee2e2; }
+    .forbidden-items li:before { content: '✗ '; color: #ef4444; font-weight: bold; margin-right: 8px; }
+    .packing-tips { background: #f0fdf4; border-left: 4px solid #10b981; padding: 20px; border-radius: 8px; margin: 20px 0; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Hand Baggage</h1>
-      <p class="section-subtitle">This page is dedicated to Hand Baggage.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Hand Baggage Allowance</h1>
+      <p class="section-subtitle">Travel light and smart with our flexible hand baggage policies</p>
+
+      <div class="info-section">
+        <h3>👜 Hand Baggage Basics</h3>
+        <p>Hand baggage (also called carry-on luggage) travels with you in the aircraft cabin. SmartFly allows 1 piece of hand baggage per passenger at no extra cost, plus a personal item (backpack, laptop bag, purse).</p>
+      </div>
+
+      <div class="info-section">
+        <h3>📏 Size & Weight Limits</h3>
+        <div class="baggage-grid">
+          <div class="baggage-card">
+            <h4>Economy Class</h4>
+            <div class="size-info">Max 56 × 45 × 25 cm</div>
+            <p><strong>Weight:</strong> 8 kg (17.6 lbs)</p>
+            <p><strong>Quantity:</strong> 1 piece + 1 personal item</p>
+            <p><strong>Examples:</strong> Roller bag, small suitcase</p>
+          </div>
+          <div class="baggage-card">
+            <h4>Premium Economy</h4>
+            <div class="size-info">Max 56 × 45 × 25 cm</div>
+            <p><strong>Weight:</strong> 8 kg (17.6 lbs)</p>
+            <p><strong>Quantity:</strong> 1 piece + 1 personal item</p>
+            <p><strong>Extra:</strong> 1 additional small bag allowed</p>
+          </div>
+          <div class="baggage-card">
+            <h4>Business Class</h4>
+            <div class="size-info">Max 62 × 45 × 25 cm</div>
+            <p><strong>Weight:</strong> 10 kg (22 lbs)</p>
+            <p><strong>Quantity:</strong> 2 pieces + 1 personal item</p>
+            <p><strong>Extra:</strong> Coat and umbrella free</p>
+          </div>
+          <div class="baggage-card">
+            <h4>First Class</h4>
+            <div class="size-info">Max 68 × 45 × 25 cm</div>
+            <p><strong>Weight:</strong> 12 kg (26.4 lbs)</p>
+            <p><strong>Quantity:</strong> 2 pieces + 1 personal item</p>
+            <p><strong>Extra:</strong> Coat, umbrella, hat box complimentary</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>✓ Allowed Items in Hand Baggage</h3>
+        <ul class="allowed-items">
+          <li>Laptop and tablet (in cabin baggage)</li>
+          <li>Toiletries bag (limited quantities)</li>
+          <li>Phone, chargers, and electronics</li>
+          <li>Medications (with prescription if required)</li>
+          <li>Glasses/sunglasses and contacts</li>
+          <li>Small books or documents</li>
+          <li>Baby items (bottle, formula, diapers)</li>
+          <li>Duty-free alcohol (sealed, in duty-free bag)</li>
+          <li>Non-alcoholic beverages (empty bottles, refill after security)</li>
+          <li>Travel essentials (pillow, blanket, eye mask)</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>✗ Prohibited Items in Hand Baggage</h3>
+        <ul class="forbidden-items">
+          <li>Sharp objects (knives, scissors, multi-tools)</li>
+          <li>Liquids over 100ml (3.4 oz)</li>
+          <li>Sporting goods (bats, clubs, guns)</li>
+          <li>Explosives and flammables</li>
+          <li>Aerosols (except deodorant/hair spray - limited)</li>
+          <li>Tools and equipment</li>
+          <li>Firearms and ammunition</li>
+          <li>Lithium batteries (except personal devices)</li>
+          <li>Hazardous materials</li>
+          <li>Heavy objects that violate weight limits</li>
+        </ul>
+      </div>
+
+      <div class="packing-tips">
+        <h3>💡 Smart Packing Tips</h3>
+        <p><strong>Layer strategically:</strong> Pack heavier items at the bottom, light items on top</p>
+        <p><strong>Use compression bags:</strong> Maximize space and minimize wrinkles</p>
+        <p><strong>Roll clothing:</strong> Takes less space than folding</p>
+        <p><strong>Keep essentials accessible:</strong> Medications, chargers, travel documents on top</p>
+        <p><strong>Follow 3-1-1 rule:</strong> Liquids max 3.4 oz, 1 quart-size bag per person</p>
+        <p><strong>Weigh before airport:</strong> Avoid overweight baggage charges</p>
+        <p><strong>Keep receipt:</strong> Duty-free purchases must stay in sealed bag</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🔧 Baggage Not Meeting Requirements</h3>
+        <p>If your hand baggage exceeds size or weight limits at check-in, you may be asked to:</p>
+        <ul class="allowed-items">
+          <li>Check the bag into hold (may incur additional charges)</li>
+          <li>Remove and repack items to fit within limits</li>
+          <li>Pay excess baggage fees</li>
+        </ul>
+        <p><strong>Tip:</strong> Arrive early to allow time for possible rebooking of oversized bags.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>👶 Special Categories</h3>
+        <p><strong>Infants (0-2 years):</strong> Infant seat and baby bag allowed free of charge</p>
+        <p><strong>Mobility aids:</strong> Wheelchairs and walking aids travel free as hand baggage</p>
+        <p><strong>Medical equipment:</strong> CPAP machines, oxygen, inhalers allowed (notify in advance)</p>
+        <p><strong>Musical instruments:</strong> Allowed if dimensions fit baggage sizer; fragile items should be soft cases</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/baggage-allowances.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Checked Baggage →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Your Flight →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

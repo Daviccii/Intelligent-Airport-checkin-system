@@ -311,7 +311,7 @@
       backdrop-filter: blur(10px);
     }
 
-    .mega-parent.open .mega-menu {
+    .nav-item.open .mega-menu {
       display: flex;
       animation: slideDown 0.3s ease;
     }
@@ -1563,26 +1563,7 @@
     // ============================================
     // MOBILE MEGA-MENU DROPDOWN TOGGLE
     // ============================================
-    const navItems = document.querySelectorAll('.nav-item > .nav-link');
-    
-    navItems.forEach(link => {
-      link.addEventListener('click', e => {
-        if(window.innerWidth <= 768) {
-          e.preventDefault();
-          const mega = link.nextElementSibling;
-          
-          // Close other mega menus
-          document.querySelectorAll('.mega-menu').forEach(m => {
-            if (m !== mega) {
-              m.classList.remove('show');
-            }
-          });
-          
-          // Toggle current mega menu
-          mega.classList.toggle('show');
-        }
-      });
-    });
+    // Handled by main nav toggle script below
 
     // ============================================
     // CLOSE MENUS ON RESIZE
@@ -1747,7 +1728,7 @@
     }
 
     // ============================================
-    // MEGA MENU CLICK TOGGLE
+    // MEGA MENU CLICK TOGGLE (DESKTOP & MOBILE)
     // ============================================
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
@@ -1758,12 +1739,21 @@
       trigger.addEventListener('click', (e) => {
         e.preventDefault();
         e.stopPropagation();
+        
+        // Close all other menus
         navItems.forEach(other => {
           if (other !== item) {
             other.classList.remove('open');
+            other.classList.remove('show');
           }
         });
-        item.classList.toggle('open');
+        
+        // Toggle current menu (works for both desktop and mobile)
+        if (window.innerWidth <= 768) {
+          menu.classList.toggle('show');
+        } else {
+          item.classList.toggle('open');
+        }
       });
     });
 

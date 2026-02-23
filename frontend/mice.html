@@ -3,38 +3,216 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meetings, Incentives, Conventions & Exhibitions (MICE) - SmartFly Airways</title>
+  <title>MICE - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .benefit-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .benefit-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .benefit-icon { font-size: 32px; margin-bottom: 12px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '✓ '; color: #10b981; font-weight: bold; margin-right: 8px; }
+    .pricing-highlight { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 20px 0; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Meetings, Incentives, Conventions & Exhibitions (MICE)</h1>
-      <p class="section-subtitle">This page is dedicated to Meetings, Incentives, Conventions & Exhibitions (MICE).</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">MICE Services</h1>
+      <p class="section-subtitle">Meetings, Incentives, Conventions & Exhibitions Solutions</p>
+
+      <div class="info-section">
+        <h3>🎯 What is MICE?</h3>
+        <p>MICE encompasses business travel for meetings, incentive trips, conventions, and exhibitions. SmartFly provides comprehensive solutions tailored to the specific needs of corporate groups traveling for business events and professional development.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🏢 Our MICE Services</h3>
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <div class="benefit-icon">📊</div>
+            <h4>Group Bookings</h4>
+            <p>Dedicated support for groups of 10+ passengers with customized pricing and flexible booking terms</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">💼</div>
+            <h4>Corporate Accounts</h4>
+            <p>Managed accounts with billing options, cost tracking, and dedicated account managers</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🎫</div>
+            <h4>Bulk Ticketing</h4>
+            <p>Special fares for large numbers of passengers traveling to the same event</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">📅</div>
+            <h4>Itinerary Planning</h4>
+            <p>Custom flight combinations and ground arrangements to match event schedules</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🔄</div>
+            <h4>Schedule Flexibility</h4>
+            <p>Flexible change and cancellation policies for event-dependent travel</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🌍</div>
+            <h4>Multi-Destination Tours</h4>
+            <p>Coordinated flights for convention tours and incentive trips across multiple cities</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>💰 Pricing & Discounts</h3>
+        <p>SmartFly offers competitive group fares based on group size and frequency:</p>
+        <ul class="feature-list">
+          <li>10-25 passengers: 5-8% discount</li>
+          <li>26-50 passengers: 8-12% discount</li>
+          <li>51-100 passengers: 12-16% discount</li>
+          <li>100+ passengers: Custom pricing (contact sales team)</li>
+          <li>Frequent travelers: Additional loyalty rewards</li>
+          <li>Advance bookings: Early bird discounts available</li>
+        </ul>
+      </div>
+
+      <div class="pricing-highlight">
+        <h3>📞 Volume Pricing Available</h3>
+        <p><strong>For groups of 100+ passengers:</strong> Contact our MICE Sales Team at <strong>mice@smartfly.com</strong> or call <strong>+254 700 000 001</strong> for custom quotes and special arrangements.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🎓 Convention Support</h3>
+        <p><strong>Pre-event services:</strong></p>
+        <ul class="feature-list">
+          <li>Marketing materials and promotional codes for attendees</li>
+          <li>Event landing pages with special booking links</li>
+          <li>Bulk registration forms and attendee lists</li>
+          <li>Ground transportation coordination</li>
+          <li>Hotel accommodation assistance</li>
+        </ul>
+        <p><strong>Post-event services:</strong></p>
+        <ul class="feature-list">
+          <li>Attendee feedback surveys</li>
+          <li>Invoice reconciliation and reporting</li>
+          <li>Cost analysis and savings documentation</li>
+          <li>Post-event support for delayed passengers</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🎁 Incentive Trip Packages</h3>
+        <p>Motivate your top performers with exclusive incentive travel experiences:</p>
+        <ul class="feature-list">
+          <li>Premium cabin upgrades at group rates</li>
+          <li>Lounge access for entire group</li>
+          <li>VIP ground services and priority handling</li>
+          <li>Customized dining options</li>
+          <li>Entertainment and special services onboard</li>
+          <li>Flexible booking with generous change allowances</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📋 Exhibition & Trade Show Travel</h3>
+        <p><strong>Services for exhibitors and attendees:</strong></p>
+        <ul class="feature-list">
+          <li>Special cargo handling for exhibition materials</li>
+          <li>Early arrival flights before event opens</li>
+          <li>Extended baggage allowance for displays</li>
+          <li>Storage facilities at arrival airport</li>
+          <li>Simplified group check-in procedures</li>
+          <li>Corporate billing for attendee reimbursement</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>✈️ Charter Flight Services</h3>
+        <p>For very large groups or exclusive events, SmartFly can arrange dedicated charter flights:</p>
+        <ul class="feature-list">
+          <li>Complete aircraft charter for groups 150+</li>
+          <li>Flexible scheduling and routing</li>
+          <li>Dedicated crew and ground staff</li>
+          <li>Custom catering and onboard services</li>
+          <li>Premium seating configurations</li>
+          <li>Branding and custom cabin decorations</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🔐 Corporate Billing & Reporting</h3>
+        <p><strong>Billing options:</strong></p>
+        <ul class="feature-list">
+          <li>Corporate accounts with billing terms (Net 30/60/90)</li>
+          <li>Centralized invoice management</li>
+          <li>Detailed trip reports and cost analysis</li>
+          <li>Cost center and project code tracking</li>
+          <li>Integration with accounting systems</li>
+          <li>Real-time booking status dashboard</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>👤 Dedicated Support</h3>
+        <p>Each MICE client receives:</p>
+        <ul class="feature-list">
+          <li>Dedicated Account Manager</li>
+          <li>24/7 emergency support hotline</li>
+          <li>Pre-event planning consultation</li>
+          <li>Customized reporting and analytics</li>
+          <li>Priority rebooking for disrupted flights</li>
+          <li>Direct access to senior management</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Get in Touch</h3>
+        <p><strong>MICE Sales Team:</strong></p>
+        <p>📧 Email: mice@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 001</p>
+        <p>🕐 Hours: Monday-Friday, 8:00 AM - 6:00 PM EAT</p>
+        <p><strong>Request a proposal:</strong> Fill out our MICE Request Form and a specialist will contact you within 24 hours.</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/group-booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Group Booking Details →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Your Group →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

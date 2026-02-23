@@ -5,24 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Kool Flyers Club - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .benefit-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .benefit-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .benefit-icon { font-size: 32px; margin-bottom: 12px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '✓ '; color: #10b981; font-weight: bold; margin-right: 8px; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
@@ -30,11 +37,131 @@
   <main class="content-section">
     <div class="container">
       <h1 class="section-title">Kool Flyers Club</h1>
-      <p class="section-subtitle">This page is dedicated to Kool Flyers Club.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <p class="section-subtitle">The ultimate youth travel community for young explorers</p>
+
+      <div class="info-section">
+        <h3>🚀 What is Kool Flyers Club?</h3>
+        <p>Kool Flyers Club is SmartFly's exclusive community for young travelers aged 12-25. Get special discounts, exclusive perks, travel tips, and connect with other young explorers around the world. It's your passport to affordable adventure!</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🌟 Membership Benefits</h3>
+        <div class="benefits-grid">
+          <div class="benefit-card">
+            <div class="benefit-icon">💲</div>
+            <h4>Youth Discounts</h4>
+            <p>Up to 25% off on selected routes and flights</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🌈</div>
+            <h4>Exclusive Deals</h4>
+            <p>Flash sales and member-only pricing on popular routes</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🍾️</div>
+            <h4>Birthday Bonus</h4>
+            <p>Special discount on flights during your birthday month</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🏆</div>
+            <h4>Status Perks</h4>
+            <p>Priority boarding, baggage allowance upgrades, lounge access</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">🏄</div>
+            <h4>Travel Community</h4>
+            <p>Connect with fellow travelers, share experiences, find travel mates</p>
+          </div>
+          <div class="benefit-card">
+            <div class="benefit-icon">📚</div>
+            <h4>Travel Guides</h4>
+            <p>Expert tips, destination guides, safety information, budget travel advice</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>📈 Membership Tiers</h3>
+        <p><strong>Bronze (Free):</strong> 10% discount on all flights, monthly newsletter, access to community</p>
+        <p><strong>Silver (KES 2,999/year):</strong> 15% discount, priority customer support, exclusive events, birthday bonus</p>
+        <p><strong>Gold (KES 7,999/year):</strong> 20% discount, free baggage upgrade to one extra bag, lounge access, travel insurance included</p>
+        <p><strong>Platinum (KES 14,999/year):</strong> 25% discount, free premium seat selection, unlimited baggage on club routes, concierge service, annual travel voucher</p>
+      </div>
+
+      <div class="info-section">
+        <h3>📊 Smart Young Traveler Program</h3>
+        <ul class="feature-list">
+          <li>Monthly tips on budget travel and planning</li>
+          <li>Scholarship opportunities for study abroad students</li>
+          <li>Travel insurance discounts for long-term trips</li>
+          <li>Hostel and accommodation partnerships with discounts</li>
+          <li>Travel photography contests with flight voucher prizes</li>
+          <li>Student visa support for international travel</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🌎 Summer & Holiday Specials</h3>
+        <ul class="feature-list">
+          <li>Spring break flight specials (March-April)</li>
+          <li>Summer vacation packages (June-August)</li>
+          <li>End-of-year holiday deals (November-December)</li>
+          <li>Gap year travel bundles with multi-month discounts</li>
+          <li>Festival and event travel packages</li>
+          <li>Adventure tourism partnerships with group discounts</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>💥 How to Join</h3>
+        <ol style="padding-left: 20px;">
+          <li>Download the SmartFly mobile app or visit smartfly.com/kool-flyers</li>
+          <li>Sign up with your email and age verification</li>
+          <li>Choose your membership tier</li>
+          <li>Activate member discounts on your first booking</li>
+          <li>Start earning points and rewards on every flight</li>
+        </ol>
+      </div>
+
+      <div class="info-section">
+        <h3>🌟 Member Exclusives</h3>
+        <p><strong>Monthly meetups:</strong> Connect with fellow Kool Flyers in your city</p>
+        <p><strong>Travel scholarship:</strong> Annual scholarship worth KES 50,000 for deserving young travelers</p>
+        <p><strong>Influencer program:</strong> Share your travel stories and earn free flights</p>
+        <p><strong>Referral rewards:</strong> Earn KES 2,000 credit for each friend you refer</p>
+        <p><strong>Early access:</strong> First dibs on new routes and flash sales</p>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Support & Questions</h3>
+        <p><strong>Contact the Kool Flyers team:</strong></p>
+        <p>📧 Email: koolflyers@smartfly.com</p>
+        <p>📱 WhatsApp: +254 700 000 005</p>
+        <p>🕐 Hours: Monday-Friday, 10:00 AM - 8:00 PM EAT</p>
+        <p>🌐 Instagram: @KoolFlyersClub - Follow for deals and community updates</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/group-booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Group Booking →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Join & Book →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

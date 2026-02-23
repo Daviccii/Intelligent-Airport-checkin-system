@@ -5,24 +5,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Duty Free Shopping - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .shopping-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .shop-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .shop-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '\u2713 '; color: #10b981; font-weight: bold; margin-right: 8px; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/experience.html" class="nav-link">Experience</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
@@ -30,11 +36,166 @@
   <main class="content-section">
     <div class="container">
       <h1 class="section-title">Duty Free Shopping</h1>
-      <p class="section-subtitle">This page is dedicated to Duty Free Shopping.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <p class="section-subtitle">Exclusive airport and in-flight shopping experience</p>
+
+      <div class="info-section">
+        <h3>🛍️ SmartFly Duty Free Service</h3>
+        <p>Enjoy exclusive duty-free shopping both at our airports and onboard all SmartFly flights. Browse premium brands, save on taxes, and discover unique gifts with our curated selection of international products.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🎁 Product Categories</h3>
+        <div class="shopping-grid">
+          <div class="shop-card">
+            <h4>💎 Perfume & Cosmetics</h4>
+            <ul class="feature-list">
+              <li>Designer fragrances (Chanel, Dior, Gucci)</li>
+              <li>Luxury skincare brands</li>
+              <li>Makeup collections</li>
+              <li>Perfume gift sets</li>
+              <li>Tax-free savings: 15-20%</li>
+            </ul>
+            <p style="margin-top: 12px; font-weight: 600;">KES 2,500 - 15,000</p>
+          </div>
+          <div class="shop-card">
+            <h4>🥃 Spirits & Wine</h4>
+            <ul class="feature-list">
+              <li>Premium whisky collection</li>
+              <li>Fine wines and champagne</li>
+              <li>Vodka and gin selections</li>
+              <li>Liqueurs and cordials</li>
+              <li>Tax-free savings: 25-30%</li>
+            </ul>
+            <p style="margin-top: 12px; font-weight: 600;">KES 3,000 - 20,000</p>
+          </div>
+          <div class="shop-card">
+            <h4>🍫 Chocolates & Confections</h4>
+            <ul class="feature-list">
+              <li>Belgian chocolates (Godiva, Leonidas)</li>
+              <li>Swiss pralines</li>
+              <li>Premium candy selections</li>
+              <li>Local specialty items</li>
+              <li>Tax-free savings: 10-15%</li>
+            </ul>
+            <p style="margin-top: 12px; font-weight: 600;">KES 1,500 - 8,000</p>
+          </div>
+          <div class="shop-card">
+            <h4>⌚ Watches & Jewelry</h4>
+            <ul class="feature-list">
+              <li>Designer watches (Rolex, Omega)</li>
+              <li>Luxury jewelry pieces</li>
+              <li>Accessories collections</li>
+              <li>Certified gemstones</li>
+              <li>Tax-free savings: 20-25%</li>
+            </ul>
+            <p style="margin-top: 12px; font-weight: 600;">KES 10,000 - 500,000+</p>
+          </div>
+          <div class="shop-card">
+            <h4>👜 Designer Goods</h4>
+            <ul class="feature-list">
+              <li>Luxury handbags (Gucci, Louis Vuitton)</li>
+              <li>Designer scarves and accessories</li>
+              <li>Sunglasses (Ray-Ban, Prada)</li>
+              <li>Leather goods</li>
+              <li>Tax-free savings: 15-20%</li>
+            </ul>
+            <p style="margin-top: 12px; font-weight: 600;">KES 5,000 - 200,000+</p>
+          </div>
+          <div class="shop-card">
+            <h4>📱 Electronics</h4>
+            <ul class="feature-list">
+              <li>Latest tech gadgets</li>
+              <li>Headphones and speakers</li>
+              <li>Portable chargers</li>
+              <li>Cameras and accessories</li>
+              <li>Tax-free savings: 10-18%</li>
+            </ul>
+            <p style="margin-top: 12px; font-weight: 600;">KES 3,000 - 50,000</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>📦 Shopping Locations</h3>
+        <p><strong>Airport Duty Free Shops:</strong></p>
+        <ul class="feature-list">
+          <li>Nairobi Hub (JKIA): 8 shops across terminals</li>
+          <li>Mombasa (MBA): 3 shops</li>
+          <li>Kisumu (KIS): 2 shops</li>
+          <li>Open 24 hours on flight days</li>
+          <li>Pre-order service available</li>
+        </ul>
+        <p style="margin-top: 20px;"><strong>In-flight Shopping:</strong></p>
+        <ul class="feature-list">
+          <li>Shopping cart service on all international flights</li>
+          <li>Payment in KES or USD</li>
+          <li>Items delivered to seat</li>
+          <li>No handling fee</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>💳 Payment Methods</h3>
+        <ul class="feature-list">
+          <li>Credit/Debit cards (Visa, Mastercard, Amex)</li>
+          <li>Cash (KES, USD, EUR, GBP)</li>
+          <li>Mobile payment (M-Pesa, Apple Pay, Google Pay)</li>
+          <li>SmartFly gift cards</li>
+          <li>Installment plans on selected items</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🎯 Loyalty Benefits</h3>
+        <ul class="feature-list">
+          <li>Kool Flyers Club members: 5% additional discount</li>
+          <li>Business Class: 10% automatic discount</li>
+          <li>First Class: 15% automatic discount</li>
+          <li>Double miles on all purchases</li>
+          <li>Exclusive early access to new collections</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🚚 Delivery & Returns</h3>
+        <ul class="feature-list">
+          <li>Items wrapped as gifts upon request</li>
+          <li>14-day return policy on unopened items</li>
+          <li>Express shipping available (KES 1,000)</li>
+          <li>Fragile items specially packaged</li>
+          <li>Authenticity guarantee on all products</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Shopping Support</h3>
+        <p><strong>Duty Free Customer Service:</strong></p>
+        <p>📧 Email: dutyfree@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 121</p>
+        <p>⏰ Hours: 24/7 support available</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/class-of-service.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Class of Service →</a>
+        <a href="/onboard-experience-more.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">More On-board Services →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

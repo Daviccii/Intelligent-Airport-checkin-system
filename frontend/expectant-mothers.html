@@ -3,38 +3,200 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Expectant Mothers - SmartFly Airways</title>
+  <title>Pregnancy Travel - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .service-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .service-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '\u2713 '; color: #10b981; font-weight: bold; margin-right: 8px; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Expectant Mothers</h1>
-      <p class="section-subtitle">This page is dedicated to Expectant Mothers.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Pregnancy Travel Guide</h1>
+      <p class="section-subtitle">Safe and comfortable air travel during pregnancy</p>
+
+      <div class="info-section">
+        <h3>🧀 Flying While Pregnant</h3>
+        <p>SmartFly welcomes pregnant passengers and provides special accommodations to ensure safe, comfortable travel. Most airlines allow flying until 36 weeks of pregnancy. Plan ahead and notify us of your pregnancy when booking or managing your reservation.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>💪 Pregnancy Timeline & Flying</h3>
+        <p><strong>First Trimester (0-12 weeks):</strong> Generally safe to fly. Nausea and fatigue common. Extra rest recommended.</p>
+        <p><strong>Second Trimester (13-26 weeks):</strong> Best time to fly. Energy levels higher, lowest miscarriage risk. Book longer trips during this period.</p>
+        <p><strong>Third Trimester (27-36 weeks):</strong> Flying permitted but discomfort increases. Extra legroom seats recommended. Consult doctor before booking.</p>
+        <p><strong>After 36 weeks:</strong> No commercial flight allowed. Risk of labor during flight makes travel inadvisable.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>💊 Medical Clearance & Documentation</h3>
+        <p><strong>Required from doctor:</strong></p>
+        <ul class="feature-list">
+          <li>Medical fitness to fly certificate</li>
+          <li>Estimated delivery date</li>
+          <li>Confirmation of single/multiple pregnancy</li>
+          <li>Any pregnancy complications or restrictions</li>
+          <li>Contact details of healthcare provider</li>
+        </ul>
+        <p><strong>Timing:</strong> Submit documentation at time of booking or 48 hours before departure</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🌟 Special Accommodations Available</h3>
+        <div class="services-grid">
+          <div class="service-card">
+            <h4>💺 Extra Legroom Seating</h4>
+            <ul class="feature-list">
+              <li>Bulkhead or exit row seats</li>
+              <li>Free upgrade for pregnant passengers</li>
+              <li>Easier aisle access</li>
+              <li>Lavatory proximity</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>🌼 Comfort Items</h4>
+            <ul class="feature-list">
+              <li>Maternity pillows provided</li>
+              <li>Blankets and cushions</li>
+              <li>Anti-nausea ginger tea</li>
+              <li>Compression socks available</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>💳 Priority Check-in</h4>
+            <ul class="feature-list">
+              <li>First in line at counter</li>
+              <li>Less standing time</li>
+              <li>Assistance with luggage</li>
+              <li>Special help at security</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>🍽️ Customized Meals</h4>
+            <ul class="feature-list">
+              <li>Mild/bland meal options</li>
+              <li>Extra snacks for cravings</li>
+              <li>Frequent beverages</li>
+              <li>Ginger or anti-nausea options</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>📩 Cabin Crew Attention</h4>
+            <ul class="feature-list">
+              <li>Frequent check-ins by crew</li>
+              <li>Assistance with lavatory</li>
+              <li>Monitoring for complications</li>
+              <li>Medical personnel on standby</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>💍 Personal Assistance</h4>
+            <ul class="feature-list">
+              <li>Designated crew member assigned</li>
+              <li>Call button priority responses</li>
+              <li>Extra bathroom breaks allowed</li>
+              <li>Emotional support available</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>🤕 Health & Wellness Tips</h3>
+        <ul class="feature-list">
+          <li>Wear loose, comfortable clothing</li>
+          <li>Move around cabin every hour to prevent blood clots</li>
+          <li>Stay hydrated (avoid caffeine and alcohol)</li>
+          <li>Use support stockings/compression socks</li>
+          <li>Elevate feet when seated</li>
+          <li>Take frequent restroom breaks</li>
+          <li>Have snacks for nausea management</li>
+          <li>Avoid sleeping flat on back after 24 weeks</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🚫 Things to Avoid</h3>
+        <ul class="feature-list">
+          <li>Flights exceeding 6 hours (if over 32 weeks)</li>
+          <li>Flights departing more than 2 hours from medical facilities</li>
+          <li>Multiple connections (tiring and stressful)</li>
+          <li>High-altitude destinations (thin oxygen)</li>
+          <li>Destinations with Zika or malaria (pregnancy risks)</li>
+          <li>Destinations with poor medical infrastructure</li>
+          <li>Travel if having pregnancy complications</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📈 Packing for Pregnancy Travel</h3>
+        <p><strong>Essentials to bring:</strong></p>
+        <ul class="feature-list">
+          <li>Prenatal records and ultrasound images</li>
+          <li>Doctor's clearance letter</li>
+          <li>Insurance documentation</li>
+          <li>Maternity compression socks</li>
+          <li>Anti-nausea medication (ginger)</li>
+          <li>Prenatal vitamins</li>
+          <li>Comfortable pillow and blanket</li>
+          <li>Extra underwear and maternity pads</li>
+          <li>Change of clothes for emergencies</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Booking Assistance</h3>
+        <p><strong>Pregnancy Travel Support Team:</strong></p>
+        <p>📧 Email: pregnancy@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 015</p>
+        <p>⏰ Hours: Monday-Friday 8am-6pm EAT</p>
+        <p><strong>Tell us:</strong> Expected delivery date, special accommodations needed, healthcare provider contact info</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/reduced-mobility.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Reduced Mobility →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Safe Pregnancy Travel →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

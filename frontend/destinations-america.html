@@ -1,40 +1,549 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>America Destinations - SmartFly Airways</title>
-  <link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>American Destinations - SmartFly Airways</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .destination-hero {
+            background: linear-gradient(135deg, #0B3D91 0%, #1e5bb8 100%);
+            padding: 80px 20px 60px;
+            color: white;
+            text-align: center;
+        }
+        
+        .destination-hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        .destination-hero p {
+            font-size: 20px;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .destinations-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .continent-section {
+            margin-bottom: 80px;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .section-header h2 {
+            font-size: 36px;
+            color: #0B3D91;
+            margin-bottom: 12px;
+        }
+        
+        .section-header p {
+            font-size: 18px;
+            color: #64748b;
+        }
+        
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 32px;
+        }
+        
+        .destination-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+        }
+        
+        .destination-card:nth-child(1) { animation-delay: 0.1s; }
+        .destination-card:nth-child(2) { animation-delay: 0.2s; }
+        .destination-card:nth-child(3) { animation-delay: 0.3s; }
+        .destination-card:nth-child(4) { animation-delay: 0.4s; }
+        .destination-card:nth-child(5) { animation-delay: 0.5s; }
+        .destination-card:nth-child(6) { animation-delay: 0.6s; }
+        .destination-card:nth-child(7) { animation-delay: 0.7s; }
+        .destination-card:nth-child(8) { animation-delay: 0.8s; }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .destination-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(11, 61, 145, 0.15);
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        
+        .destination-card:hover .card-image {
+            transform: scale(1.1);
+        }
+        
+        .card-content {
+            padding: 28px;
+        }
+        
+        .card-flag {
+            font-size: 32px;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        
+        .card-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .card-country {
+            font-size: 16px;
+            color: #0B3D91;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .card-description {
+            font-size: 15px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .card-features {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .feature-tag {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0B3D91;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #0B3D91 0%, #1e5bb8 100%);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(11, 61, 145, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(11, 61, 145, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .destination-hero h1 {
+                font-size: 36px;
+            }
+            
+            .destinations-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
-      </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
-      </div>
-    </div>
-  </header>
 
-  <main class="content-section">
-    <div class="container">
-      <h1 class="section-title">America Destinations</h1>
-      <p class="section-subtitle">This page is dedicated to America Destinations.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
-      </div>
+<header class="main-header">
+  <div class="top-bar">
+    <div class="top-left">
+      <span>EN | KE</span>
+      <span>Help</span>
     </div>
-  </main>
+    <div class="top-right">
+      <span>+254 700 000 000</span>
+      <a href="/login.html">Login</a>
+    </div>
+  </div>
+
+  <div class="nav-wrapper">
+    <div class="logo">
+      <img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly">
+      <span>SmartFly</span>
+    </div>
+
+    <nav class="nav-menu">
+      <div class="nav-item">
+        <a href="/explore.html">Explore</a>
+        <div class="mega-menu">
+          <div class="mega-container">
+            <div>
+              <h4>Our Destinations</h4>
+              <a href="/destinations-africa.html">Africa</a>
+              <a href="/destinations-europe.html">Europe</a>
+              <a href="/destinations-asia.html">Asia</a>
+              <a href="/destinations-america.html">America</a>
+              <a href="/destinations-middle-east.html">Middle East</a>
+              <a href="/destinations.html">View All</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="/plan.html">Plan</a>
+      </div>
+      <div class="nav-item">
+        <a href="/book-manage.html">Book & Manage</a>
+      </div>
+      <div class="nav-item">
+        <a href="/experience.html">Experience</a>
+      </div>
+      <div class="nav-item">
+        <a href="/loyalty.html">Loyalty</a>
+      </div>
+    </nav>
+
+    <div class="cta-btn">
+      <a href="/booking.html">Book Now</a>
+    </div>
+  </div>
+</header>
+
+<div class="destination-hero">
+    <h1>✈️ Discover America</h1>
+    <p>From towering skyscrapers to ancient ruins, explore the diverse beauty of North and South America</p>
+</div>
+
+<div class="destinations-container">
+    <div class="continent-section">
+        <div class="section-header">
+            <h2>🗽 North America</h2>
+            <p>Iconic cities and natural wonders</p>
+        </div>
+        
+        <div class="destinations-grid">
+            <div class="destination-card" onclick="location.href='/destination-new-york.html'">
+                <img src="/assets/images/destinations/new-york.jpg" alt="New York" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇺🇸</span>
+                    <h3 class="card-title">New York</h3>
+                    <p class="card-country">United States</p>
+                    <p class="card-description">The city that never sleeps - Broadway shows, world-class museums, Central Park, and iconic skyline.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🗽 Iconic</span>
+                        <span class="feature-tag">🎭 Broadway</span>
+                        <span class="feature-tag">🏙️ Urban</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">15+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$920</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-los-angeles.html'">
+                <img src="/assets/images/destinations/los-angeles.jpg" alt="Los Angeles" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇺🇸</span>
+                    <h3 class="card-title">Los Angeles</h3>
+                    <p class="card-country">United States</p>
+                    <p class="card-description">Entertainment capital with Hollywood glamour, beautiful beaches, perfect weather, and celebrity culture.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🎬 Hollywood</span>
+                        <span class="feature-tag">🏖️ Beaches</span>
+                        <span class="feature-tag">☀️ Weather</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">14+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$880</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-toronto.html'">
+                <img src="/assets/images/destinations/toronto.jpg" alt="Toronto" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇨🇦</span>
+                    <h3 class="card-title">Toronto</h3>
+                    <p class="card-country">Canada</p>
+                    <p class="card-description">Cosmopolitan hub with CN Tower, diverse neighborhoods, world-class dining, and multicultural vibrancy.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🏙️ Modern</span>
+                        <span class="feature-tag">🍽️ Dining</span>
+                        <span class="feature-tag">🎭 Culture</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">10+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$850</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.7★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-mexico-city.html'">
+                <img src="/assets/images/destinations/mexico-city.jpg" alt="Mexico City" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇲🇽</span>
+                    <h3 class="card-title">Mexico City</h3>
+                    <p class="card-country">Mexico</p>
+                    <p class="card-description">Ancient Aztec heritage, vibrant markets, incredible cuisine, colorful architecture, and rich traditions.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🏛️ Historic</span>
+                        <span class="feature-tag">🌮 Cuisine</span>
+                        <span class="feature-tag">🎨 Art</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">8+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$720</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="continent-section">
+        <div class="section-header">
+            <h2>🌎 South America</h2>
+            <p>Passion, culture, and natural beauty</p>
+        </div>
+        
+        <div class="destinations-grid">
+            <div class="destination-card" onclick="location.href='/destination-rio.html'">
+                <img src="/assets/images/destinations/rio.jpg" alt="Rio de Janeiro" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇧🇷</span>
+                    <h3 class="card-title">Rio de Janeiro</h3>
+                    <p class="card-country">Brazil</p>
+                    <p class="card-description">Marvelous city with Christ the Redeemer, Copacabana beach, Carnival spirit, and samba energy.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🏖️ Beaches</span>
+                        <span class="feature-tag">⛰️ Mountains</span>
+                        <span class="feature-tag">🎉 Carnival</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">9+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$980</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-buenos-aires.html'">
+                <img src="/assets/images/destinations/buenos-aires.jpg" alt="Buenos Aires" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇦🇷</span>
+                    <h3 class="card-title">Buenos Aires</h3>
+                    <p class="card-country">Argentina</p>
+                    <p class="card-description">Paris of South America with passionate tango, incredible steaks, European architecture, and wine culture.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">💃 Tango</span>
+                        <span class="feature-tag">🥩 Cuisine</span>
+                        <span class="feature-tag">🍷 Wine</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">7+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$1020</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-lima.html'">
+                <img src="/assets/images/destinations/lima.jpg" alt="Lima" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇵🇪</span>
+                    <h3 class="card-title">Lima</h3>
+                    <p class="card-country">Peru</p>
+                    <p class="card-description">Gateway to Machu Picchu, culinary capital, colonial architecture, and Pacific Ocean coastline.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🍽️ Cuisine</span>
+                        <span class="feature-tag">🏛️ Historic</span>
+                        <span class="feature-tag">🌊 Coastal</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">6+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$950</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.7★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-bogota.html'">
+                <img src="/assets/images/destinations/bogota.jpg" alt="Bogotá" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇨🇴</span>
+                    <h3 class="card-title">Bogotá</h3>
+                    <p class="card-country">Colombia</p>
+                    <p class="card-description">High-altitude capital with colonial charm, vibrant nightlife, excellent coffee, and warm hospitality.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">☕ Coffee</span>
+                        <span class="feature-tag">🎨 Culture</span>
+                        <span class="feature-tag">🌃 Nightlife</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">5+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$820</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.6★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 60px;">
+        <a href="/destinations.html" class="cta-button">View All Destinations →</a>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-top">
+            <div>
+                <div class="logo">✈ SmartFly Airways</div>
+                <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="/script.js"></script>
 </body>
 </html>

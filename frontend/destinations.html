@@ -3,401 +3,1005 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Explore Destinations - SmartFly Airways</title>
-    <link rel="stylesheet" href="/style.css">
+    <title>Explore All Destinations - SmartFly Airways</title>
+    <link rel="stylesheet" href="/styles.css">
     <style>
         .hero-section {
-            background: linear-gradient(135deg, #0a2463 0%, #1e3d59 100%);
+            background: linear-gradient(135deg, #0B3D91 0%, #1e5bb8 100%);
             color: white;
-            padding: 60px 20px;
+            padding: 100px 20px 80px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '✈';
+            position: absolute;
+            font-size: 400px;
+            opacity: 0.05;
+            top: -100px;
+            right: -50px;
+            transform: rotate(-15deg);
         }
         
         .hero-section h1 {
-            font-size: 2.8em;
-            margin: 0 0 16px 0;
-            font-weight: 700;
-        }
-        
-        .hero-section p {
-            font-size: 1.2em;
-            margin: 0;
-            opacity: 0.95;
-        }
-        
-        .destination-badge {
-            display: inline-block;
-            background: #f39c12;
-            color: #0a2463;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85em;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        
-        .destinations-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 24px;
-            padding: 60px 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .destination-card {
-            position: relative;
-            overflow: hidden;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-        
-        .destination-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-        }
-        
-        .destination-card:focus-visible {
-            outline: 3px solid #f39c12;
-            outline-offset: 2px;
-        }
-        
-        .destination-card img {
-            width: 100%;
-            height: 240px;
-            object-fit: cover;
-            display: block;
-        }
-        
-        .destination-info {
-            padding: 24px;
-            background: white;
+            font-size: 56px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            animation: fadeInUp 0.8s ease;
             position: relative;
             z-index: 1;
         }
         
-        .destination-info h3 {
-            color: #0a2463;
-            margin: 0 0 12px 0;
-            font-size: 1.5em;
-            font-weight: 700;
+        .hero-section p {
+            font-size: 22px;
+            opacity: 0.95;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            animation: fadeInUp 1s ease;
+            position: relative;
+            z-index: 1;
         }
         
-        .destination-info p {
-            color: #6b7280;
-            margin: 0;
-            font-size: 0.95em;
-            line-height: 1.5;
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            background: white;
+            border-radius: 50px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
         }
         
-        .cta-button {
-            display: inline-block;
-            margin-top: 16px;
-            padding: 10px 18px;
-            background: #0a2463;
-            color: white;
-            border-radius: 6px;
-            font-weight: 600;
-            transition: background 0.3s ease;
-            text-decoration: none;
+        .search-box input {
+            flex: 1;
+            padding: 18px 28px;
+            border: none;
+            font-size: 16px;
+            outline: none;
         }
         
-        .destination-card:hover .cta-button {
+        .search-box button {
+            padding: 18px 36px;
             background: #f39c12;
-            color: #0a2463;
-        }
-        
-        .section-title {
-            font-size: 2.2em;
-            color: #0a2463;
-            margin-bottom: 12px;
+            border: none;
+            color: #0B3D91;
             font-weight: 700;
+            cursor: pointer;
+            transition: background 0.3s;
         }
         
-        .section-subtitle {
-            font-size: 1.1em;
-            color: #6b7280;
-            margin-bottom: 40px;
+        .search-box button:hover {
+            background: #e67e22;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .continent-filters {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 40px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: #f8fafc;
+        }
+        
+        .filter-btn {
+            padding: 12px 28px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            color: #0B3D91;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            border-color: #0B3D91;
+            background: #0B3D91;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(11, 61, 145, 0.3);
         }
         
         .destinations-container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 60px 20px;
         }
         
-        .filters {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 40px;
-            flex-wrap: wrap;
-            justify-content: center;
+        .continent-section {
+            margin-bottom: 100px;
+            animation: fadeIn 0.8s ease;
         }
         
-        .filter-btn {
-            padding: 10px 20px;
-            border: 2px solid #e5e7eb;
-            background: white;
-            color: #0a2463;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .continent-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 8px 20px;
             border-radius: 20px;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: 0.5px;
+        }
+        
+        .section-header h2 {
+            font-size: 42px;
+            color: #0B3D91;
+            margin-bottom: 12px;
+            font-weight: 800;
+        }
+        
+        .section-header p {
+            font-size: 18px;
+            color: #64748b;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 32px;
+        }
+        
+        .destination-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+        }
+        
+        .destination-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(11, 61, 145, 0.15);
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        
+        .destination-card:hover .card-image {
+            transform: scale(1.1);
+        }
+        
+        .card-content {
+            padding: 24px;
+        }
+        
+        .card-flag {
+            font-size: 28px;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+        
+        .card-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+        
+        .card-country {
+            font-size: 14px;
+            color: #0B3D91;
             font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .card-stats {
+            display: flex;
+            gap: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .stat {
+            flex: 1;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #0B3D91;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .view-all-btn {
+            display: inline-block;
+            margin-top: 32px;
+            padding: 16px 40px;
+            background: linear-gradient(135deg, #0B3D91 0%, #1e5bb8 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 16px;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(11, 61, 145, 0.3);
         }
         
-        .filter-btn:hover,
-        .filter-btn.active {
-            border-color: #f39c12;
-            background: #f39c12;
-            color: #0a2463;
+        .view-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(11, 61, 145, 0.4);
         }
         
-        .filter-btn:focus-visible {
-            outline: 2px solid #0a2463;
-            outline-offset: 2px;
+        .world-map-section {
+            background: #f8fafc;
+            padding: 80px 20px;
+            margin: 60px 0;
+            text-align: center;
+        }
+        
+        .world-map-section h3 {
+            font-size: 36px;
+            color: #0B3D91;
+            margin-bottom: 20px;
+            font-weight: 800;
+        }
+        
+        .world-map-section p {
+            font-size: 18px;
+            color: #64748b;
+            margin-bottom: 40px;
+        }
+        
+        .map-placeholder {
+            max-width: 1000px;
+            margin: 0 auto;
+            font-size: 120px;
+            opacity: 0.1;
+            user-select: none;
         }
         
         @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 36px;
+            }
+            
+            .hero-section p {
+                font-size: 16px;
+            }
+            
             .destinations-grid {
                 grid-template-columns: 1fr;
-                padding: 40px 16px;
             }
             
-            .hero-section h1 {
-                font-size: 2em;
+            .section-header h2 {
+                font-size: 32px;
             }
             
-            .section-title {
-                font-size: 1.8em;
+            .continent-filters {
+                padding: 30px 15px;
             }
         }
     </style>
 </head>
 <body>
-    <header class="main-nav">
-        <div class="container nav-container">
-            <div class="logo-container">
-                <div class="logo">
-                    <svg viewBox="0 0 24 24">
-                        <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
-                    </svg>
-                </div>
-                <h2 class="logo-text">SmartFly</h2>
-            </div>
-            <div class="nav-links">
-                <a href="/">Home</a>
-                <a href="/experience.html">Experience</a>
-                <a href="/book.html">Book</a>
-                <a href="/help-center.html">Help</a>
-            </div>
-        </div>
-    </header>
 
-    <section class="hero-section">
-        <div class="container">
-            <span class="destination-badge" id="ds-badge">Discover</span>
-            <h1 id="ds-title">Explore Destinations</h1>
-            <p id="ds-desc">Find your next adventure across the globe</p>
-        </div>
-    </section>
+<header class="main-header">
+  <div class="top-bar">
+    <div class="top-left">
+      <span>EN | KE</span>
+      <span>Help</span>
+    </div>
+    <div class="top-right">
+      <span>+254 700 000 000</span>
+      <a href="/login.html">Login</a>
+    </div>
+  </div>
 
-    <section class="destinations-container">
-        <div style="text-align: center; margin-bottom: 40px;">
-            <h2 class="section-title" id="grid-title">Popular Destinations</h2>
-            <p class="section-subtitle" id="grid-sub">Choose a region to discover flights and special offers</p>
+  <div class="nav-wrapper">
+    <div class="logo">
+      <img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly">
+      <span>SmartFly</span>
+    </div>
+
+    <nav class="nav-menu">
+      <div class="nav-item">
+        <a href="/explore.html">Explore</a>
+        <div class="mega-menu">
+          <div class="mega-container">
+            <div>
+              <h4>Our Destinations</h4>
+              <a href="/destinations-africa.html">Africa</a>
+              <a href="/destinations-europe.html">Europe</a>
+              <a href="/destinations-asia.html">Asia</a>
+              <a href="/destinations-america.html">America</a>
+              <a href="/destinations-middle-east.html">Middle East</a>
+              <a href="/destinations.html">View All</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="/plan.html">Plan</a>
+      </div>
+      <div class="nav-item">
+        <a href="/book-manage.html">Book & Manage</a>
+      </div>
+      <div class="nav-item">
+        <a href="/experience.html">Experience</a>
+      </div>
+      <div class="nav-item">
+        <a href="/loyalty.html">Loyalty</a>
+      </div>
+    </nav>
+
+    <div class="cta-btn">
+      <a href="/booking.html">Book Now</a>
+    </div>
+  </div>
+</header>
+
+<section class="hero-section">
+    <h1>🌍 Explore Our Global Network</h1>
+    <p>Discover 200+ destinations across 5 continents with SmartFly Airways</p>
+    <div class="search-box">
+        <input type="text" id="destinationSearch" placeholder="Search destinations...">
+        <button onclick="searchDestinations()">Search</button>
+    </div>
+</section>
+
+<div class="continent-filters">
+    <button class="filter-btn active" onclick="filterContinent('all')">All Continents</button>
+    <button class="filter-btn" onclick="filterContinent('africa')">🌍 Africa</button>
+    <button class="filter-btn" onclick="filterContinent('europe')">🇪🇺 Europe</button>
+    <button class="filter-btn" onclick="filterContinent('asia')">🌏 Asia</button>
+    <button class="filter-btn" onclick="filterContinent('america')">🌎 America</button>
+    <button class="filter-btn" onclick="filterContinent('middle-east')">🕌 Middle East</button>
+</div>
+
+<div class="destinations-container">
+    <!-- AFRICA SECTION -->
+    <div class="continent-section" data-continent="africa">
+        <div class="section-header">
+            <span class="continent-badge">AFRICA</span>
+            <h2>🌍 African Destinations</h2>
+            <p>Experience the wild beauty and rich cultures of Africa</p>
         </div>
         
-        <div class="filters" role="group" aria-label="Filter destinations">
-            <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
-            <button class="filter-btn" data-filter="africa" aria-pressed="false">Africa</button>
-            <button class="filter-btn" data-filter="europe" aria-pressed="false">Europe</button>
-            <button class="filter-btn" data-filter="asia" aria-pressed="false">Asia</button>
-            <button class="filter-btn" data-filter="americas" aria-pressed="false">Americas</button>
+        <div class="destinations-grid">
+            <div class="destination-card" onclick="location.href='/destination-nairobi.html'">
+                <img src="/assets/images/destinations/nairobi.jpg" alt="Nairobi" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇰🇪</span>
+                    <h3 class="card-title">Nairobi</h3>
+                    <p class="card-country">Kenya</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">8+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$450</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-cape-town.html'">
+                <img src="/assets/images/destinations/capetown.jpg" alt="Cape Town" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇿🇦</span>
+                    <h3 class="card-title">Cape Town</h3>
+                    <p class="card-country">South Africa</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">3+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$580</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">5.0★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-johannesburg.html'">
+                <img src="/assets/images/destinations/johannesburg.jpg" alt="Johannesburg" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇿🇦</span>
+                    <h3 class="card-title">Johannesburg</h3>
+                    <p class="card-country">South Africa</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">5+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$520</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-mombasa.html'">
+                <img src="/assets/images/destinations/beach.jpg" alt="Mombasa" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇰🇪</span>
+                    <h3 class="card-title">Mombasa</h3>
+                    <p class="card-country">Kenya</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">6+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$250</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div class="destinations-grid" id="grid" role="region" aria-label="Destinations list">
-            <!-- Populated by JavaScript -->
+        
+        <div style="text-align: center;">
+            <a href="/destinations-africa.html" class="view-all-btn">View All African Destinations →</a>
         </div>
-    </section>
+    </div>
 
-    <footer class="site-footer">
-        <div class="container">
-            <p style="text-align: center; padding: 24px 0; color: #e7eefc;">&copy; 2026 SmartFly Airways. All rights reserved.</p>
+    <!-- EUROPE SECTION -->
+    <div class="continent-section" data-continent="europe">
+        <div class="section-header">
+            <span class="continent-badge">EUROPE</span>
+            <h2>🇪🇺 European Destinations</h2>
+            <p>Explore centuries of history, art, and culture</p>
         </div>
-    </footer>
+        
+        <div class="destinations-grid">
+            <div class="destination-card" onclick="location.href='/destination-london.html'">
+                <img src="/assets/images/destinations/london.jpg" alt="London" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇬🇧</span>
+                    <h3 class="card-title">London</h3>
+                    <p class="card-country">United Kingdom</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">12+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$680</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <script>
-        (function(){
-            const params = new URLSearchParams(location.search || '');
-            const interest = (params.get('interest')||'').toLowerCase();
-            const deal = (params.get('deal')||'').toLowerCase();
-            const type = (params.get('type')||'').toLowerCase(); // Add type parameter support
-            
-            const titleEl = document.getElementById('ds-title');
-            const descEl = document.getElementById('ds-desc');
-            const badge = document.getElementById('ds-badge');
-            const grid = document.getElementById('grid');
-            const gtitle = document.getElementById('grid-title');
-            const gsub = document.getElementById('grid-sub');
-            const filterButtons = document.querySelectorAll('.filter-btn');
-            
-            // Image mapping by category/interest type
-            const imageMap = {
-                beach: '/assets/images/destinations/destination-2.jpg',
-                dive: '/assets/images/destinations/destination-1.jpg',
-                heritage: '/assets/images/destinations/destination-4.jpg',
-                culture: '/assets/images/destinations/destination-4.jpg',
-                golf: '/assets/images/destinations/destination-5.jpg',
-                ecotourism: '/assets/images/destinations/destination-3.jpg',
-                'beach-escape': '/assets/images/destinations/destination-2.jpg',
-                'city-break': '/assets/images/destinations/destination-4.jpg',
-                'mountain-retreat': '/assets/images/destinations/destination-5.jpg'
-            };
-            
-            // Assign correct images based on interest/deal type
-            function getCorrectImage(item, category) {
-                // If item already has correct image, keep it
-                if (item.img && !item.img.includes('undefined')) return item.img;
-                // Use category map to get appropriate image
-                return imageMap[category] || '/assets/images/destinations/destination-3.jpg';
+            <div class="destination-card" onclick="location.href='/destination-paris.html'">
+                <img src="/assets/images/destinations/paris.jpg" alt="Paris" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇫🇷</span>
+                    <h3 class="card-title">Paris</h3>
+                    <p class="card-country">France</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">10+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$720</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">5.0★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-rome.html'">
+                <img src="/assets/images/destinations/rome.jpg" alt="Rome" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇮🇹</span>
+                    <h3 class="card-title">Rome</h3>
+                    <p class="card-country">Italy</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">11+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$700</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">5.0★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-barcelona.html'">
+                <img src="/assets/images/destinations/barcelona.jpg" alt="Barcelona" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇪🇸</span>
+                    <h3 class="card-title">Barcelona</h3>
+                    <p class="card-country">Spain</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">9+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$690</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="/destinations-europe.html" class="view-all-btn">View All European Destinations →</a>
+        </div>
+    </div>
+
+    <!-- ASIA SECTION -->
+    <div class="continent-section" data-continent="asia">
+        <div class="section-header">
+            <span class="continent-badge">ASIA</span>
+            <h2>🌏 Asian Destinations</h2>
+            <p>Ancient traditions meet modern innovation</p>
+        </div>
+        
+        <div class="destinations-grid">
+            <div class="destination-card" onclick="location.href='/destination-singapore.html'">
+                <img src="/assets/images/destinations/singapore.jpg" alt="Singapore" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇸🇬</span>
+                    <h3 class="card-title">Singapore</h3>
+                    <p class="card-country">Singapore</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">14+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$780</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">5.0★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-tokyo.html'">
+                <img src="/assets/images/destinations/tokyo.jpg" alt="Tokyo" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇯🇵</span>
+                    <h3 class="card-title">Tokyo</h3>
+                    <p class="card-country">Japan</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">12+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$850</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">5.0★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-bangkok.html'">
+                <img src="/assets/images/destinations/bangkok.jpg" alt="Bangkok" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇹🇭</span>
+                    <h3 class="card-title">Bangkok</h3>
+                    <p class="card-country">Thailand</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">10+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$620</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-seoul.html'">
+                <img src="/assets/images/destinations/seoul.jpg" alt="Seoul" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇰🇷</span>
+                    <h3 class="card-title">Seoul</h3>
+                    <p class="card-country">South Korea</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">11+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$820</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="/destinations-asia.html" class="view-all-btn">View All Asian Destinations →</a>
+        </div>
+    </div>
+
+    <!-- AMERICA SECTION -->
+    <div class="continent-section" data-continent="america">
+        <div class="section-header">
+            <span class="continent-badge">AMERICA</span>
+            <h2>🌎 American Destinations</h2>
+            <p>From skyscrapers to ancient ruins</p>
+        </div>
+        
+        <div class="destinations-grid">
+            <div class="destination-card" onclick="location.href='/destination-new-york.html'">
+                <img src="/assets/images/destinations/new-york.jpg" alt="New York" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇺🇸</span>
+                    <h3 class="card-title">New York</h3>
+                    <p class="card-country">United States</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">15+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$920</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-rio.html'">
+                <img src="/assets/images/destinations/rio.jpg" alt="Rio de Janeiro" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇧🇷</span>
+                    <h3 class="card-title">Rio de Janeiro</h3>
+                    <p class="card-country">Brazil</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">9+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$980</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-toronto.html'">
+                <img src="/assets/images/destinations/toronto.jpg" alt="Toronto" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇨🇦</span>
+                    <h3 class="card-title">Toronto</h3>
+                    <p class="card-country">Canada</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">10+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$850</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.7★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-mexico-city.html'">
+                <img src="/assets/images/destinations/mexico-city.jpg" alt="Mexico City" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇲🇽</span>
+                    <h3 class="card-title">Mexico City</h3>
+                    <p class="card-country">Mexico</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">8+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$720</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="/destinations-america.html" class="view-all-btn">View All American Destinations →</a>
+        </div>
+    </div>
+
+    <!-- MIDDLE EAST SECTION -->
+    <div class="continent-section" data-continent="middle-east">
+        <div class="section-header">
+            <span class="continent-badge">MIDDLE EAST</span>
+            <h2>🕌 Middle Eastern Destinations</h2>
+            <p>Where luxury meets ancient heritage</p>
+        </div>
+        
+        <div class="destinations-grid">
+            <div class="destination-card" onclick="location.href='/destination-dubai.html'">
+                <img src="/assets/images/destinations/dubai.jpg" alt="Dubai" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇦🇪</span>
+                    <h3 class="card-title">Dubai</h3>
+                    <p class="card-country">United Arab Emirates</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">16+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$750</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">5.0★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-doha.html'">
+                <img src="/assets/images/destinations/doha.jpg" alt="Doha" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇶🇦</span>
+                    <h3 class="card-title">Doha</h3>
+                    <p class="card-country">Qatar</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">11+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$740</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-abu-dhabi.html'">
+                <img src="/assets/images/destinations/abu-dhabi.jpg" alt="Abu Dhabi" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇦🇪</span>
+                    <h3 class="card-title">Abu Dhabi</h3>
+                    <p class="card-country">United Arab Emirates</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">12+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$720</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-tel-aviv.html'">
+                <img src="/assets/images/destinations/tel-aviv.jpg" alt="Tel Aviv" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇮🇱</span>
+                    <h3 class="card-title">Tel Aviv</h3>
+                    <p class="card-country">Israel</p>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">8+</div>
+                            <div class="stat-label">Daily</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$710</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.7★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <a href="/destinations-middle-east.html" class="view-all-btn">View All Middle Eastern Destinations →</a>
+        </div>
+    </div>
+</div>
+
+<div class="world-map-section">
+    <h3>Our Global Network</h3>
+    <p>Connecting you to over 200 destinations worldwide</p>
+    <div class="map-placeholder">🗺️</div>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-top">
+            <div>
+                <div class="logo">✈ SmartFly Airways</div>
+                <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+function filterContinent(continent) {
+    const sections = document.querySelectorAll('.continent-section');
+    const buttons = document.querySelectorAll('.filter-btn');
+    
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    if (continent === 'all') {
+        sections.forEach(section => section.style.display = 'block');
+    } else {
+        sections.forEach(section => {
+            if (section.dataset.continent === continent) {
+                section.style.display = 'block';
+            } else {
+                section.style.display = 'none';
             }
-            
-            let allItems = [];
-            let currentFilter = 'all';
+        });
+    }
+}
 
-            function cardHTML(item){
-                return `<a class="destination-card" href="${item.to}" role="article">
-                          <img alt="Destination: ${item.name}" src="${item.img}" loading="lazy">
-                          <div class="destination-info">
-                            <h3>${item.name}</h3>
-                            <p>${item.blurb}</p>
-                            <span class="cta-button">Explore</span>
-                          </div>
-                        </a>`;
-            }
+function searchDestinations() {
+    const searchTerm = document.getElementById('destinationSearch').value.toLowerCase();
+    const cards = document.querySelectorAll('.destination-card');
+    
+    if (!searchTerm) {
+        cards.forEach(card => card.style.display = 'block');
+        return;
+    }
+    
+    cards.forEach(card => {
+        const title = card.querySelector('.card-title').textContent.toLowerCase();
+        const country = card.querySelector('.card-country').textContent.toLowerCase();
+        
+        if (title.includes(searchTerm) || country.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
 
-            function renderCards(items) {
-                if (items.length === 0) {
-                    grid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #6b7280; padding: 40px;">No destinations found for this filter.</p>';
-                } else {
-                    grid.innerHTML = items.map(cardHTML).join('');
-                }
-            }
+// Allow Enter key to trigger search
+document.getElementById('destinationSearch').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        searchDestinations();
+    }
+});
+</script>
 
-            function filterCards(filterType) {
-                currentFilter = filterType;
-                
-                if (filterType === 'all') {
-                    renderCards(allItems);
-                } else {
-                    const filtered = allItems.filter(item => item.region === filterType);
-                    renderCards(filtered);
-                }
-                
-                // Update button states
-                filterButtons.forEach(btn => {
-                    if (btn.dataset.filter === filterType) {
-                        btn.classList.add('active');
-                        btn.setAttribute('aria-pressed', 'true');
-                    } else {
-                        btn.classList.remove('active');
-                        btn.setAttribute('aria-pressed', 'false');
-                    }
-                });
-            }
-
-            async function loadCatalog(){
-                try{
-                    const res = await fetch('assets/data/destinations.json', { cache: 'no-store' });
-                    if (!res.ok) throw new Error('Failed to load destinations');
-                    return await res.json();
-                }catch(e){ 
-                    console.warn(e); 
-                    return { interests:{}, deals:{} }; 
-                }
-            }
-
-            (async function init(){
-                const catalog = await loadCatalog();
-                
-                if (type === 'popular') {
-                    badge.textContent = 'Popular';
-                    titleEl.textContent = 'Popular Destinations';
-                    descEl.textContent = 'Our most sought-after travel destinations';
-                    gtitle.textContent = 'Top Picks';
-                    gsub.textContent = 'Explore our travelers\' favorite destinations';
-                    allItems = [
-                        { name:'Mombasa', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Pristine beaches and historic charm', to:'/book.html?to=MBA' },
-                        { name:'Nairobi', region:'africa', img:'/assets/images/destinations/destination-3.jpg', blurb:'Gateway to East African adventures', to:'/book.html?to=NBO' },
-                        { name:'Johannesburg', region:'africa', img:'/assets/images/destinations/destination-4.jpg', blurb:'Vibrant city with rich history', to:'/book.html?to=JNB' },
-                        { name:'Zanzibar', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Tropical paradise and spice island', to:'/book.html?to=ZNZ' },
-                        { name:'Entebbe', region:'africa', img:'/assets/images/destinations/destination-3.jpg', blurb:'Gateway to Uganda\'s natural wonders', to:'/book.html?to=EBB' },
-                        { name:'Cape Town', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Stunning scenery and diverse culture', to:'/book.html?to=CPT' }
-                    ];
-                } else if (type === 'longhaul') {
-                    badge.textContent = 'Long-Haul';
-                    titleEl.textContent = 'Long-Haul Destinations';
-                    descEl.textContent = 'International flights to major cities worldwide';
-                    gtitle.textContent = 'Intercontinental Travel';
-                    gsub.textContent = 'Direct and connecting flights to global destinations';
-                    allItems = [
-                        { name:'New York', region:'americas', img:'/assets/images/destinations/destination-4.jpg', blurb:'The city that never sleeps', to:'/book.html?to=JFK' },
-                        { name:'Dubai', region:'middle-east', img:'/assets/images/destinations/destination-5.jpg', blurb:'Luxury shopping and modern marvels', to:'/book.html?to=DXB' },
-                        { name:'London', region:'europe', img:'/assets/images/destinations/destination-4.jpg', blurb:'Historic capital with royal heritage', to:'/book.html?to=LHR' },
-                        { name:'Paris', region:'europe', img:'/assets/images/destinations/destination-4.jpg', blurb:'City of lights and romance', to:'/book.html?to=CDG' },
-                        { name:'Amsterdam', region:'europe', img:'/assets/images/destinations/destination-4.jpg', blurb:'Canals, culture, and cosmopolitan charm', to:'/book.html?to=AMS' },
-                        { name:'Singapore', region:'asia', img:'/assets/images/destinations/destination-3.jpg', blurb:'Garden city with futuristic skyline', to:'/book.html?to=SIN' }
-                    ];
-                    document.querySelector('.filters').style.display = 'none';
-                } else if (interest && catalog.interests && catalog.interests[interest]) {
-                    badge.textContent = 'Interest';
-                    titleEl.textContent = interest.charAt(0).toUpperCase() + interest.slice(1);
-                    descEl.textContent = 'Top picks for ' + interest + ' lovers.';
-                    gtitle.textContent = 'Popular ' + interest + ' spots';
-                    gsub.textContent = 'Tap a card to see flights and availability.';
-                    allItems = catalog.interests[interest].map(item => ({
-                        ...item,
-                        img: getCorrectImage(item, interest)
-                    }));
-                } else if (deal && catalog.deals && catalog.deals[deal]) {
-                    badge.textContent = 'Deal';
-                    titleEl.textContent = deal.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
-                    descEl.textContent = 'Limited-time offers and packages.';
-                    gtitle.textContent = 'Deal highlights';
-                    gsub.textContent = 'Hurry—availability may be limited.';
-                    allItems = catalog.deals[deal].map(item => ({
-                        ...item,
-                        img: getCorrectImage(item, deal)
-                    }));
-                    document.querySelector('.filters').style.display = 'none';
-                } else {
-                    badge.textContent = 'Discover';
-                    titleEl.textContent = 'Explore Destinations';
-                    descEl.textContent = 'Find your next adventure across the globe';
-                    gtitle.textContent = 'Popular Destinations';
-                    gsub.textContent = 'Choose a region to discover flights and special offers';
-                    allItems = [
-                        { name:'Europe', region:'europe', img:'/assets/images/destinations/destination-4.jpg', blurb:'History, art, and modernity converge', to:'flight-results.html?region=europe' },
-                        { name:'Africa', region:'africa', img:'/assets/images/destinations/destination-2.jpg', blurb:'Vast landscapes and vibrant culture', to:'flight-results.html?region=africa' },
-                        { name:'Asia', region:'asia', img:'/assets/images/destinations/destination-3.jpg', blurb:'Ancient traditions and tech hubs', to:'flight-results.html?region=asia' },
-                        { name:'Americas', region:'americas', img:'/assets/images/destinations/destination-5.jpg', blurb:'Dynamic cities and natural wonders', to:'flight-results.html?region=americas' }
-                    ];
-                }
-                
-                renderCards(allItems);
-                
-                // Add filter event listeners
-                filterButtons.forEach(btn => {
-                    btn.addEventListener('click', function() {
-                        filterCards(this.dataset.filter);
-                    });
-                });
-            })();
-        })();
-    </script>
+<script src="/script.js"></script>
 </body>
 </html>

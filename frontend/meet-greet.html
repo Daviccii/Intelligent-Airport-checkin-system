@@ -3,38 +3,272 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meet & Greet - SmartFly Airways</title>
+  <title>Meet & Greet Services - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin: 20px 0; }
+    .package-card { padding: 24px; background: white; border: 2px solid #e2e8f0; border-radius: 8px; }
+    .package-card.featured { border-color: #1e3a8a; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1); }
+    .package-price { font-size: 28px; color: #1e3a8a; font-weight: bold; margin: 16px 0; }
+    .package-title { font-size: 20px; color: #1e3a8a; margin-bottom: 12px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '\u2713 '; color: #10b981; font-weight: bold; margin-right: 8px; }
+    .pricing-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .pricing-table th, .pricing-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .pricing-table th { background: #f0f4f8; color: #1e3a8a; font-weight: bold; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Meet & Greet</h1>
-      <p class="section-subtitle">This page is dedicated to Meet & Greet.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Meet & Greet Services</h1>
+      <p class="section-subtitle">Premium airport assistance with personal escorts</p>
+
+      <div class="info-section">
+        <h3>🤝 VIP Meet & Greet Experience</h3>
+        <p>SmartFly offers premium airport meet & greet services at major hubs across Africa and beyond. Get personal assistance from our trained representatives who will help you through every step of your journey - from arrival to departure, check-in to security, and everything in between.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>💼 Our Meet & Greet Packages</h3>
+        <div class="package-grid">
+          <div class="package-card">
+            <div class="package-title">Silver Package</div>
+            <div class="package-price">KES 3,500</div>
+            <p>Perfect for solo travelers seeking basic assistance</p>
+            <ul class="feature-list">
+              <li>Meet at terminal entrance</li>
+              <li>Luggage assistance</li>
+              <li>Check-in support</li>
+              <li>Gate guidance</li>
+              <li>Standard waiting time</li>
+            </ul>
+          </div>
+          <div class="package-card featured">
+            <div class="package-title">Gold Package</div>
+            <div class="package-price">KES 6,500</div>
+            <p>Our most popular choice for families and groups</p>
+            <ul class="feature-list">
+              <li>Meet inside airport terminal</li>
+              <li>Full luggage assistance</li>
+              <li>Complete check-in support</li>
+              <li>Priority security guidance</li>
+              <li>Boarding gate assistance</li>
+              <li>Extended waiting time</li>
+            </ul>
+          </div>
+          <div class="package-card">
+            <div class="package-title">Platinum Package</div>
+            <div class="package-price">KES 10,500</div>
+            <p>Ultimate luxury service for discerning travelers</p>
+            <ul class="feature-list">
+              <li>VIP meet & personal assistant</li>
+              <li>Dedicated escort throughout airport</li>
+              <li>Premium lounge access included</li>
+              <li>Full concierge services</li>
+              <li>Complimentary refreshments</li>
+              <li>Unlimited waiting time</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>✈️ Departure Services (All Packages)</h3>
+        <ul class="feature-list">
+          <li>Pick-up assistance at curbside or parking</li>
+          <li>Help with luggage handling and trolleys</li>
+          <li>Guidance through check-in process</li>
+          <li>Security screening assistance</li>
+          <li>Gate location and boarding notification</li>
+          <li>Connection guidance for transfers</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🛬 Arrival Services (All Packages)</h3>
+        <ul class="feature-list">
+          <li>Personal greeting upon landing</li>
+          <li>Meet at luggage carousel</li>
+          <li>Immigration/customs guidance</li>
+          <li>Luggage collection assistance</li>
+          <li>Ground transportation arrangement</li>
+          <li>Help with hotel check-in info</li>
+          <li>Local area orientation</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🚗 Ground Transportation Add-ons</h3>
+        <table class="pricing-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Price</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Private Car</td>
+              <td>KES 2,500</td>
+              <td>Sedan for 1-2 passengers, max 3 bags</td>
+            </tr>
+            <tr>
+              <td>Executive Sedan</td>
+              <td>KES 4,000</td>
+              <td>Premium sedan, complimentary WiFi</td>
+            </tr>
+            <tr>
+              <td>Minibus</td>
+              <td>KES 5,500</td>
+              <td>For groups 3-6 passengers</td>
+            </tr>
+            <tr>
+              <td>Van (8-seater)</td>
+              <td>KES 7,000</td>
+              <td>Groups 7-8 passengers, extra luggage</td>
+            </tr>
+            <tr>
+              <td>Hotel Shuttle</td>
+              <td>KES 1,500</td>
+              <td>Direct to partner hotels</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-section">
+        <h3>⭐ Premium Add-on Services</h3>
+        <table class="pricing-table">
+          <thead>
+            <tr>
+              <th>Service</th>
+              <th>Price</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Lounge Access (all day)</td>
+              <td>KES 1,500</td>
+              <td>Premium lounge with food, beverages, WiFi</td>
+            </tr>
+            <tr>
+              <td>Business Center (per hour)</td>
+              <td>KES 2,000</td>
+              <td>WiFi, printing, private workspace</td>
+            </tr>
+            <tr>
+              <td>Shower & Refresh</td>
+              <td>KES 3,000</td>
+              <td>Private bathroom, toiletries, towels</td>
+            </tr>
+            <tr>
+              <td>Sleeping Lounge (8 hours)</td>
+              <td>KES 5,000</td>
+              <td>Private room, bedding, shower facilities</td>
+            </tr>
+            <tr>
+              <td>Professional Translator</td>
+              <td>KES 3,000/hr</td>
+              <td>English, French, Mandarin, Arabic</td>
+            </tr>
+            <tr>
+              <td>Child Care Assistant</td>
+              <td>KES 2,500/hr</td>
+              <td>Professional childcare during layover</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-section">
+        <h3>📅 How to Book Meet & Greet</h3>
+        <ol style="padding-left: 20px;">
+          <li>Add Meet & Greet service during booking or manage existing reservation</li>
+          <li>Select your preferred package (Silver, Gold, or Platinum)</li>
+          <li>Choose ground transportation if desired</li>
+          <li>Provide passenger names and flight details</li>
+          <li>Receive confirmation email with contact details</li>
+          <li>Get call from our team 24 hours before flight</li>
+          <li>Enjoy seamless airport experience with your escort</li>
+        </ol>
+      </div>
+
+      <div class="info-section">
+        <h3>🌍 Available at Major Hubs</h3>
+        <ul class="feature-list">
+          <li>Nairobi (Jomo Kenyatta International Airport)</li>
+          <li>Johannesburg (OR Tambo International)</li>
+          <li>Dubai (Dubai International & DXB)</li>
+          <li>London (Heathrow, Gatwick, Stansted)</li>
+          <li>Paris (Charles de Gaulle, Orly)</li>
+          <li>Amsterdam (Amsterdam Airport Schiphol)</li>
+          <li>Bangkok (Suvarnabhumi International)</li>
+          <li>New York (JFK, Newark)</li>
+          <li>Other major international airports upon request</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>👥 Special Circumstances</h3>
+        <p><strong>Senior Travelers:</strong> Enhanced assistance with mobility, medical support, and comfortable waiting areas</p>
+        <p><strong>Families with Children:</strong> Family-friendly lounges, child care, stroller assistance, baby amenities</p>
+        <p><strong>Business Travelers:</strong> Express check-in, business center access, conference call facilities</p>
+        <p><strong>Medical Needs:</strong> Medical personnel on standby, wheelchair access, oxygen availability, medication storage</p>
+        <p><strong>Unaccompanied Minors:</strong> Dedicated guardian, special care throughout journey, meal provisions</p>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Contact Our Premium Services Team</h3>
+        <p><strong>Meet & Greet Reservations:</strong></p>
+        <p>📧 Email: premiumservices@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 009</p>
+        <p>⏰ Hours: 24/7 support available</p>
+        <p><strong>What to include:</strong> Passenger names, flight number, date, preferred package, special requests</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/special-meals.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Special Meals →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Premium Services →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

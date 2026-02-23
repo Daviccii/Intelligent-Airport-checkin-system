@@ -1,3 +1,35 @@
+// ============================================
+// MEGA MENU CLICK TOGGLE (NAVIGATION)
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        const trigger = item.querySelector('a');
+        const menu = item.querySelector('.mega-menu');
+        if (!trigger || !menu) return;
+
+        trigger.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            navItems.forEach(other => {
+                if (other !== item) {
+                    other.classList.remove('open');
+                }
+            });
+            item.classList.toggle('open');
+        });
+    });
+
+    document.addEventListener('click', () => {
+        navItems.forEach(item => item.classList.remove('open'));
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            navItems.forEach(item => item.classList.remove('open'));
+        }
+    });
+});
 // Airport Dropdown Manager
 class AirportDropdown {
     constructor() {

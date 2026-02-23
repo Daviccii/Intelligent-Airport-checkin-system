@@ -94,7 +94,7 @@ body {
   z-index: 999;
 }
 
-.mega-parent.open .mega-menu {
+.nav-item.open .mega-menu {
     opacity: 1;
     visibility: visible;
     transform: translateY(0);
@@ -1857,27 +1857,27 @@ button {
   width: 100%;
   position: sticky;
   top: 0;
-  background: #ffffff;
+  background: linear-gradient(135deg, #0B3D91 0%, #1e5bb8 100%);
   z-index: 1000;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     overflow: visible;
 }
 
 /* Top bar */
 .top-bar {
-  background: #f5f7fa;
+  background: rgba(255, 255, 255, 0.1);
   padding: 8px 60px;
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #555;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .top-bar span,
 .top-bar a {
   margin-right: 15px;
   text-decoration: none;
-  color: #555;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* Nav */
@@ -1909,7 +1909,7 @@ button {
 .logo span {
   font-size: 20px;
   font-weight: 700;
-  color: #111;
+  color: #ffffff;
 }
 
 .nav-menu {
@@ -1923,16 +1923,16 @@ button {
 
 .nav-item > a {
   text-decoration: none;
-    color: #0f172a;
-    font-weight: 700;
-    font-size: 15px;
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 16px;
   padding: 28px 0;
   display: block;
   transition: 0.3s;
 }
 
 .nav-item > a:hover {
-    color: #c8102e;
+    color: #90CAF9;
 }
 
 /* Mega Menu */
@@ -1940,10 +1940,10 @@ button {
   position: absolute;
   top: 100%;
   left: 0;
-  width: 100vw;
+  width: 100%;
   background: #ffffff;
   padding: 40px 100px;
-  display: none;
+  display: none; /*hidden by default*/
   box-shadow: 0 15px 35px rgba(0,0,0,0.08);
     z-index: 2000;
 }
@@ -1972,7 +1972,7 @@ button {
 }
 
 .nav-item.open .mega-menu {
-    display: block;
+    display: block; /* shown when 'open' class is added */
 }
 
 /* Button */

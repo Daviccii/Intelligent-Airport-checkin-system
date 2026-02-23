@@ -3,38 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dubai - SmartFly Airways</title>
+  <title>Discover Dubai - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .dest-hero{background:linear-gradient(135deg,rgba(11,61,145,0.95),rgba(30,91,184,0.95)),url('/assets/images/destinations/dubai.jpg') center/cover;padding:100px 20px;color:#fff;text-align:center}
+    .dest-hero h1{font-size:52px;font-weight:800;margin-bottom:12px;animation:fadeInUp .8s}
+    .dest-hero .tagline{font-size:22px;opacity:.95;animation:fadeInUp 1s}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .dest-container{max-width:1200px;margin:0 auto;padding:60px 20px}
+    .quick-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px;margin-bottom:60px}
+    .fact-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center}
+    .fact-icon{font-size:32px;margin-bottom:8px}
+    .fact-label{font-size:12px;color:#64748b;margin-bottom:4px}
+    .fact-value{font-size:16px;font-weight:700;color:#0B3D91}
+    .section{margin-bottom:60px}
+    .section h2{font-size:32px;color:#0B3D91;margin-bottom:32px;text-align:center}
+    .attractions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px}
+    .attraction-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);transition:.3s;cursor:pointer}
+    .attraction-card:hover{transform:translateY(-8px);box-shadow:0 12px 28px rgba(11,61,145,.15)}
+    .attraction-img{width:100%;height:200px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:48px}
+    .attraction-content{padding:24px}
+    .attraction-title{font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px}
+    .attraction-desc{font-size:14px;color:#64748b;line-height:1.6}
+    .hotels-list{display:grid;gap:20px}
+    .hotel-card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+    .hotel-info h3{font-size:22px;color:#0B3D91;margin-bottom:8px}
+    .hotel-info p{color:#64748b;font-size:14px}
+    .hotel-price{text-align:right}
+    .price-label{font-size:12px;color:#64748b}
+    .price-value{font-size:28px;font-weight:800;color:#0B3D91}
+    .cuisine-section{background:#f8fafc;padding:40px;border-radius:16px}
+    .cuisine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:24px}
+    .cuisine-item{text-align:center;padding:20px}
+    .cuisine-icon{font-size:48px;margin-bottom:12px}
+    .cuisine-name{font-size:18px;font-weight:600;color:#1f2937;margin-bottom:4px}
+    .cuisine-desc{font-size:13px;color:#64748b}
+    .cta-section{background:linear-gradient(135deg,#0B3D91,#1e5bb8);padding:50px;border-radius:16px;text-align:center;color:#fff;margin-top:60px}
+    .cta-section h2{color:#fff;font-size:36px;margin-bottom:16px}
+    .cta-button{display:inline-block;background:#fff;color:#0B3D91;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:700;font-size:18px;margin-top:20px;transition:.3s}
+    .cta-button:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,255,255,.3)}
+    @media(max-width:768px){.dest-hero h1{font-size:36px}.attractions-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
   <header class="main-header">
+    <div class="top-bar"><div class="top-left"><span>EN | AE</span><span>Help</span></div><div class="top-right"><span>+971 4 123 4567</span><a href="/login.html">Login</a></div></div>
     <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
-      </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
-      </div>
+      <div class="logo"><img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly"><span>SmartFly</span></div>
+      <nav class="nav-menu"><div class="nav-item"><a href="/index.html">Home</a></div><div class="nav-item"><a href="/explore.html">Explore</a></div><div class="nav-item"><a href="/destinations.html">Destinations</a></div></nav>
+      <div class="cta-btn"><a href="/booking.html">Book Now</a></div>
     </div>
   </header>
 
-  <main class="content-section">
-    <div class="container">
-      <h1 class="section-title">Dubai</h1>
-      <p class="section-subtitle">This page is dedicated to Dubai.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+  <div class="dest-hero"><h1>🇦🇪 Dubai</h1><p class="tagline">Where Desert Tradition Meets Futuristic Luxury</p></div>
+
+  <div class="dest-container">
+    <div class="quick-facts">
+      <div class="fact-card"><div class="fact-icon">👥</div><div class="fact-label">Population</div><div class="fact-value">3.3M</div></div>
+      <div class="fact-card"><div class="fact-icon">💰</div><div class="fact-label">Currency</div><div class="fact-value">AED (Dh)</div></div>
+      <div class="fact-card"><div class="fact-icon">🗣️</div><div class="fact-label">Languages</div><div class="fact-value">Arabic, English</div></div>
+      <div class="fact-card"><div class="fact-icon">🕐</div><div class="fact-label">Time Zone</div><div class="fact-value">GMT+4</div></div>
+      <div class="fact-card"><div class="fact-icon">🌤️</div><div class="fact-label">Best Time</div><div class="fact-value">Nov-Mar</div></div>
+    </div>
+
+    <div class="section">
+      <h2>🎯 Top Attractions</h2>
+      <div class="attractions-grid">
+        <div class="attraction-card"><div class="attraction-img">🏙️</div><div class="attraction-content"><h3 class="attraction-title">Burj Khalifa</h3><p class="attraction-desc">World's tallest building at 828m. Visit the observation deck on the 124th floor for stunning views.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🛍️</div><div class="attraction-content"><h3 class="attraction-title">Dubai Mall</h3><p class="attraction-desc">World's largest shopping mall with 1,200 stores, aquarium, ice rink, and fountain shows.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏝️</div><div class="attraction-content"><h3 class="attraction-title">Palm Jumeirah</h3><p class="attraction-desc">Iconic man-made island shaped like a palm tree with luxury resorts and beaches.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🕌</div><div class="attraction-content"><h3 class="attraction-title">Dubai Creek & Old Dubai</h3><p class="attraction-desc">Historic heart of Dubai with traditional souks, abra boats, and authentic Arabian atmosphere.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏖️</div><div class="attraction-content"><h3 class="attraction-title">Jumeirah Beach</h3><p class="attraction-desc">Pristine white sand beaches with views of Burj Al Arab and water sports activities.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏜️</div><div class="attraction-content"><h3 class="attraction-title">Desert Safari</h3><p class="attraction-desc">Thrilling dune bashing, camel rides, falconry, and Bedouin-style dinner under the stars.</p></div></div>
       </div>
     </div>
-  </main>
+
+    <div class="section">
+      <h2>🏨 Where to Stay</h2>
+      <div class="hotels-list">
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐⭐ Burj Al Arab</h3><p>Iconic sail-shaped ultra-luxury hotel on private island - world's only 7-star hotel</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">AED 5,000</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐ Atlantis The Palm</h3><p>Spectacular resort on Palm Jumeirah with waterpark and marine exhibits</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">AED 1,800</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐ Rove Downtown</h3><p>Contemporary budget hotel near Dubai Mall with modern amenities</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">AED 450</div><div class="price-label">/night</div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🍽️ Dining & Cuisine</h2>
+      <div class="cuisine-section">
+        <p style="text-align:center;color:#64748b;font-size:16px;margin-bottom:20px">From traditional Emirati dishes to world-class fine dining - Dubai is a culinary paradise</p>
+        <div class="cuisine-grid">
+          <div class="cuisine-item"><div class="cuisine-icon">🥙</div><h4 class="cuisine-name">Shawarma</h4><p class="cuisine-desc">Marinated meat wraps</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍢</div><h4 class="cuisine-name">Kabsa</h4><p class="cuisine-desc">Spiced rice with meat</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🫓</div><h4 class="cuisine-name">Hummus & Falafel</h4><p class="cuisine-desc">Middle Eastern staples</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🥘</div><h4 class="cuisine-name">Machboos</h4><p class="cuisine-desc">Emirati spiced rice</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">☕</div><h4 class="cuisine-name">Arabic Coffee</h4><p class="cuisine-desc">With dates, traditional welcome</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🚗 Getting Around</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li><strong style="color:#0B3D91">🚇 Dubai Metro:</strong> Modern, driverless trains - Red & Green lines cover major areas</li>
+          <li><strong style="color:#0B3D91">🚕 Taxis:</strong> Abundant, metered, and affordable - starting at AED 12</li>
+          <li><strong style="color:#0B3D91">🚌 Dubai Bus:</strong> Extensive network connecting all areas</li>
+          <li><strong style="color:#0B3D91">🚗 Car Rental:</strong> Well-maintained roads, but traffic can be heavy</li>
+          <li><strong style="color:#0B3D91">⛴️ Abra:</strong> Traditional water taxis across Dubai Creek (AED 1)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>💡 Travel Tips</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li>✓ Visa on arrival for most nationalities - free 30-90 day stays</li>
+          <li>✓ Dress modestly in public areas - shoulders and knees covered</li>
+          <li>✓ Summer (Jun-Sep) is extremely hot - indoor activities recommended</li>
+          <li>✓ No tipping required but 10% appreciated for good service</li>
+          <li>✓ Dubai is very safe - one of the world's safest cities</li>
+          <li>✓ Alcohol only served in licensed hotels and restaurants</li>
+          <li>✓ Friday is the weekend day - some businesses closed</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2>✈️ Ready to Explore Dubai?</h2>
+      <p style="font-size:18px;opacity:.95">Book your flight to the city of superlatives and experience Arabian luxury</p>
+      <a href="/booking.html" class="cta-button">Book Your Flight to Dubai →</a>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
 </body>
 </html>

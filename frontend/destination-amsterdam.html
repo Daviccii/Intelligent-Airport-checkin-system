@@ -3,38 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Amsterdam - SmartFly Airways</title>
+  <title>Discover Amsterdam - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .dest-hero{background:linear-gradient(135deg,rgba(11,61,145,0.95),rgba(30,91,184,0.95)),url('/assets/images/destinations/amsterdam.jpg') center/cover;padding:100px 20px;color:#fff;text-align:center}
+    .dest-hero h1{font-size:52px;font-weight:800;margin-bottom:12px;animation:fadeInUp .8s}
+    .dest-hero .tagline{font-size:22px;opacity:.95;animation:fadeInUp 1s}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .dest-container{max-width:1200px;margin:0 auto;padding:60px 20px}
+    .quick-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px;margin-bottom:60px}
+    .fact-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center}
+    .fact-icon{font-size:32px;margin-bottom:8px}
+    .fact-label{font-size:12px;color:#64748b;margin-bottom:4px}
+    .fact-value{font-size:16px;font-weight:700;color:#0B3D91}
+    .section{margin-bottom:60px}
+    .section h2{font-size:32px;color:#0B3D91;margin-bottom:32px;text-align:center}
+    .attractions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px}
+    .attraction-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);transition:.3s;cursor:pointer}
+    .attraction-card:hover{transform:translateY(-8px);box-shadow:0 12px 28px rgba(11,61,145,.15)}
+    .attraction-img{width:100%;height:200px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:48px}
+    .attraction-content{padding:24px}
+    .attraction-title{font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px}
+    .attraction-desc{font-size:14px;color:#64748b;line-height:1.6}
+    .hotels-list{display:grid;gap:20px}
+    .hotel-card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+    .hotel-info h3{font-size:22px;color:#0B3D91;margin-bottom:8px}
+    .hotel-info p{color:#64748b;font-size:14px}
+    .hotel-price{text-align:right}
+    .price-label{font-size:12px;color:#64748b}
+    .price-value{font-size:28px;font-weight:800;color:#0B3D91}
+    .cuisine-section{background:#f8fafc;padding:40px;border-radius:16px}
+    .cuisine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:24px}
+    .cuisine-item{text-align:center;padding:20px}
+    .cuisine-icon{font-size:48px;margin-bottom:12px}
+    .cuisine-name{font-size:18px;font-weight:600;color:#1f2937;margin-bottom:4px}
+    .cuisine-desc{font-size:13px;color:#64748b}
+    .cta-section{background:linear-gradient(135deg,#0B3D91,#1e5bb8);padding:50px;border-radius:16px;text-align:center;color:#fff;margin-top:60px}
+    .cta-section h2{color:#fff;font-size:36px;margin-bottom:16px}
+    .cta-button{display:inline-block;background:#fff;color:#0B3D91;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:700;font-size:18px;margin-top:20px;transition:.3s}
+    .cta-button:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,255,255,.3)}
+    @media(max-width:768px){.dest-hero h1{font-size:36px}.attractions-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
   <header class="main-header">
+    <div class="top-bar"><div class="top-left"><span>EN | NL</span><span>Help</span></div><div class="top-right"><span>+31 20 1234 5678</span><a href="/login.html">Login</a></div></div>
     <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
-      </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
-      </div>
+      <div class="logo"><img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly"><span>SmartFly</span></div>
+      <nav class="nav-menu"><div class="nav-item"><a href="/index.html">Home</a></div><div class="nav-item"><a href="/explore.html">Explore</a></div><div class="nav-item"><a href="/destinations.html">Destinations</a></div></nav>
+      <div class="cta-btn"><a href="/booking.html">Book Now</a></div>
     </div>
   </header>
 
-  <main class="content-section">
-    <div class="container">
-      <h1 class="section-title">Amsterdam</h1>
-      <p class="section-subtitle">This page is dedicated to Amsterdam.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+  <div class="dest-hero"><h1>🇳🇱 Amsterdam</h1><p class="tagline">Venice of the North - Canals, Bikes, and Golden Age Charm</p></div>
+
+  <div class="dest-container">
+    <div class="quick-facts">
+      <div class="fact-card"><div class="fact-icon">👥</div><div class="fact-label">Population</div><div class="fact-value">870K</div></div>
+      <div class="fact-card"><div class="fact-icon">💰</div><div class="fact-label">Currency</div><div class="fact-value">EUR (€)</div></div>
+      <div class="fact-card"><div class="fact-icon">🗣️</div><div class="fact-label">Languages</div><div class="fact-value">Dutch, English</div></div>
+      <div class="fact-card"><div class="fact-icon">🕐</div><div class="fact-label">Time Zone</div><div class="fact-value">GMT+1</div></div>
+      <div class="fact-card"><div class="fact-icon">🌤️</div><div class="fact-label">Best Time</div><div class="fact-value">Apr-May, Sep-Oct</div></div>
+    </div>
+
+    <div class="section">
+      <h2>🎯 Top Attractions</h2>
+      <div class="attractions-grid">
+        <div class="attraction-card"><div class="attraction-img">🚲</div><div class="attraction-content"><h3 class="attraction-title">Canal Cruises</h3><p class="attraction-desc">Iconic canals with 1,600 bridges. Peaceful boat tours through 17th-century waterways.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏛️</div><div class="attraction-content"><h3 class="attraction-title">Anne Frank House</h3><p class="attraction-desc">Moving WWII memorial and museum in the hidden annex where Anne Frank wrote her diary.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🎨</div><div class="attraction-content"><h3 class="attraction-title">Van Gogh Museum</h3><p class="attraction-desc">World's largest collection of Vincent van Gogh paintings with 200+ masterpieces.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏰</div><div class="attraction-content"><h3 class="attraction-title">Dam Square</h3><p class="attraction-desc">Historic center with Royal Palace, Madam Tussauds, and the iconic area's main attractions.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🌷</div><div class="attraction-content"><h3 class="attraction-title">Keukenhof Gardens</h3><p class="attraction-desc">Spring tulip paradise with 7 million flowers. The world's largest flower garden.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏘️</div><div class="attraction-content"><h3 class="attraction-title">Canal Houses</h3><p class="attraction-desc">17th-century merchants' houses with distinctive gables lining the romantic canals.</p></div></div>
       </div>
     </div>
-  </main>
+
+    <div class="section">
+      <h2>🏨 Where to Stay</h2>
+      <div class="hotels-list">
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐⭐ The Waldorf Astoria Amsterdam</h3><p>Luxury palace hotel in historic canal palaces with rooftop bar and fine dining</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">€750</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐ Canal's Boutique Hotel</h3><p>Charming 4-star on the canals with canal-side views and contemporary design</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">€320</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐ Jaz Amsterdam</h3><p>Modern 3-star hotel in central location near tram and metro lines</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">€120</div><div class="price-label">/night</div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🍽️ Dining & Cuisine</h2>
+      <div class="cuisine-section">
+        <p style="text-align:center;color:#64748b;font-size:16px;margin-bottom:20px">Dutch cuisine is hearty and unpretentious - stroopwafels, poffertjes, and bitterballen</p>
+        <div class="cuisine-grid">
+          <div class="cuisine-item"><div class="cuisine-icon">🍜</div><h4 class="cuisine-name">Stroopwafel</h4><p class="cuisine-desc">Sweet waffle with syrup</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🧈</div><h4 class="cuisine-name">Poffertjes</h4><p class="cuisine-desc">Mini pancakes with butter</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🧀</div><h4 class="cuisine-name">Dutch Cheese</h4><p class="cuisine-desc">Edam and Gouda varieties</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🥔</div><h4 class="cuisine-name">Patat</h4><p class="cuisine-desc">Dutch-style fries with mayo</p></div>
+          <li><div class="cuisine-icon">🍺</div><h4 class="cuisine-name">Dutch Beer</h4><p class="cuisine-desc">Heineken and craft beers</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🚗 Getting Around</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li><strong style="color:#0B3D91">🚲 Bikes:</strong> Most efficient way - Amsterdam is ultra-cycle friendly with dedicated lanes</li>
+          <li><strong style="color:#0B3D91">🚊 Tram:</strong> 17 tram lines covering the entire city efficiently</li>
+          <li><strong style="color:#0B3D91">🚢 Canal Boats:</strong> Romantic transport and sightseeing option</li>
+          <li><strong style="color:#0B3D91">🚶 Walking:</strong> Compact, pedestrian-friendly city perfect for exploring</li>
+          <li><strong style="color:#0B3D91">🚕 Taxis:</strong> Available but expensive - use other transport options</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>💡 Travel Tips</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li>✓ EU citizens travel visa-free - check Schengen requirements</li>
+          <li>✓ Rent a bike - cheapest and most authentic way to get around</li>
+          <li>✓ Get an OV-chipkaart for trams and buses - discounted fares</li>
+          <li>✓ Amsterdam Pass gives access to museums and public transport</li>
+          <li>✓ Dutch people speak excellent English - communication is easy</li>
+          <li>✓ Pickpocketing in crowded areas - secure your valuables</li>
+          <li>✓ Tipping is optional - round up or add 5-10%</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2>✈️ Ready to Explore Amsterdam?</h2>
+      <p style="font-size:18px;opacity:.95">Book your flight to the Venice of the North and cycle through centuries of history and charm</p>
+      <a href="/booking.html" class="cta-button">Book Your Flight to Amsterdam →</a>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
 </body>
 </html>

@@ -7,25 +7,399 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-    <!-- Sticky Header -->
-    <header class="header">
-        <div class="header-container">
-            <div class="logo-bubble">
-                <span class="logo-icon">✈</span>
-            </div>
-            <nav class="nav-links">
-                <a href="#" class="nav-link active">Flights</a>
-                <a href="#" class="nav-link">Bookings</a>
-                <a href="#" class="nav-link">Manage</a>
-                <a href="#" class="nav-link">Check-in</a>
-                <a href="#" class="nav-link">Help</a>
-            </nav>
-            <div class="header-actions">
-                <button class="btn-secondary">Sign In</button>
-            </div>
-        </div>
-    </header>
+<header class="main-header">
 
+    <!-- TOP BAR -->
+    <div class="top-bar">
+        <div class="top-left">
+            <span>EN | KE</span>
+            <span>Help</span>
+        </div>
+        <div class="top-right">
+            <span>+254 700 000 000</span>
+            <a href="#">Login</a>
+        </div>
+    </div>
+
+    <!-- MAIN NAV -->
+    <div class="nav-wrapper">
+
+        <div class="logo">
+            <img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly">
+            <span>SmartFly</span>
+        </div>
+
+        <nav class="nav-menu">
+            <div class="nav-item">
+                <a href="/explore.html">Explore</a>
+                <div class="mega-menu">
+                    <div class="mega-container">
+                        <div>
+                            <h4>Our Destinations</h4>
+                            <a href="/destinations-africa.html">Africa</a>
+                            <a href="/destinations-europe.html">Europe</a>
+                            <a href="/destinations-asia.html">Asia</a>
+                            <a href="/destinations-america.html">America</a>
+                            <a href="/destinations-middle-east.html">Middle East</a>
+                            <a href="/destinations.html">View All</a>
+                        </div>
+                        <div>
+                            <h4>Discover Nairobi</h4>
+                            <a href="/route-london-gatwick-nairobi.html">London Gatwick to Nairobi</a>
+                            <a href="/route-london-heathrow-nairobi.html">London Heathrow to Nairobi</a>
+                            <a href="/route-paris-nairobi.html">Paris to Nairobi</a>
+                            <a href="/route-amsterdam-nairobi.html">Amsterdam to Nairobi</a>
+                            <a href="/route-new-york-nairobi.html">New York to Nairobi</a>
+                            <a href="/availability.html">View More</a>
+                        </div>
+                        <div>
+                            <h4>Popular Destinations</h4>
+                            <a href="/destination-nairobi.html">Nairobi</a>
+                            <a href="/destination-london.html">London</a>
+                            <a href="/destination-johannesburg.html">Johannesburg</a>
+                            <a href="/destination-dubai.html">Dubai</a>
+                            <a href="/destination-bangkok.html">Bangkok</a>
+                            <a href="/destinations.html">View More</a>
+                        </div>
+                        <div>
+                            <h4>Long-Haul Destinations</h4>
+                            <a href="/destination-new-york.html">New York</a>
+                            <a href="/destination-guangzhou.html">Guangzhou</a>
+                            <a href="/destination-london.html">London</a>
+                            <a href="/destination-paris.html">Paris</a>
+                            <a href="/destination-amsterdam.html">Amsterdam</a>
+                            <a href="/destinations.html">View More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-item">
+                <a href="/plan.html">Plan</a>
+                <div class="mega-menu">
+                    <div class="mega-container">
+                        <div>
+                            <h4>Travel Information</h4>
+                            <a href="/policy.html">Travel Requirements</a>
+                            <a href="/eta-kenya.html">eTA for Travel in Kenya</a>
+                            <a href="/travel-tips.html">Comfort & Tips</a>
+                            <a href="/codeshare-partners.html">Codeshare Partners</a>
+                            <a href="/skyteam-alliance.html">SkyTeam Alliance</a>
+                            <a href="/plan.html">View More</a>
+                        </div>
+                        <div>
+                            <h4>Baggage Information</h4>
+                            <a href="/hand-baggage.html">Hand Baggage</a>
+                            <a href="/baggage-allowances.html">Baggage Allowances</a>
+                            <a href="/pet-carriage.html">Pet Carriage</a>
+                            <a href="/baggage-restrictions.html">Baggage Restrictions</a>
+                            <a href="/lost-baggage.html">Lost or Delayed Baggage</a>
+                            <a href="/baggage.html">View More</a>
+                        </div>
+                        <div>
+                            <h4>Travel Services</h4>
+                            <a href="/mice.html">Meetings, Incentives, Conventions & Exhibitions (MICE)</a>
+                            <a href="/kool-flyers-club.html">Kool Flyers’ Club</a>
+                            <a href="/group-booking.html">Group Booking</a>
+                            <a href="/corporate-travel.html">Corporate Travel</a>
+                            <a href="/charter-flights.html">Charter Flights</a>
+                            <a href="/meet-greet.html">Meet & Greet</a>
+                        </div>
+                        <div>
+                            <h4>Special Care</h4>
+                            <a href="/unaccompanied-minors.html">Unaccompanied Minors</a>
+                            <a href="/infant-toddlers.html">Infant & Toddlers</a>
+                            <a href="/expectant-mothers.html">Expectant Mothers</a>
+                            <a href="/medical-support.html">Medical & Special Support</a>
+                            <a href="/reduced-mobility.html">Reduced Mobility</a>
+                            <a href="/special-meals.html">Special Meals</a>
+                            <a href="/special-care.html">View More</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-item">
+                <a href="/book-manage.html">Book &amp; Manage</a>
+                <div class="mega-menu">
+                    <div class="mega-container">
+                        <div>
+                            <h4>Book Flight</h4>
+                            <a href="/flight-schedule.html">Flight Timetable</a>
+                            <a href="/destinations.html">Where We Fly</a>
+                            <a href="/deals.html">Flight Deals</a>
+                            <a href="/booking.html">Booking Online</a>
+                            <a href="/seats.html">Our Seats</a>
+                            <a href="/time-to-think.html">Time To Think</a>
+                            <a href="/payment.html">Payment Methods</a>
+                        </div>
+                        <div>
+                            <h4>Manage Booking</h4>
+                            <a href="/change-booking.html">Change Booking</a>
+                            <a href="/upgrade-flight.html">Upgrade Flight</a>
+                            <a href="/refunds.html">Refunds</a>
+                            <a href="/delay-cancellations.html">Delay &amp; Cancellations</a>
+                            <a href="/post-booking.html">Post Booking</a>
+                        </div>
+                        <div>
+                            <h4>Check In</h4>
+                            <a href="/flight-status.html">Flight Status</a>
+                            <a href="/airport-transfers.html">Airport Transfers</a>
+                            <a href="/car-rentals-booking.html">Car Rentals</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-item">
+                <a href="/experience.html">Experience</a>
+                <div class="mega-menu">
+                    <div class="mega-container">
+                        <div>
+                            <h4>On-board</h4>
+                            <a href="/inflight-entertainment.html">In-flight Entertainment</a>
+                            <a href="/duty-free-shopping.html">Duty Free Shopping</a>
+                            <a href="/class-of-service.html">Class of Service</a>
+                            <a href="/meal-options.html">Meal Options</a>
+                            <a href="/experience.html">View More</a>
+                        </div>
+                        <div>
+                            <h4>Seat Selection</h4>
+                            <a href="/economy-max.html">Economy Max</a>
+                            <a href="/economy-comfort.html">Economy Comfort</a>
+                            <a href="/extra-legroom.html">Extra Legroom</a>
+                            <a href="/preferred-seats.html">Preferred Seats</a>
+                            <a href="/seat-faqs.html">Seat FAQs</a>
+                            <a href="/seat-selection.html">View More</a>
+                        </div>
+                        <div>
+                            <h4>At The Airport</h4>
+                            <a href="/skypriority.html">SkyPriority</a>
+                            <a href="/lounge-services.html">Lounge Services</a>
+                            <a href="/baggage-dropoff-services.html">Baggage Drop-off Services</a>
+                            <a href="/kiosk-checkin.html">Kiosk Check-in</a>
+                        </div>
+                        <div>
+                            <h4>Our Aircraft</h4>
+                            <a href="/boeing-787-8.html">Boeing 787-8</a>
+                            <a href="/boeing-737-800.html">Boeing 737-800</a>
+                            <a href="/boeing-737-300f.html">Boeing 737-300F</a>
+                            <a href="/embraer-e190.html">Embraer-E190</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="nav-item">
+                <a href="/loyalty.html">Loyalty</a>
+                <div class="mega-menu">
+                    <div class="mega-container">
+                        <div>
+                            <h4>Loyalty Program</h4>
+                            <a href="/asante-rewards.html">Asante Rewards</a>
+                            <a href="/members-register.html">Join Asante</a>
+                            <a href="/about-asante.html">About Asante</a>
+                            <a href="/tier-benefits.html">Tier and Benefits</a>
+                            <a href="/loyalty-partners.html">Partners</a>
+                        </div>
+                        <div>
+                            <h4>Membership</h4>
+                            <a href="/membership-platinum.html">Platinum</a>
+                            <a href="/membership-gold.html">Gold</a>
+                            <a href="/membership-ruby.html">Ruby</a>
+                            <a href="/membership-silver.html">Silver</a>
+                        </div>
+                        <div>
+                            <h4>Help</h4>
+                            <a href="/help.html">FAQs</a>
+                            <a href="/contact.html">Contacts</a>
+                            <a href="/legal.html">Terms &amp; Conditions</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="cta-btn">
+            <a href="/booking.html">Book Now</a>
+        </div>
+
+    </div>
+
+</header>
+
+        <!-- Hero Section with Image Slideshow -->
+        <section class="hero">
+                <!-- Image slideshow background -->
+                <div class="hero-slideshow">
+                        <div class="hero-slide active" style="background-image: url('/assets/images/heroes/hero-1.jpg');"></div>
+                        <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-2.jpg');"></div>
+                        <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-3.jpg');"></div>
+                        <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-4.jpg');"></div>
+                </div>
+
+                <!-- Hero overlay gradient -->
+                <div class="hero-overlay"></div>
+
+                <!-- Hero content container -->
+                <div class="hero-content">
+                    <!-- Booking Card - KQ Compact Style -->
+                    <div class="booking-card-kq">
+                                <form id="flightSearchForm" class="booking-form-kq">
+                                        <!-- Single Row: All fields inline -->
+                                        <div class="kq-form-row">
+                                                <!-- Trip Type Dropdown -->
+                                                <div class="kq-field">
+                                                        <label class="kq-label">Trip</label>
+                                                        <div class="kq-dropdown compact" id="tripTypeDropdown">
+                                                                <button type="button" class="kq-dropdown-btn-compact">
+                                                                        <span class="kq-value">Return</span>
+                                                                        <span class="kq-arrow">▾</span>
+                                                                </button>
+                                                                <ul class="kq-dropdown-menu-compact">
+                                                                    <li data-value="return">Return</li>
+                                                                    <li data-value="oneway">One-way</li>
+                                                                    <li data-value="roundtrip">Round Trip</li>
+                                                                </ul>
+                                                        </div>
+                                                        <input type="hidden" id="tripType" name="tripType" value="return">
+                                                </div>
+
+                                                <!-- From Input -->
+                                                <div class="kq-field kq-field-route flight-field">
+                          
+                                                    <label for="fromInput" class="kq-label">From</label>
+                                                    <input 
+                                                        id="fromInput" 
+                                                        type="text" 
+                                                        class="kq-input" 
+                                                        placeholder="City or airport"
+                                                        autocomplete="off"
+                                                        readonly
+                                                    />      
+                                                    <div class="kq-airport-dropdown" id="fromDropdown"></div>                 
+                                                </div>
+
+                                                <!-- Swap Button -->
+                                                <button type="button" class="swap-btn" id="swapBtn">
+                                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                <path d="M7 16V4M7 4L3 8M7 4L11 8"></path>
+                                                                <path d="M17 8V20M17 20L21 16M17 20L13 16"></path>
+                                                        </svg>
+                                                </button>
+
+                                                <!-- To Input -->
+                                                <div class="kq-field kq-field-route">
+                                                        <label for="toInput" class="kq-label">To</label>
+                                                        <input 
+                                                                id="toInput" 
+                                                                type="text" 
+                                                                class="kq-input" 
+                                                                placeholder="City or airport"
+                                                                autocomplete="off"
+                                                        />
+                                                        <div class="kq-airport-dropdown" id="toDropdown"></div>
+                                                </div>
+
+                                                <!-- Passengers Dropdown -->
+                                                <div class="kq-field">
+                                                        <label class="kq-label">Passengers</label>
+                                                        <div class="kq-dropdown compact" id="passengersDropdown">
+                                                                <button type="button" class="kq-dropdown-btn-compact">
+                                                                        <span class="kq-value">1</span>
+                                                                        <span class="kq-arrow">▾</span>
+                                                                </button>
+                                                                <ul class="kq-dropdown-menu-compact">
+                                                                        <li data-value="1">1 Passenger</li>
+                                                                        <li data-value="2">2 Passengers</li>
+                                                                        <li data-value="3">3 Passengers</li>
+                                                                        <li data-value="4">4 Passengers</li>
+                                                                        <li data-value="5">5 Passengers</li>
+                                                                        <li data-value="6">6+ Passengers</li>
+                                                                </ul>
+                                                        </div>
+                                                        <input type="hidden" id="passengers" name="passengers" value="1">
+                                                </div>
+
+                                                <!-- Class Dropdown -->
+                                                <div class="kq-field">
+                                                        <label class="kq-label">Class</label>
+                                                        <div class="kq-dropdown compact" id="classDropdown">
+                                                                <button type="button" class="kq-dropdown-btn-compact">
+                                                                        <span class="kq-value">Economy</span>
+                                                                        <span class="kq-arrow">▾</span>
+                                                                </button>
+                                                                <ul class="kq-dropdown-menu-compact">
+                                                                        <li data-value="economy">Economy</li>
+                                                                        <li data-value="premium">Premium Economy</li>
+                                                                        <li data-value="business">Business</li>
+                                                                        <li data-value="first">First Class</li>
+                                                                </ul>
+                                                        </div>
+                                                        <input type="hidden" id="class" name="class" value="economy">
+                                                </div>
+
+                                                <!-- Search Button -->
+                                                <button id="searchBtn" type="submit" class="kq-search-btn">
+                                                        <span>Search Flights</span>
+                                                </button>
+                                        </div>
+
+                                        <!-- Calendar Row -->
+                                        <div class="kq-date-wrapper" id="datePickerWrapper">
+                                                <div class="kq-calendar-header">
+                                                        <button class="nav-btn" id="prevMonth">‹</button>
+                                                        <div class="month-labels">
+                                                                <span id="monthLeft"></span>
+                                                                <span id="monthRight"></span>
+                                                        </div>
+                                                        <button class="nav-btn" id="nextMonth">›</button>
+                                                </div>
+
+                                                <div class="kq-calendar-grid">
+                                                        <div class="calendar-column">
+                                                                <div class="calendar-date-label">Departure Date <span id="selectedDepartLabel"></span></div>
+                                                                <div class="calendar-weekdays">
+                                                                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                                                                </div>
+                                                                <div class="calendar" id="calendarLeft"></div>
+                                                        </div>
+                                                        <div class="calendar-column">
+                                                                <div class="calendar-date-label">Return Date <span id="selectedReturnLabel"></span></div>
+                                                                <div class="calendar-weekdays">
+                                                                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                                                                </div>
+                                                                <div class="calendar" id="calendarRight"></div>
+                                                        </div>
+                                                </div>
+
+                                                <button class="kq-done-btn">Done</button>
+                                        </div>
+
+                                        <input type="hidden" id="departDate" name="departDate" value="">
+                                        <input type="hidden" id="returnDate" name="returnDate" value="">
+                                </form>
+                            </div>
+
+                            <div class="hero-chip">Flight booking</div>
+                            <h1 class="hero-title">Book smarter, breeze through every checkpoint</h1>
+                            <p class="hero-subtitle">Real-time availability, smart seat selection, and passport validation—built to keep your trip moving forward.</p>
+
+                </div>
+        </section>
+        <div class="container">
+                <div class="quick-actions-grid">
+                        <a href="/checkin.html" class="quick-action-card simple">
+                                <h3>Check In</h3>
+                        </a>
+                        <a href="/book-manage.html" class="quick-action-card simple">
+                                <h3>Manage Booking</h3>
+                        </a>
+                        <a href="/availability.html" class="quick-action-card simple">
+                                <h3>Flight Schedule</h3>
+                        </a>
+                        <a href="/lookup.html" class="quick-action-card simple">
+                                <h3>Flight Status</h3>
+                        </a>
+                </div>
+        </div>
                             <label for="departDate" class="form-label">Depart</label>
                             <input id="departDate" type="date" class="form-control" />
                         </div>

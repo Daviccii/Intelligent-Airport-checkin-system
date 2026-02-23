@@ -3,38 +3,202 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Comfort & Tips - SmartFly Airways</title>
+  <title>Travel Tips & In-Flight Comfort - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .tips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .tip-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .tip-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '\u2713 '; color: #10b981; font-weight: bold; margin-right: 8px; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Comfort & Tips</h1>
-      <p class="section-subtitle">This page is dedicated to Comfort & Tips.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Travel Tips & In-Flight Comfort</h1>
+      <p class="section-subtitle">Make your flight experience more comfortable and enjoyable</p>
+
+      <div class="info-section">
+        <h3>✈️ Before Your Flight</h3>
+        <ul class="feature-list">
+          <li>Arrive 2-3 hours before departure for domestic flights</li>
+          <li>Arrive 3-4 hours early for international flights</li>
+          <li>Check baggage allowance and pack smartly</li>
+          <li>Select your seat online (extra legroom available)</li>
+          <li>Download airline app for real-time updates</li>
+          <li>Wear comfortable, loose-fitting clothing</li>
+          <li>Charge all electronic devices before boarding</li>
+          <li>Have important documents easily accessible</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>💡 In-Flight Comfort Tips</h3>
+        <div class="tips-grid">
+          <div class="tip-card">
+            <h4>🎧 Entertainment</h4>
+            <ul class="feature-list">
+              <li>Personal entertainment screens</li>
+              <li>Movies, TV shows, music</li>
+              <li>Bring headphones/earbuds</li>
+              <li>Noise-cancelling recommended</li>
+            </ul>
+          </div>
+          <div class="tip-card">
+            <h4>💤 Sleep & Rest</h4>
+            <ul class="feature-list">
+              <li>Travel pillows provided</li>
+              <li>Blankets available on request</li>
+              <li>Window seats better for sleeping</li>
+              <li>Eye masks and earplugs helpful</li>
+            </ul>
+          </div>
+          <div class="tip-card">
+            <h4>💧 Hydration</h4>
+            <ul class="feature-list">
+              <li>Drink 1 cup water per hour</li>
+              <li>Avoid alcohol and caffeine</li>
+              <li>Free water available anytime</li>
+              <li>Moisturize skin frequently</li>
+            </ul>
+          </div>
+          <div class="tip-card">
+            <h4>🚶 Staying Active</h4>
+            <ul class="feature-list">
+              <li>Walk aisle every 1-2 hours</li>
+              <li>Do in-seat exercises (stretches)</li>
+              <li>Flex legs and feet regularly</li>
+              <li>Visit lavatory for movement</li>
+            </ul>
+          </div>
+          <div class="tip-card">
+            <h4>🍽️ Dining Options</h4>
+            <ul class="feature-list">
+              <li>Meal service included on long flights</li>
+              <li>Special meals available (pre-order)</li>
+              <li>Snacks available on demand</li>
+              <li>Complimentary beverages</li>
+            </ul>
+          </div>
+          <div class="tip-card">
+            <h4>😴 Jet Lag Management</h4>
+            <ul class="feature-list">
+              <li>Adjust sleep to destination time</li>
+              <li>Gradual light exposure helps</li>
+              <li>Stay hydrated for adjustment</li>
+              <li>Melatonin tablets available</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>🧘 Wellness During Flight</h3>
+        <p><strong>Deep Vein Thrombosis (DVT) Prevention:</strong> Move legs frequently, wear compression socks, avoid prolonged immobility</p>
+        <p><strong>Back Pain Relief:</strong> Lumbar support pillow, adjust seat recline, change position hourly</p>
+        <p><strong>Headaches:</strong> Stay hydrated, avoid excess caffeine, take paracetamol as needed</p>
+        <p><strong>Ear Discomfort:</strong> Chew gum during takeoff/landing, use nasal decongestant spray, yawn to equalize pressure</p>
+      </div>
+
+      <div class="info-section">
+        <h3>📱 Tech & Connectivity</h3>
+        <ul class="feature-list">
+          <li>SmartFly has WiFi on most flights (free for premium members)</li>
+          <li>USB charging ports available at most seats</li>
+          <li>Bluetooth connectivity for wireless headphones</li>
+          <li>Portable battery packs recommended</li>
+          <li>In-flight calling available (limited coverage)</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🛫 Long-Haul Flight Tips</h3>
+        <ul class="feature-list">
+          <li>Book flights departing evening for better sleep</li>
+          <li>Upgrade to business class for extended comfort</li>
+          <li>Consider stopover options for rest breaks</li>
+          <li>Bring entertainment for 12+ hour flights</li>
+          <li>Compression socks reduce swelling</li>
+          <li>Medication for motion sickness available from crew</li>
+          <li>Business center available at major hubs</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>👨‍👩‍👧‍👦 Family Travel Comfort</h3>
+        <ul class="feature-list">
+          <li>Family seating available (request at booking)</li>
+          <li>Bassinets for infants on long flights</li>
+          <li>Kids meals and entertainment provided</li>
+          <li>Changing tables in lavatories</li>
+          <li>Child seats available for lap infants</li>
+          <li>Stroller assistance at gates</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>⚠️ What Not to Do</h3>
+        <ul class="feature-list">
+          <li>Don't leave carry-on under your feet</li>
+          <li>Avoid smoking (strictly prohibited)</li>
+          <li>Don't tamper with cabin equipment</li>
+          <li>Respect quiet hours on night flights</li>
+          <li>Don't recline seat excessively without notice</li>
+          <li>Avoid strong perfumes affecting others</li>
+          <li>Don't use electronic devices during takeoff/landing</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Questions About Comfort</h3>
+        <p><strong>Contact SmartFly Customer Care:</strong></p>
+        <p>📧 Email: comfort@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 011</p>
+        <p>⏰ Hours: 24/7 support available</p>
+        <p><strong>Request services:</strong> Special seating, meal preferences, medical accommodations</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/codeshare-partners.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Codeshare Partners →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Your Flight →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

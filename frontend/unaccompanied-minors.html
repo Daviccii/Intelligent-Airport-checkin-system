@@ -3,38 +3,203 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Unaccompanied Minors - SmartFly Airways</title>
+  <title>Unaccompanied Minors Service - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .service-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .service-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '\u2713 '; color: #10b981; font-weight: bold; margin-right: 8px; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Unaccompanied Minors</h1>
-      <p class="section-subtitle">This page is dedicated to Unaccompanied Minors.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Unaccompanied Minors Service</h1>
+      <p class="section-subtitle">Safe, dedicated care for young travelers</p>
+
+      <div class="info-section">
+        <h3>👧 SmartFly Unaccompanied Minor Program</h3>
+        <p>SmartFly offers comprehensive services for children traveling alone. Our dedicated staff ensures your child is well cared for from check-in to arrival, providing a safe and comfortable journey with peace of mind for parents.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>👩‍⚖️ Eligibility & Age Guidelines</h3>
+        <p><strong>Unaccompanied Minor Service Available:</strong> Ages 5-17 years</p>
+        <p><strong>Age 5-8:</strong> Mandatory unaccompanied minor service required. Child must be escorted through entire journey.</p>
+        <p><strong>Age 9-11:</strong> Service recommended but optional. Parent can choose to have staff supervision.</p>
+        <p><strong>Age 12-17:</strong> Service optional. Some restrictions apply for very long flights or multiple connections.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🌟 Our Unaccompanied Minor Services</h3>
+        <div class="services-grid">
+          <div class="service-card">
+            <h4>💳 Check-in Assistance</h4>
+            <ul class="feature-list">
+              <li>Direct check-in at desk</li>
+              <li>Guardian escorted to gate</li>
+              <li>Luggage handled personally</li>
+              <li>Documentation reviewed</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>🌟 Boarding Priority</h4>
+            <ul class="feature-list">
+              <li>Priority boarding first</li>
+              <li>Staff escorts to seat</li>
+              <li>Seat location chosen for safety</li>
+              <li>Special attention from crew</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>🍽️ In-Flight Care</h4>
+            <ul class="feature-list">
+              <li>Regular crew check-ins</li>
+              <li>Meals provided</li>
+              <li>Entertainment support</li>
+              <li>Lavatory assistance if needed</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>📞 Communication</h4>
+            <ul class="feature-list">
+              <li>Updates to parent/guardian</li>
+              <li>Emergency contact available</li>
+              <li>Regular check-in calls</li>
+              <li>24/7 support line</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>🚶 Connection Support</h4>
+            <ul class="feature-list">
+              <li>Gate-to-gate assistance</li>
+              <li>Guided through airport</li>
+              <li>Baggage tracked personally</li>
+              <li>Re-boarding priority</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>📩 Arrival Handover</h4>
+            <ul class="feature-list">
+              <li>Meet at luggage carousel</li>
+              <li>Identification verification</li>
+              <li>Direct handover to guardian</li>
+              <li>Confirmation to parent</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>📄 Required Documentation</h3>
+        <p><strong>Parent/Guardian must provide:</strong></p>
+        <ul class="feature-list">
+          <li>Child's valid passport or ID</li>
+          <li>Parental consent form (signed)</li>
+          <li>Contact details of receiving guardian</li>
+          <li>Emergency contact information</li>
+          <li>Copies of custody documents (if applicable)</li>
+          <li>Medical information or allergies</li>
+          <li>Insurance documents</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📈 Booking Process</h3>
+        <ol style="padding-left: 20px;">
+          <li>Select flight and add "Unaccompanied Minor Service" during booking</li>
+          <li>Provide child and guardian details</li>
+          <li>Upload required documentation</li>
+          <li>Receive confirmation and special instructions</li>
+          <li>SmartFly team contacts you 48 hours before departure</li>
+          <li>Parent confirms details and emergency contacts</li>
+          <li>Child checks in at designated desk</li>
+        </ol>
+      </div>
+
+      <div class="info-section">
+        <h3>💰 Service Pricing</h3>
+        <p><strong>Unaccompanied Minor Service Fee:</strong> KES 1,500 per flight (one-way)</p>
+        <p><strong>Included in service:</strong> Staff escort, meals, priority handling, communication with parents, emergency support</p>
+        <p><strong>Optional add-ons:</strong> Meet & greet (KES 3,500), lounge access (KES 1,500), special meals (KES 500)</p>
+      </div>
+
+      <div class="info-section">
+        <h3>❌ Restrictions & Important Rules</h3>
+        <ul class="feature-list">
+          <li>No connecting flights exceeding 4 hours (requires staff availability)</li>
+          <li>No overnight connections without special arrangements</li>
+          <li>Receiving guardian must have valid ID matching documents</li>
+          <li>Receiving guardian cannot be more than one person (except with prior approval)</li>
+          <li>International flights require passport stamps and entry authorization</li>
+          <li>No service for flights departing after 10pm or before 6am</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🙏 Parent/Guardian Responsibilities</h3>
+        <ul class="feature-list">
+          <li>Ensure child is prepared for solo travel</li>
+          <li>Provide clear instructions to child about flight</li>
+          <li>Ensure child has valuables and medications secured</li>
+          <li>Verify receiving guardian can attend arrival</li>
+          <li>Keep phone available for updates from SmartFly</li>
+          <li>Confirm documentation is complete before booking</li>
+          <li>Inform child of emergency contact procedures</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Book & Support</h3>
+        <p><strong>Unaccompanied Minor Coordination:</strong></p>
+        <p>📧 Email: minors@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 014</p>
+        <p>⏰ Hours: Monday-Friday 8am-6pm EAT</p>
+        <p><strong>Emergency Support (24/7):</strong> +254 700 000 099</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/expectant-mothers.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Expectant Mothers →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Your Flight →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

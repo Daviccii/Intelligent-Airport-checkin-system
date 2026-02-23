@@ -5,24 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Lost or Delayed Baggage - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .process-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+    .process-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; }
+    .process-number { font-size: 32px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '✓ '; color: #10b981; font-weight: bold; margin-right: 8px; }
+    .compensation-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .compensation-table th, .compensation-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .compensation-table th { background: #f0f4ff; color: #1e3a8a; font-weight: 600; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
@@ -30,11 +39,202 @@
   <main class="content-section">
     <div class="container">
       <h1 class="section-title">Lost or Delayed Baggage</h1>
-      <p class="section-subtitle">This page is dedicated to Lost or Delayed Baggage.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <p class="section-subtitle">What to do if your baggage doesn't arrive with you</p>
+
+      <div class="info-section">
+        <h3>📄 Report Lost or Delayed Baggage</h3>
+        <p><strong>Important:</strong> Report missing baggage before leaving the airport. Go to the Baggage Service Office in the Arrivals area. Have your baggage tag and booking reference ready.</p>
+        <p><strong>Baggage recovery rate:</strong> 99.2% of delayed baggage is recovered and delivered within 24-48 hours</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🔍 Baggage Tracking Process</h3>
+        <div class="process-grid">
+          <div class="process-card">
+            <div class="process-number">1</div>
+            <h4>Report at Airport</h4>
+            <p>Notify baggage service immediately upon arrival</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">2</div>
+            <h4>File PIR Report</h4>
+            <p>Property Irregularity Report filed with details</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">3</div>
+            <h4>Tracking Begins</h4>
+            <p>Baggage located via barcode system</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">4</div>
+            <h4>Delivery Arranged</h4>
+            <p>Free delivery to your address once found</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">5</div>
+            <h4>Compensation</h4>
+            <p>If lost, compensation processed</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">6</div>
+            <h4>Follow Up</h4>
+            <p>Regular updates on baggage status</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>🛍️ Emergency Assistance for Delayed Baggage</h3>
+        <p>If your baggage is delayed, SmartFly provides immediate assistance:</p>
+        <ul class="feature-list">
+          <li>Emergency toilet kit with toiletries (free)</li>
+          <li>Basic clothing items (t-shirt, underwear - free)</li>
+          <li>Medications and essential items reimbursement</li>
+          <li>Accommodation allowance if overnight delay</li>
+          <li>Meal allowance during delay</li>
+          <li>Phone credit for contacting family</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>💰 Reimbursement for Delayed Baggage Expenses</h3>
+        <p><strong>What SmartFly will reimburse:</strong></p>
+        <ul class="feature-list">
+          <li>Essential toiletries and cosmetics (receipts required)</li>
+          <li>Medication and medical supplies</li>
+          <li>Underwear and basic clothing</li>
+          <li>Accommodation for multi-day delays</li>
+          <li>Meals during baggage delay period</li>
+          <li>Reasonable ground transportation</li>
+        </ul>
+        <p><strong>Reimbursement limits:</strong> Up to KES 15,000 per day for delays under 72 hours</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🏐 Compensation for Lost Baggage</h3>
+        <table class="compensation-table">
+          <thead>
+            <tr>
+              <th>Baggage Status</th>
+              <th>Timeframe</th>
+              <th>Maximum Compensation</th>
+              <th>Action Required</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Delayed 24 hours</td>
+              <td>Within 24 hrs</td>
+              <td>KES 15,000</td>
+              <td>Submit receipts for emergency items</td>
+            </tr>
+            <tr>
+              <td>Delayed 48-72 hours</td>
+              <td>2-3 days</td>
+              <td>KES 30,000</td>
+              <td>File claim with documentation</td>
+            </tr>
+            <tr>
+              <td>Delayed 72+ hours</td>
+              <td>3+ days</td>
+              <td>KES 50,000</td>
+              <td>Full claim assessment</td>
+            </tr>
+            <tr>
+              <td>Lost Baggage</td>
+              <td>After 21 days</td>
+              <td>USD 3,000 equivalent (per bag)</td>
+              <td>Full inventory documentation required</td>
+            </tr>
+            <tr>
+              <td>Damaged Baggage</td>
+              <td>Immediate</td>
+              <td>USD 2,500 equivalent</td>
+              <td>Photos of damage and repair estimates</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-section">
+        <h3>📄 Documents Needed for Compensation Claims</h3>
+        <ul class="feature-list">
+          <li>Booking reference and flight details</li>
+          <li>Baggage tag/receipt numbers</li>
+          <li>Property Irregularity Report (PIR)</li>
+          <li>Itemized inventory of lost items with values</li>
+          <li>Purchase receipts for high-value items</li>
+          <li>Proof of payment (credit card statement)</li>
+          <li>Photos of items (if available)</li>
+          <li>Receipts for emergency purchases</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📅 How to File a Claim</h3>
+        <ol style="padding-left: 20px;">
+          <li><strong>Immediate action:</strong> File PIR at airport baggage service office</li>
+          <li><strong>Within 7 days:</strong> Submit formal claim with PIR number and documentation</li>
+          <li><strong>Claim submission:</strong> Email baggage-claims@smartfly.com with all documents</li>
+          <li><strong>Assessment:</strong> SmartFly reviews claim (5-10 business days)</li>
+          <li><strong>Decision:</strong> Compensation approved or requested additional documentation</li>
+          <li><strong>Payment:</strong> Funds transferred within 10 days of approval</li>
+        </ol>
+      </div>
+
+      <div class="info-section">
+        <h3>👤 Baggage Services Contact Information</h3>
+        <p><strong>At the Airport (Terminal 1):</strong> Baggage Service Office, Arrivals Level</p>
+        <p><strong>Hours:</strong> Open 24/7 for baggage reports</p>
+        <p><strong>Phone:</strong> +254 700 000 004</p>
+        <p><strong>Email:</strong> baggage@smartfly.com</p>
+        <p><strong>Online tracking:</strong> Visit smartfly.com/track-baggage with booking reference</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🙋 Special Circumstances</h3>
+        <p><strong>Connecting flights:</strong> Baggage delayed to next destination - free rerouting included</p>
+        <p><strong>Damaged during handling:</strong> Report immediately with photos - separate compensation process</p>
+        <p><strong>Baggage never loaded:</strong> Automatically located and delivered to your address</p>
+        <p><strong>Baggage in another city:</strong> We arrange return at no cost with expedited delivery</p>
+      </div>
+
+      <div class="info-section">
+        <h3>💮 Prevention Tips</h3>
+        <p><strong>Reduce baggage loss risks:</strong></p>
+        <ul class="feature-list">
+          <li>Use distinctive baggage tags and color markers</li>
+          <li>Add contact information inside and outside luggage</li>
+          <li>Take photos of your bags before departure</li>
+          <li>Keep receipts for expensive items</li>
+          <li>Avoid checking bags on tight connections</li>
+          <li>Check baggage allowance before packing</li>
+          <li>Use hardshell luggage for better protection</li>
+          <li>Consider baggage insurance for valuable items</li>
+        </ul>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/baggage-allowances.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Baggage Info →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Your Flight →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

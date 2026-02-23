@@ -5,36 +5,195 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Pet Carriage - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .pet-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .pet-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .pet-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '✓ '; color: #10b981; font-weight: bold; margin-right: 8px; }
+    .forbidden-items { list-style: none; padding: 0; margin: 10px 0; }
+    .forbidden-items li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #fee2e2; }
+    .forbidden-items li:before { content: '✗ '; color: #ef4444; font-weight: bold; margin-right: 8px; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Pet Carriage</h1>
-      <p class="section-subtitle">This page is dedicated to Pet Carriage.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Pet Carriage Services</h1>
+      <p class="section-subtitle">Travel with your furry friends safely and comfortably</p>
+
+      <div class="info-section">
+        <h3>🐾 Traveling with Pets on SmartFly</h3>
+        <p>SmartFly welcomes your beloved pets as companions on your journey. We provide safe, comfortable, and climate-controlled accommodations for dogs, cats, rabbits, and other approved animals. Pets can travel in the cargo hold (checked) or in the cabin with you, depending on size and type.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🐠 Pet Categories & Options</h3>
+        <div class="pet-grid">
+          <div class="pet-card">
+            <h4>🐶 Dogs & Cats (Cabin)</h4>
+            <p><strong>Max weight:</strong> 10 kg (22 lbs)</p>
+            <p><strong>Fee:</strong> KES 3,500 per pet</p>
+            <p><strong>Requirements:</strong> Airline-approved carrier, health certificate, valid vaccinations</p>
+          </div>
+          <div class="pet-card">
+            <h4>🐇 Rabbits & Small Animals (Cabin)</h4>
+            <p><strong>Max weight:</strong> 5 kg (11 lbs)</p>
+            <p><strong>Fee:</strong> KES 2,500 per pet</p>
+            <p><strong>Requirements:</strong> Ventilated carrier, hay/bedding, health certificate</p>
+          </div>
+          <div class="pet-card">
+            <h4>🐾 Dogs (Cargo Hold)</h4>
+            <p><strong>Max weight:</strong> Unlimited</p>
+            <p><strong>Fee:</strong> KES 8,000 - 15,000 (by weight)</p>
+            <p><strong>Requirements:</strong> Airline-approved crate, health cert, acclimation time</p>
+          </div>
+          <div class="pet-card">
+            <h4>🐯 Exotic Pets (Cargo Hold)</h4>
+            <p><strong>Species:</strong> Birds, reptiles, others (case-by-case)</p>
+            <p><strong>Fee:</strong> Contact special services</p>
+            <p><strong>Requirements:</strong> CITES permit, health cert, special handling</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>📄 Required Documentation</h3>
+        <ul class="feature-list">
+          <li>Health certificate (issued within 10 days of travel by veterinarian)</li>
+          <li>Proof of rabies vaccination (if applicable)</li>
+          <li>Valid microchip registration details</li>
+          <li>Airline pet declaration form (available on booking)</li>
+          <li>Import/export permits (for international travel)</li>
+          <li>CITES certificate (for protected species)</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>💰 Pet Travel Costs</h3>
+        <p><strong>Cabin travel (small pets):</strong> KES 2,500 - 3,500 one-way</p>
+        <p><strong>Cargo hold (large dogs):</strong> KES 8,000 - 15,000 depending on weight and distance</p>
+        <p><strong>International flights:</strong> Add 20-30% to base domestic rates</p>
+        <p><strong>Pet amenities package:</strong> KES 500 (includes water bowl, treats, comfort items)</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🚪 Approved Carrier Requirements</h3>
+        <ul class="feature-list">
+          <li>Airline-approved carrier (IATA compliant for cargo)</li>
+          <li>Minimum dimensions: 24" length × 16" width × 14" height (for cabin)</li>
+          <li>Adequate ventilation (minimum 50% openings)</li>
+          <li>Secure locking mechanism</li>
+          <li>Absorbent padding and leak-proof bottom</li>
+          <li>Food and water bowls accessible</li>
+          <li>ID tag with pet name and contact information</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🎒 Pre-Travel Preparation Checklist</h3>
+        <p><strong>4 weeks before:</strong> Schedule veterinary health check, obtain health certificate</p>
+        <p><strong>2 weeks before:</strong> Ensure current vaccinations, microchip pet if not done</p>
+        <p><strong>1 week before:</strong> Prepare carrier, pack supplies (food, medication, toys, blanket)</p>
+        <p><strong>3 days before:</strong> Acclimate pet to carrier with practice trips</p>
+        <p><strong>Day before:</strong> Light meal, ensure water access</p>
+        <p><strong>Flight day:</strong> Arrive 2 hours early, carry recent photo of pet</p>
+      </div>
+
+      <div class="info-section">
+        <h3>⚠️ Restricted Breeds & Species</h3>
+        <p><strong>Note:</strong> SmartFly cannot transport:</p>
+        <ul class="forbidden-items">
+          <li>Brachycephalic breeds in cargo (health risk: Bulldogs, Pugs, Persians)</li>
+          <li>Dangerous/aggressive animals</li>
+          <li>Snakes and venomous reptiles</li>
+          <li>Large primates and wild animals</li>
+          <li>Animals without proper health/import documentation</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🌟 Service Animals & Emotional Support Animals</h3>
+        <p><strong>Certified service animals (guide dogs, hearing dogs, mobility assist):</strong> Travel FREE in cabin</p>
+        <p><strong>Requirements:</strong> Service animal vest/certificate, handler documentation</p>
+        <p><strong>Emotional Support Animals (ESA):</strong> Must follow standard pet policies and fees</p>
+        <p><strong>Therapy animals:</strong> Contact special services for documentation requirements</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🌄 Climate Considerations</h3>
+        <p>SmartFly maintains temperature and humidity control in cargo holds. However, pets may experience stress during air travel. Consider:</p>
+        <ul class="feature-list">
+          <li>Avoid peak heat seasons for cargo travel when possible</li>
+          <li>Provide sedation options (with veterinary approval)</li>
+          <li>Book early morning or late evening flights</li>
+          <li>Avoid connections - direct flights are less stressful</li>
+          <li>Include water bottle attachment in carrier</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📅 Booking Your Pet's Flight</h3>
+        <p><strong>Steps to book:</strong></p>
+        <ol style="padding-left: 20px;">
+          <li>Contact Special Services at pets@smartfly.com or +254 700 000 002</li>
+          <li>Provide pet details (species, breed, weight, age)</li>
+          <li>Confirm carrier specifications and fees</li>
+          <li>Book flight and pay pet travel fee</li>
+          <li>Submit health certificate and required documents 7 days before</li>
+          <li>Receive pet handling instructions and updates</li>
+        </ol>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Pet Support & Special Services</h3>
+        <p><strong>Contact our pet specialists:</strong></p>
+        <p>📧 Email: pets@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 002</p>
+        <p>🕐 Hours: Monday-Friday, 8:00 AM - 5:00 PM EAT</p>
+        <p><strong>Available services:</strong> Pet insurance, special handling requests, veterinary consultation, pet-friendly accommodations</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/baggage-allowances.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Baggage Info →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book with Pet →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

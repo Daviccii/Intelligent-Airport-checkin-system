@@ -5,36 +5,198 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Medical & Special Support - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .service-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .service-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .service-icon { font-size: 32px; margin-bottom: 12px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '\u2713 '; color: #10b981; font-weight: bold; margin-right: 8px; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Medical & Special Support</h1>
-      <p class="section-subtitle">This page is dedicated to Medical & Special Support.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Medical & Special Support Services</h1>
+      <p class="section-subtitle">Comprehensive medical assistance and disability support for safe air travel</p>
+
+      <div class="info-section">
+        <h3>💊 Medical Services Overview</h3>
+        <p>SmartFly is committed to supporting passengers with medical conditions, disabilities, and special needs. Our trained crew and comprehensive facilities ensure you can fly safely and comfortably. Advance notification helps us provide the best possible care.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🏥 Special Medical Support Available</h3>
+        <div class="services-grid">
+          <div class="service-card">
+            <div class="service-icon">🧑‍🦽</div>
+            <h4>Disability Assistance</h4>
+            <p>Wheelchair assistance, mobility aids, accessible seating, boarding support</p>
+          </div>
+          <div class="service-card">
+            <div class="service-icon">👨‍💻</div>
+            <h4>Visual Impairment</h4>
+            <p>Guide dog accommodation, personnel assistance, in-flight support</p>
+          </div>
+          <div class="service-card">
+            <div class="service-icon">👂</div>
+            <h4>Hearing Impairment</h4>
+            <p>Visual announcements, written information, special communication support</p>
+          </div>
+          <div class="service-card">
+            <div class="service-icon">🥗</div>
+            <h4>Allergies & Dietary</h4>
+            <p>Allergen-free meals, special diet options, medical documentation</p>
+          </div>
+          <div class="service-card">
+            <div class="service-icon">🏥</div>
+            <h4>Oxygen & Medical Equipment</h4>
+            <p>CPAP machines, oxygen concentrators, inhalers, mobility devices</p>
+          </div>
+          <div class="service-card">
+            <div class="service-icon">🤒</div>
+            <h4>Infectious Diseases</h4>
+            <p>Isolation seating, enhanced hygiene, medical personnel standby</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>🏥 Medical Conditions & Flying Restrictions</h3>
+        <p><strong>Generally permitted with notification:</strong></p>
+        <ul class="feature-list">
+          <li>Diabetes (insulin and supplies allowed)</li>
+          <li>Asthma and respiratory conditions</li>
+          <li>Heart conditions (stable, with medical clearance)</li>
+          <li>Arthritis and joint conditions</li>
+          <li>Mental health conditions (documented)</li>
+          <li>Blood clotting disorders (medical certificate required)</li>
+        </ul>
+        <p><strong>Restrictions or special requirements:</strong></p>
+        <ul class="feature-list">
+          <li>Recent surgery (typically 2-4 weeks required)</li>
+          <li>Pneumonia or respiratory infections</li>
+          <li>Unstable heart conditions (medical clearance needed)</li>
+          <li>Recent heart attack or stroke (doctor approval required)</li>
+          <li>Severe back problems with complications</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📄 Medical Documentation Requirements</h3>
+        <p><strong>For medical conditions:</strong></p>
+        <ol style="padding-left: 20px;">
+          <li>Medical certificate from your doctor stating you are fit to fly</li>
+          <li>List of medications and medical equipment needed</li>
+          <li>Specific special requirements or accommodations</li>
+          <li>Emergency contact and medical information</li>
+          <li>Insurance and liability waiver (for some conditions)</li>
+        </ol>
+        <p><strong>Timing:</strong> Submit documentation 48 hours before departure for review</p>
+      </div>
+
+      <div class="info-section">
+        <h3>💊 Medications & Medical Equipment</h3>
+        <p><strong>What you can bring:</strong></p>
+        <ul class="feature-list">
+          <li>Prescription medications in original labeled bottles</li>
+          <li>Insulin and injection supplies</li>
+          <li>Inhalers and nebulizers</li>
+          <li>CPAP and sleep apnea devices</li>
+          <li>Oxygen concentrators (battery-powered, approved models)</li>
+          <li>Wheelchairs and mobility aids</li>
+          <li>Crutches and walking aids</li>
+        </ul>
+        <p><strong>Important:</strong> Keep medications in carry-on bag, not checked luggage</p>
+      </div>
+
+      <div class="info-section">
+        <h3>⭐ Mobility & Disability Services</h3>
+        <ul class="feature-list">
+          <li>Priority boarding for passengers with disabilities</li>
+          <li>Wheelchair accessibility at all gates and aircraft</li>
+          <li>On-board wheelchair assistance and transfers</li>
+          <li>Accessible lavatories and spacious seating</li>
+          <li>Guide dog accommodation (no quarantine periods)</li>
+          <li>Service dog in-cabin travel (no pet fees)</li>
+          <li>Assistance with boarding and deplaning</li>
+          <li>Special seating assignments (aisle, extra legroom)</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>💨 Oxygen Availability</h3>
+        <p><strong>Passengers needing oxygen:</strong></p>
+        <ul class="feature-list">
+          <li>MUST arrange oxygen with airline in advance (minimum 48 hours notice)</li>
+          <li>SmartFly provides bottled oxygen and delivery to destination (additional charge)</li>
+          <li>Passenger-supplied oxygen allowed (portable concentrators on approved list)</li>
+          <li>Medical documentation required from physician</li>
+          <li>Special seat assignment near lavatories for easier access</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🙏 Booking with Special Medical Needs</h3>
+        <ol style="padding-left: 20px;">
+          <li>Contact Special Services BEFORE booking or during booking process</li>
+          <li>Provide detailed information about your condition and needs</li>
+          <li>Receive confirmation of available accommodations</li>
+          <li>Submit medical documentation 48 hours before departure</li>
+          <li>Receive call from medical coordinator to confirm arrangements</li>
+          <li>Arrive at airport early (2.5-3 hours) for special procedures</li>
+        </ol>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Contact Special Services</h3>
+        <p><strong>Medical & Disability Services Team:</strong></p>
+        <p>📧 Email: special-services@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 008</p>
+        <p>🕐 Hours: 24/7 support available</p>
+        <p><strong>What to include in request:</strong> Flight details, condition/disability, required accommodations, medical documentation</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/reduced-mobility.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Reduced Mobility →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Your Flight →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

@@ -1,40 +1,480 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Middle East Destinations - SmartFly Airways</title>
-  <link rel="stylesheet" href="/styles.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Middle East Destinations - SmartFly Airways</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .destination-hero {
+            background: linear-gradient(135deg, #0B3D91 0%, #1e5bb8 100%);
+            padding: 80px 20px 60px;
+            color: white;
+            text-align: center;
+        }
+        
+        .destination-hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        .destination-hero p {
+            font-size: 20px;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto;
+            animation: fadeInUp 1s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .destinations-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .continent-section {
+            margin-bottom: 80px;
+        }
+        
+        .section-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        
+        .section-header h2 {
+            font-size: 36px;
+            color: #0B3D91;
+            margin-bottom: 12px;
+        }
+        
+        .section-header p {
+            font-size: 18px;
+            color: #64748b;
+        }
+        
+        .destinations-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 32px;
+        }
+        
+        .destination-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+        }
+        
+        .destination-card:nth-child(1) { animation-delay: 0.1s; }
+        .destination-card:nth-child(2) { animation-delay: 0.2s; }
+        .destination-card:nth-child(3) { animation-delay: 0.3s; }
+        .destination-card:nth-child(4) { animation-delay: 0.4s; }
+        .destination-card:nth-child(5) { animation-delay: 0.5s; }
+        .destination-card:nth-child(6) { animation-delay: 0.6s; }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+        
+        .destination-card:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 40px rgba(11, 61, 145, 0.15);
+        }
+        
+        .card-image {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+        
+        .destination-card:hover .card-image {
+            transform: scale(1.1);
+        }
+        
+        .card-content {
+            padding: 28px;
+        }
+        
+        .card-flag {
+            font-size: 32px;
+            margin-bottom: 12px;
+            display: inline-block;
+        }
+        
+        .card-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .card-country {
+            font-size: 16px;
+            color: #0B3D91;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+        
+        .card-description {
+            font-size: 15px;
+            color: #64748b;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        
+        .card-features {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        
+        .feature-tag {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0B3D91;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #0B3D91 0%, #1e5bb8 100%);
+            color: white;
+            padding: 14px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(11, 61, 145, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(11, 61, 145, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .destination-hero h1 {
+                font-size: 36px;
+            }
+            
+            .destinations-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
-      </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
-      </div>
-    </div>
-  </header>
 
-  <main class="content-section">
-    <div class="container">
-      <h1 class="section-title">Middle East Destinations</h1>
-      <p class="section-subtitle">This page is dedicated to Middle East Destinations.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
-      </div>
+<header class="main-header">
+  <div class="top-bar">
+    <div class="top-left">
+      <span>EN | KE</span>
+      <span>Help</span>
     </div>
-  </main>
+    <div class="top-right">
+      <span>+254 700 000 000</span>
+      <a href="/login.html">Login</a>
+    </div>
+  </div>
+
+  <div class="nav-wrapper">
+    <div class="logo">
+      <img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly">
+      <span>SmartFly</span>
+    </div>
+
+    <nav class="nav-menu">
+      <div class="nav-item">
+        <a href="/explore.html">Explore</a>
+        <div class="mega-menu">
+          <div class="mega-container">
+            <div>
+              <h4>Our Destinations</h4>
+              <a href="/destinations-africa.html">Africa</a>
+              <a href="/destinations-europe.html">Europe</a>
+              <a href="/destinations-asia.html">Asia</a>
+              <a href="/destinations-america.html">America</a>
+              <a href="/destinations-middle-east.html">Middle East</a>
+              <a href="/destinations.html">View All</a>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="nav-item">
+        <a href="/plan.html">Plan</a>
+      </div>
+      <div class="nav-item">
+        <a href="/book-manage.html">Book & Manage</a>
+      </div>
+      <div class="nav-item">
+        <a href="/experience.html">Experience</a>
+      </div>
+      <div class="nav-item">
+        <a href="/loyalty.html">Loyalty</a>
+      </div>
+    </nav>
+
+    <div class="cta-btn">
+      <a href="/booking.html">Book Now</a>
+    </div>
+  </div>
+</header>
+
+<div class="destination-hero">
+    <h1>✈️ Discover Middle East</h1>
+    <p>Where ancient history meets modern luxury - experience the magic of the Arabian Peninsula and beyond</p>
+</div>
+
+<div class="destinations-container">
+    <div class="continent-section">
+        <div class="section-header">
+            <h2>🕌 Middle East</h2>
+            <p>Luxury, tradition, and architectural wonders</p>
+        </div>
+        
+        <div class="destinations-grid">
+            <div class="destination-card" onclick="location.href='/destination-dubai.html'">
+                <img src="/assets/images/destinations/dubai.jpg" alt="Dubai" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇦🇪</span>
+                    <h3 class="card-title">Dubai</h3>
+                    <p class="card-country">United Arab Emirates</p>
+                    <p class="card-description">Futuristic city with Burj Khalifa, luxury shopping, desert safaris, and world-class entertainment.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🏙️ Luxury</span>
+                        <span class="feature-tag">🛍️ Shopping</span>
+                        <span class="feature-tag">🏜️ Desert</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">16+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$750</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">5.0★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-abu-dhabi.html'">
+                <img src="/assets/images/destinations/abu-dhabi.jpg" alt="Abu Dhabi" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇦🇪</span>
+                    <h3 class="card-title">Abu Dhabi</h3>
+                    <p class="card-country">United Arab Emirates</p>
+                    <p class="card-description">UAE capital with Sheikh Zayed Grand Mosque, Louvre Abu Dhabi, pristine beaches, and cultural richness.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🕌 Mosques</span>
+                        <span class="feature-tag">🎨 Art</span>
+                        <span class="feature-tag">🏖️ Beach</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">12+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$720</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.9★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-doha.html'">
+                <img src="/assets/images/destinations/doha.jpg" alt="Doha" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇶🇦</span>
+                    <h3 class="card-title">Doha</h3>
+                    <p class="card-country">Qatar</p>
+                    <p class="card-description">Modern metropolis with stunning skyline, Museum of Islamic Art, traditional souqs, and world-class sports facilities.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🏙️ Modern</span>
+                        <span class="feature-tag">🏛️ Museums</span>
+                        <span class="feature-tag">🛍️ Souqs</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">11+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$740</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-riyadh.html'">
+                <img src="/assets/images/destinations/riyadh.jpg" alt="Riyadh" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇸🇦</span>
+                    <h3 class="card-title">Riyadh</h3>
+                    <p class="card-country">Saudi Arabia</p>
+                    <p class="card-description">Saudi capital blending heritage with modern development, historic sites, cultural attractions, and hospitality.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🏛️ Heritage</span>
+                        <span class="feature-tag">🏙️ Modern</span>
+                        <span class="feature-tag">🎭 Culture</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">9+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$680</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.7★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-muscat.html'">
+                <img src="/assets/images/destinations/muscat.jpg" alt="Muscat" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇴🇲</span>
+                    <h3 class="card-title">Muscat</h3>
+                    <p class="card-country">Oman</p>
+                    <p class="card-description">Beautiful capital with Sultan Qaboos Grand Mosque, dramatic mountains, pristine beaches, and authentic Arabian culture.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🕌 Mosques</span>
+                        <span class="feature-tag">⛰️ Mountains</span>
+                        <span class="feature-tag">🏖️ Beaches</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">7+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$660</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.8★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="destination-card" onclick="location.href='/destination-tel-aviv.html'">
+                <img src="/assets/images/destinations/tel-aviv.jpg" alt="Tel Aviv" class="card-image">
+                <div class="card-content">
+                    <span class="card-flag">🇮🇱</span>
+                    <h3 class="card-title">Tel Aviv</h3>
+                    <p class="card-country">Israel</p>
+                    <p class="card-description">Vibrant Mediterranean city with beautiful beaches, thriving tech scene, incredible nightlife, and rich history.</p>
+                    <div class="card-features">
+                        <span class="feature-tag">🏖️ Beaches</span>
+                        <span class="feature-tag">🎉 Nightlife</span>
+                        <span class="feature-tag">🍽️ Cuisine</span>
+                    </div>
+                    <div class="card-stats">
+                        <div class="stat">
+                            <div class="stat-value">8+</div>
+                            <div class="stat-label">Daily Flights</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">$710</div>
+                            <div class="stat-label">From</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value">4.7★</div>
+                            <div class="stat-label">Rating</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 60px;">
+        <a href="/destinations.html" class="cta-button">View All Destinations →</a>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-content">
+        <div class="footer-top">
+            <div>
+                <div class="logo">✈ SmartFly Airways</div>
+                <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="/script.js"></script>
 </body>
 </html>

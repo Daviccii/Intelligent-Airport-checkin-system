@@ -3,38 +3,138 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New York - SmartFly Airways</title>
+  <title>Discover New York - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .dest-hero{background:linear-gradient(135deg,rgba(11,61,145,0.95),rgba(30,91,184,0.95)),url('/assets/images/destinations/new-york.jpg') center/cover;padding:100px 20px;color:#fff;text-align:center}
+    .dest-hero h1{font-size:52px;font-weight:800;margin-bottom:12px;animation:fadeInUp .8s}
+    .dest-hero .tagline{font-size:22px;opacity:.95;animation:fadeInUp 1s}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .dest-container{max-width:1200px;margin:0 auto;padding:60px 20px}
+    .quick-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px;margin-bottom:60px}
+    .fact-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center}
+    .fact-icon{font-size:32px;margin-bottom:8px}
+    .fact-label{font-size:12px;color:#64748b;margin-bottom:4px}
+    .fact-value{font-size:16px;font-weight:700;color:#0B3D91}
+    .section{margin-bottom:60px}
+    .section h2{font-size:32px;color:#0B3D91;margin-bottom:32px;text-align:center}
+    .attractions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px}
+    .attraction-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);transition:.3s;cursor:pointer}
+    .attraction-card:hover{transform:translateY(-8px);box-shadow:0 12px 28px rgba(11,61,145,.15)}
+    .attraction-img{width:100%;height:200px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:48px}
+    .attraction-content{padding:24px}
+    .attraction-title{font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px}
+    .attraction-desc{font-size:14px;color:#64748b;line-height:1.6}
+    .hotels-list{display:grid;gap:20px}
+    .hotel-card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+    .hotel-info h3{font-size:22px;color:#0B3D91;margin-bottom:8px}
+    .hotel-info p{color:#64748b;font-size:14px}
+    .hotel-price{text-align:right}
+    .price-label{font-size:12px;color:#64748b}
+    .price-value{font-size:28px;font-weight:800;color:#0B3D91}
+    .cuisine-section{background:#f8fafc;padding:40px;border-radius:16px}
+    .cuisine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:24px}
+    .cuisine-item{text-align:center;padding:20px}
+    .cuisine-icon{font-size:48px;margin-bottom:12px}
+    .cuisine-name{font-size:18px;font-weight:600;color:#1f2937;margin-bottom:4px}
+    .cuisine-desc{font-size:13px;color:#64748b}
+    .cta-section{background:linear-gradient(135deg,#0B3D91,#1e5bb8);padding:50px;border-radius:16px;text-align:center;color:#fff;margin-top:60px}
+    .cta-section h2{color:#fff;font-size:36px;margin-bottom:16px}
+    .cta-button{display:inline-block;background:#fff;color:#0B3D91;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:700;font-size:18px;margin-top:20px;transition:.3s}
+    .cta-button:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,255,255,.3)}
+    @media(max-width:768px){.dest-hero h1{font-size:36px}.attractions-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
   <header class="main-header">
+    <div class="top-bar"><div class="top-left"><span>EN | US</span><span>Help</span></div><div class="top-right"><span>+1 212 123 4567</span><a href="/login.html">Login</a></div></div>
     <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
-      </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
-      </div>
+      <div class="logo"><img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly"><span>SmartFly</span></div>
+      <nav class="nav-menu"><div class="nav-item"><a href="/index.html">Home</a></div><div class="nav-item"><a href="/explore.html">Explore</a></div><div class="nav-item"><a href="/destinations.html">Destinations</a></div></nav>
+      <div class="cta-btn"><a href="/booking.html">Book Now</a></div>
     </div>
   </header>
 
-  <main class="content-section">
-    <div class="container">
-      <h1 class="section-title">New York</h1>
-      <p class="section-subtitle">This page is dedicated to New York.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+  <div class="dest-hero"><h1>🗽 New York</h1><p class="tagline">The City That Never Sleeps - Where Dreams Come True</p></div>
+
+  <div class="dest-container">
+    <div class="quick-facts">
+      <div class="fact-card"><div class="fact-icon">👥</div><div class="fact-label">Population</div><div class="fact-value">8.3M</div></div>
+      <div class="fact-card"><div class="fact-icon">💰</div><div class="fact-label">Currency</div><div class="fact-value">USD ($)</div></div>
+      <div class="fact-card"><div class="fact-icon">🗣️</div><div class="fact-label">Language</div><div class="fact-value">English</div></div>
+      <div class="fact-card"><div class="fact-icon">🕐</div><div class="fact-label">Time Zone</div><div class="fact-value">GMT-5</div></div>
+      <div class="fact-card"><div class="fact-icon">🌤️</div><div class="fact-label">Best Time</div><div class="fact-value">Apr-Jun, Sep-Nov</div></div>
+    </div>
+
+    <div class="section">
+      <h2>🎯 Top Attractions</h2>
+      <div class="attractions-grid">
+        <div class="attraction-card"><div class="attraction-img">🗽</div><div class="attraction-content"><h3 class="attraction-title">Statue of Liberty</h3><p class="attraction-desc">Iconic symbol of freedom. Take the ferry to Liberty Island and climb to the crown for panoramic views.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏙️</div><div class="attraction-content"><h3 class="attraction-title">Empire State Building</h3><p class="attraction-desc">Legendary Art Deco skyscraper with observation decks offering 360° views of Manhattan.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🎭</div><div class="attraction-content"><h3 class="attraction-title">Broadway & Times Square</h3><p class="attraction-desc">World-famous theatre district with world-class musicals, shows, and neon-lit entertainment.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏛️</div><div class="attraction-content"><h3 class="attraction-title">Metropolitan Museum of Art</h3><p class="attraction-desc">One of the world's greatest art museums with 2 million works spanning 5,000 years.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🌳</div><div class="attraction-content"><h3 class="attraction-title">Central Park</h3><p class="attraction-desc">843 acres of urban oasis with lakes, trails, meadows, and iconic landmarks like Bethesda Terrace.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🌉</div><div class="attraction-content"><h3 class="attraction-title">Brooklyn Bridge</h3><p class="attraction-desc">Historic suspension bridge with stunning Manhattan views. Walk across for unforgettable sunset views.</p></div></div>
       </div>
     </div>
-  </main>
+
+    <div class="section">
+      <h2>🏨 Where to Stay</h2>
+      <div class="hotels-list">
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐⭐ Plaza Hotel</h3><p>Legendary iconic luxury hotel on Fifth Avenue overlooking Central Park since 1907</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">$650</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐ The NoMad Hotel</h3><p>Trendy boutique hotel in Flatiron District with rooftop bar and library lounge</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">$380</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐ Pod Hotels NYC</h3><p>Budget-friendly microhotels in prime locations with modern design and affordability</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">$120</div><div class="price-label">/night</div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🍽️ Dining & Cuisine</h2>
+      <div class="cuisine-section">
+        <p style="text-align:center;color:#64748b;font-size:16px;margin-bottom:20px">NYC is a culinary melting pot - from street hot dogs to Michelin-starred restaurants</p>
+        <div class="cuisine-grid">
+          <div class="cuisine-item"><div class="cuisine-icon">🌭</div><h4 class="cuisine-name">Hot Dogs</h4><p class="cuisine-desc">Classic NYC street food</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍕</div><h4 class="cuisine-name">New York Pizza</h4><p class="cuisine-desc">Iconic thin-crust slices</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🥯</div><h4 class="cuisine-name">Bagels</h4><p class="cuisine-desc">Authentic New York bagels</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍔</div><h4 class="cuisine-name">Burgers</h4><p class="cuisine-desc">Gourmet burger joints</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍜</div><h4 class="cuisine-name">Asian Fusion</h4><p class="cuisine-desc">World-class Asian cuisine</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🚗 Getting Around</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li><strong style="color:#0B3D91">🚇 Subway:</strong> 472 stations - fastest way to get around Manhattan and boroughs</li>
+          <li><strong style="color:#0B3D91">🚖 Yellow Cabs:</strong> Iconic taxis throughout the city, hail on street or use apps</li>
+          <li><strong style="color:#0B3D91">🚕 Ride-Hailing:</strong> Uber and Lyft widely available</li>
+          <li><strong style="color:#0B3D91">🚌 Buses:</strong> Extensive bus network covering all boroughs</li>
+          <li><strong style="color:#0B3D91">🚴 Citibike:</strong> Bike-sharing program with 20,000+ bikes at 1,300 stations</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>💡 Travel Tips</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li>✓ No visa required for most nationalities - ESTA for US entry</li>
+          <li>✓ Get a MetroCard for subway/bus - much cheaper than taxis</li>
+          <li>✓ NYC is walkable - comfortable shoes essential</li>
+          <li>✓ Tipping is 15-20% in restaurants, 15% for taxis</li>
+          <li>✓ Many museums offer "pay-what-you-wish" hours</li>
+          <li>✓ Broadway shows - book in advance for best prices</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2>✈️ Ready to Explore New York?</h2>
+      <p style="font-size:18px;opacity:.95">Book your flight to the city that never sleeps and experience the energy of the world</p>
+      <a href="/booking.html" class="cta-button">Book Your Flight to New York →</a>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
 </body>
 </html>

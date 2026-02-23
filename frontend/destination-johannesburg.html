@@ -3,38 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Johannesburg - SmartFly Airways</title>
+  <title>Discover Johannesburg - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .dest-hero{background:linear-gradient(135deg,rgba(11,61,145,0.95),rgba(30,91,184,0.95)),url('/assets/images/destinations/johannesburg.jpg') center/cover;padding:100px 20px;color:#fff;text-align:center}
+    .dest-hero h1{font-size:52px;font-weight:800;margin-bottom:12px;animation:fadeInUp .8s}
+    .dest-hero .tagline{font-size:22px;opacity:.95;animation:fadeInUp 1s}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .dest-container{max-width:1200px;margin:0 auto;padding:60px 20px}
+    .quick-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px;margin-bottom:60px}
+    .fact-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center}
+    .fact-icon{font-size:32px;margin-bottom:8px}
+    .fact-label{font-size:12px;color:#64748b;margin-bottom:4px}
+    .fact-value{font-size:16px;font-weight:700;color:#0B3D91}
+    .section{margin-bottom:60px}
+    .section h2{font-size:32px;color:#0B3D91;margin-bottom:32px;text-align:center}
+    .attractions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px}
+    .attraction-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);transition:.3s;cursor:pointer}
+    .attraction-card:hover{transform:translateY(-8px);box-shadow:0 12px 28px rgba(11,61,145,.15)}
+    .attraction-img{width:100%;height:200px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:48px}
+    .attraction-content{padding:24px}
+    .attraction-title{font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px}
+    .attraction-desc{font-size:14px;color:#64748b;line-height:1.6}
+    .hotels-list{display:grid;gap:20px}
+    .hotel-card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+    .hotel-info h3{font-size:22px;color:#0B3D91;margin-bottom:8px}
+    .hotel-info p{color:#64748b;font-size:14px}
+    .hotel-price{text-align:right}
+    .price-label{font-size:12px;color:#64748b}
+    .price-value{font-size:28px;font-weight:800;color:#0B3D91}
+    .cuisine-section{background:#f8fafc;padding:40px;border-radius:16px}
+    .cuisine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:24px}
+    .cuisine-item{text-align:center;padding:20px}
+    .cuisine-icon{font-size:48px;margin-bottom:12px}
+    .cuisine-name{font-size:18px;font-weight:600;color:#1f2937;margin-bottom:4px}
+    .cuisine-desc{font-size:13px;color:#64748b}
+    .cta-section{background:linear-gradient(135deg,#0B3D91,#1e5bb8);padding:50px;border-radius:16px;text-align:center;color:#fff;margin-top:60px}
+    .cta-section h2{color:#fff;font-size:36px;margin-bottom:16px}
+    .cta-button{display:inline-block;background:#fff;color:#0B3D91;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:700;font-size:18px;margin-top:20px;transition:.3s}
+    .cta-button:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,255,255,.3)}
+    @media(max-width:768px){.dest-hero h1{font-size:36px}.attractions-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
   <header class="main-header">
+    <div class="top-bar"><div class="top-left"><span>EN | ZA</span><span>Help</span></div><div class="top-right"><span>+27 11 123 4567</span><a href="/login.html">Login</a></div></div>
     <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
-      </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
-      </div>
+      <div class="logo"><img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly"><span>SmartFly</span></div>
+      <nav class="nav-menu"><div class="nav-item"><a href="/index.html">Home</a></div><div class="nav-item"><a href="/explore.html">Explore</a></div><div class="nav-item"><a href="/destinations.html">Destinations</a></div></nav>
+      <div class="cta-btn"><a href="/booking.html">Book Now</a></div>
     </div>
   </header>
 
-  <main class="content-section">
-    <div class="container">
-      <h1 class="section-title">Johannesburg</h1>
-      <p class="section-subtitle">This page is dedicated to Johannesburg.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+  <div class="dest-hero"><h1>🇿🇦 Johannesburg</h1><p class="tagline">Africa's Economic Powerhouse & Cultural Hub</p></div>
+
+  <div class="dest-container">
+    <div class="quick-facts">
+      <div class="fact-card"><div class="fact-icon">👥</div><div class="fact-label">Population</div><div class="fact-value">5.6M</div></div>
+      <div class="fact-card"><div class="fact-icon">💰</div><div class="fact-label">Currency</div><div class="fact-value">ZAR (R)</div></div>
+      <div class="fact-card"><div class="fact-icon">🗣️</div><div class="fact-label">Languages</div><div class="fact-value">11 Official</div></div>
+      <div class="fact-card"><div class="fact-icon">🕐</div><div class="fact-label">Time Zone</div><div class="fact-value">GMT+2</div></div>
+      <div class="fact-card"><div class="fact-icon">🌤️</div><div class="fact-label">Best Time</div><div class="fact-value">Apr-Oct</div></div>
+    </div>
+
+    <div class="section">
+      <h2>🎯 Top Attractions</h2>
+      <div class="attractions-grid">
+        <div class="attraction-card"><div class="attraction-img">🏛️</div><div class="attraction-content"><h3 class="attraction-title">Apartheid Museum</h3><p class="attraction-desc">Moving journey through South Africa's history of segregation and the triumph of human spirit.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏘️</div><div class="attraction-content"><h3 class="attraction-title">Soweto Township</h3><p class="attraction-desc">Visit Vilakazi Street, the only street where two Nobel Prize winners lived - Mandela and Tutu.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🎢</div><div class="attraction-content"><h3 class="attraction-title">Gold Reef City</h3><p class="attraction-desc">Theme park built on old gold mine with thrilling rides and gold mining tours.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏛️</div><div class="attraction-content"><h3 class="attraction-title">Constitution Hill</h3><p class="attraction-desc">Former prison turned museum, where Mandela and Gandhi were once incarcerated.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🌳</div><div class="attraction-content"><h3 class="attraction-title">Lion & Safari Park</h3><p class="attraction-desc">Get close to lions, cheetahs, and giraffes just 40 minutes from the city center.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🛍️</div><div class="attraction-content"><h3 class="attraction-title">Maboneng Precinct</h3><p class="attraction-desc">Trendy arts district with galleries, restaurants, rooftop bars, and street markets.</p></div></div>
       </div>
     </div>
-  </main>
+
+    <div class="section">
+      <h2>🏨 Where to Stay</h2>
+      <div class="hotels-list">
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐⭐ The Saxon Hotel</h3><p>Ultra-luxury boutique hotel in Sandhurst with presidential suites and Nelson Mandela Suite</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">R8,500</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐ The Peech Hotel</h3><p>Eco-friendly boutique in trendy Melrose with garden setting and sustainable practices</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">R2,800</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐ City Lodge Sandton</h3><p>Modern business hotel near Sandton City mall with excellent amenities</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">R1,400</div><div class="price-label">/night</div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🍽️ Dining & Cuisine</h2>
+      <div class="cuisine-section">
+        <p style="text-align:center;color:#64748b;font-size:16px;margin-bottom:20px">Experience South African flavors - from traditional braai to cosmopolitan fusion cuisine</p>
+        <div class="cuisine-grid">
+          <div class="cuisine-item"><div class="cuisine-icon">🥩</div><h4 class="cuisine-name">Braai</h4><p class="cuisine-desc">South African BBQ tradition</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍖</div><h4 class="cuisine-name">Biltong</h4><p class="cuisine-desc">Dried cured meat snack</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍲</div><h4 class="cuisine-name">Bobotie</h4><p class="cuisine-desc">Spiced mince with egg topping</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🌮</div><h4 class="cuisine-name">Bunny Chow</h4><p class="cuisine-desc">Curry served in bread loaf</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍰</div><h4 class="cuisine-name">Malva Pudding</h4><p class="cuisine-desc">Sweet spongy dessert</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🚗 Getting Around</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li><strong style="color:#0B3D91">🚄 Gautrain:</strong> Fast, modern train connecting airport, Sandton, Pretoria, and Rosebank</li>
+          <li><strong style="color:#0B3D91">🚕 Uber & Bolt:</strong> Most convenient and safe way to get around the city</li>
+          <li><strong style="color:#0B3D91">🚗 Car Rental:</strong> Best for exploring wider areas and flexibility</li>
+          <li><strong style="color:#0B3D91">🚌 Bus Rapid Transit:</strong> Rea Vaya buses connect key areas</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>💡 Travel Tips</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li>✓ Most nationalities receive 90-day visa-free entry at O.R. Tambo Airport</li>
+          <li>✓ Use Uber/Bolt rather than street taxis for safety</li>
+          <li>✓ Altitude is 1,753m - you may feel breathless initially</li>
+          <li>✓ Tipping is customary - 10-15% in restaurants</li>
+          <li>✓ Exchange rate is favorable - your money goes far here</li>
+          <li>✓ Weather: warm days, cool nights - bring layers</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2>✈️ Ready to Explore Johannesburg?</h2>
+      <p style="font-size:18px;opacity:.95">Book your flight to South Africa's dynamic city and discover its rich heritage</p>
+      <a href="/booking.html" class="cta-button">Book Your Flight to Johannesburg →</a>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
 </body>
 </html>

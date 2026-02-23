@@ -3,38 +3,139 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paris - SmartFly Airways</title>
+  <title>Discover Paris - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .dest-hero{background:linear-gradient(135deg,rgba(11,61,145,0.95),rgba(30,91,184,0.95)),url('/assets/images/destinations/paris.jpg') center/cover;padding:100px 20px;color:#fff;text-align:center}
+    .dest-hero h1{font-size:52px;font-weight:800;margin-bottom:12px;animation:fadeInUp .8s}
+    .dest-hero .tagline{font-size:22px;opacity:.95;animation:fadeInUp 1s}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+    .dest-container{max-width:1200px;margin:0 auto;padding:60px 20px}
+    .quick-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px;margin-bottom:60px}
+    .fact-card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);text-align:center}
+    .fact-icon{font-size:32px;margin-bottom:8px}
+    .fact-label{font-size:12px;color:#64748b;margin-bottom:4px}
+    .fact-value{font-size:16px;font-weight:700;color:#0B3D91}
+    .section{margin-bottom:60px}
+    .section h2{font-size:32px;color:#0B3D91;margin-bottom:32px;text-align:center}
+    .attractions-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:28px}
+    .attraction-card{background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,.08);transition:.3s;cursor:pointer}
+    .attraction-card:hover{transform:translateY(-8px);box-shadow:0 12px 28px rgba(11,61,145,.15)}
+    .attraction-img{width:100%;height:200px;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:48px}
+    .attraction-content{padding:24px}
+    .attraction-title{font-size:20px;font-weight:700;color:#1f2937;margin-bottom:8px}
+    .attraction-desc{font-size:14px;color:#64748b;line-height:1.6}
+    .hotels-list{display:grid;gap:20px}
+    .hotel-card{background:#fff;padding:28px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px}
+    .hotel-info h3{font-size:22px;color:#0B3D91;margin-bottom:8px}
+    .hotel-info p{color:#64748b;font-size:14px}
+    .hotel-price{text-align:right}
+    .price-label{font-size:12px;color:#64748b}
+    .price-value{font-size:28px;font-weight:800;color:#0B3D91}
+    .cuisine-section{background:#f8fafc;padding:40px;border-radius:16px}
+    .cuisine-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-top:24px}
+    .cuisine-item{text-align:center;padding:20px}
+    .cuisine-icon{font-size:48px;margin-bottom:12px}
+    .cuisine-name{font-size:18px;font-weight:600;color:#1f2937;margin-bottom:4px}
+    .cuisine-desc{font-size:13px;color:#64748b}
+    .cta-section{background:linear-gradient(135deg,#0B3D91,#1e5bb8);padding:50px;border-radius:16px;text-align:center;color:#fff;margin-top:60px}
+    .cta-section h2{color:#fff;font-size:36px;margin-bottom:16px}
+    .cta-button{display:inline-block;background:#fff;color:#0B3D91;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:700;font-size:18px;margin-top:20px;transition:.3s}
+    .cta-button:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(255,255,255,.3)}
+    @media(max-width:768px){.dest-hero h1{font-size:36px}.attractions-grid{grid-template-columns:1fr}}
+  </style>
 </head>
 <body>
   <header class="main-header">
+    <div class="top-bar"><div class="top-left"><span>EN | FR</span><span>Help</span></div><div class="top-right"><span>+33 1 1234 5678</span><a href="/login.html">Login</a></div></div>
     <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
-      </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
-      </div>
+      <div class="logo"><img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly"><span>SmartFly</span></div>
+      <nav class="nav-menu"><div class="nav-item"><a href="/index.html">Home</a></div><div class="nav-item"><a href="/explore.html">Explore</a></div><div class="nav-item"><a href="/destinations.html">Destinations</a></div></nav>
+      <div class="cta-btn"><a href="/booking.html">Book Now</a></div>
     </div>
   </header>
 
-  <main class="content-section">
-    <div class="container">
-      <h1 class="section-title">Paris</h1>
-      <p class="section-subtitle">This page is dedicated to Paris.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+  <div class="dest-hero"><h1>🇫🇷 Paris</h1><p class="tagline">The City of Light - Romance, Art, and Timeless Beauty</p></div>
+
+  <div class="dest-container">
+    <div class="quick-facts">
+      <div class="fact-card"><div class="fact-icon">👥</div><div class="fact-label">Population</div><div class="fact-value">2.2M</div></div>
+      <div class="fact-card"><div class="fact-icon">💰</div><div class="fact-label">Currency</div><div class="fact-value">EUR (€)</div></div>
+      <div class="fact-card"><div class="fact-icon">🗣️</div><div class="fact-label">Language</div><div class="fact-value">French</div></div>
+      <div class="fact-card"><div class="fact-icon">🕐</div><div class="fact-label">Time Zone</div><div class="fact-value">GMT+1</div></div>
+      <div class="fact-card"><div class="fact-icon">🌤️</div><div class="fact-label">Best Time</div><div class="fact-value">Apr-Jun, Sep-Oct</div></div>
+    </div>
+
+    <div class="section">
+      <h2>🎯 Top Attractions</h2>
+      <div class="attractions-grid">
+        <div class="attraction-card"><div class="attraction-img">🗼</div><div class="attraction-content"><h3 class="attraction-title">Eiffel Tower</h3><p class="attraction-desc">Iconic iron lattice tower offering breathtaking views from three levels. Symbol of Paris and romance.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🏛️</div><div class="attraction-content"><h3 class="attraction-title">Louvre Museum</h3><p class="attraction-desc">World's largest museum housing the Mona Lisa and 35,000+ artworks spanning centuries.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">⛪</div><div class="attraction-content"><h3 class="attraction-title">Notre-Dame Cathedral</h3><p class="attraction-desc">Stunning Gothic masterpiece on Île de la Cité with intricate architecture and stained glass.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🎨</div><div class="attraction-content"><h3 class="attraction-title">Musée d'Orsay</h3><p class="attraction-desc">Former railway station turned art museum with extensive Impressionist and Post-Impressionist collections.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🌳</div><div class="attraction-content"><h3 class="attraction-title">Champs-Élysées</h3><p class="attraction-desc">Famous avenue with luxury shops, cafés, and restaurants stretching from Arc de Triomphe to Place de la Concorde.</p></div></div>
+        <div class="attraction-card"><div class="attraction-img">🛕</div><div class="attraction-content"><h3 class="attraction-title">Montmartre</h3><p class="attraction-desc">Bohemian hilltop neighborhood with Sacré-Cœur Basilica, artists, and charming cafés.</p></div></div>
       </div>
     </div>
-  </main>
+
+    <div class="section">
+      <h2>🏨 Where to Stay</h2>
+      <div class="hotels-list">
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐⭐ Ritz Paris</h3><p>Legendary luxury palace hotel on Place Vendôme - epitome of Parisian elegance</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">€800</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐⭐ Marais Boutique Hotel</h3><p>Charming 4-star in trendy Marais district with rooftop terrace and modern design</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">€280</div><div class="price-label">/night</div></div></div>
+        <div class="hotel-card"><div class="hotel-info"><h3>⭐⭐⭐ Hotel des Invalides</h3><p>Budget-friendly 3-star near Invalides with clean rooms and good location</p></div><div class="hotel-price"><div class="price-label">From</div><div class="price-value">€95</div><div class="price-label">/night</div></div></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🍽️ Dining & Cuisine</h2>
+      <div class="cuisine-section">
+        <p style="text-align:center;color:#64748b;font-size:16px;margin-bottom:20px">Paris is the culinary capital - from bistros to Michelin-starred fine dining</p>
+        <div class="cuisine-grid">
+          <div class="cuisine-item"><div class="cuisine-icon">🥐</div><h4 class="cuisine-name">Croissants</h4><p class="cuisine-desc">Buttery pastry perfection</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🧀</div><h4 class="cuisine-name">French Cheese</h4><p class="cuisine-desc">Hundreds of varieties</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍇</div><h4 class="cuisine-name">French Wine</h4><p class="cuisine-desc">World-class vineyards</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🥖</div><h4 class="cuisine-name">Baguette</h4><p class="cuisine-desc">Fresh daily bread</p></div>
+          <div class="cuisine-item"><div class="cuisine-icon">🍫</div><h4 class="cuisine-name">Chocolate</h4><p class="cuisine-desc">Exquisite patisserie</p></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🚗 Getting Around</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li><strong style="color:#0B3D91">🚇 Metro:</strong> 16 lines covering entire city - efficient and affordable</li>
+          <li><strong style="color:#0B3D91">🚌 Buses:</strong> Extensive network with day/night services</li>
+          <li><strong style="color:#0B3D91">🚴 Vélib':</strong> Bike-sharing system with 20,000+ bicycles</li>
+          <li><strong style="color:#0B3D91">🚕 Taxis:</strong> Available throughout, or use apps like Uber</li>
+          <li><strong style="color:#0B3D91">🚶 Walking:</strong> Paris is best explored on foot</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>💡 Travel Tips</h2>
+      <div style="background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)">
+        <ul style="line-height:2;color:#64748b;font-size:15px">
+          <li>✓ Most EU citizens travel visa-free - check requirements</li>
+          <li>✓ Learn basic French phrases - locals appreciate the effort</li>
+          <li>✓ Museums often closed Mondays - plan accordingly</li>
+          <li>✓ Pickpocketing common in tourist areas - watch your belongings</li>
+          <li>✓ Book restaurants in advance, especially in high season</li>
+          <li>✓ Dress well - Parisians are fashion-conscious</li>
+          <li>✓ Tip 5-10% if service not included</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <h2>✈️ Ready to Explore Paris?</h2>
+      <p style="font-size:18px;opacity:.95">Book your flight to the City of Light and experience world-class art, cuisine, and romance</p>
+      <a href="/booking.html" class="cta-button">Book Your Flight to Paris →</a>
+    </div>
+  </div>
+
+  <script src="/script.js"></script>
 </body>
 </html>

@@ -5,36 +5,230 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Group Booking - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .process-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 20px 0; }
+    .process-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; text-align: center; }
+    .process-number { font-size: 32px; font-weight: bold; color: #1e3a8a; margin-bottom: 8px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '✓ '; color: #10b981; font-weight: bold; margin-right: 8px; }
+    .pricing-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .pricing-table th, .pricing-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    .pricing-table th { background: #f0f4ff; color: #1e3a8a; font-weight: 600; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Group Booking</h1>
-      <p class="section-subtitle">This page is dedicated to Group Booking.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Group Booking Services</h1>
+      <p class="section-subtitle">Travel together with exclusive group rates and dedicated support</p>
+
+      <div class="info-section">
+        <h3>👫 Group Bookings Overview</h3>
+        <p>Whether you're organizing a school trip, family reunion, sports team travel, or any group of 10 or more passengers, SmartFly offers customized group booking solutions with special rates, flexible payment terms, and dedicated support.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>💰 Group Discount Pricing</h3>
+        <table class="pricing-table">
+          <thead>
+            <tr>
+              <th>Group Size</th>
+              <th>Domestic Routes</th>
+              <th>Regional Routes</th>
+              <th>International Routes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>10-25 passengers</td>
+              <td>5-8% discount</td>
+              <td>7-10% discount</td>
+              <td>8-12% discount</td>
+            </tr>
+            <tr>
+              <td>26-50 passengers</td>
+              <td>8-12% discount</td>
+              <td>10-14% discount</td>
+              <td>12-16% discount</td>
+            </tr>
+            <tr>
+              <td>51-100 passengers</td>
+              <td>12-16% discount</td>
+              <td>14-18% discount</td>
+              <td>16-22% discount</td>
+            </tr>
+            <tr>
+              <td>100+ passengers</td>
+              <td>Custom pricing</td>
+              <td>Custom pricing</td>
+              <td>Custom pricing</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-section">
+        <h3>🏆 Group Booking Benefits</h3>
+        <ul class="feature-list">
+          <li>Discounted fares based on group size</li>
+          <li>Flexible payment terms (deposits and installments)</li>
+          <li>Dedicated group coordinator/account manager</li>
+          <li>Flexible changes and cancellation policies</li>
+          <li>Preferential seat allocation for the group</li>
+          <li>Special group meals and catering options</li>
+          <li>Welcome packages or group gifts available</li>
+          <li>Group check-in at dedicated counter</li>
+          <li>Priority baggage handling</li>
+          <li>Post-booking support and updates</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📋 Group Booking Process</h3>
+        <div class="process-grid">
+          <div class="process-card">
+            <div class="process-number">1</div>
+            <h4>Inquiry</h4>
+            <p>Contact group sales with dates and passenger count</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">2</div>
+            <h4>Quote</h4>
+            <p>Receive customized pricing within 24 hours</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">3</div>
+            <h4>Agreement</h4>
+            <p>Sign group booking agreement with terms</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">4</div>
+            <h4>Deposit</h4>
+            <p>Pay 30% deposit, balance flexible payment plan</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">5</div>
+            <h4>Coordination</h4>
+            <p>Dedicated manager helps with all arrangements</p>
+          </div>
+          <div class="process-card">
+            <div class="process-number">6</div>
+            <h4>Departure</h4>
+            <p>Special group check-in and boarding procedures</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>💵 Payment Options</h3>
+        <p><strong>Standard payment terms:</strong></p>
+        <ul class="feature-list">
+          <li>30% deposit to secure booking</li>
+          <li>50% payment 60 days before departure</li>
+          <li>20% payment 30 days before departure</li>
+          <li>Alternative: Full payment upfront for 5% extra discount</li>
+        </ul>
+        <p><strong>Payment methods:</strong> Bank transfer, credit card, corporate billing, cash (for deposits)</p>
+      </div>
+
+      <div class="info-section">
+        <h3>📄 Required Documentation</h3>
+        <ul class="feature-list">
+          <li>Passenger manifest (names, dates of birth, contact info)</li>
+          <li>Group organizer/leader contact details</li>
+          <li>Special requests (dietary, medical, accessibility)</li>
+          <li>Passports for international groups (copies)</li>
+          <li>Visa documentation status</li>
+          <li>Baggage allowance preferences</li>
+          <li>Any special group arrangements needed</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🎫 Group Types We Support</h3>
+        <p><strong>Education groups:</strong> School trips, university groups, study tours, educational exchanges</p>
+        <p><strong>Family reunions:</strong> Extended family travel, milestone celebrations, group vacations</p>
+        <p><strong>Sports teams:</strong> Athletic competitions, tournaments, training camps, fan travels</p>
+        <p><strong>Religious pilgrimages:</strong> Group religious travel, pilgrimage tours, spiritual journeys</p>
+        <p><strong>Corporate events:</strong> Team building trips, conferences, corporate retreats, incentive travel</p>
+        <p><strong>Social groups:</strong> Club outings, charity events, community groups, tour groups</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🙋 Special Services for Groups</h3>
+        <ul class="feature-list">
+          <li>Tour operator partnerships and commissions</li>
+          <li>Customized itineraries and multi-leg routes</li>
+          <li>Ground services coordination (hotels, transfers)</li>
+          <li>Travel insurance group packages</li>
+          <li>Visa assistance for international groups</li>
+          <li>Pre-flight briefings and group orientation</li>
+          <li>Group entertainment and activities onboard</li>
+          <li>Emergency support throughout journey</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📅 Cancellation & Change Policy for Groups</h3>
+        <p><strong>Cancellation:</strong></p>
+        <ul class="feature-list">
+          <li>More than 90 days: 50% refund of payments</li>
+          <li>60-90 days: 25% refund</li>
+          <li>30-60 days: 10% refund</li>
+          <li>Less than 30 days: No refund (unless airline-caused)</li>
+        </ul>
+        <p><strong>Changes to manifest:</strong> Passenger additions/removals up to 15 days before at no penalty</p>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Book Your Group</h3>
+        <p><strong>Group Sales Team:</strong></p>
+        <p>📧 Email: groups@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 006</p>
+        <p>🕐 Hours: Monday-Friday, 8:00 AM - 6:00 PM EAT</p>
+        <p><strong>WhatsApp:</strong> Available for quick inquiries and support</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/mice.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">MICE Services →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Your Group →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

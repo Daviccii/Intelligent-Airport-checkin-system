@@ -3,38 +3,245 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Corporate Travel - SmartFly Airways</title>
+  <title>Corporate Travel Solutions - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .service-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .service-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '\u2713 '; color: #10b981; font-weight: bold; margin-right: 8px; }
+    .pricing-table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    .pricing-table th { background: #1e3a8a; color: white; padding: 12px; text-align: left; }
+    .pricing-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; }
+    .pricing-table tr:hover { background: #f8fafc; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Corporate Travel</h1>
-      <p class="section-subtitle">This page is dedicated to Corporate Travel.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Corporate Travel Solutions</h1>
+      <p class="section-subtitle">Streamlined air travel programs for companies and enterprises</p>
+
+      <div class="info-section">
+        <h3>🏂 SmartFly Corporate Programs</h3>
+        <p>SmartFly provides comprehensive corporate travel solutions tailored to businesses of all sizes. From travel policy management and cost control to employee well-being and seamless booking, we help companies simplify corporate air travel while reducing expenses and improving employee satisfaction.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>📈 Corporate Account Benefits</h3>
+        <div class="services-grid">
+          <div class="service-card">
+            <h4>💳 Negotiated Rates</h4>
+            <ul class="feature-list">
+              <li>Volume discounts on all routes</li>
+              <li>Dedicated account manager</li>
+              <li>Quarterly rate reviews</li>
+              <li>Custom pricing tiers</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>📊 Travel Policy Management</h4>
+            <ul class="feature-list">
+              <li>Customizable travel policies</li>
+              <li>Automated compliance tracking</li>
+              <li>Real-time booking oversight</li>
+              <li>Policy violation alerts</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>💱 Cost Control & Reporting</h4>
+            <ul class="feature-list">
+              <li>Detailed expense reports</li>
+              <li>Department-level tracking</li>
+              <li>Budget allocation tools</li>
+              <li>ROI analysis dashboards</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>🌟 24/7 Travel Support</h4>
+            <ul class="feature-list">
+              <li>Corporate helpline available</li>
+              <li>Emergency rebooking assistance</li>
+              <li>Traveler support services</li>
+              <li>Mobile app access</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>👥 Employee Wellness Programs</h4>
+            <ul class="feature-list">
+              <li>Jet lag management resources</li>
+              <li>Health monitoring services</li>
+              <li>Mental health support</li>
+              <li>Fitness facility partnerships</li>
+            </ul>
+          </div>
+          <div class="service-card">
+            <h4>🧱 Traveler Engagement</h4>
+            <ul class="feature-list">
+              <li>SmartFly lounge access</li>
+              <li>Priority boarding upgrades</li>
+              <li>Reward program integration</li>
+              <li>Flexible booking options</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>💾 Corporate Booking Portal</h3>
+        <p><strong>Features of SmartFly Corporate Portal:</strong></p>
+        <ul class="feature-list">
+          <li>Single sign-on (SSO) authentication</li>
+          <li>Pre-populated company data and preferences</li>
+          <li>Lowest available fares guaranteed</li>
+          <li>Automated policy compliance at point-of-booking</li>
+          <li>Real-time approval workflows</li>
+          <li>Mobile app for on-the-go bookings</li>
+          <li>Integration with expense management systems</li>
+          <li>Carbon footprint tracking per trip</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>💰 Corporate Pricing Tiers</h3>
+        <table class="pricing-table">
+          <thead>
+            <tr>
+              <th>Program Tier</th>
+              <th>Annual Spend</th>
+              <th>Discount</th>
+              <th>Key Benefits</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Silver Partner</strong></td>
+              <td>KES 5-15 Million</td>
+              <td>10-12% discount</td>
+              <td>Account manager, basic reporting, priority support</td>
+            </tr>
+            <tr>
+              <td><strong>Gold Partner</strong></td>
+              <td>KES 15-50 Million</td>
+              <td>15-18% discount</td>
+              <td>Dedicated team, advanced analytics, lounge access</td>
+            </tr>
+            <tr>
+              <td><strong>Platinum Partner</strong></td>
+              <td>KES 50+ Million</td>
+              <td>20-25% discount</td>
+              <td>Executive account team, custom solutions, priority everything</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="info-section">
+        <h3>💁 Account Management Services</h3>
+        <ul class="feature-list">
+          <li>Dedicated Account Manager assignment</li>
+          <li>Quarterly business reviews with your team</li>
+          <li>Annual rate negotiations and updates</li>
+          <li>Traveler training and onboarding sessions</li>
+          <li>Policy customization and updates</li>
+          <li>Emergency travel coordination center</li>
+          <li>Special project support (conferences, events, relocations)</li>
+          <li>24/7 escalation contact for critical issues</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📈 Analytics & Reporting</h3>
+        <p><strong>Available Reports:</strong></p>
+        <ul class="feature-list">
+          <li>Monthly spend summaries by department/traveler</li>
+          <li>Route analysis and usage patterns</li>
+          <li>Compliance metrics and policy adherence</li>
+          <li>Traveler profile and frequency data</li>
+          <li>Savings vs. list price calculations</li>
+          <li>Carbon emissions and sustainability metrics</li>
+          <li>Advance purchase vs. last-minute booking analysis</li>
+          <li>Custom report builder for specific needs</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🏆 Special Programs</h3>
+        <ul class="feature-list">
+          <li><strong>Events & Conferences:</strong> Group bookings with unified billing for attendees</li>
+          <li><strong>Executive Travel:</strong> Premium cabin preferences, dedicated lounge, concierge services</li>
+          <li><strong>Relocation Assistance:</strong> Employee transfer flights with special accommodations</li>
+          <li><strong>Internship Programs:</strong> Subsidized travel for student interns</li>
+          <li><strong>Training & Development:</strong> Group rates for professional development travel</li>
+          <li><strong>Medical Travel:</strong> Emergency medical referral flights with special handling</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📄 Implementation & Setup</h3>
+        <p><strong>Getting started with SmartFly Corporate:</strong></p>
+        <ol style="padding-left: 20px;">
+          <li>Contact corporate sales team with company info</li>
+          <li>Preliminary cost-benefit analysis conducted</li>
+          <li>Custom proposal developed for your needs</li>
+          <li>Contract negotiation and agreement signing</li>
+          <li>Portal setup and integration planning</li>
+          <li>Company-wide traveler training sessions</li>
+          <li>Policy finalization and system testing</li>
+          <li>Go-live with dedicated support transition</li>
+        </ol>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Corporate Travel Support</h3>
+        <p><strong>SmartFly Corporate Team:</strong></p>
+        <p>📧 Email: corporate@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 018 (Ext. 1 for sales, Ext. 2 for support)</p>
+        <p>⏰ Hours: Monday-Friday 7am-8pm EAT, Saturday 8am-4pm EAT</p>
+        <p><strong>Emergency Line (24/7):</strong> +254 700 000 099</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/charter-flights.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Charter Flights →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Get Started →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

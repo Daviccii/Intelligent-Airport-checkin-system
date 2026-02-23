@@ -442,31 +442,31 @@ const airportDropdown = new AirportDropdown();
 
 document.addEventListener('DOMContentLoaded', () => {
     // Header mega-menu: open only on click
-    const megaParents = Array.from(document.querySelectorAll('.nav-menu .mega-parent'));
-    megaParents.forEach(parent => {
-        const link = parent.querySelector('a');
+    const navItems = Array.from(document.querySelectorAll('.nav-menu .nav-item'));
+    navItems.forEach(item => {
+        const link = item.querySelector('a');
         if (!link) return;
 
         link.addEventListener('click', (event) => {
-            const isOpen = parent.classList.contains('open');
-            megaParents.forEach(p => p.classList.remove('open'));
+            const isOpen = item.classList.contains('open');
+            navItems.forEach(p => p.classList.remove('open'));
 
             if (!isOpen) {
                 event.preventDefault();
-                parent.classList.add('open');
+                item.classList.add('open');
             }
         });
     });
 
     document.addEventListener('click', (event) => {
         if (!event.target.closest('.nav-menu')) {
-            megaParents.forEach(p => p.classList.remove('open'));
+            navItems.forEach(p => p.classList.remove('open'));
         }
     });
 
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-            megaParents.forEach(p => p.classList.remove('open'));
+            navItems.forEach(p => p.classList.remove('open'));
         }
     });
 

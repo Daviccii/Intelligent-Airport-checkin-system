@@ -3,38 +3,256 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Special Meals - SmartFly Airways</title>
+  <title>Special Meals & Dietary Options - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .meals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin: 20px 0; }
+    .meal-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .meal-card h4 { margin: 0 0 12px 0; color: #1e3a8a; font-size: 18px; }
+    .feature-list { list-style: none; padding: 0; margin: 10px 0; }
+    .feature-list li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+    .feature-list li:before { content: '\u2713 '; color: #10b981; font-weight: bold; margin-right: 8px; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
 
   <main class="content-section">
     <div class="container">
-      <h1 class="section-title">Special Meals</h1>
-      <p class="section-subtitle">This page is dedicated to Special Meals.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <h1 class="section-title">Special Meals & Dietary Options</h1>
+      <p class="section-subtitle">Customized meals for all dietary requirements</p>
+
+      <div class="info-section">
+        <h3>🍽️ SmartFly Special Meal Services</h3>
+        <p>SmartFly accommodates a wide variety of dietary requirements and preferences. From vegetarian and vegan to religious observances and medical restrictions, our catering partners prepare fresh, nutritious meals tailored to your needs. Order special meals when booking or up to 24 hours before departure.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🥗 Available Special Meal Types</h3>
+        <div class="meals-grid">
+          <div class="meal-card">
+            <h4>🥬 Vegetarian Meals</h4>
+            <ul class="feature-list">
+              <li>No meat, poultry, or fish</li>
+              <li>Dairy and eggs included</li>
+              <li>Variety of vegetables & legumes</li>
+              <li>Grains and pasta dishes</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🥗 Vegan Meals</h4>
+            <ul class="feature-list">
+              <li>No animal products whatsoever</li>
+              <li>Plant-based proteins</li>
+              <li>Fruit and vegetable focused</li>
+              <li>Nutritionally balanced</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>👩‍🦱 Kosher Meals</h4>
+            <ul class="feature-list">
+              <li>Prepared per Jewish dietary law</li>
+              <li>Certified by rabbinic authority</li>
+              <li>Sealed packaging from certified kitchen</li>
+              <li>No shellfish or pork</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🕌 Halal Meals</h4>
+            <ul class="feature-list">
+              <li>Prepared per Islamic dietary law</li>
+              <li>Certified halal ingredients</li>
+              <li>No pork or alcohol</li>
+              <li>Prayer facilities information provided</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🍆 Low Calorie Meals</h4>
+            <ul class="feature-list">
+              <li>500-600 calories per meal</li>
+              <li>Low fat and sugar</li>
+              <li>High protein options</li>
+              <li>Nutritionist approved</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🦞 Seafood Meals</h4>
+            <ul class="feature-list">
+              <li>Fish and seafood specialties</li>
+              <li>Mediterranean-inspired</li>
+              <li>Fresh from sustainable sources</li>
+              <li>Prepared with light sauces</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🍪 Diabetic Friendly</h4>
+            <ul class="feature-list">
+              <li>Low sugar content</li>
+              <li>Complex carbohydrates</li>
+              <li>Balanced nutrition</li>
+              <li>Medical professional approved</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🍟 Gluten-Free Meals</h4>
+            <ul class="feature-list">
+              <li>No wheat or gluten products</li>
+              <li>Celiac disease safe</li>
+              <li>Cross-contamination prevented</li>
+              <li>Certified allergen-free</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🥜 Nut Allergy Free</h4>
+            <ul class="feature-list">
+              <li>No tree nuts or peanuts</li>
+              <li>Cross-contamination avoided</li>
+              <li>Safe preparation facilities</li>
+              <li>Ingredient verification provided</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🌳 Lactose-Free Meals</h4>
+            <ul class="feature-list">
+              <li>No dairy products</li>
+              <li>Plant-based alternatives</li>
+              <li>Calcium-enriched options</li>
+              <li>IBS friendly</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>🐄 Hindu Meals</h4>
+            <ul class="feature-list">
+              <li>No beef or pork</li>
+              <li>Vegetarian or chicken option</li>
+              <li>Respect religious practices</li>
+              <li>Spiced traditional style</li>
+            </ul>
+          </div>
+          <div class="meal-card">
+            <h4>😷 Bland/Soft Meals</h4>
+            <ul class="feature-list">
+              <li>Gentle on sensitive stomachs</li>
+              <li>Easy to digest</li>
+              <li>Low spice and fiber</li>
+              <li>Medical recommended</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>📈 Ordering Special Meals</h3>
+        <p><strong>How to request:</strong></p>
+        <ol style="padding-left: 20px;">
+          <li>During flight booking, select "Special Meal" option</li>
+          <li>Choose your dietary requirement from list</li>
+          <li>Add any additional notes/allergies</li>
+          <li>Confirmation sent to your email</li>
+          <li>Can modify until 24 hours before flight</li>
+          <li>For medical conditions, attach doctor's note</li>
+          <li>Meal prepared fresh and served hot</li>
+        </ol>
+      </div>
+
+      <div class="info-section">
+        <h3>💰 Pricing</h3>
+        <p><strong>Special Meal Cost:</strong> Included FREE with all meals</p>
+        <p><strong>Premium meal upgrades available (charged separately):</strong></p>
+        <ul class="feature-list">
+          <li>Chef's specialty meals: KES 1,500</li>
+          <li>International cuisine selection: KES 1,000</li>
+          <li>Fresh fruit & cheese platters: KES 1,200</li>
+          <li>Premium seafood option: KES 2,000</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📄 Allergy & Medical Certification</h3>
+        <p><strong>For severe allergies or medical conditions:</strong></p>
+        <ul class="feature-list">
+          <li>Provide doctor's letter confirming allergy/condition</li>
+          <li>List all ingredients to avoid</li>
+          <li>Specify safe preparation requirements</li>
+          <li>Submit at least 5 days before travel</li>
+          <li>SmartFly verifies with medical team</li>
+          <li>Extra precautions taken during meal prep</li>
+          <li>Meal delivered in sealed, labeled packaging</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🍟 In-Flight Snack Options</h3>
+        <ul class="feature-list">
+          <li>Complimentary snacks on all flights (beverages, biscuits)</li>
+          <li>Paid snack menu with healthy options</li>
+          <li>Fresh fruit available from galley</li>
+          <li>Nuts and trail mix (check allergen info)</li>
+          <li>Sandwiches and wraps</li>
+          <li>Desserts and pastries</li>
+          <li>Hot beverage selection (tea, coffee, chocolate)</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🍕 Infant & Children Meals</h3>
+        <ul class="feature-list">
+          <li>Baby food (pureed) available for infants</li>
+          <li>Milk formula heating service</li>
+          <li>Child meals with favorite foods</li>
+          <li>Allergy-friendly kids options</li>
+          <li>Birthday cake available on request (2 days notice)</li>
+          <li>Bottle and spoon warming service</li>
+          <li>Dietary education provided to parents</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📞 Special Meal Support</h3>
+        <p><strong>Dietary & Special Meals Coordination:</strong></p>
+        <p>📧 Email: meals@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 017</p>
+        <p>⏰ Hours: Monday-Friday 8am-6pm EAT</p>
+        <p><strong>Request deadline:</strong> 24 hours before flight departure</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Book Your Flight →</a>
+        <a href="/meet-greet.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Premium Services →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>

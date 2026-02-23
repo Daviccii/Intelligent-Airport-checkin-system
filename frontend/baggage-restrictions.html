@@ -5,24 +5,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Baggage Restrictions - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
+  <style>
+    .info-section { margin: 40px 0; padding: 24px; background: #f8fafc; border-radius: 12px; border-left: 4px solid #1e3a8a; }
+    .restriction-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+    .restriction-card { padding: 20px; background: white; border: 1px solid #e2e8f0; border-radius: 8px; }
+    .restriction-card h4 { margin: 0 0 12px 0; color: #d32f2f; font-size: 18px; }
+    .forbidden-items { list-style: none; padding: 0; margin: 10px 0; }
+    .forbidden-items li { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #fee2e2; }
+    .forbidden-items li:before { content: '✗ '; color: #ef4444; font-weight: bold; margin-right: 8px; }
+    .warning-box { background: #fef2f2; border-left: 4px solid #dc2626; padding: 20px; border-radius: 8px; margin: 20px 0; }
+  </style>
 </head>
 <body>
   <header class="main-header">
-    <div class="nav-wrapper">
-      <div class="logo">
-        <img src="/assets/logos/smartfly-logo.svg" alt="SmartFly">
-        <span>SmartFly</span>
-      </div>
-      <nav class="nav-menu">
-        <div class="nav-item"><a href="/index.html">Home</a></div>
-        <div class="nav-item"><a href="/explore.html">Explore</a></div>
-        <div class="nav-item"><a href="/plan.html">Plan</a></div>
-        <div class="nav-item"><a href="/book-manage.html">Book &amp; Manage</a></div>
-        <div class="nav-item"><a href="/experience.html">Experience</a></div>
-        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+    <div class="header-container">
+      <a href="/index.html" class="logo-bubble">
+        <div class="logo-icon">✈️</div>
+        <div class="logo-text">SmartFly</div>
+      </a>
+      <nav class="nav-links">
+        <div class="nav-item"><a href="/index.html" class="nav-link">Home</a></div>
+        <div class="nav-item"><a href="/explore.html" class="nav-link">Explore</a></div>
+        <div class="nav-item"><a href="/plan.html" class="nav-link">Plan</a></div>
       </nav>
-      <div class="cta-btn">
-        <a href="/booking.html">Book Now</a>
+      <div class="header-buttons">
+        <a href="/booking.html" class="btn-primary"><span>Book Now</span></a>
       </div>
     </div>
   </header>
@@ -30,11 +37,200 @@
   <main class="content-section">
     <div class="container">
       <h1 class="section-title">Baggage Restrictions</h1>
-      <p class="section-subtitle">This page is dedicated to Baggage Restrictions.</p>
-      <div class="info-card">
-        <p>Content will be added here. If you want this page fleshed out with details, tell me what to include.</p>
+      <p class="section-subtitle">Items you cannot bring on SmartFly flights</p>
+
+      <div class="warning-box">
+        <h3>⚠️ Important Safety Notice</h3>
+        <p><strong>Safety is our top priority.</strong> We maintain strict baggage restrictions to protect all passengers and crew. Violation of these rules may result in:</p>
+        <ul style="margin: 10px 0; padding-left: 20px;">
+          <li>Bag confiscation without compensation</li>
+          <li>Denial of boarding</li>
+          <li>Legal penalties and fines</li>
+          <li>Airline bans from future travel</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>🔥 Dangerous Goods (Absolutely Prohibited)</h3>
+        <div class="restriction-grid">
+          <div class="restriction-card">
+            <h4>🧷 Explosives & Flammables</h4>
+            <ul class="forbidden-items">
+              <li>Fireworks and firecrackers</li>
+              <li>Dynamite and ammunition</li>
+              <li>Matches and lighters</li>
+              <li>Gasoline and paint thinner</li>
+              <li>Propane cartridges</li>
+              <li>Camping stoves with fuel</li>
+            </ul>
+          </div>
+          <div class="restriction-card">
+            <h4>🔬 Weapons & Firearms</h4>
+            <ul class="forbidden-items">
+              <li>Guns, rifles, and pistols</li>
+              <li>Ammunition and cartridges</li>
+              <li>Crossbows and arrows</li>
+              <li>Tear gas and pepper spray</li>
+              <li>Knives over 6 inches</li>
+              <li>Martial arts weapons</li>
+            </ul>
+          </div>
+          <div class="restriction-card">
+            <h4>⚗️ Corrosive Chemicals</h4>
+            <ul class="forbidden-items">
+              <li>Acids and alkalis</li>
+              <li>Drain cleaner and bleach</li>
+              <li>Battery acid</li>
+              <li>Paint stripper</li>
+              <li>Rust remover</li>
+              <li>Pool chlorine tablets</li>
+            </ul>
+          </div>
+          <div class="restriction-card">
+            <h4>👻 Toxic & Biological</h4>
+            <ul class="forbidden-items">
+              <li>Pesticides and insecticides</li>
+              <li>Radioactive materials</li>
+              <li>Biological hazards</li>
+              <li>Cyanide compounds</li>
+              <li>Mercury and asbestos</li>
+              <li>Medical/clinical waste</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>🧪 Restricted Items (May Require Approval)</h3>
+        <p>The following items may be allowed with special permissions and advance notice:</p>
+        <div class="restriction-grid">
+          <div class="restriction-card">
+            <h4>🐡 Lithium Batteries</h4>
+            <ul class="forbidden-items">
+              <li>Spare lithium ion batteries</li>
+              <li>Lithium metal batteries over 2g</li>
+              <li>Power banks over 20,000 mAh</li>
+            </ul>
+            <p style="color: #10b981; margin-top: 10px;"><strong>Allowed:</strong> Batteries installed in devices</p>
+          </div>
+          <div class="restriction-card">
+            <h4>🐋 Electronics & Gadgets</h4>
+            <ul class="forbidden-items">
+              <li>Hoverboards (lithium battery)</li>
+              <li>E-cigarettes (with juice/batteries)</li>
+              <li>Drones (with batteries)</li>
+              <li>Power tools with large batteries</li>
+            </ul>
+            <p style="color: #10b981; margin-top: 10px;"><strong>Allowed:</strong> When packed properly</p>
+          </div>
+          <div class="restriction-card">
+            <h4>🌈 Alcoholic Beverages</h4>
+            <ul class="forbidden-items">
+              <li>Liquor in carry-on bag</li>
+              <li>Open bottles or containers</li>
+              <li>More than 1 liter per person (checked)</li>
+            </ul>
+            <p style="color: #10b981; margin-top: 10px;"><strong>Allowed:</strong> Duty-free sealed bottles in checked baggage</p>
+          </div>
+          <div class="restriction-card">
+            <h4>🧴 Medicinal & Sharp Items</h4>
+            <ul class="forbidden-items">
+              <li>Syringes without prescriptions</li>
+              <li>Large quantities of medication</li>
+              <li>Surgical instruments</li>
+              <li>Scalpels and lancets</li>
+            </ul>
+            <p style="color: #10b981; margin-top: 10px;"><strong>Allowed:</strong> With documentation</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>🪠 Liquid & Gel Restrictions (3-1-1 Rule)</h3>
+        <p><strong>Carry-on baggage:</strong> Max 100 ml (3.4 oz) per container, 1 quart-sized bag total</p>
+        <p><strong>Restricted liquids/gels:</strong></p>
+        <ul style="padding-left: 20px;">
+          <li>Shampoo, conditioner, body wash</li>
+          <li>Toothpaste and cosmetics</li>
+          <li>Sunscreen and moisturizer</li>
+          <li>Hairspray and deodorant (aerosol)</li>
+          <li>Peanut butter and jam</li>
+          <li>Yogurt and pudding</li>
+          <li>Honey and sauces</li>
+        </ul>
+      </div>
+
+      <div class="info-section">
+        <h3>📄 Item-by-Item Restrictions</h3>
+        <p><strong>Sharp Objects (carry-on prohibited):</strong> Knives, razors, scissors (over 6cm), nail clippers, ice picks, meat cleavers</p>
+        <p><strong>Tools (carry-on prohibited):</strong> Hammer, drill, saw, wrench, pliers, screwdriver, power tools</p>
+        <p><strong>Sporting Goods (carry-on prohibited):</strong> Baseball bat, golf club, ski poles, tennis racket, hockey stick</p>
+        <p><strong>Compressed Gas (absolutely prohibited):</strong> Oxygen cylinder, propane, helium, nitrogen cartridges</p>
+        <p><strong>Heavy/Awkward Items:</strong> Dumbbells, heavy power tools, large machinery (may exceed weight limits)</p>
+      </div>
+
+      <div class="info-section">
+        <h3>💶 Medical & Prescription Exceptions</h3>
+        <p>SmartFly allows the following with proper documentation:</p>
+        <ul style="padding-left: 20px;">
+          <li>Prescription medications (original bottles with label)</li>
+          <li>Medical devices (CPAP, nebulizer, oxygen)</li>
+          <li>Insulin and injectable medications</li>
+          <li>Crutches, wheelchairs, walking aids</li>
+          <li>Wigs, prosthetics, mobility aids</li>
+        </ul>
+        <p><strong>Required:</strong> Doctor's letter or prescription for medications/devices. Notify airline 24 hours before departure.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>🚳 International Travel Additions</h3>
+        <p>Additional restrictions apply to international flights (beyond UK, EU, US restrictions):</p>
+        <ul style="padding-left: 20px;">
+          <li>Protected wildlife and endangered species items</li>
+          <li>Cultural artifacts and antiques (may require permits)</li>
+          <li>Certain electronics (may be restricted in destination country)</li>
+          <li>Foods and agricultural products (many countries prohibit)</li>
+        </ul>
+        <p><strong>Tip:</strong> Check destination country customs regulations before packing.</p>
+      </div>
+
+      <div class="info-section">
+        <h3>😨 What Happens if You Bring Prohibited Items</h3>
+        <p><strong>At security screening:</strong> Items will be confiscated and disposed of safely</p>
+        <p><strong>At check-in:</strong> You may be denied boarding without refund</p>
+        <p><strong>During flight:</strong> Criminal charges may apply for dangerous items</p>
+        <p><strong>Fines:</strong> Government penalties up to KES 500,000 in Kenya, plus airline bans</p>
+      </div>
+
+      <div class="info-section">
+        <h3>❓ Questions About Items?</h3>
+        <p>If you're unsure whether an item is allowed, contact us before your flight:</p>
+        <p>📧 Email: baggage@smartfly.com</p>
+        <p>📱 Phone: +254 700 000 003</p>
+        <p>🕐 Hours: 24/7 support available</p>
+      </div>
+
+      <div style="text-align: center; margin: 40px 0;">
+        <a href="/hand-baggage.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block; margin-right: 12px;">Hand Baggage →</a>
+        <a href="/booking.html" class="destination-button" style="padding: 14px 32px; font-size: 16px; display: inline-block;">Book Your Flight →</a>
       </div>
     </div>
   </main>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-top">
+        <div>
+          <div class="logo">✈ SmartFly Airways</div>
+          <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js"></script>
 </body>
 </html>
