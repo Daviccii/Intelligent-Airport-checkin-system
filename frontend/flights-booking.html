@@ -817,9 +817,9 @@
   </div>
 
   <script>
-    // Currency management
-    let currentCurrency = 'USD';
-    const exchangeRate = 130; // 1 USD = 130 KSH
+    // Currency management (KES only)
+    let currentCurrency = 'KES';
+    const exchangeRate = 130; // 1 USD = 130 KES
 
     function setCurrency(currency) {
       currentCurrency = currency;
@@ -831,12 +831,11 @@
     }
 
     function getPrice(priceUSD) {
-      if (currentCurrency === 'USD') return priceUSD;
       return Math.round(priceUSD * exchangeRate);
     }
 
     function getCurrencySymbol() {
-      return currentCurrency === 'USD' ? '৳' : 'KSH ';
+      return 'Ksh ';
     }
 
     // Sample flight data

@@ -1387,38 +1387,38 @@
         // ============================================
         // Approximate distances in km and base prices for routes
         const routePricing = {
-            // Domestic routes (Kenya)
-            'NBO-MBA': { distance: 500, basePrice: 250 },
-            'MBA-NBO': { distance: 500, basePrice: 250 },
-            'NBO-KIS': { distance: 350, basePrice: 200 },
-            'KIS-NBO': { distance: 350, basePrice: 200 },
-            'NBO-ELD': { distance: 300, basePrice: 180 },
-            'ELD-NBO': { distance: 300, basePrice: 180 },
-            'MBA-KIS': { distance: 700, basePrice: 300 },
-            'KIS-MBA': { distance: 700, basePrice: 300 },
+          // Domestic routes (Kenya)
+          'NBO-MBA': { distance: 500, basePrice: 7500 },
+          'MBA-NBO': { distance: 500, basePrice: 7500 },
+          'NBO-KIS': { distance: 350, basePrice: 6200 },
+          'KIS-NBO': { distance: 350, basePrice: 6200 },
+          'NBO-ELD': { distance: 300, basePrice: 5800 },
+          'ELD-NBO': { distance: 300, basePrice: 5800 },
+          'MBA-KIS': { distance: 700, basePrice: 9800 },
+          'KIS-MBA': { distance: 700, basePrice: 9800 },
             
-            // Regional routes (East Africa)
-            'NBO-EBB': { distance: 700, basePrice: 350 },
-            'EBB-NBO': { distance: 700, basePrice: 350 },
-            'NBO-DAR': { distance: 400, basePrice: 250 },
-            'DAR-NBO': { distance: 400, basePrice: 250 },
+          // Regional routes (East Africa)
+          'NBO-EBB': { distance: 700, basePrice: 18500 },
+          'EBB-NBO': { distance: 700, basePrice: 18500 },
+          'NBO-DAR': { distance: 400, basePrice: 15500 },
+          'DAR-NBO': { distance: 400, basePrice: 15500 },
             
-            // Long-haul international routes
-            'NBO-LHR': { distance: 7200, basePrice: 650 },
-            'LHR-NBO': { distance: 7200, basePrice: 650 },
-            'NBO-CDG': { distance: 7500, basePrice: 680 },
-            'CDG-NBO': { distance: 7500, basePrice: 680 },
-            'NBO-DXB': { distance: 4200, basePrice: 450 },
-            'DXB-NBO': { distance: 4200, basePrice: 450 },
-            'NBO-JFK': { distance: 8900, basePrice: 750 },
-            'JFK-NBO': { distance: 8900, basePrice: 750 },
-            'NBO-SIN': { distance: 9000, basePrice: 800 },
-            'SIN-NBO': { distance: 9000, basePrice: 800 }
+          // Long-haul international routes
+          'NBO-LHR': { distance: 7200, basePrice: 78000 },
+          'LHR-NBO': { distance: 7200, basePrice: 78000 },
+          'NBO-CDG': { distance: 7500, basePrice: 82000 },
+          'CDG-NBO': { distance: 7500, basePrice: 82000 },
+          'NBO-DXB': { distance: 4200, basePrice: 52000 },
+          'DXB-NBO': { distance: 4200, basePrice: 52000 },
+          'NBO-JFK': { distance: 8900, basePrice: 98000 },
+          'JFK-NBO': { distance: 8900, basePrice: 98000 },
+          'NBO-SIN': { distance: 9000, basePrice: 102000 },
+          'SIN-NBO': { distance: 9000, basePrice: 102000 }
         };
 
         function getRoutePricing(from, to) {
             const routeKey = `${from}-${to}`;
-            return routePricing[routeKey] || { distance: 5000, basePrice: 500 }; // Default for unknown routes
+            return routePricing[routeKey] || { distance: 5000, basePrice: 45000 }; // Default for unknown routes
         }
 
         // ============================================
@@ -1439,6 +1439,12 @@
         fromInput.addEventListener("input", checkRouteSelected);
         toInput.addEventListener("input", checkRouteSelected);
 
+        function getDeterministicVariation(date, basePrice) {
+          const seed = (date.getFullYear() * 10000) + ((date.getMonth() + 1) * 100) + date.getDate();
+          const normalized = Math.abs(Math.sin(seed) * 10000) % 1;
+          return (normalized * 0.1 - 0.05) * basePrice; // +/-5%
+        }
+
         // Generate dynamic prices for calendar dates based on route distance
         function generatePricesForMonth(startDate, fromCode, toCode) {
           const prices = {};
@@ -1454,8 +1460,8 @@
             if (date.getMonth() === startDate.getMonth()) {
               const isWeekend = date.getDay() === 0 || date.getDay() === 6;
               const weekendSurge = isWeekend ? (basePrice * 0.15) : 0; // 15% weekend premium
-              // Only a small random variation, ±5%
-              const dayVariation = Math.floor(Math.random() * (basePrice * 0.1)) - (basePrice * 0.05);
+              // Deterministic variation, ±5%
+              const dayVariation = getDeterministicVariation(date, basePrice);
               // Never go below 90% of base price
               const finalPrice = Math.max(basePrice * 0.9, basePrice + weekendSurge + dayVariation);
               prices[day] = Math.round(finalPrice);

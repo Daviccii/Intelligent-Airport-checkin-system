@@ -288,7 +288,7 @@
                     </div>
                     <div class="summary-item">
                         <span>Base Fare</span>
-                        <strong id="summaryPrice">$0.00</strong>
+                        <strong id="summaryPrice">Ksh 0</strong>
                     </div>
                     <div class="summary-item">
                         <span>Seat</span>
@@ -297,7 +297,7 @@
                     
                     <div class="price-total">
                         <div class="label">Total Price</div>
-                        <div class="amount" id="totalPrice">$0.00</div>
+                        <div class="amount" id="totalPrice">Ksh 0</div>
                     </div>
                 </div>
 
@@ -400,8 +400,9 @@
             document.getElementById('summaryClass').textContent = flightParams.class === 'Y' ? 'Economy' : 
                                                                  flightParams.class === 'W' ? 'Premium Economy' :
                                                                  flightParams.class === 'J' ? 'Business' : 'First';
-            document.getElementById('summaryPrice').textContent = '$' + flightParams.price.toFixed(2);
-            document.getElementById('totalPrice').textContent = '$' + (flightParams.price * selectedSeats.length).toFixed(2);
+            const basePrice = Number(flightParams.price || 0);
+            document.getElementById('summaryPrice').textContent = `Ksh ${basePrice.toLocaleString()}`;
+            document.getElementById('totalPrice').textContent = `Ksh ${(basePrice * selectedSeats.length).toLocaleString()}`;
 
             document.getElementById('flightInfo').textContent = `Flight: ${flightParams.flight} | Class: ${flightParams.class}`;
         }

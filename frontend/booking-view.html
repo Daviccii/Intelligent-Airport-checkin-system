@@ -497,7 +497,7 @@
                 
                 <div class="payment-summary">
                     <h3><i class="fas fa-check-circle"></i> Payment Successful</h3>
-                    <div class="payment-amount" id="amountPaidLarge">$0.00</div>
+                    <div class="payment-amount" id="amountPaidLarge">Ksh 0</div>
                     <div class="payment-success-badge">
                         <i class="fas fa-shield-alt"></i>
                         <span>Securely Processed</span>
@@ -623,10 +623,10 @@
         }
 
         function formatCurrency(amount) {
-            if (!amount) return '$0.00';
+            if (!amount) return 'Ksh 0';
             return new Intl.NumberFormat('en-US', {
                 style: 'currency',
-                currency: 'USD'
+                currency: 'KES'
             }).format(parseFloat(amount));
         }
 

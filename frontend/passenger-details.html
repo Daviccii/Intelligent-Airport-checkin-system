@@ -239,7 +239,7 @@
                 </div>
                 <div class="summary-item">
                     <div class="summary-label">Total Price</div>
-                    <div class="summary-value price" id="summaryPrice">$0</div>
+                    <div class="summary-value price" id="summaryPrice">Ksh 0</div>
                 </div>
             </div>
         </div>
@@ -358,7 +358,10 @@
             document.getElementById('summaryRoute').textContent = `${params.from} → ${params.to}`;
             document.getElementById('summaryDate').textContent = formatDate(params.date);
             document.getElementById('summaryClass').textContent = params.fare.charAt(0).toUpperCase() + params.fare.slice(1);
-            document.getElementById('summaryPrice').textContent = `$${params.price}`;
+            const numericPrice = parseFloat(params.price);
+            document.getElementById('summaryPrice').textContent = isNaN(numericPrice)
+                ? 'Ksh 0'
+                : `Ksh ${numericPrice.toLocaleString()}`;
 
             console.log('🎫 Passenger Details Loaded:', params);
         }

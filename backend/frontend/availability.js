@@ -27,6 +27,110 @@ function formatDateLong(dateStr) {
     return `${days[date.getDay()]} ${months[date.getMonth()]} ${date.getDate()}`;
 }
 
+// Route pricing aligned with homepage calendar (KES)
+const ROUTE_PRICING = {
+    // Domestic routes (Kenya)
+    'NBO-MBA': { distance: 500, basePrice: 7500 },
+    'MBA-NBO': { distance: 500, basePrice: 7500 },
+    'NBO-KIS': { distance: 350, basePrice: 6200 },
+    'KIS-NBO': { distance: 350, basePrice: 6200 },
+    'NBO-ELD': { distance: 300, basePrice: 5800 },
+    'ELD-NBO': { distance: 300, basePrice: 5800 },
+    'MBA-KIS': { distance: 700, basePrice: 9800 },
+    'KIS-MBA': { distance: 700, basePrice: 9800 },
+
+    // Regional routes (East Africa)
+    'NBO-EBB': { distance: 700, basePrice: 18500 },
+    'EBB-NBO': { distance: 700, basePrice: 18500 },
+    'NBO-DAR': { distance: 400, basePrice: 15500 },
+    'DAR-NBO': { distance: 400, basePrice: 15500 },
+
+    // Long-haul international routes
+    'NBO-LHR': { distance: 7200, basePrice: 78000 },
+    'LHR-NBO': { distance: 7200, basePrice: 78000 },
+    'NBO-CDG': { distance: 7500, basePrice: 82000 },
+    'CDG-NBO': { distance: 7500, basePrice: 82000 },
+    'NBO-DXB': { distance: 4200, basePrice: 52000 },
+    'DXB-NBO': { distance: 4200, basePrice: 52000 },
+    'NBO-JFK': { distance: 8900, basePrice: 98000 },
+    'JFK-NBO': { distance: 8900, basePrice: 98000 },
+    'NBO-SIN': { distance: 9000, basePrice: 102000 },
+    'SIN-NBO': { distance: 9000, basePrice: 102000 }
+};
+
+function getRoutePricing(from, to) {
+    const routeKey = `${from}-${to}`;
+    return ROUTE_PRICING[routeKey] || { distance: 5000, basePrice: 45000 };
+}
+
+function getDeterministicVariation(date, basePrice) {
+    const seed = (date.getFullYear() * 10000) + ((date.getMonth() + 1) * 100) + date.getDate();
+    const normalized = Math.abs(Math.sin(seed) * 10000) % 1;
+    return (normalized * 0.1 - 0.05) * basePrice; // +/-5%
+}
+
+function getCalendarPriceForDate(date, from, to) {
+    const routeInfo = getRoutePricing(from, to);
+    const basePrice = routeInfo.basePrice;
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+    const weekendSurge = isWeekend ? (basePrice * 0.15) : 0;
+    const dayVariation = getDeterministicVariation(date, basePrice);
+    const finalPrice = Math.max(basePrice * 0.9, basePrice + weekendSurge + dayVariation);
+    return Math.round(finalPrice);
+}
+
+// Route pricing aligned with homepage calendar (KES)
+const ROUTE_PRICING = {
+    // Domestic routes (Kenya)
+    'NBO-MBA': { distance: 500, basePrice: 250 },
+    'MBA-NBO': { distance: 500, basePrice: 250 },
+    'NBO-KIS': { distance: 350, basePrice: 200 },
+    'KIS-NBO': { distance: 350, basePrice: 200 },
+    'NBO-ELD': { distance: 300, basePrice: 180 },
+    'ELD-NBO': { distance: 300, basePrice: 180 },
+    'MBA-KIS': { distance: 700, basePrice: 300 },
+    'KIS-MBA': { distance: 700, basePrice: 300 },
+
+    // Regional routes (East Africa)
+    'NBO-EBB': { distance: 700, basePrice: 350 },
+    'EBB-NBO': { distance: 700, basePrice: 350 },
+    'NBO-DAR': { distance: 400, basePrice: 250 },
+    'DAR-NBO': { distance: 400, basePrice: 250 },
+
+    // Long-haul international routes
+    'NBO-LHR': { distance: 7200, basePrice: 650 },
+    'LHR-NBO': { distance: 7200, basePrice: 650 },
+    'NBO-CDG': { distance: 7500, basePrice: 680 },
+    'CDG-NBO': { distance: 7500, basePrice: 680 },
+    'NBO-DXB': { distance: 4200, basePrice: 450 },
+    'DXB-NBO': { distance: 4200, basePrice: 450 },
+    'NBO-JFK': { distance: 8900, basePrice: 750 },
+    'JFK-NBO': { distance: 8900, basePrice: 750 },
+    'NBO-SIN': { distance: 9000, basePrice: 800 },
+    'SIN-NBO': { distance: 9000, basePrice: 800 }
+};
+
+function getRoutePricing(from, to) {
+    const routeKey = `${from}-${to}`;
+    return ROUTE_PRICING[routeKey] || { distance: 5000, basePrice: 500 };
+}
+
+function getDeterministicVariation(date, basePrice) {
+    const seed = (date.getFullYear() * 10000) + ((date.getMonth() + 1) * 100) + date.getDate();
+    const normalized = Math.abs(Math.sin(seed) * 10000) % 1;
+    return (normalized * 0.1 - 0.05) * basePrice; // +/-5%
+}
+
+function getCalendarPriceForDate(date, from, to) {
+    const routeInfo = getRoutePricing(from, to);
+    const basePrice = routeInfo.basePrice;
+    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+    const weekendSurge = isWeekend ? (basePrice * 0.15) : 0;
+    const dayVariation = getDeterministicVariation(date, basePrice);
+    const finalPrice = Math.max(basePrice * 0.9, basePrice + weekendSurge + dayVariation);
+    return Math.round(finalPrice);
+}
+
 // Generate mock flight data
 function generateFlights(from, to, date) {
     const airlines = [
@@ -55,8 +159,9 @@ function generateFlights(from, to, date) {
         const stops = Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 2);
         const stopText = stops === 0 ? 'Nonstop' : `${stops} stop${stops > 1 ? 's' : ''}`;
         
-        const basePrice = 450 + Math.floor(Math.random() * 550); // $450-$1000
-        const economyPrice = basePrice + (stops * 50);
+        const basePrice = getCalendarPriceForDate(new Date(date), from, to);
+        const stopSurcharge = 3500;
+        const economyPrice = basePrice + (stops * stopSurcharge);
         const businessPrice = Math.floor(economyPrice * (2.5 + Math.random() * 0.5));
 
         flights.push({
@@ -80,7 +185,7 @@ function generateFlights(from, to, date) {
 }
 
 // Generate date slider data
-function generateDateSlider(departDate, tripType) {
+function generateDateSlider(departDate, tripType, from, to) {
     const dates = [];
     const centerDate = new Date(departDate);
     
@@ -89,15 +194,14 @@ function generateDateSlider(departDate, tripType) {
         const date = new Date(centerDate);
         date.setDate(date.getDate() + i);
         
-        const basePrice = 450 + Math.floor(Math.random() * 550);
-        const priceVariation = i === 0 ? 0 : Math.floor(Math.random() * 100) - 50;
+        const price = getCalendarPriceForDate(date, from, to);
         
         dates.push({
             date: date.toISOString().split('T')[0],
             dayName: formatDateLong(date.toISOString().split('T')[0]).split(' ')[0],
             dayNum: date.getDate(),
             monthName: formatDateLong(date.toISOString().split('T')[0]).split(' ')[1],
-            price: basePrice + priceVariation,
+            price,
             selected: i === 0
         });
     }
@@ -134,7 +238,7 @@ function renderDateSlider(dates, onDateSelect) {
         card.innerHTML = `
             <div class="date-card-day">${dateData.dayName}</div>
             <div class="date-card-date">${dateData.monthName} ${dateData.dayNum}</div>
-            <div class="date-card-price">Ksh ${dateData.price}</div>
+            <div class="date-card-price">Ksh ${dateData.price.toLocaleString()}</div>
         `;
         card.addEventListener('click', () => onDateSelect(dateData.date));
         slider.appendChild(card);
@@ -275,7 +379,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Generate and render date slider
     selectedDate = params.departDate;
-    currentDateData = generateDateSlider(params.departDate, params.tripType);
+    currentDateData = generateDateSlider(params.departDate, params.tripType, params.from, params.to);
     renderDateSlider(currentDateData, (date) => {
         selectedDate = date;
         // Update date cards

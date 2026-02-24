@@ -587,10 +587,10 @@
       try { 
         return new Intl.NumberFormat(undefined, {
           style: 'currency', 
-          currency: 'USD'
+          currency: 'KES'
         }).format(Number(amt)); 
       } catch(e) { 
-        return amt || '—'; 
+        return amt ? `Ksh ${amt}` : 'Ksh 0'; 
       } 
     }
 
@@ -632,7 +632,7 @@
       email: getParam('email'),
       passport: getParam('passport'),
       phone: getParam('phone'),
-      currency: getParam('currency') || 'USD'
+      currency: getParam('currency') || 'KES'
     };
 
     // Extract airport codes from full airport strings
@@ -658,7 +658,7 @@
     document.getElementById('phoneInfo').textContent = ctx.phone || '—';
     
     // Display total with fallback
-    const displayAmount = ctx.fare > 0 ? fmtCurrency(ctx.fare) : '$0.00';
+    const displayAmount = ctx.fare > 0 ? fmtCurrency(ctx.fare) : 'Ksh 0';
     document.getElementById('totalAmount').textContent = displayAmount;
     console.log('Total amount set to:', displayAmount);
 
@@ -801,7 +801,7 @@
           class: ctx.cls || 'economy',
           fare: ctx.fare || '0',
           amount: parseFloat(ctx.fare) || 0,
-          currency: ctx.currency || 'USD',
+          currency: ctx.currency || 'KES',
           payment_method: currentPaymentMethod
         };
 
@@ -839,7 +839,7 @@
               seat_class: ctx.cls || 'Economy',
               amount: parseFloat(ctx.fare) || 0,
               payment_method: currentPaymentMethod,
-              currency: 'USD'
+              currency: 'KES'
             })
           });
 

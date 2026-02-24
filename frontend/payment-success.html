@@ -253,6 +253,10 @@
     localStorage.setItem('lastBooking', JSON.stringify(bookingData));
 
     // Display booking details
+    const fareValue = params.get('fare');
+    const numericFare = fareValue ? parseFloat(fareValue) : NaN;
+    const formattedFare = !isNaN(numericFare) ? `Ksh ${numericFare.toLocaleString()}` : (fareValue || '---');
+
     const details = [
       { label: 'Passenger Name', value: params.get('name') },
       { label: 'Email', value: params.get('email') },
@@ -262,7 +266,7 @@
       { label: 'Departure Date', value: params.get('depart') },
       { label: 'Return Date', value: params.get('return') || 'N/A' },
       { label: 'Class', value: params.get('class') || 'Economy' },
-      { label: 'Fare', value: params.get('fare') || '---' },
+      { label: 'Fare', value: formattedFare },
       { label: 'Payment Method', value: params.get('method')?.toUpperCase() || '---' }
     ];
 

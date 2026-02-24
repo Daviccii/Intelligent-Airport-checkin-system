@@ -1188,8 +1188,8 @@
 
   <script>
     // Currency and data management
-    let currentCurrency = 'USD';
-    const exchangeRate = 130; // 1 USD = 130 KSH
+    let currentCurrency = 'KES';
+    const exchangeRate = 130; // 1 USD = 130 KES
     let currentStep = 1;
     let selectedFlight = null;
     let selectedSeat = null;
@@ -1273,11 +1273,11 @@
     }
 
     function getPrice(priceUSD) {
-      return currentCurrency === 'USD' ? priceUSD : Math.round(priceUSD * exchangeRate);
+      return Math.round(priceUSD * exchangeRate);
     }
 
     function getCurrencySymbol() {
-      return currentCurrency === 'USD' ? '$' : 'KSH ';
+      return 'Ksh ';
     }
 
     function switchTab(tabName) {
