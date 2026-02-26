@@ -1,1 +1,17 @@
-{}
+{
+  "admin_session_ttl": 3600,
+  "maintenance_mode": false,
+  "notify_email": "",
+  "maintenance_message": "",
+  "slack_notifications": true,
+  "date_format": "MM/DD/YYYY",
+  "enable_audit_log": true,
+  "enable_mfa": false,
+  "backup_frequency": "daily",
+  "sms_notifications": true,
+  "timezone": "UTC",
+  "system_email": "",
+  "passenger_session_ttl": 7200,
+  "system_name": "SmartFly Airlines",
+  "email_notifications": true
+}

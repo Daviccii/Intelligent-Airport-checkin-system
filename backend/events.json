@@ -1373,5 +1373,11 @@
     "role": "admin",
     "username": "Riley Gabi",
     "timestamp": "2026-02-20T11:36:50.806913Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-02-26T06:53:15.168972Z"
   }
 ]

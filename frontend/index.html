@@ -525,19 +525,19 @@
 
     .signin-dropdown-menu {
       position: absolute;
-      bottom: 100%;
+      top: 100%;
       left: 0;
       right: 0;
       background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
       border-radius: 12px;
       padding: 8px;
-      margin-bottom: 8px;
-      box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.3);
+      margin-top: 8px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
       border: 2px solid rgba(255, 255, 255, 0.15);
       display: none;
       flex-direction: column;
       gap: 4px;
-      z-index: 100;
+      z-index: 1000;
     }
 
     .signin-dropdown-menu.active {
@@ -959,7 +959,7 @@
             <div>
               <h4>Loyalty Program</h4>
               <a href="/asante-rewards.html">Asante Rewards</a>
-              <a href="/members-register.html">Join Asante</a>
+              <a href="/join-asante.html">Join Asante</a>
               <a href="/about-asante.html">About Asante</a>
               <a href="/tier-benefits.html">Tier and Benefits</a>
               <a href="/loyalty-partners.html">Partners</a>
@@ -973,9 +973,9 @@
             </div>
             <div>
               <h4>Help</h4>
-              <a href="/help.html">FAQs</a>
+              <a href="/help-center.html">FAQs</a>
               <a href="/contact.html">Contacts</a>
-              <a href="/legal.html">Terms &amp; Conditions</a>
+              <a href="/terms-conditions.html">Terms &amp; Conditions</a>
             </div>
           </div>
         </div>
@@ -1510,7 +1510,7 @@
 
             cell.innerHTML = `
               <div>${day}</div>
-              <div class="day-price">Ksh ${price}</div>
+              <div class="day-price">Ksh ${price.toLocaleString()}</div>
             `;
 
             // Highlight cheapest dates (lowest 20% of prices)

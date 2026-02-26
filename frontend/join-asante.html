@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join Asante - SmartFly Airways</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    .join-hero {
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 100%);
+      color: white;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .join-hero h1 {
+      font-size: 2.8em;
+      margin: 0 0 16px 0;
+      font-weight: 700;
+    }
+
+    .join-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 60px 20px;
+    }
+
+    .benefits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin: 40px 0;
+    }
+
+    .benefit-card {
+      background: #f0f9ff;
+      padding: 24px;
+      border-radius: 12px;
+      border-left: 4px solid #2563eb;
+    }
+
+    .benefit-card h3 {
+      color: #2563eb;
+      margin-top: 0;
+    }
+
+    .benefit-card p {
+      color: #666;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .signup-form {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: 40px auto;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+    }
+
+    .tier-comparison {
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-top: 40px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th {
+      background: #f3f4f6;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    table td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <div class="nav-wrapper">
+      <div class="logo">✈ SmartFly Airways</div>
+      <nav class="nav-menu">
+        <div class="nav-item"><a href="/index.html">Home</a></div>
+        <div class="nav-item"><a href="/loyalty.html">Loyalty</a></div>
+        <div class="nav-item"><a href="/help.html">Help</a></div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="join-hero">
+    <h1>Join Asante Rewards</h1>
+    <p>Earn points on every flight and enjoy exclusive benefits</p>
+  </div>
+
+  <div class="join-container">
+    <h2>Why Join Asante?</h2>
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <h3>🎁 Earn Points</h3>
+        <p>Earn 1 point per KES spent on flights and enjoy bonuses on partner purchases</p>
+      </div>
+      <div class="benefit-card">
+        <h3>💎 Tier Benefits</h3>
+        <p>Unlock exclusive perks as you climb from Silver to Platinum status</p>
+      </div>
+      <div class="benefit-card">
+        <h3>✈️ Redeem Rewards</h3>
+        <p>Use points for free flights, seat upgrades, baggage allowances and more</p>
+      </div>
+      <div class="benefit-card">
+        <h3>🏪 Partner Rewards</h3>
+        <p>Earn points at partner hotels, car rentals, and dining establishments</p>
+      </div>
+      <div class="benefit-card">
+        <h3>🎯 Priority Boarding</h3>
+        <p>Board early and enjoy priority services at airports worldwide</p>
+      </div>
+      <div class="benefit-card">
+        <h3>🎉 Exclusive Offers</h3>
+        <p>Access member-only deals, flash sales and special promotions year-round</p>
+      </div>
+    </div>
+
+    <div class="signup-form">
+      <h2 style="text-align: center; color: #333; margin-top: 0;">Create Your Account</h2>
+      <form onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label>Full Name *</label>
+          <input type="text" required placeholder="Enter your full name">
+        </div>
+        <div class="form-group">
+          <label>Email Address *</label>
+          <input type="email" required placeholder="your@email.com">
+        </div>
+        <div class="form-group">
+          <label>Phone Number *</label>
+          <input type="tel" required placeholder="+254 xxx xxx xxx">
+        </div>
+        <div class="form-group">
+          <label>Date of Birth *</label>
+          <input type="date" required>
+        </div>
+        <div class="form-group">
+          <label>Country *</label>
+          <select required>
+            <option value="">Select your country</option>
+            <option value="KE">Kenya</option>
+            <option value="UG">Uganda</option>
+            <option value="TZ">Tanzania</option>
+            <option value="GB">United Kingdom</option>
+            <option value="US">United States</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="display: flex; align-items: center; font-weight: normal; cursor: pointer;">
+            <input type="checkbox" required style="width: auto; margin-right: 8px;">
+            I agree to the Terms & Conditions
+          </label>
+        </div>
+        <button type="submit" class="submit-btn" style="margin-top: 20px;">Create Account</button>
+      </form>
+    </div>
+
+    <div class="tier-comparison">
+      <h2>Membership Tiers</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Silver</th>
+            <th>Gold</th>
+            <th>Ruby</th>
+            <th>Platinum</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Annual Flights Required</strong></td>
+            <td>—</td>
+            <td>4+</td>
+            <td>8+</td>
+            <td>12+</td>
+          </tr>
+          <tr>
+            <td><strong>Points Multiplier</strong></td>
+            <td>1x</td>
+            <td>1.25x</td>
+            <td>1.5x</td>
+            <td>2x</td>
+          </tr>
+          <tr>
+            <td><strong>Complimentary Lounge Access</strong></td>
+            <td>—</td>
+            <td>2/year</td>
+            <td>6/year</td>
+            <td>Unlimited</td>
+          </tr>
+          <tr>
+            <td><strong>Free Baggage Allowance</strong></td>
+            <td>1</td>
+            <td>2</td>
+            <td>2</td>
+            <td>3</td>
+          </tr>
+          <tr>
+            <td><strong>Priority Boarding</strong></td>
+            <td>—</td>
+            <td>Yes</td>
+            <td>Yes</td>
+            <td>Yes</td>
+          </tr>
+          <tr>
+            <td><strong>Seat Upgrade Vouchers</strong></td>
+            <td>—</td>
+            <td>1/year</td>
+            <td>2/year</td>
+            <td>4/year</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#privacy">Privacy</a>
+          <a href="#terms">Terms</a>
+          <a href="#contact">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function handleSignup(event) {
+      event.preventDefault();
+      alert('Welcome to Asante Rewards! Check your email for account confirmation.');
+    }
+  </script>
+</body>
+</html>
