@@ -223,8 +223,26 @@ function renderSummary(params) {
         : formatDate(departDate);
     document.getElementById('travelDates').textContent = dateText;
     
-    const passengerText = passengers === 1 ? '1 Adult' : `${passengers} Adults`;
+    // Parse passengers format (adults-children-infants)
+    let passengerText = '1 Adult';
+    if (typeof passengers === 'string' && passengers.includes('-')) {
+        const [adults, children, infants] = passengers.split('-').map(Number);
+        let parts = [];
+        if (adults > 0) parts.push(`${adults} Adult${adults > 1 ? 's' : ''}`);
+        if (children > 0) parts.push(`${children} Child${children > 1 ? 'ren' : ''}`);
+        if (infants > 0) parts.push(`${infants} Infant${infants > 1 ? 's' : ''}`);
+        passengerText = parts.join(', ');
+    } else if (typeof passengers === 'number') {
+        passengerText = passengers === 1 ? '1 Adult' : `${passengers} Adults`;
+    }
     document.getElementById('passengerCount').textContent = passengerText;
+    
+    // Display class from sessionStorage (locked after homepage)
+    const selectedClass = sessionStorage.getItem('selectedClassName') || 'Economy';
+    const classDisplay = document.getElementById('classDisplay');
+    if (classDisplay) {
+        classDisplay.textContent = selectedClass;
+    }
 }
 
 // Render date slider

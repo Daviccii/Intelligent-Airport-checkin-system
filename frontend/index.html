@@ -1069,19 +1069,20 @@
                             <label class="kq-label">Passengers</label>
                             <div class="kq-dropdown compact" id="passengersDropdown">
                                 <button type="button" class="kq-dropdown-btn-compact">
-                                    <span class="kq-value">1</span>
+                                    <span class="kq-value">1 Adult</span>
                                     <span class="kq-arrow">▾</span>
                                 </button>
                                 <ul class="kq-dropdown-menu-compact">
-                                    <li data-value="1">1 Passenger</li>
-                                    <li data-value="2">2 Passengers</li>
-                                    <li data-value="3">3 Passengers</li>
-                                    <li data-value="4">4 Passengers</li>
-                                    <li data-value="5">5 Passengers</li>
-                                    <li data-value="6">6+ Passengers</li>
+                                    <li data-value="1-0-0" data-display="1 Adult">1 Adult</li>
+                                    <li data-value="2-0-0" data-display="2 Adults">2 Adults</li>
+                                    <li data-value="1-1-0" data-display="1 Adult, 1 Child">1 Adult, 1 Child</li>
+                                    <li data-value="2-1-0" data-display="2 Adults, 1 Child">2 Adults, 1 Child</li>
+                                    <li data-value="2-2-0" data-display="2 Adults, 2 Children">2 Adults, 2 Children</li>
+                                    <li data-value="1-0-1" data-display="1 Adult, 1 Infant">1 Adult, 1 Infant</li>
+                                    <li data-value="2-1-1" data-display="2 Adults, 1 Child, 1 Infant">2 Adults, 1 Child, 1 Infant</li>
                                 </ul>
                             </div>
-                            <input type="hidden" id="passengers" name="passengers" value="1">
+                            <input type="hidden" id="passengers" name="passengers" value="1-0-0">
                         </div>
 
                         <!-- Class Dropdown -->
@@ -1158,10 +1159,10 @@
             <a href="/book-manage.html" class="quick-action-card simple">
                 <h3>Manage Booking</h3>
             </a>
-            <a href="/availability.html" class="quick-action-card simple">
+            <a href="/flight-schedule.html" class="quick-action-card simple">
                 <h3>Flight Schedule</h3>
             </a>
-            <a href="/lookup.html" class="quick-action-card simple">
+            <a href="/flight-status.html" class="quick-action-card simple">
                 <h3>Flight Status</h3>
             </a>
         </div>
@@ -1663,11 +1664,18 @@
         item.addEventListener('click', () => {
           const value = item.getAttribute('data-value');
           const text = item.textContent;
-          const displayText = displayFormat ? displayFormat(value, text) : text;
+          const displayAttr = item.getAttribute('data-display');
+          const displayText = displayFormat ? displayFormat(value, text, displayAttr) : text;
           valueSpan.textContent = displayText;
           hiddenInput.value = value;
           menu.style.display = 'none';
           btn.classList.remove('active');
+          
+          // Store selected class in sessionStorage when changed
+          if (hiddenInputId === 'class') {
+            sessionStorage.setItem('selectedClass', value);
+            sessionStorage.setItem('selectedClassName', displayText);
+          }
           
           // Handle trip type change - show/hide return date
           if (hiddenInputId === 'tripType') {
@@ -1690,9 +1698,9 @@
 
     // Initialize dropdowns
     initKQDropdown('tripTypeDropdown', 'tripType');
-    initKQDropdown('passengersDropdown', 'passengers', (value) =>
-      value === '1' ? '1' : value + ' pax'
-    );
+    initKQDropdown('passengersDropdown', 'passengers', (value, text, displayAttr) => {
+      return displayAttr || text;
+    });
     initKQDropdown('classDropdown', 'class');
 
     // ============================================

@@ -3,53 +3,801 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Refunds - SmartFly Airways</title>
+  <title>Refunds & Cancellations - SmartFly Airways</title>
   <link rel="stylesheet" href="/styles.css">
   <style>
     .refund-hero {
-      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
       color: white;
-      padding: 60px 20px;
+      padding: 80px 20px;
       text-align: center;
     }
 
     .refund-hero h1 {
-      font-size: 2.8em;
+      font-size: 3em;
       margin: 0 0 16px 0;
       font-weight: 700;
     }
 
+    .refund-hero p {
+      font-size: 1.2em;
+      opacity: 0.95;
+    }
+
     .refund-container {
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 60px 20px;
     }
 
+    .refund-calculator {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+      margin-bottom: 40px;
+    }
+
+    .refund-calculator h2 {
+      color: #dc2626;
+      margin-top: 0;
+      font-size: 28px;
+      margin-bottom: 24px;
+    }
+
+    .calculator-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group select {
+      padding: 12px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #dc2626;
+      box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    }
+
+    .calculate-btn {
+      padding: 14px 32px;
+      background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-top: 20px;
+    }
+
+    .calculate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3);
+    }
+
+    .result-box {
+      display: none;
+      background: #f0fdf4;
+      padding: 24px;
+      border-radius: 12px;
+      border-left: 4px solid #10b981;
+      margin-top: 24px;
+    }
+
+    .result-box.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .result-amount {
+      font-size: 32px;
+      font-weight: 700;
+      color: #10b981;
+      margin: 8px 0;
+    }
+
     .refund-types {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
       margin-bottom: 40px;
     }
 
     .refund-card {
       background: white;
-      padding: 24px;
+      padding: 30px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      border-left: 4px solid #7c3aed;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-top: 4px solid #dc2626;
+      transition: all 0.3s ease;
+    }
+
+    .refund-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15);
+    }
+
+    .refund-card-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
     }
 
     .refund-card h3 {
-      color: #7c3aed;
+      color: #dc2626;
       margin-top: 0;
+      font-size: 22px;
+      margin-bottom: 12px;
     }
 
     .refund-card p {
       color: #666;
       margin: 0;
-      line-height: 1.6;
+      line-height: 1.7;
+    }
+
+    .refund-card ul {
+      margin: 12px 0 0 0;
+      padding-left: 20px;
+      color: #666;
+    }
+
+    .refund-card li {
+      margin: 8px 0;
     }
 
     .info-grid {
-      background: #f5f3ff;\n      padding: 24px;\n      border-radius: 12px;\n      display: grid;\n      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));\n      gap: 20px;\n      margin-bottom: 40px;\n    }\n\n    .info-item {\n      background: white;\n      padding: 20px;\n      border-radius: 8px;\n      border-top: 3px solid #7c3aed;\n    }\n\n    .info-item h4 {\n      color: #7c3aed;\n      margin: 0 0 8px 0;\n    }\n\n    .info-item p {\n      margin: 0;\n      color: #666;\n      font-size: 14px;\n    }\n\n    .process-section {\n      background: white;\n      padding: 24px;\n      border-radius: 12px;\n      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);\n      margin-bottom: 40px;\n    }\n\n    .step {\n      display: flex;\n      gap: 20px;\n      padding: 16px 0;\n      border-bottom: 1px solid #e5e7eb;\n    }\n\n    .step:last-child {\n      border-bottom: none;\n    }\n\n    .step-icon {\n      width: 32px;\n      height: 32px;\n      background: #7c3aed;\n      color: white;\n      border-radius: 50%;\n      display: flex;\n      align-items: center;\n      justify-content: center;\n      font-weight: bold;\n      flex-shrink: 0;\n    }\n\n    .step-content h4 {\n      margin: 0 0 4px 0;\n      color: #333;\n    }\n\n    .step-content p {\n      margin: 0;\n      color: #666;\n      font-size: 14px;\n    }\n  </style>\n</head>\n<body>\n  <header class=\"main-header\">\n    <div class=\"nav-wrapper\">\n      <div class=\"logo\">✈ SmartFly Airways</div>\n      <nav class=\"nav-menu\">\n        <div class=\"nav-item\"><a href=\"/index.html\">Home</a></div>\n        <div class=\"nav-item\"><a href=\"/manage-booking.html\">Manage Booking</a></div>\n        <div class=\"nav-item\"><a href=\"/help-center.html\">Help</a></div>\n      </nav>\n      <div class=\"cta-btn\">\n        <a href=\"/members-login.html\">Sign In</a>\n      </div>\n    </div>\n  </header>\n\n  <div class=\"refund-hero\">\n    <h1>Refunds & Credits</h1>\n    <p>Understand our refund policy and process</p>\n  </div>\n\n  <div class=\"refund-container\">\n    <div class=\"info-grid\">\n      <div class=\"info-item\">\n        <h4>💳 Refundable Tickets</h4>\n        <p>Full refund if cancelled 7+ days before departure</p>\n      </div>\n      <div class=\"info-item\">\n        <h4>🎫 Non-Refundable Tickets</h4>\n        <p>Travel credit issued; no cash refund available</p>\n      </div>\n      <div class=\"info-item\">\n        <h4>✈️ Schedule Change</h4>\n        <p>Automatic refund if we reschedule your flight</p>\n      </div>\n      <div class=\"info-item\">\n        <h4>⏰ Processing Time</h4>\n        <p>5-7 business days for refund to appear</p>\n      </div>\n    </div>\n\n    <div class=\"process-section\">\n      <h2>Refund Process</h2>\n      \n      <div class=\"step\">\n        <div class=\"step-icon\">1</div>\n        <div class=\"step-content\">\n          <h4>Request Cancellation</h4>\n          <p>Submit your cancellation request via our website, app, or customer service within the allowed timeframe.</p>\n        </div>\n      </div>\n\n      <div class=\"step\">\n        <div class=\"step-icon\">2</div>\n        <div class=\"step-content\">\n          <h4>Review Eligibility</h4>\n          <p>We'll review your ticket type and cancellation window to determine refund eligibility.</p>\n        </div>\n      </div>\n\n      <div class=\"step\">\n        <div class=\"step-icon\">3</div>\n        <div class=\"step-content\">\n          <h4>Calculate Amount</h4>\n          <p>Deductibles and service fees (if applicable) will be subtracted from your refund amount.</p>\n        </div>\n      </div>\n\n      <div class=\"step\">\n        <div class=\"step-icon\">4</div>\n        <div class=\"step-content\">\n          <h4>Issue Refund</h4>\n          <p>Refund will be issued to the original payment method within 5-7 business days.</p>\n        </div>\n      </div>\n\n      <div class=\"step\">\n        <div class=\"step-icon\">5</div>\n        <div class=\"step-content\">\n          <h4>Confirmation Email</h4>\n          <p>You'll receive a confirmation email with refund details and tracking information.</p>\n        </div>\n      </div>\n    </div>\n\n    <div class=\"refund-types\">\n      <div class=\"refund-card\">\n        <h3>Full Refund</h3>\n        <p>Available for cancellations made 7 or more days before departure. 100% of the ticket fare is refunded.</p>\n      </div>\n\n      <div class=\"refund-card\">\n        <h3>Partial Refund</h3>\n        <p>Available for cancellations made 3-7 days before departure. Admin fees and service charges apply.</p>\n      </div>\n\n      <div class=\"refund-card\">\n        <h3>Travel Credit</h3>\n        <p>Non-refundable tickets can be converted to travel credit valid for 12 months from original departure date.</p>\n      </div>\n\n      <div class=\"refund-card\">\n        <h3>Schedule Change</h3>\n        <p>If we change your flight schedule, you're eligible for a full refund or rebooking at no additional cost.</p>\n      </div>\n    </div>\n  </div>\n\n  <footer class=\"footer\">\n    <div class=\"footer-content\">\n      <div class=\"footer-bottom\">\n        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>\n        <div class=\"footer-links\">\n          <a href=\"#privacy\">Privacy</a>\n          <a href=\"#terms\">Terms</a>\n          <a href=\"#contact\">Contact</a>\n        </div>\n      </div>\n    </div>\n  </footer>\n</body>\n</html>
+      background: #fef2f2;
+      padding: 32px;
+      border-radius: 12px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      margin-bottom: 40px;
+    }
+
+    .info-item {
+      background: white;
+      padding: 24px;
+      border-radius: 10px;
+      border-left: 4px solid #ef4444;
+    }
+
+    .info-item h4 {
+      color: #dc2626;
+      margin: 0 0 10px 0;
+      font-size: 16px;
+    }
+
+    .info-item p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .process-section {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 40px;
+    }
+
+    .process-section h2 {
+      color: #dc2626;
+      margin-top: 0;
+      font-size: 28px;
+      margin-bottom: 30px;
+    }
+
+    .step {
+      display: flex;
+      gap: 20px;
+      padding: 20px 0;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    .step:last-child {
+      border-bottom: none;
+    }
+
+    .step-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+    }
+
+    .step-content h4 {
+      margin: 0 0 8px 0;
+      color: #1f2937;
+      font-size: 18px;
+    }
+
+    .step-content p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .compensation-table {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 40px;
+      overflow-x: auto;
+    }
+
+    .compensation-table h2 {
+      color: #dc2626;
+      margin-top: 0;
+      margin-bottom: 24px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    table th {
+      background: #fef2f2;
+      padding: 16px;
+      text-align: left;
+      font-weight: 600;
+      color: #dc2626;
+      border-bottom: 2px solid #ef4444;
+    }
+
+    table td {
+      padding: 16px;
+      border-bottom: 1px solid #f3f4f6;
+      color: #4b5563;
+    }
+
+    table tr:hover {
+      background: #fef2f2;
+    }
+
+    .faq-section {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 40px;
+    }
+
+    .faq-section h2 {
+      color: #dc2626;
+      margin-top: 0;
+      margin-bottom: 24px;
+    }
+
+    .faq-item {
+      border-bottom: 1px solid #f3f4f6;
+      padding: 20px 0;
+    }
+
+    .faq-item:last-child {
+      border-bottom: none;
+    }
+
+    .faq-question {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+
+    .faq-answer {
+      color: #6b7280;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    .cta-section {
+      background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+      color: white;
+      padding: 48px;
+      border-radius: 16px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .cta-section h2 {
+      margin: 0 0 16px 0;
+      font-size: 28px;
+    }
+
+    .cta-section p {
+      margin: 0 0 24px 0;
+      font-size: 16px;
+      opacity: 0.95;
+    }
+
+    .cta-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .cta-btn-primary,
+    .cta-btn-secondary {
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .cta-btn-primary {
+      background: white;
+      color: #dc2626;
+    }
+
+    .cta-btn-primary:hover {
+      background: #fef2f2;
+      transform: translateY(-2px);
+    }
+
+    .cta-btn-secondary {
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid white;
+    }
+
+    .cta-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+      .refund-hero h1 {
+        font-size: 2em;
+      }
+
+      .calculator-form {
+        grid-template-columns: 1fr;
+      }
+
+      .refund-types {
+        grid-template-columns: 1fr;
+      }
+
+      .cta-buttons {
+        flex-direction: column;
+      }
+
+      .cta-btn-primary,
+      .cta-btn-secondary {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="main-header">
+    <div class="nav-wrapper">
+      <div class="logo">✈ SmartFly Airways</div>
+      <nav class="nav-menu">
+        <div class="nav-item"><a href="/index.html">Home</a></div>
+        <div class="nav-item"><a href="/book-manage.html">Book & Manage</a></div>
+        <div class="nav-item"><a href="/help-center.html">Help</a></div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="refund-hero">
+    <h1>Refunds & Cancellations</h1>
+    <p>Get your money back or travel credit with our flexible refund policy</p>
+  </div>
+
+  <div class="refund-container">
+    <!-- Refund Calculator -->
+    <div class="refund-calculator">
+      <h2>💰 Refund Calculator</h2>
+      <p style="color: #666; margin-bottom: 24px;">Estimate your potential refund amount based on your ticket type and cancellation timing</p>
+      
+      <form class="calculator-form" onsubmit="calculateRefund(event)">
+        <div class="form-group">
+          <label for="ticketPrice">Ticket Price (KES)</label>
+          <input type="number" id="ticketPrice" placeholder="e.g., 75000" required min="1000">
+        </div>
+        
+        <div class="form-group">
+          <label for="ticketType">Ticket Type</label>
+          <select id="ticketType" required>
+            <option value="">Select ticket type</option>
+            <option value="refundable">Refundable</option>
+            <option value="nonrefundable">Non-Refundable</option>
+            <option value="flexible">Flexible</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="daysBefore">Days Before Departure</label>
+          <select id="daysBefore" required>
+            <option value="">Select timeframe</option>
+            <option value="30">30+ days</option>
+            <option value="14">14-29 days</option>
+            <option value="7">7-13 days</option>
+            <option value="3">3-6 days</option>
+            <option value="1">1-2 days</option>
+            <option value="0">Within 24 hours</option>
+          </select>
+        </div>
+      </form>
+      
+      <button type="submit" class="calculate-btn" onclick="calculateRefund(event)">Calculate Refund</button>
+      
+      <div class="result-box" id="resultBox">
+        <h3 style="margin: 0 0 8px 0; color: #10b981;">Estimated Refund Amount</h3>
+        <div class="result-amount" id="resultAmount">Ksh 0</div>
+        <p id="resultDetails" style="margin: 8px 0 0 0; color: #059669;"></p>
+      </div>
+    </div>
+
+    <!-- Quick Info Grid -->
+    <div class="info-grid">
+      <div class="info-item">
+        <h4>⏰ Processing Time</h4>
+        <p>Refunds are processed within 5-7 business days to your original payment method</p>
+      </div>
+      <div class="info-item">
+        <h4>💳 Refund Method</h4>
+        <p>Refunds issued to the same payment method used for booking (card, M-Pesa, bank)</p>
+      </div>
+      <div class="info-item">
+        <h4>🎫 Travel Credit</h4>
+        <p>Valid for 12 months from issue date, can be used for any SmartFly flight</p>
+      </div>
+      <div class="info-item">
+        <h4>📧 Confirmation</h4>
+        <p>You'll receive email confirmation with refund tracking reference number</p>
+      </div>
+    </div>
+
+    <!-- Refund Types -->
+    <div class="refund-types">
+      <div class="refund-card">
+        <div class="refund-card-icon">✅</div>
+        <h3>Refundable Tickets</h3>
+        <p><strong>Full refund available</strong></p>
+        <ul>
+          <li>Cancel anytime before departure</li>
+          <li>100% refund if cancelled 7+ days before</li>
+          <li>Small admin fee for last-minute cancellations</li>
+          <li>No questions asked policy</li>
+        </ul>
+      </div>
+
+      <div class="refund-card">
+        <div class="refund-card-icon">🎟️</div>
+        <h3>Non-Refundable Tickets</h3>
+        <p><strong>Travel credit option</strong></p>
+        <ul>
+          <li>No cash refund available</li>
+          <li>Convert to travel credit (minus fees)</li>
+          <li>Valid for 12 months</li>
+          <li>Transferable to family members</li>
+        </ul>
+      </div>
+
+      <div class="refund-card">
+        <div class="refund-card-icon">⚡</div>
+        <h3>Flexible Tickets</h3>
+        <p><strong>Best of both worlds</strong></p>
+        <ul>
+          <li>Cancel up to 48 hours before departure</li>
+          <li>80-100% refund depending on timing</li>
+          <li>Change dates for free</li>
+          <li>Priority processing</li>
+        </ul>
+      </div>
+
+      <div class="refund-card">
+        <div class="refund-card-icon">🔄</div>
+        <h3>Schedule Changes</h3>
+        <p><strong>We've got you covered</strong></p>
+        <ul>
+          <li>Full refund if we change your flight</li>
+          <li>Free rebooking to alternative flights</li>
+          <li>Compensation for major delays</li>
+          <li>No penalties or fees</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Refund Process Steps -->
+    <div class="process-section">
+      <h2>How to Request a Refund</h2>
+      
+      <div class="step">
+        <div class="step-icon">1</div>
+        <div class="step-content">
+          <h4>Find Your Booking</h4>
+          <p>Log in to your account or enter your booking reference and last name to access your reservation details.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-icon">2</div>
+        <div class="step-content">
+          <h4>Request Cancellation</h4>
+          <p>Click "Cancel Booking" and select your reason for cancellation. Review the refund amount before confirming.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-icon">3</div>
+        <div class="step-content">
+          <h4>Review & Confirm</h4>
+          <p>Check your refund eligibility, amount, and processing time. Accept the terms and submit your request.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-icon">4</div>
+        <div class="step-content">
+          <h4>Await Processing</h4>
+          <p>We'll review your request within 24 hours. You'll receive a confirmation email with your refund reference number.</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-icon">5</div>
+        <div class="step-content">
+          <h4>Receive Refund</h4>
+          <p>Your refund will be processed to the original payment method within 5-7 business days. Track status online.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cancellation Fees Table -->
+    <div class="compensation-table">
+      <h2>Cancellation Fees by Timeframe</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Cancellation Timing</th>
+            <th>Refundable Tickets</th>
+            <th>Non-Refundable Tickets</th>
+            <th>Flexible Tickets</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>30+ days before</strong></td>
+            <td>100% refund</td>
+            <td>80% travel credit</td>
+            <td>100% refund</td>
+          </tr>
+          <tr>
+            <td><strong>14-29 days before</strong></td>
+            <td>100% refund</td>
+            <td>70% travel credit</td>
+            <td>95% refund</td>
+          </tr>
+          <tr>
+            <td><strong>7-13 days before</strong></td>
+            <td>95% refund (Ksh 2,000 fee)</td>
+            <td>60% travel credit</td>
+            <td>90% refund</td>
+          </tr>
+          <tr>
+            <td><strong>3-6 days before</strong></td>
+            <td>90% refund (Ksh 4,000 fee)</td>
+            <td>50% travel credit</td>
+            <td>85% refund</td>
+          </tr>
+          <tr>
+            <td><strong>1-2 days before</strong></td>
+            <td>80% refund (Ksh 6,000 fee)</td>
+            <td>30% travel credit</td>
+            <td>80% refund</td>
+          </tr>
+          <tr>
+            <td><strong>Within 24 hours</strong></td>
+            <td>50% refund</td>
+            <td>No refund/credit</td>
+            <td>50% refund</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+      <h2>Frequently Asked Questions</h2>
+      
+      <div class="faq-item">
+        <div class="faq-question">How long does it take to receive my refund?</div>
+        <p class="faq-answer">Refunds are processed within 5-7 business days. Depending on your bank or payment provider, it may take an additional 3-5 days to appear in your account.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Can I get a refund if I missed my flight?</div>
+        <p class="faq-answer">If you missed your flight due to circumstances within your control, refunds are typically not available. However, you may be able to pay a rebooking fee to catch the next available flight.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">What happens if SmartFly cancels my flight?</div>
+        <p class="faq-answer">If we cancel or significantly delay your flight, you're entitled to a full refund or free rebooking to an alternative flight. We'll also provide compensation according to applicable regulations.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Can I transfer my travel credit to someone else?</div>
+        <p class="faq-answer">Yes! Travel credits can be transferred to immediate family members (spouse, children, parents, siblings). Contact customer service with both parties' details to process the transfer.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Do I get a refund for taxes and fees?</div>
+        <p class="faq-answer">Yes, government taxes and airport fees are fully refundable regardless of ticket type, as these charges are only payable when you actually fly.</p>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-question">Can I cancel just one passenger on a group booking?</div>
+        <p class="faq-answer">Yes, you can cancel individual passengers from a group booking. Each passenger's refund will be calculated based on their specific ticket type and cancellation timing.</p>
+      </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="cta-section">
+      <h2>Need to Cancel Your Booking?</h2>
+      <p>Access your booking to request a refund or explore rebooking options</p>
+      <div class="cta-buttons">
+        <a href="/manage-booking.html" class="cta-btn-primary">Manage Booking</a>
+        <a href="/contact.html" class="cta-btn-secondary">Contact Support</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-bottom">
+        <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
+        <div class="footer-links">
+          <a href="#privacy">Privacy</a>
+          <a href="/terms-conditions.html">Terms</a>
+          <a href="/contact.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function calculateRefund(event) {
+      event.preventDefault();
+      
+      const ticketPrice = parseFloat(document.getElementById('ticketPrice').value);
+      const ticketType = document.getElementById('ticketType').value;
+      const daysBefore = parseInt(document.getElementById('daysBefore').value);
+      
+      if (!ticketPrice || !ticketType || isNaN(daysBefore)) {
+        alert('Please fill in all fields');
+        return;
+      }
+      
+      let refundPercentage = 0;
+      let fee = 0;
+      let details = '';
+      
+      // Calculate based on ticket type and timing
+      if (ticketType === 'refundable') {
+        if (daysBefore >= 7) {
+          refundPercentage = 100;
+          details = 'Full refund - no fees';
+        } else if (daysBefore >= 3) {
+          refundPercentage = 90;
+          fee = 4000;
+          details = '90% refund - Ksh 4,000 admin fee';
+        } else if (daysBefore >= 1) {
+          refundPercentage = 80;
+          fee = 6000;
+          details = '80% refund - Ksh 6,000 admin fee';
+        } else {
+          refundPercentage = 50;
+          details = '50% refund - last minute cancellation';
+        }
+      } else if (ticketType === 'flexible') {
+        if (daysBefore >= 14) {
+          refundPercentage = 100;
+          details = 'Full refund - flexible ticket';
+        } else if (daysBefore >= 7) {
+          refundPercentage = 95;
+          details = '95% refund';
+        } else if (daysBefore >= 3) {
+          refundPercentage = 90;
+          details = '90% refund';
+        } else if (daysBefore >= 2) {
+          refundPercentage = 85;
+          details = '85% refund';
+        } else {
+          refundPercentage = 80;
+          details = '80% refund - within 48 hours';
+        }
+      } else if (ticketType === 'nonrefundable') {
+        if (daysBefore >= 30) {
+          refundPercentage = 80;
+          details = '80% travel credit (no cash refund)';
+        } else if (daysBefore >= 14) {
+          refundPercentage = 70;
+          details = '70% travel credit (no cash refund)';
+        } else if (daysBefore >= 7) {
+          refundPercentage = 60;
+          details = '60% travel credit (no cash refund)';
+        } else if (daysBefore >= 3) {
+          refundPercentage = 50;
+          details = '50% travel credit (no cash refund)';
+        } else if (daysBefore >= 1) {
+          refundPercentage = 30;
+          details = '30% travel credit (no cash refund)';
+        } else {
+          refundPercentage = 0;
+          details = 'No refund or credit available';
+        }
+      }
+      
+      const refundAmount = Math.max(0, (ticketPrice * refundPercentage / 100) - fee);
+      
+      // Display results
+      const resultBox = document.getElementById('resultBox');
+      const resultAmount = document.getElementById('resultAmount');
+      const resultDetails = document.getElementById('resultDetails');
+      
+      resultAmount.textContent = 'Ksh ' + refundAmount.toLocaleString();
+      resultDetails.textContent = details;
+      resultBox.classList.add('show');
+      
+      // Scroll to result
+      resultBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  </script>
+</body>
+</html>
