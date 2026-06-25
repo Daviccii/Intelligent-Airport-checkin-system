@@ -3997,5 +3997,22 @@
     "status": "completed",
     "created_at": "2026-01-29T09:40:24.771709Z",
     "updated_at": "2026-01-29T09:40:24.771709Z"
+  },
+  {
+    "booking_ref": "O-CPT1782413592",
+    "id": "O-CPT1782413592",
+    "name": "MARIA SANCHEZ",
+    "email": "msanchez@gmail.com",
+    "passport": "AO54321",
+    "flight": "NBO-CPT",
+    "from": "NBO",
+    "to": "CPT",
+    "class": "economy",
+    "amount": 43854.0,
+    "currency": "KES",
+    "payment_method": "mpesa",
+    "status": "completed",
+    "created_at": "2026-06-25T18:53:12.650488Z",
+    "updated_at": "2026-06-25T18:53:12.650488Z"
   }
 ]

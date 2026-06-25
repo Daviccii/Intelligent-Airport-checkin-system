@@ -768,6 +768,54 @@
     .option-text {
       flex: 1;
     }
+
+    .top-right .login-links {
+      display: inline-flex;
+      gap: 12px;
+      align-items: center;
+      margin-left: 18px;
+    }
+
+    .top-right .login-links a {
+      color: #ffffff;
+      text-decoration: none;
+      background: rgba(255,255,255,0.15);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: background 0.2s ease, transform 0.2s ease;
+    }
+
+    .top-right .login-links a:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-1px);
+    }
+
+    .hero-login-links {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .hero-login-links a {
+      color: white;
+      text-decoration: none;
+      border: 1px solid rgba(255,255,255,0.75);
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      transition: background 0.2s ease, transform 0.2s ease;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .hero-login-links a:hover {
+      background: rgba(255,255,255,0.3);
+      transform: translateY(-1px);
+    }
     </style>
 </head>
 <body>
@@ -782,7 +830,11 @@
     </div>
     <div class="top-right">
       <span>+254 700 000 000</span>
-      <a href="#">Login</a>
+      <div class="login-links">
+        <a href="/members-login.html">Member</a>
+        <a href="/staff-login.html">Staff</a>
+        <a href="/admin-login.html">Admin</a>
+      </div>
     </div>
   </div>
 
@@ -1146,8 +1198,13 @@
               </div>
 
               <div class="hero-chip">Flight booking</div>
-              <h1 class="hero-title">Book smarter, breeze through every checkpoint</h1>
-              <p class="hero-subtitle">Real-time availability, smart seat selection, and passport validation—built to keep your trip moving forward.</p>
+              <h1 class="hero-title">Book smarter, pay with M-Pesa, and breeze through every checkpoint</h1>
+              <p class="hero-subtitle">Real-time availability, M-Pesa mobile payment prompts, and express check-in for your next Kenya Airways itinerary.</p>
+              <div class="hero-login-links">
+                <a href="/members-login.html">Member Login</a>
+                <a href="/staff-login.html">Staff Login</a>
+                <a href="/admin-login.html">Admin Login</a>
+              </div>
 
         </div>
     </section>

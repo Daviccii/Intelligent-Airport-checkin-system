@@ -1,5 +1,5 @@
 {
-  "total": 4477.0,
+  "total": 48331.0,
   "by_date": {
     "2026-01-28": {
       "total": 2881.0,
@@ -7,6 +7,10 @@
     },
     "2026-01-29": {
       "total": 1596.0,
+      "count": 1
+    },
+    "2026-06-25": {
+      "total": 43854.0,
       "count": 1
     }
   },
@@ -40,6 +44,16 @@
       "currency": "USD",
       "type": "booking",
       "timestamp": "2026-01-29T09:40:24.771709Z"
+    },
+    {
+      "id": "O-CPT1782413592",
+      "passenger": "MARIA SANCHEZ",
+      "passport": "AO54321",
+      "flight": "NBO-CPT",
+      "amount": 43854.0,
+      "currency": "KES",
+      "type": "booking",
+      "timestamp": "2026-06-25T18:53:12.650488Z"
     }
   ]
 }

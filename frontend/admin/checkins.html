@@ -166,28 +166,7 @@
           }
         });
 
-        if (response.status === 401) {
-          // Fallback: fetch from passengers endpoint
-          const passResponse = await fetch('/api/passengers', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          const passData = await passResponse.json();
-          const passengers = Array.isArray(passData) ? passData : (passData.passengers || []);
-          
-          allCheckins = passengers
-            .filter(p => p.checked_in)
-            .map(p => ({
-              id: p.id,
-              passenger_name: p.name || p.passenger_name || 'Guest',
-              flight_number: p.flight || 'N/A',
-              checkin_time: p.checkin_time || p.checked_in_at || new Date().toISOString(),
-              gate: p.gate || 'TBA',
-              seat: p.seat || 'TBA',
-              status: 'checked_in'
-            }));
-        } else if (response.ok) {
+        if (response.ok) {
           const data = await response.json();
           allCheckins = (data.checkins || []).map(activity => ({
             id: activity.id,

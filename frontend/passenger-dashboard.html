@@ -390,8 +390,16 @@
   <!-- Main Content -->
   <main class="dashboard-container">
     <div class="dashboard-header">
-      <h1 class="dashboard-title">Welcome back!</h1>
-      <p class="dashboard-subtitle">Manage your bookings and access all your travel services</p>
+      <h1 class="dashboard-title">Your SmartFly Travel Dashboard</h1>
+      <p class="dashboard-subtitle">Track your Kenya Airways itinerary, mobile payment prompts, boarding pass, and check-in status in one place.</p>
+    </div>
+
+    <div class="card" style="background: linear-gradient(135deg, #e0f2fe, #eff6ff); border: 1px solid #bae6fd; color: #0c4a6e; margin-bottom: 24px;">
+      <div class="card-content">
+        <p style="font-size: 14px; line-height: 1.7;">
+          Your latest booking summary is shown below. If you used M-Pesa, a payment prompt has been sent to your phone and email. Complete payment to keep your ticket confirmed.
+        </p>
+      </div>
     </div>
 
     <!-- Current Booking Card -->
@@ -438,7 +446,14 @@
               <div class="info-label">Booking Reference</div>
               <div class="info-value" id="bookingRef">-</div>
             </div>
+            <div class="info-item">
+              <div class="info-label">Payment</div>
+              <div class="info-value" id="paymentStatus">-</div>
+            </div>
           </div>
+        </div>
+        <div id="paymentNote" style="margin-top: 16px; padding: 14px; border-radius: 12px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; font-size: 14px;">
+          Payment instructions are available in your booking email.
         </div>
 
         <div class="card-actions">
@@ -565,12 +580,23 @@
         document.getElementById('userName').textContent = bookingInfo.passengerName;
         document.getElementById('userAvatar').textContent = bookingInfo.passengerName.charAt(0).toUpperCase();
 
-        document.getElementById('flightRoute').textContent = `${bookingInfo.from} → ${bookingInfo.to}`;
+        document.getElementById('flightRoute').textContent = bookingInfo.airline
+          ? `${bookingInfo.airline} ${bookingInfo.flight} — ${bookingInfo.from} → ${bookingInfo.to}`
+          : `${bookingInfo.from} → ${bookingInfo.to}`;
         document.getElementById('flightDate').textContent = `Departure: ${bookingInfo.date} at ${bookingInfo.departure}`;
         document.getElementById('flightNumber').textContent = bookingInfo.flight;
         document.getElementById('departureTime').textContent = bookingInfo.departure;
         document.getElementById('bookingRef').textContent = bookingInfo.bookingRef;
         document.getElementById('seatNumber').textContent = bookingInfo.seatNumber || 'Not assigned';
+        const paymentStatusText = bookingInfo.paymentMethod === 'mpesa'
+          ? `M-Pesa request sent to ${bookingInfo.mpesaPhone || 'your registered number'}`
+          : bookingInfo.paymentMethod
+            ? bookingInfo.paymentMethod.toUpperCase()
+            : 'Pending';
+        document.getElementById('paymentStatus').textContent = paymentStatusText;
+        document.getElementById('paymentNote').textContent = bookingInfo.paymentMethod === 'mpesa'
+          ? 'You will receive an M-Pesa prompt on your phone and a confirmation email shortly.'
+          : 'Your payment is confirmed. Thank you for booking with SmartFly.';
       } else {
         // No booking info, redirect to booking page
         window.location.href = 'passenger-booking.html';

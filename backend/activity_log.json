@@ -612,5 +612,61 @@
       "payment_method": "mpesa",
       "timestamp": "2026-01-09T09:45:50.325480Z"
     }
+  },
+  {
+    "id": 45,
+    "type": "booking",
+    "timestamp": "2026-06-25T21:53:13.580255",
+    "data": {
+      "booking_ref": "O-CPT1782413592",
+      "passenger_name": "MARIA SANCHEZ",
+      "passport": "AO54321",
+      "flight": "NBO-CPT",
+      "amount": 43854.0,
+      "currency": "KES"
+    }
+  },
+  {
+    "id": 46,
+    "type": "payment",
+    "timestamp": "2026-06-25T21:53:13.619768",
+    "data": {
+      "booking_ref": "O-CPT1782413592",
+      "passenger_name": "MARIA SANCHEZ",
+      "passport": "AO54321",
+      "email": "msanchez@gmail.com",
+      "flight": "NBO-CPT",
+      "amount": 43854.0,
+      "currency": "KES",
+      "payment_method": "mpesa",
+      "status": "completed",
+      "payment_status": "completed"
+    }
+  },
+  {
+    "id": 47,
+    "type": "payment",
+    "timestamp": "2026-06-25T21:53:24.843759",
+    "data": {
+      "booking_ref": "O-CPT1782413592",
+      "passenger_name": "MARIA SANCHEZ",
+      "flight": "SF-NBOCPT",
+      "payment_method": "mpesa",
+      "status": "completed",
+      "timestamp": "2026-06-25T18:53:24.836Z"
+    }
+  },
+  {
+    "id": 48,
+    "type": "payment",
+    "timestamp": "2026-06-25T21:54:09.596305",
+    "data": {
+      "booking_ref": "O-CPT1782413592",
+      "passenger_name": "MARIA SANCHEZ",
+      "flight": "SF-NBOCPT",
+      "payment_method": "mpesa",
+      "status": "completed",
+      "timestamp": "2026-06-25T18:54:09.593Z"
+    }
   }
 ]

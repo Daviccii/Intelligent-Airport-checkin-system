@@ -264,42 +264,31 @@
         async function loadActivityLog() {
             try {
                 const token = localStorage.getItem('adminToken') || localStorage.getItem('session');
-                const res = await (window.apiFetch ? apiFetch('/api/events', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }) : fetch('/api/events', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                }));
-                
+                const res = await fetch('/api/activities', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+
                 let events = [];
                 if (res.ok) {
                     const data = await res.json();
-                    events = Array.isArray(data) ? data : data.events || [];
+                    events = Array.isArray(data) ? data : data.activities || [];
                 }
 
-                // If no events from backend, create sample data
                 if (events.length === 0) {
-                    events = generateSampleEvents();
+                    // Keep admin dashboard empty when no logged activity exists yet.
+                    events = [];
                 }
 
                 allEvents = events.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                 renderLog();
             } catch (err) {
                 console.error('Failed to load activity log:', err);
-                allEvents = generateSampleEvents();
+                allEvents = [];
                 renderLog();
             }
         }
 
-        function generateSampleEvents() {
-            return [
-                { type: 'payment', title: 'Payment Received', description: 'Gabriel Kebiro paid $280 via M-Pesa', timestamp: new Date().toISOString() },
-                { type: 'checkin', title: 'Passenger Checked In', description: 'Jane Smith checked in for flight BA123', timestamp: new Date(Date.now() - 5*60000).toISOString() },
-                { type: 'booking', title: 'Booking Created', description: 'New booking BK51VW3PI for London route', timestamp: new Date(Date.now() - 10*60000).toISOString() },
-                { type: 'seat_assign', title: 'Seat Assigned', description: 'Passenger assigned seat 12A on flight AA202', timestamp: new Date(Date.now() - 15*60000).toISOString() },
-                { type: 'access', title: 'Access Code Generated', description: 'Access code generated for check-in', timestamp: new Date(Date.now() - 20*60000).toISOString() },
-                { type: 'system', title: 'System Update', description: 'Database backup completed', timestamp: new Date(Date.now() - 60*60000).toISOString() }
-            ];
-        }
+        
 
         function renderLog() {
             const logContainer = document.getElementById('activityLog');

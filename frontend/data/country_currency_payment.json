@@ -1,0 +1,9 @@
+{
+  "KE": { "country":"Kenya", "currency":"KES", "currencySymbol":"KSh", "paymentMethods":["mpesa","card","bank_transfer"] },
+  "NG": { "country":"Nigeria", "currency":"NGN", "currencySymbol":"₦", "paymentMethods":["card","bank_transfer"] },
+  "US": { "country":"United States", "currency":"USD", "currencySymbol":"$", "paymentMethods":["card","paypal"] },
+  "GB": { "country":"United Kingdom", "currency":"GBP", "currencySymbol":"£", "paymentMethods":["card","paypal"] },
+  "ZA": { "country":"South Africa", "currency":"ZAR", "currencySymbol":"R", "paymentMethods":["card","eft"] },
+  "KE-Default": { "paymentMethods":["mpesa","card"] },
+  "default": { "currency":"USD", "currencySymbol":"$", "paymentMethods":["card","paypal"] }
+}

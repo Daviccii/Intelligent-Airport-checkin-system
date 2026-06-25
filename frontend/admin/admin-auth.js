@@ -9,17 +9,12 @@
 
   // Check authentication on page load
   function checkAuth() {
-    // Check for admin token in localStorage (consistent single method)
-    const adminToken = localStorage.getItem('adminToken');
-    
-    // For development/testing: Allow access without token
-    // Comment out the redirect logic temporarily
+    const adminToken = localStorage.getItem('adminToken') || localStorage.getItem('session');
     if (!adminToken) {
-      console.warn('No admin token found - proceeding without authentication (dev mode)');
-      // Uncomment the line below to enable authentication:
-      // window.location.href = '../admin-login.html';
-      return true; // Allow access for now
+      window.location.href = '../admin-login.html';
+      return false;
     }
+    return true;
     
     // Token exists - user is authenticated, allow page to load
     console.log('Admin authenticated, loading page...');

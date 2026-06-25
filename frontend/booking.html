@@ -605,6 +605,14 @@
 
         <!-- Actions -->
         <div class="actions">
+          <div style="display:flex;gap:12px;align-items:center;margin-right:auto;">
+            <label for="paymentMethod" style="font-weight:600;margin-right:6px;color:#1e293b;">Payment</label>
+            <select id="paymentMethod" name="method" style="padding:8px;border-radius:6px;border:1px solid #d1d5db;">
+              <option value="card">CARD</option>
+              <option value="mpesa">M-PESA</option>
+              <option value="bank_transfer">BANK</option>
+            </select>
+          </div>
           <button type="button" class="btn secondary" id="backBtn">Back</button>
           <button type="submit" class="btn primary" id="proceedBtn">Proceed to Payment →</button>
         </div>
@@ -1021,6 +1029,35 @@
 
     // Initialize prefix on page load if country is pre-selected
     document.addEventListener('DOMContentLoaded', updatePhonePrefix);
+    // Load locale utilities to determine currency and payment options
+    (async function(){
+      if(window.LocaleUtils === undefined){
+        const s = document.createElement('script'); s.src = '/js/locale-utils.js'; s.defer = true; document.body.appendChild(s);
+        s.onload = async () => { await window.LocaleUtils.init(); initLocaleDefaults(); };
+      } else { await window.LocaleUtils.init(); initLocaleDefaults(); }
+    })();
+
+    function initLocaleDefaults(){
+      try{
+        const select = document.getElementById('p_country');
+        const cc = (select && select.value && select.value.startsWith('+')) ? null : null; // we rely on country ISO when available later
+        // try to infer Kenya default (common for this deployment) if phone prefix is +254
+        const prefix = select.options[select.selectedIndex]?.value || '';
+        let countryCode = null;
+        if(prefix === '+254') countryCode = 'KE';
+        if(prefix === '+1') countryCode = 'US';
+        const cur = window.LocaleUtils.getCurrencyForCountryCode(countryCode || 'default');
+        const methods = window.LocaleUtils.getPaymentMethodsForCountryCode(countryCode || 'default');
+        const paymentSelect = document.getElementById('paymentMethod');
+        if(paymentSelect){
+          paymentSelect.innerHTML = methods.map(m => `<option value="${m}">${m.toUpperCase()}</option>`).join('');
+        }
+        if(cur){
+          const fareEl = document.getElementById('fareAmount');
+          if(fareEl && ctx.fare) fareEl.textContent = window.LocaleUtils.formatCurrency(ctx.fare, cur.code);
+        }
+      }catch(e){ console.warn('initLocaleDefaults failed', e); }
+    }
   </script>
 </body>
 </html>

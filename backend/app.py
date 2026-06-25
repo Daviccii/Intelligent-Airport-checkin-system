@@ -6,7 +6,6 @@ from security_utils import security_manager, sanitize_input, validate_passport, 
 import bcrypt
 from flight_manager import FlightManager
 from activity_tracker import log_activity, get_activities, get_bookings_log, get_checkins_log, get_payments_log, save_activities
-from booking_endpoints import register_booking_endpoints
 import json
 import os
 from dotenv import load_dotenv
@@ -101,6 +100,158 @@ def _save_json_file(filepath, data):
         print(f'Error saving to {filepath}: {e}')
         return False
 
+
+def _normalize_phone(phone):
+    if not phone:
+        return ''
+    normalized = ''.join(ch for ch in phone if ch.isdigit() or ch == '+')
+    if normalized.startswith('00'):
+        normalized = '+' + normalized[2:]
+    return normalized
+
+
+def _smtp_send_message(msg):
+    smtp_host = os.getenv('SMTP_HOST')
+    smtp_port = int(os.getenv('SMTP_PORT') or 0)
+    if not smtp_host or not smtp_port:
+        raise RuntimeError('SMTP is not configured')
+    use_ssl = os.getenv('SMTP_USE_SSL', 'false').lower() in ('1', 'true', 'yes')
+    starttls = os.getenv('SMTP_STARTTLS', 'false').lower() in ('1', 'true', 'yes')
+    smtp_user = os.getenv('SMTP_USER')
+    smtp_pass = os.getenv('SMTP_PASS')
+
+    if use_ssl:
+        server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+    else:
+        server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+        server.ehlo()
+        if starttls:
+            server.starttls()
+            server.ehlo()
+
+    try:
+        if smtp_user and smtp_pass:
+            server.login(smtp_user, smtp_pass)
+        server.send_message(msg)
+    finally:
+        try:
+            server.quit()
+        except Exception:
+            pass
+
+
+def _send_sms_via_gateway(phone, message):
+    gateway = os.getenv('SMS_GATEWAY_DOMAIN')
+    if not gateway:
+        raise RuntimeError('SMS gateway domain not configured')
+    to_addr = f"{phone}@{gateway}"
+    msg = EmailMessage()
+    msg['Subject'] = os.getenv('SMS_SUBJECT', 'SMS Notification')
+    msg['From'] = os.getenv('SMTP_FROM') or os.getenv('SMTP_USER') or 'no-reply@example.com'
+    msg['To'] = to_addr
+    msg.set_content(message)
+    _smtp_send_message(msg)
+    return True
+
+
+def _send_sms_via_twilio(phone, message):
+    import base64
+    import urllib.request
+    import urllib.parse
+
+    account_sid = os.getenv('TWILIO_ACCOUNT_SID')
+    auth_token = os.getenv('TWILIO_AUTH_TOKEN')
+    from_number = os.getenv('TWILIO_FROM_NUMBER')
+    if not (account_sid and auth_token and from_number):
+        raise RuntimeError('Twilio configuration missing')
+
+    data = urllib.parse.urlencode({
+        'From': from_number,
+        'To': phone,
+        'Body': message
+    }).encode('utf-8')
+    url = f'https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json'
+    req = urllib.request.Request(url, data=data, method='POST')
+    basic = base64.b64encode(f'{account_sid}:{auth_token}'.encode('utf-8')).decode('ascii')
+    req.add_header('Authorization', f'Basic {basic}')
+    req.add_header('Content-Type', 'application/x-www-form-urlencoded')
+
+    with urllib.request.urlopen(req, timeout=10) as resp:
+        if resp.status not in (200, 201):
+            raise RuntimeError(f'Twilio SMS failed with status {resp.status}')
+    return True
+
+
+def _send_sms_message(phone, message):
+    phone = _normalize_phone(phone)
+    if not phone:
+        raise RuntimeError('Invalid phone number')
+    if os.getenv('TWILIO_ACCOUNT_SID') and os.getenv('TWILIO_AUTH_TOKEN'):
+        return _send_sms_via_twilio(phone, message)
+    if os.getenv('SMS_GATEWAY_DOMAIN'):
+        return _send_sms_via_gateway(phone, message)
+    raise RuntimeError('No SMS provider configured')
+
+
+def send_booking_confirmation_sms(passenger, booking_ref, flight_details):
+    """Send booking confirmation SMS to the passenger."""
+    phone = passenger.get('phone') or passenger.get('mpesa_phone')
+    if not phone:
+        log_event({
+            'type': 'booking_sms_skipped',
+            'passport': passenger.get('passport'),
+            'booking_ref': booking_ref,
+            'reason': 'no_phone_available',
+            'timestamp': datetime.utcnow().isoformat() + 'Z'
+        })
+        return False
+
+    phone = _normalize_phone(phone)
+    if not phone:
+        log_event({
+            'type': 'booking_sms_skipped',
+            'passport': passenger.get('passport'),
+            'booking_ref': booking_ref,
+            'reason': 'invalid_phone',
+            'raw_phone': passenger.get('phone') or passenger.get('mpesa_phone'),
+            'timestamp': datetime.utcnow().isoformat() + 'Z'
+        })
+        return False
+
+    paybill = os.getenv('MPESA_PAYBILL', '123456')
+    account_ref = os.getenv('MPESA_ACCOUNT_PREFIX', 'SF') + passenger.get('passport', '')[-4:]
+    message_parts = [
+        f"SmartFly booking {booking_ref} confirmed.",
+        f"Flight {flight_details.get('flight', 'N/A')} {flight_details.get('from', '')}→{flight_details.get('to', '')}.",
+        f"{flight_details.get('date', 'N/A')} at {flight_details.get('departure', 'N/A')}.",
+    ]
+    if passenger.get('payment_method', '').lower() == 'm-pesa':
+        message_parts.append(
+            f"Pay {passenger.get('amount')} {passenger.get('currency')} via M-Pesa Paybill {paybill}, account {account_ref}."
+        )
+    message_parts.append("Check your email for full booking details.")
+    message = ' '.join(message_parts)
+
+    log_event({
+        'type': 'booking_sms_send_attempt',
+        'passport': passenger.get('passport'),
+        'booking_ref': booking_ref,
+        'to': phone,
+        'timestamp': datetime.utcnow().isoformat() + 'Z'
+    })
+
+    _send_sms_message(phone, message)
+
+    log_event({
+        'type': 'booking_sms_sent',
+        'passport': passenger.get('passport'),
+        'booking_ref': booking_ref,
+        'to': phone,
+        'timestamp': datetime.utcnow().isoformat() + 'Z'
+    })
+    return True
+
+
 def _get_session_from_request(request):
     """Extract session token from request headers or cookies."""
     token = request.headers.get('X-SESSION') or request.headers.get('Authorization', '')
@@ -165,22 +316,17 @@ def _create_session(username, role='staff', ttl_seconds=86400):
     return token, session_entry
 
 # Register booking endpoints after helper functions are defined
-register_booking_endpoints(app, _require_session)
-
 # ---------------------------------------------------------------------------
 # Helper: minimal admin session check for protected admin HTML pages.
 # Accepts either the session cookie set by the frontend login flow or a Bearer
 # token header, and only controls access to static admin HTML. API routes still
 # rely on their own auth decorators.
 def _has_admin_session():
-    token = request.cookies.get('session') or request.headers.get('Authorization')
-    if not token:
-        cookie_header = request.headers.get('Cookie', '')
-        for part in cookie_header.split(';'):
-            if part.strip().startswith('session='):
-                token = part.split('=', 1)[1]
-                break
-    return bool(token)
+    try:
+        return bool(_require_session(request, require_role='admin'))
+    except Exception:
+        return False
+
 
 def _generate_staff_id():
     """
@@ -521,37 +667,34 @@ def api_get_activities_checkins():
 @app.route('/api/activities/payments', methods=['GET'])
 def api_get_activities_payments():
     try:
-        # Get payment activities
+        # Get payment activities only. Booking activities already log payment metadata separately.
         payment_items = get_payments_log() or []
 
-        # Also get booking activities that contain payment information
-        booking_items = get_bookings_log() or []
+        # If payments are not present, fall back to booking records that include payment amounts.
+        if not payment_items:
+            booking_items = get_bookings_log() or []
+            fallback_payments = []
+            for item in booking_items:
+                if item.get('data', {}).get('amount'):
+                    fallback_payments.append({
+                        'id': f"booking-{item['id']}",
+                        'type': 'payment',
+                        'timestamp': item['timestamp'],
+                        'data': {
+                            'passenger_name': item['data'].get('passenger_name'),
+                            'flight': item['data'].get('flight_number', 'N/A'),
+                            'amount': item['data'].get('amount'),
+                            'payment_method': item['data'].get('payment_method', 'Card'),
+                            'status': item['data'].get('status', 'completed'),
+                            'booking_ref': f"BK-{item['id']:04d}",
+                            'timestamp': item['timestamp']
+                        }
+                    })
+            fallback_payments.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+            return jsonify({'payments': fallback_payments}), 200
 
-        # Convert booking activities to payment format
-        booking_payments = []
-        for item in booking_items:
-            if item.get('data', {}).get('amount'):  # Only include bookings with payment amounts
-                payment_item = {
-                    'id': f"booking-{item['id']}",
-                    'type': 'payment',
-                    'timestamp': item['timestamp'],
-                    'data': {
-                        'passenger_name': item['data'].get('passenger_name'),
-                        'flight': item['data'].get('flight_number', 'N/A'),
-                        'amount': item['data'].get('amount'),
-                        'payment_method': item['data'].get('payment_method', 'Card'),
-                        'status': 'completed',  # Assume completed since booking was successful
-                        'booking_ref': f"BK-{item['id']:04d}",
-                        'timestamp': item['timestamp']
-                    }
-                }
-                booking_payments.append(payment_item)
-
-        # Combine and sort by timestamp (most recent first)
-        all_payments = payment_items + booking_payments
-        all_payments.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
-
-        return jsonify({'payments': all_payments}), 200
+        payment_items.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        return jsonify({'payments': payment_items}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -772,102 +915,8 @@ def serve_admin_dashboard():
 # Session & Access Code helpers (file-backed)
 # ----------------------
 
-def _load_json_file(path, default):
-    try:
-        if not os.path.exists(path):
-            return default
-        with open(path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            return data if isinstance(data, type(default)) else default
-    except Exception:
-        return default
+# Session helpers are defined above and used across API routes.
 
-def _save_json_file(path, data):
-    try:
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2)
-    except Exception:
-        pass
-
-def _load_sessions():
-    return _load_json_file(SESSIONS_FILE, [])
-
-def _save_sessions(items):
-    _save_json_file(SESSIONS_FILE, items or [])
-
-def _create_session(role, passport=None, ttl_seconds=3600.0, user_id=None):
-    token = secrets.token_urlsafe(24)
-    exp = (datetime.utcnow() + timedelta(seconds=float(ttl_seconds))).isoformat() + 'Z'
-    sess = {
-        'token': token,
-        'role': role,
-        'passport': passport,
-        'user_id': user_id,
-        'expires': exp
-    }
-    items = _load_sessions()
-    # prune expired
-    now = datetime.utcnow()
-    kept = []
-    for s in items:
-        try:
-            if s.get('expires') and datetime.fromisoformat(s['expires'].replace('Z','')) > now:
-                kept.append(s)
-        except Exception:
-            continue
-    kept.append(sess)
-    _save_sessions(kept)
-    return token, exp
-
-def _get_session(token):
-    if not token:
-        return None
-    items = _load_sessions()
-    now = datetime.utcnow()
-    for s in items:
-        try:
-            if s.get('token') == token and s.get('expires') and datetime.fromisoformat(s['expires'].replace('Z','')) > now:
-                return s
-        except Exception:
-            continue
-    return None
-
-def _require_session(req, require_role=None):
-    """Check for valid session. Supports:
-    1. session cookie
-    2. X-SESSION header
-    3. Authorization: Bearer <token> (JWT)
-    """
-    token = req.headers.get('X-SESSION') or req.cookies.get('session')
-    
-    # If no session token, try Authorization header (JWT)
-    if not token:
-        auth_header = req.headers.get('Authorization', '')
-        if auth_header.startswith('Bearer '):
-            token = auth_header[7:]  # Strip 'Bearer '
-    
-    sess = _get_session(token)
-    if not sess:
-        # Try JWT token as fallback
-        if token:
-            try:
-                data = security_manager.verify_token(token)
-                if data[0]:  # If verification succeeded
-                    # Create a pseudo-session from JWT
-                    sess = {
-                        'token': token,
-                        'role': data[1].get('role', 'passenger'),
-                        'passport': data[1].get('user_id') if data[1].get('role') == 'passenger' else None,
-                        'expires': data[1].get('exp')
-                    }
-            except Exception:
-                pass
-    
-    if not sess:
-        return None
-    if require_role and sess.get('role') != require_role:
-        return None
-    return sess
 
 def _load_codes():
     return _load_json_file(ACCESS_CODES_FILE, [])
@@ -1297,77 +1346,6 @@ def _save_flights(flights_list):
         pass
 
 
-# --- simple session store (file-backed) ------------------------------------------------
-SESSIONS_FILE = os.path.abspath(os.path.join(os.path.dirname(__file__), "sessions.json"))
-
-if not os.path.exists(SESSIONS_FILE):
-    try:
-        with open(SESSIONS_FILE, 'w') as f:
-            json.dump({}, f)
-    except Exception:
-        pass
-
-def _load_sessions():
-    try:
-        with open(SESSIONS_FILE, 'r') as f:
-            return json.load(f) or {}
-    except Exception:
-        return {}
-
-def _save_sessions(sessions: dict):
-    try:
-        with open(SESSIONS_FILE, 'w') as f:
-            json.dump(sessions, f, indent=2)
-    except Exception:
-        pass
-
-def _create_session(role: str, passport: str = None, ttl_minutes: int = 60, ttl_seconds: float = None):
-    """Create a session token.
-    By default uses ttl_minutes. If ttl_seconds is provided it takes precedence and allows short lifetimes (e.g., admin testing).
-    """
-    token = __import__('uuid').uuid4().hex
-    if ttl_seconds is not None:
-        expires = (datetime.utcnow() + timedelta(seconds=float(ttl_seconds))).isoformat() + 'Z'
-    else:
-        expires = (datetime.utcnow() + timedelta(minutes=ttl_minutes)).isoformat() + 'Z'
-    sessions = _load_sessions()
-    sessions[token] = {'role': role, 'passport': passport, 'expires': expires}
-    _save_sessions(sessions)
-    return token, expires
-
-def _get_session(token: str):
-    if not token:
-        return None
-    sessions = _load_sessions()
-    entry = sessions.get(token)
-    if not entry:
-        return None
-    try:
-        exp = datetime.fromisoformat(entry.get('expires').replace('Z',''))
-    except Exception:
-        return None
-    if datetime.utcnow() > exp:
-        try:
-            del sessions[token]
-            _save_sessions(sessions)
-        except Exception:
-            pass
-        return None
-    return entry
-
-def _delete_session(token: str):
-    sessions = _load_sessions()
-    if token in sessions:
-        try:
-            del sessions[token]
-            _save_sessions(sessions)
-        except Exception:
-            pass
-
-
-    # The following code block is unreachable and references an undefined variable 'identifier'.
-    # It can be safely removed as staff lookup is handled elsewhere.
-
 def log_event(event: dict):
     """Append an event dict to events.json (simple audit log)."""
     try:
@@ -1593,6 +1571,7 @@ def api_register():
     name = sanitize_input(data.get("name") or '')
     passport = sanitize_input(data.get("passport") or '')
     email = sanitize_input(data.get("email") or '')
+    phone = sanitize_input(data.get("phone") or '')
     flight = sanitize_input(data.get("flight") or '')
 
     if not (name and passport and flight):
@@ -1622,28 +1601,48 @@ def api_register():
             return jsonify({"error": "flight_full", "detail": "flight has reached capacity"}), 400
 
     seat = sum(1 for p in passengers if p.get("flight") == flight) + 1
-    passenger = {"name": name, "passport": passport, "flight": flight, "seat": seat}
+    payment_method = (data.get("payment_method") or "card").strip().lower()
+    mpesa_phone = sanitize_input(data.get("mpesa_phone") or '')
+    payment_method_display = payment_method.title()
+    if payment_method == 'mpesa':
+        mpesa_phone = _normalize_phone(mpesa_phone)
+        digits = ''.join(ch for ch in mpesa_phone if ch.isdigit())
+        if not mpesa_phone or len(digits) < 10:
+            return jsonify({"error": "mpesa_phone_required", "detail": "Valid M-Pesa phone number is required."}), 400
+        payment_method_display = 'M-Pesa'
+
+    passenger = {
+        "name": name,
+        "passport": passport,
+        "flight": flight,
+        "seat": seat,
+        "payment_method": payment_method_display,
+        "currency": sanitize_input(data.get("currency") or "USD"),
+        "amount": float(data.get("amount") or 0)
+    }
     if email:
         passenger['email'] = email
+    if phone:
+        passenger['phone'] = phone
+    if mpesa_phone:
+        passenger['mpesa_phone'] = mpesa_phone
     passengers.append(passenger)
     save_passengers()
-    # attempt to send boarding pass by email if configured
-    email_sent = False
-    try:
-        if passenger.get('email'):
-            # enqueue email send in background to avoid blocking
-            def enqueue_boarding_email(passenger):
-                # Placeholder: implement actual email sending logic here
-                # For now, just print/log for demonstration
-                print(f"Enqueue boarding email for {passenger.get('email')}")
-            enqueue_boarding_email(passenger)
-            email_sent = True
-    except Exception:
-        email_sent = False
 
+    booking_ref = f"SF{seat:04d}"
     out = passenger.copy()
-    out['email_sent'] = email_sent
-    out['booking_ref'] = f"SF{seat:04d}"  # Generate booking reference
+    out['booking_ref'] = booking_ref
+    out['email_sent'] = False
+    out['sms_sent'] = False
+
+    if payment_method_display == 'M-Pesa':
+        paybill = os.getenv('MPESA_PAYBILL', '123456')
+        account_ref = os.getenv('MPESA_ACCOUNT_PREFIX', 'SF') + passport[-4:]
+        out['mpesa_phone'] = mpesa_phone
+        out['payment_instructions'] = (
+            f"Pay {out['amount']} {out['currency']} via M-Pesa to Paybill {paybill}, "
+            f"Account {account_ref}. Use phone {mpesa_phone} to complete the payment."
+        )
 
     # Log booking and payment activities
     try:
@@ -1653,7 +1652,8 @@ def api_register():
             'from': data.get('from'),
             'to': data.get('to'),
             'amount': data.get('amount', 0),
-            'payment_method': data.get('payment_method', 'Card'),
+            'payment_method': payment_method_display,
+            'mpesa_phone': mpesa_phone if payment_method_display == 'M-Pesa' else None,
             'timestamp': datetime.utcnow().isoformat() + 'Z'
         })
 
@@ -1661,32 +1661,49 @@ def api_register():
             'passenger_name': name,
             'flight': flight,
             'amount': data.get('amount', 0),
-            'payment_method': data.get('payment_method', 'Card'),
+            'payment_method': payment_method_display,
             'status': 'completed',
-            'booking_ref': out['booking_ref'],
+            'booking_ref': booking_ref,
+            'mpesa_phone': mpesa_phone if payment_method_display == 'M-Pesa' else None,
             'timestamp': datetime.utcnow().isoformat() + 'Z'
         })
     except Exception as e:
         print(f"Warning: Failed to log activities: {e}")
-    
+
     # Send booking confirmation email
     try:
-        flight_details = {
-            'flight': flight,
-            'from': data.get('from'),
-            'to': data.get('to'),
-            'date': data.get('date'),
-            'departure': data.get('departure')
-        }
-        # Define a stub for enqueue_booking_confirmation_email if not already defined
-        def enqueue_booking_confirmation_email(passenger, booking_ref, flight_details):
-            # Placeholder: implement actual email sending logic here
-            print(f"Enqueue booking confirmation email to {passenger.get('email')} for booking {booking_ref}")
-        enqueue_booking_confirmation_email(passenger, out['booking_ref'], flight_details)
-        out['confirmation_email_sent'] = True
-    except Exception:
-        out['confirmation_email_sent'] = False
-    
+        if passenger.get('email'):
+            enqueue_booking_confirmation_email(passenger, booking_ref, {
+                'flight': flight,
+                'from': data.get('from'),
+                'to': data.get('to'),
+                'date': data.get('date'),
+                'departure': data.get('departure')
+            })
+            out['email_sent'] = True
+    except Exception as e:
+        print(f"Booking email enqueue failed: {e}")
+        out['email_sent'] = False
+
+    # Send SMS notification for M-Pesa if configured
+    if payment_method_display == 'M-Pesa' and mpesa_phone:
+        try:
+            passenger['mpesa_phone'] = mpesa_phone
+            passenger['payment_method'] = payment_method_display
+            passenger['amount'] = out['amount']
+            passenger['currency'] = out['currency']
+            send_booking_confirmation_sms(passenger, booking_ref, {
+                'flight': flight,
+                'from': data.get('from'),
+                'to': data.get('to'),
+                'date': data.get('date'),
+                'departure': data.get('departure')
+            })
+            out['sms_sent'] = True
+        except Exception as e:
+            print(f"Booking SMS send failed: {e}")
+            out['sms_sent'] = False
+
     return jsonify(out), 201
 
 
@@ -3837,45 +3854,57 @@ def api_admin_send_notification():
     results = []
     
     for recipient in recipients:
-        passenger = next((p for p in passengers if p['passport'] == recipient), None)
-        if passenger:
-            try:
-                if notification_type == 'email' and passenger.get('email'):
-                    # Send email notification
-                    msg = EmailMessage()
-                    msg['Subject'] = data.get('subject', 'Important Flight Information')
-                    msg['From'] = os.getenv('SMTP_FROM') or os.getenv('SMTP_USER')
-                    msg['To'] = passenger['email']
-                    msg.set_content(message)
-                    
-                    smtp_host = os.getenv('SMTP_HOST')
-                    smtp_port = int(os.getenv('SMTP_PORT') or 0)
-                    if smtp_host and smtp_port:
-                        with smtplib.SMTP(smtp_host, smtp_port) as smtp:
-                            smtp.send_message(msg)
-                            success_count += 1
-                            results.append({
-                                'recipient': recipient,
-                                'status': 'sent',
-                                'method': 'email'
-                            })
-                    
-                elif notification_type == 'sms' and passenger.get('phone'):
-                    # SMS notification logic would go here
-                    # For now, we'll just log it
-                    success_count += 1
-                    results.append({
-                        'recipient': recipient,
-                        'status': 'sent',
-                        'method': 'sms'
-                    })
-            except Exception as e:
+        passenger = next(
+            (p for p in passengers if str(p.get('passport')) == str(recipient)
+             or str(p.get('email')).lower() == str(recipient).lower()
+             or str(p.get('phone')) == str(recipient)),
+            None
+        )
+        if not passenger:
+            failed_count += 1
+            results.append({
+                'recipient': recipient,
+                'status': 'failed',
+                'error': 'recipient_not_found'
+            })
+            continue
+
+        try:
+            if notification_type == 'email' and passenger.get('email'):
+                msg = EmailMessage()
+                msg['Subject'] = data.get('subject', 'Important Flight Information')
+                msg['From'] = os.getenv('SMTP_FROM') or os.getenv('SMTP_USER') or 'no-reply@example.com'
+                msg['To'] = passenger['email']
+                msg.set_content(message)
+                _smtp_send_message(msg)
+                success_count += 1
+                results.append({
+                    'recipient': recipient,
+                    'status': 'sent',
+                    'method': 'email'
+                })
+            elif notification_type == 'sms' and passenger.get('phone'):
+                _send_sms_message(passenger['phone'], message)
+                success_count += 1
+                results.append({
+                    'recipient': recipient,
+                    'status': 'sent',
+                    'method': 'sms'
+                })
+            else:
                 failed_count += 1
                 results.append({
                     'recipient': recipient,
                     'status': 'failed',
-                    'error': str(e)
+                    'error': 'recipient_missing_contact'
                 })
+        except Exception as e:
+            failed_count += 1
+            results.append({
+                'recipient': recipient,
+                'status': 'failed',
+                'error': str(e)
+            })
     
     return jsonify({
         'status': 'completed',
@@ -4202,7 +4231,12 @@ def api_login():
                 admin_ttl = 3600.0
             token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
             log_event({'type': 'login', 'role': 'admin', 'username': username or 'master', 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-            return jsonify({'token': token, 'role': 'admin', 'expires': expires}), 200
+            resp = jsonify({'token': token, 'role': 'admin', 'expires': expires, 'username': username or 'master'})
+            try:
+                resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax', path='/')
+            except Exception:
+                pass
+            return resp, 200
 
         # Check admin users file (hashed password)
         users = _load_admin_users()
@@ -4540,60 +4574,65 @@ def create_boarding_pass_image(p):
     return bg
 
 
-    def send_booking_confirmation_email(passenger, booking_ref, flight_details):
-      """Send booking confirmation email to passenger"""
-    # SMTP configuration via env vars
-    smtp_host = os.getenv('SMTP_HOST')
-    smtp_port = int(os.getenv('SMTP_PORT') or 0)
-    smtp_user = os.getenv('SMTP_USER')
-    smtp_pass = os.getenv('SMTP_PASS')
-    smtp_from = os.getenv('SMTP_FROM') or smtp_user
-    use_ssl = os.getenv('SMTP_USE_SSL', 'false').lower() in ('1','true','yes')
-
-    if not (smtp_host and smtp_port and smtp_from):
-        # SMTP not configured - just log
+def send_booking_confirmation_email(passenger, booking_ref, flight_details):
+    """Send booking confirmation email to passenger."""
+    smtp_from = os.getenv('SMTP_FROM') or os.getenv('SMTP_USER') or 'no-reply@example.com'
+    if not (os.getenv('SMTP_HOST') and int(os.getenv('SMTP_PORT') or 0) and smtp_from and passenger.get('email')):
         log_event({
-            'type': 'email_not_configured',
+            'type': 'booking_email_not_configured',
             'passport': passenger.get('passport'),
             'booking_ref': booking_ref,
             'timestamp': datetime.utcnow().isoformat() + 'Z'
         })
         return False
 
-    # Compose email
     msg = EmailMessage()
     msg['Subject'] = f"Booking Confirmed - {booking_ref}"
     msg['From'] = smtp_from
     msg['To'] = passenger.get('email')
-    
-    body = f"""Hello {passenger.get('name')},
 
-Your booking has been confirmed!
+    lines = [
+        f"Hello {passenger.get('name')},",
+        "",
+        "Your booking has been confirmed!",
+        "",
+        f"Booking Reference: {booking_ref}",
+        f"Flight: {flight_details.get('flight', 'N/A')}",
+        f"Route: {flight_details.get('from', 'N/A')} → {flight_details.get('to', 'N/A')}",
+        f"Date: {flight_details.get('date', 'N/A')}",
+        f"Departure: {flight_details.get('departure', 'N/A')}",
+        f"Seat: {passenger.get('seat', 'To be assigned')}",
+        "",
+    ]
+    if passenger.get('payment_method'):
+        lines.append(f"Payment Method: {passenger.get('payment_method')}")
+    if passenger.get('payment_method') == 'M-Pesa' and passenger.get('mpesa_phone'):
+        paybill = os.getenv('MPESA_PAYBILL', '123456')
+        account_ref = os.getenv('MPESA_ACCOUNT_PREFIX', 'SF') + passenger.get('passport', '')[-4:]
+        lines.extend([
+            "",
+            "M-Pesa payment instructions:",
+            f"  Paybill: {paybill}",
+            f"  Account: {account_ref}",
+            f"  Phone: {passenger.get('mpesa_phone')}",
+        ])
 
-Booking Reference: {booking_ref}
-Flight: {flight_details.get('flight', 'N/A')}
-Route: {flight_details.get('from', 'N/A')} → {flight_details.get('to', 'N/A')}
-Date: {flight_details.get('date', 'N/A')}
-Departure: {flight_details.get('departure', 'N/A')}
-Seat: {passenger.get('seat', 'To be assigned')}
-Passenger: {passenger.get('name')}
-Passport: {passenger.get('passport')}
+    lines.extend([
+        "",
+        "Important Information:",
+        "- Check-in opens 24 hours before departure",
+        "- Arrive at the airport 2 hours before departure",
+        "- Bring valid ID and this booking reference",
+        "",
+        "You can manage your booking and access your boarding pass at: http://127.0.0.1:5000/passenger-dashboard.html",
+        "",
+        "Safe travels with SmartFly!",
+        "",
+        "Best regards,",
+        "SmartFly Airlines Team"
+    ])
 
-Important Information:
-- Check-in opens 24 hours before departure
-- Arrive at the airport 2 hours before departure
-- Bring valid ID and this booking reference
-
-You can manage your booking and access your boarding pass at: http://127.0.0.1:5000/passenger-dashboard.html
-
-Safe travels with SmartFly!
-
-Best regards,
-SmartFly Airlines Team
-"""
-    msg.set_content(body)
-
-    # Log attempt
+    msg.set_content("\n".join(lines))
     log_event({
         'type': 'booking_email_send_attempt',
         'passport': passenger.get('passport'),
@@ -4602,37 +4641,15 @@ SmartFly Airlines Team
         'timestamp': datetime.utcnow().isoformat() + 'Z'
     })
 
-    try:
-        # Send email
-        if use_ssl:
-            server = smtplib.SMTP_SSL(smtp_host, smtp_port)
-        else:
-            server = smtplib.SMTP(smtp_host, smtp_port)
-            server.starttls()
-        
-        if smtp_user and smtp_pass:
-            server.login(smtp_user, smtp_pass)
-        
-        server.send_message(msg)
-        server.quit()
-        
-        log_event({
-            'type': 'booking_email_sent',
-            'passport': passenger.get('passport'),
-            'booking_ref': booking_ref,
-            'to': passenger.get('email'),
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
-        })
-        return True
-    except Exception as e:
-        log_event({
-            'type': 'booking_email_send_failed',
-            'passport': passenger.get('passport'),
-            'booking_ref': booking_ref,
-            'error': str(e),
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
-        })
-        raise
+    _smtp_send_message(msg)
+    log_event({
+        'type': 'booking_email_sent',
+        'passport': passenger.get('passport'),
+        'booking_ref': booking_ref,
+        'to': passenger.get('email'),
+        'timestamp': datetime.utcnow().isoformat() + 'Z'
+    })
+    return True
 
 
 def send_boarding_pass_email(passenger):
@@ -4732,97 +4749,20 @@ SmartFly Airlines Team
 def enqueue_booking_confirmation_email(passenger, booking_ref, flight_details):
     """Enqueue sending booking confirmation email."""
     try:
-        RQ_QUEUE = getattr(__import__('rq', fromlist=['Queue']), 'Queue', None)
-        if RQ_QUEUE:
-            # Try to enqueue the function by import path
+        if RQ_QUEUE is not None:
             try:
                 RQ_QUEUE.enqueue(send_booking_confirmation_email, passenger, booking_ref, flight_details)
             except Exception:
-                # Fallback: enqueue by string path
                 RQ_QUEUE.enqueue('app.send_booking_confirmation_email', args=(passenger, booking_ref, flight_details))
             log_event({'type': 'booking_email_rq_enqueued', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-        else:
-            # No RQ, send synchronously (not recommended for production)
-          send_booking_confirmation_email(passenger, booking_ref, flight_details)
+            return
     except Exception as e:
-        log_event({'type': 'booking_email_enqueue_failed', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-    # SMTP configuration via env vars
-    smtp_host = os.getenv('SMTP_HOST')
-    smtp_port = int(os.getenv('SMTP_PORT') or 0)
-    smtp_user = os.getenv('SMTP_USER')
-    smtp_pass = os.getenv('SMTP_PASS')
-    smtp_from = os.getenv('SMTP_FROM') or smtp_user
-    use_ssl = os.getenv('SMTP_USE_SSL', 'false').lower() in ('1','true','yes')
-
-    if not (smtp_host and smtp_port and smtp_from):
-        # SMTP not configured
-        raise RuntimeError('SMTP not configured')
-
-    # Create boarding pass image
-    img = create_boarding_pass_image(passenger)
-    buf = io.BytesIO()
-    img.save(buf, format='PNG')
-    buf.seek(0)
-
-    # Compose email
-    msg = EmailMessage()
-    msg['Subject'] = f"Your boarding pass for {passenger.get('flight')}"
-    msg['From'] = smtp_from
-    msg['To'] = passenger.get('email')
-    body = f"Hello {passenger.get('name')},\n\nAttached is your boarding pass for flight {passenger.get('flight')}, seat {passenger.get('seat')}.\n\nSafe travels."
-    msg.set_content(body)
-
-    # Attach PNG
-    img_bytes = buf.getvalue()
-    msg.add_attachment(img_bytes, maintype='image', subtype='png', filename=f"boardingpass_{passenger.get('passport')}.png")
-
-    # Log attempt
-    log_event({
-        'type': 'email_send_attempt',
-        'passport': passenger.get('passport'),
-        'to': passenger.get('email'),
-        'smtp_host': smtp_host,
-        'timestamp': __import__('datetime').datetime.utcnow().isoformat() + 'Z'
-    })
-
-    # Send
-    if use_ssl:
-        smtp = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
-    else:
-        smtp = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
-        smtp.ehlo()
-        if os.getenv('SMTP_STARTTLS', 'false').lower() in ('1','true','yes'):
-            smtp.starttls()
-            smtp.ehlo()
+        log_event({'type': 'booking_email_rq_enqueue_failed', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
 
     try:
-        if smtp_user and smtp_pass:
-            smtp.login(smtp_user, smtp_pass)
-        smtp.send_message(msg)
-        # success log
-        log_event({
-            'type': 'email_sent',
-            'passport': passenger.get('passport'),
-            'to': passenger.get('email'),
-            'timestamp': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
-            'status': 'ok'
-        })
+        send_booking_confirmation_email(passenger, booking_ref, flight_details)
     except Exception as e:
-        # failure log
-        log_event({
-            'type': 'email_sent',
-            'passport': passenger.get('passport'),
-            'to': passenger.get('email'),
-            'timestamp': __import__('datetime').datetime.utcnow().isoformat() + 'Z',
-            'status': 'error',
-            'detail': str(e)
-        })
-        raise
-    finally:
-        try:
-            smtp.quit()
-        except Exception:
-            pass
+        log_event({'type': 'booking_email_send_failed', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
 
 
 def _email_worker(passenger):

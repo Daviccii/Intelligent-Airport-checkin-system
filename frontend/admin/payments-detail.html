@@ -218,28 +218,13 @@
             }));
           }
         } catch (e) {
-          console.log('Using fallback payment data');
+          console.warn('Error fetching /api/activities/payments:', e.message);
+          transactions = [];
         }
 
-        // Fallback: fetch bookings and convert to transactions
         if (transactions.length === 0) {
-          const response = await fetch('/api/bookings', {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          });
-          const data = await response.json();
-          const bookings = Array.isArray(data) ? data : (data.bookings || []);
-          
-          transactions = bookings.map(b => ({
-            id: b.id || b.booking_id,
-            passenger: b.passenger_name || b.name || 'Guest',
-            bookingId: b.flight_number || 'N/A',
-            amount: parseFloat(b.total_amount || 0),
-            status: b.payment_status || b.status || 'pending',
-            method: b.payment_method || 'Credit Card',
-            date: new Date(b.booking_date || b.created_at)
-          }));
+          console.warn('No payment activity records returned from /api/activities/payments');
+          transactions = [];
         }
 
         allTransactions = transactions;

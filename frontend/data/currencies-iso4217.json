@@ -1,0 +1,12 @@
+[
+  {"code":"USD","numeric":"840","name":"US Dollar","minor_unit":2,"symbol":"$"},
+  {"code":"EUR","numeric":"978","name":"Euro","minor_unit":2,"symbol":"€"},
+  {"code":"KES","numeric":"404","name":"Kenyan Shilling","minor_unit":2,"symbol":"KSh"},
+  {"code":"GBP","numeric":"826","name":"Pound Sterling","minor_unit":2,"symbol":"£"},
+  {"code":"ZAR","numeric":"710","name":"South African Rand","minor_unit":2,"symbol":"R"},
+  {"code":"NGN","numeric":"566","name":"Nigerian Naira","minor_unit":2,"symbol":"₦"},
+  {"code":"CNY","numeric":"156","name":"Yuan Renminbi","minor_unit":2,"symbol":"¥"},
+  {"code":"INR","numeric":"356","name":"Indian Rupee","minor_unit":2,"symbol":"₹"},
+  {"code":"KES","numeric":"404","name":"Kenyan Shilling","minor_unit":2,"symbol":"KSh"},
+  {"code":"MGA","numeric":"969","name":"Malagasy Ariary","minor_unit":2,"symbol":"Ar"}
+]

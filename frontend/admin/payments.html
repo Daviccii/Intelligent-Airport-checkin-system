@@ -357,29 +357,7 @@
       }
     }
 
-    function seedSampleTransactions(){
-      const now = Date.now();
-      return [
-        { id:'BK-SAMPLE-01', passenger:'Jane Doe', bookingId:'BA2026', amount:742.50, status:'completed', method:'Card', date:new Date(now - 86400000*2) },
-        { id:'BK-SAMPLE-02', passenger:'John Mwangi', bookingId:'KQ101', amount:520.00, status:'completed', method:'M-Pesa', date:new Date(now - 86400000*3) },
-        { id:'BK-SAMPLE-03', passenger:'Aisha Khan', bookingId:'EK215', amount:890.75, status:'pending', method:'PayPal', date:new Date(now - 86400000*1) },
-        { id:'BK-SAMPLE-04', passenger:'Lucas Silva', bookingId:'LA721', amount:430.10, status:'completed', method:'Card', date:new Date(now - 86400000*5) },
-        { id:'BK-SAMPLE-05', passenger:'Emily Chen', bookingId:'LH780', amount:660.00, status:'failed', method:'Card', date:new Date(now - 86400000*7) }
-      ];
-    }
-
     async function loadPaymentData() {
-      console.log('🔄 Loading payment data...');
-
-      // Always have something to show before network calls
-      if (!allTransactions || allTransactions.length === 0) {
-        console.log('🌱 Seeding sample data pre-fetch');
-        allTransactions = seedSampleTransactions();
-        updateStats();
-        initCharts();
-        renderTransactions();
-      }
-
       try {
         let transactions = [];
         const token = getStorageItem('adminToken') || getStorageItem('session') || getStorageItem('auth_token') || '';
@@ -414,10 +392,9 @@
           console.log('🔄 Mapped transactions:', transactions.length, 'from API');
         }
 
-        // Fallback to seeded data to avoid empty tables
         if (!transactions || transactions.length === 0) {
-          console.warn('No payment data returned; seeding sample transactions for visibility');
-          transactions = seedSampleTransactions();
+          console.warn('No payment records returned from /api/activities/payments');
+          transactions = [];
         }
 
         console.log('Mapped transactions:', transactions.length, transactions.slice(0, 2));
@@ -427,10 +404,10 @@
         initCharts();
         renderTransactions();
         console.log('✨ Payment data loaded successfully!');
-      } catch (error) {
+        } catch (error) {
         console.error('❌ Error loading payments:', error);
-        console.warn('🔄 Falling back to sample data due to error');
-        allTransactions = allTransactions && allTransactions.length ? allTransactions : seedSampleTransactions();
+        console.warn('🔄 Unable to load payment activity data');
+        allTransactions = [];
         updateStats();
         initCharts();
         renderTransactions();
@@ -438,14 +415,12 @@
           `<div class="empty-state">
             <i class="fas fa-exclamation-circle"></i>
             <p>Error loading live transactions: ${error.message}</p>
-            <p style="font-size: 0.9rem; margin-top: 10px;">Showing sample data instead</p>
           </div>`;
       }
 
-      // Safety fallback: if still empty, seed sample data so charts and tables are never blank
+      // Safety fallback: render empty activity state if no transactions
       if (!allTransactions || allTransactions.length === 0) {
-        console.warn('⚠️ No transactions after load; seeding sample data for visibility');
-        allTransactions = seedSampleTransactions();
+        console.warn('⚠️ No transactions available after load; rendering empty payment activity state');
         updateStats();
         initCharts();
         renderTransactions();
@@ -801,25 +776,16 @@
 
     // Safe event listener initialization
     document.addEventListener('DOMContentLoaded', () => {
-      // Immediately seed sample data so the page is never empty while loading
-      allTransactions = seedSampleTransactions();
-      updateStats();
-      initCharts();
-      renderTransactions();
+      const searchEl = document.getElementById('searchTransaction');
+      const statusEl = document.getElementById('statusFilter');
+      const methodEl = document.getElementById('methodFilter');
+      const sortEl = document.getElementById('sortFilter');
+      
+      if (searchEl) searchEl.addEventListener('input', renderTransactions);
+      if (statusEl) statusEl.addEventListener('change', renderTransactions);
+      if (methodEl) methodEl.addEventListener('change', renderTransactions);
+      if (sortEl) sortEl.addEventListener('change', renderTransactions);
 
-      setTimeout(() => {
-        const searchEl = document.getElementById('searchTransaction');
-        const statusEl = document.getElementById('statusFilter');
-        const methodEl = document.getElementById('methodFilter');
-        const sortEl = document.getElementById('sortFilter');
-        
-        if (searchEl) searchEl.addEventListener('input', renderTransactions);
-        if (statusEl) statusEl.addEventListener('change', renderTransactions);
-        if (methodEl) methodEl.addEventListener('change', renderTransactions);
-        if (sortEl) sortEl.addEventListener('change', renderTransactions);
-      }, 50);
-
-      // Then attempt live load (will overwrite sample if API works)
       loadPaymentData();
     });
 

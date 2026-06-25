@@ -12,14 +12,14 @@
       checkins: { total: 156, live: true },
     },
     activities: [
-      { type: 'Check-in', passenger: 'Sarah Mitchell', flight: 'SF 4521', time: '1m ago', status: 'Success' },
-      { type: 'Booking', passenger: 'James Chen', flight: 'SF 8834', time: '3m ago', status: 'Success' },
-      { type: 'Payment', passenger: 'Emma Johnson', flight: 'SF 2205', time: '8m ago', status: 'Success' },
-      { type: 'Check-in', passenger: 'David Singh', flight: 'SF 7641', time: '12m ago', status: 'Pending' },
-      { type: 'Booking', passenger: 'Lisa Brown', flight: 'SF 5829', time: '18m ago', status: 'Success' },
-      { type: 'Cancellation', passenger: 'Michael Davis', flight: 'SF 3456', time: '24m ago', status: 'Canceled' },
-      { type: 'Check-in', passenger: 'Nina Patel', flight: 'SF 9102', time: '31m ago', status: 'Pending' },
-      { type: 'Booking', passenger: 'Carlos Munoz', flight: 'SF 6789', time: '38m ago', status: 'Success' },
+      { type: 'Check-in', passenger: 'Amina Otieno', flight: 'KQ500', time: '1m ago', status: 'Success' },
+      { type: 'Booking', passenger: 'James Karanja', flight: 'KQ502', time: '3m ago', status: 'Success' },
+      { type: 'Payment', passenger: 'Emma Njoroge', flight: 'KQ504', time: '8m ago', status: 'Success' },
+      { type: 'Check-in', passenger: 'David Singh', flight: 'KQ500', time: '12m ago', status: 'Pending' },
+      { type: 'Booking', passenger: 'Lisa Mwangi', flight: 'KQ502', time: '18m ago', status: 'Success' },
+      { type: 'Cancellation', passenger: 'Michael Njenga', flight: 'KQ504', time: '24m ago', status: 'Canceled' },
+      { type: 'Check-in', passenger: 'Nina Patel', flight: 'KQ502', time: '31m ago', status: 'Pending' },
+      { type: 'Booking', passenger: 'Carlos Wanjiru', flight: 'KQ500', time: '38m ago', status: 'Success' },
     ],
     charts: {
       bookings: {
@@ -31,18 +31,25 @@
         data: [8200, 9100, 8950, 10200, 11500, 12840],
       },
       flights: {
-        labels: ['Boeing 787', 'Airbus A380', 'Boeing 777', 'Airbus A350', 'Boeing 737'],
-        data: [45, 38, 32, 28, 18],
+        labels: ['Boeing 737', 'Embraer E190', 'Boeing 787', 'Airbus A330', 'Dash 8'],
+        data: [52, 43, 32, 21, 18],
       },
       loadFactor: {
-        labels: ['LHR', 'CDG', 'AMS', 'FRA', 'MAD', 'FCO', 'AGP', 'BCN'],
-        data: [92, 88, 85, 91, 79, 86, 84, 89],
+        labels: ['NBO-JNB', 'NBO-ADD', 'NBO-KGL', 'NBO-CPT', 'NBO-LOS', 'NBO-MBA', 'NBO-EBB', 'NBO-DAR'],
+        data: [93, 90, 88, 84, 82, 91, 89, 86],
       }
     }
   };
 
   // Hydrate summary cards
   function hydrateSummary() {
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric'
+    });
+
     document.getElementById('statFlights').textContent = fmtNumber(state.summary.flights.total);
     document.getElementById('statFlightsDelta').textContent = `+${state.summary.flights.delta} today`;
 

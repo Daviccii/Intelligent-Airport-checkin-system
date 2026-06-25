@@ -1014,6 +1014,9 @@
             <input type="tel" id="mpesaPhone" placeholder="+254 712 345 678" maxlength="15">
             <small style="color: var(--text-muted); font-size: 12px;">Enter your M-Pesa registered phone number</small>
           </div>
+          <div id="mpesaInstructionNote" style="display:none; margin-top: 12px; padding: 14px; background: #eff7ff; border-radius: 10px; border: 1px solid #d0e8ff; color: #0f4f8b; font-size: 13px;">
+            After booking, you will receive an SMS with payment instructions to complete the transaction from your M-Pesa app.
+          </div>
         </div>
 
         <!-- PayPal Payment Fields -->
@@ -1198,48 +1201,48 @@
     // Flight data
     const flights = [
       {
-        id: 'FL001',
+        id: 'KQ500',
         airline: 'Kenya Airways',
         from: 'NBO',
-        to: 'JNB',
-        departure: '10:30',
-        arrival: '13:00',
-        date: '2025-12-20',
-        duration: '2h 30m',
+        to: 'MBA',
+        departure: '06:00',
+        arrival: '07:00',
+        date: '2026-01-16',
+        duration: '1h 00m',
         priceUSD: 320,
         originalPriceUSD: 450,
-        capacity: 180,
-        booked: 145,
+        capacity: 100,
+        booked: 62,
         stops: 'Direct'
       },
       {
-        id: 'FL002',
-        airline: 'Ethiopian Airlines',
+        id: 'KQ502',
+        airline: 'Kenya Airways',
         from: 'NBO',
         to: 'ADD',
-        departure: '14:15',
-        arrival: '15:45',
-        date: '2025-12-20',
-        duration: '1h 30m',
+        departure: '09:30',
+        arrival: '10:30',
+        date: '2026-01-16',
+        duration: '1h 00m',
         priceUSD: 280,
         originalPriceUSD: 400,
-        capacity: 200,
-        booked: 120,
+        capacity: 100,
+        booked: 55,
         stops: 'Direct'
       },
       {
-        id: 'FL003',
-        airline: 'RwandAir',
+        id: 'KQ504',
+        airline: 'Kenya Airways',
         from: 'NBO',
         to: 'KGL',
-        departure: '08:45',
-        arrival: '10:15',
-        date: '2025-12-20',
+        departure: '14:10',
+        arrival: '15:40',
+        date: '2026-01-16',
         duration: '1h 30m',
         priceUSD: 250,
         originalPriceUSD: 350,
-        capacity: 150,
-        booked: 110,
+        capacity: 120,
+        booked: 79,
         stops: 'Direct'
       }
     ];
@@ -1542,7 +1545,18 @@
 
           // Show selected payment fields
           const selectedMethod = this.value;
-          document.getElementById(selectedMethod + 'Fields').style.display = 'block';
+          const target = document.getElementById(selectedMethod + 'Fields');
+          if (target) {
+            target.style.display = 'block';
+          }
+
+          // Show extra M-Pesa guidance when selected
+          const mpesaNote = document.getElementById('mpesaInstructionNote');
+          if (selectedMethod === 'mpesa' && mpesaNote) {
+            mpesaNote.style.display = 'block';
+          } else if (mpesaNote) {
+            mpesaNote.style.display = 'none';
+          }
         });
       });
     }
@@ -1575,6 +1589,11 @@
         return;
       }
 
+      // Track selected payment method for passenger dashboard
+      bookingData.paymentMethod = paymentMethod;
+      if (paymentMethod === 'mpesa') {
+        bookingData.mpesaPhone = document.getElementById('mpesaPhone').value.trim();
+      }
       // Calculate total price
       const basePrice = getPrice(bookingData.flight.priceUSD);
       const taxes = basePrice * 0.15;
@@ -1591,13 +1610,17 @@
             name: bookingData.passenger.name,
             passport: bookingData.passenger.passport,
             email: bookingData.passenger.email,
-            flight: 'KQ500', // Use valid flight number from database
+            phone: bookingData.passenger.phone,
+            flight: bookingData.flight.id,
             from: bookingData.flight.from,
             to: bookingData.flight.to,
+            date: bookingData.flight.date,
+            departure: bookingData.flight.departure,
             seat_class: 'Economy',
             amount: total,
             currency: currentCurrency,
-            payment_method: paymentMethod
+            payment_method: paymentMethod,
+            mpesa_phone: paymentMethod === 'mpesa' ? document.getElementById('mpesaPhone').value.trim() : ''
           })
         });
 
@@ -1614,8 +1637,8 @@
 
           document.getElementById('ticketNumber').textContent = ticketNumber;
           document.getElementById('bookingRef').textContent = bookingRef;
-          document.getElementById('ticketFlight').textContent = `${bookingData.flight.airline} ${bookingData.flight.from}${bookingData.flight.to}`;
-          document.getElementById('ticketDateTime').textContent = `${bookingData.flight.date} at ${bookingData.flight.departure}`;
+          document.getElementById('ticketFlight').textContent = `${bookingData.flight.airline} ${bookingData.flight.id} (${bookingData.flight.from} → ${bookingData.flight.to})`;
+          document.getElementById('ticketDateTime').textContent = `${bookingData.flight.date} • Departs ${bookingData.flight.departure}`;
           document.getElementById('ticketRoute').textContent = `${bookingData.flight.from} → ${bookingData.flight.to}`;
           document.getElementById('ticketSeat').textContent = bookingData.seatLabel;
           document.getElementById('ticketName').textContent = bookingData.passenger.name;
@@ -1650,11 +1673,17 @@
         email: bookingData.passenger.email,
         phone: bookingData.passenger.phone,
         flight: bookingData.flight.id,
+        airline: bookingData.flight.airline,
         from: bookingData.flight.from,
         to: bookingData.flight.to,
         date: bookingData.flight.date,
         departure: bookingData.flight.departure,
-        seatNumber: bookingData.seatLabel
+        seatNumber: bookingData.seatLabel,
+        paymentMethod: bookingData.paymentMethod || 'card',
+        mpesaPhone: bookingData.mpesaPhone || '',
+        paymentNote: bookingData.paymentMethod === 'mpesa'
+          ? 'M-Pesa payment prompt sent to your phone and email.'
+          : 'Payment completed successfully.'
       };
       
       // Store in sessionStorage for passenger portal
@@ -1682,17 +1711,17 @@
       if (sel) {
         const f = JSON.parse(sel);
         selectedFlight = {
-          id: 'KQ500', // Use valid flight number from database
-          airline: f.airline || 'SmartFly Airways',
-          from: f.from,
-          to: f.to,
-          departure: f.departure,
-          arrival: f.arrival,
-          date: f.date,
-          duration: f.duration || '',
-          priceUSD: f.priceUSD || 0,
+          id: f.id || f.flight_number || 'KQ500',
+          airline: f.airline || 'Kenya Airways',
+          from: f.from || 'NBO',
+          to: f.to || 'MBA',
+          departure: f.departure || '06:00',
+          arrival: f.arrival || '07:00',
+          date: f.date || '2026-01-16',
+          duration: f.duration || '1h 00m',
+          priceUSD: f.priceUSD || 320,
           originalPriceUSD: f.originalPriceUSD || Math.round((f.priceUSD || 0) * 1.2),
-          capacity: f.capacity || 180,
+          capacity: f.capacity || 100,
           booked: f.booked || 0,
           stops: f.stops || 'Direct'
         };
