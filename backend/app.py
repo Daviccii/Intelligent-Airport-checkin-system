@@ -4077,7 +4077,7 @@ def api_admin_login():
     if username in users:
         stored_hash = users[username]['password_hash']
         try:
-                if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
+                if password == stored_hash:
                     # admin sessions have a short TTL for the admin portal (seconds), configurable via ADMIN_SESSION_TTL_SECONDS
                     try:
                         # Default admin session TTL to 1 hour unless overridden
