@@ -6,6 +6,11 @@
     <title>SmartFly Airways - Book Your Flight</title>
     <link rel="stylesheet" href="/styles.css">
     <style>
+        /* Global smooth scrolling */
+        html {
+          scroll-behavior: smooth;
+        }
+
         /* Hide initially */
         .kq-date-wrapper {
           display: none;
@@ -18,88 +23,1182 @@
           margin-top: 12px;
         }
 
+        /* KQ-inspired Date Picker Styles */
+        .kq-date-wrapper {
+          display: none;
+          background: #ffffff;
+          border-radius: 16px;
+          padding: 24px;
+          width: 100%;
+          max-width: 900px;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+          margin-top: 16px;
+          position: absolute;
+          z-index: 1000;
+          top: 100%;
+          left: 0;
+        }
+
+        .kq-date-wrapper.show {
+          display: block;
+          animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
         /* Header */
         .kq-calendar-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 20px;
+          margin-bottom: 16px;
+          padding-bottom: 12px;
+          border-bottom: 2px solid #f0f0f0;
         }
 
         .month-labels {
           display: flex;
-          gap: 120px;
-          font-size: 18px;
+          gap: 80px;
+          font-size: 16px;
           font-weight: 600;
+          color: #1e3a8a;
         }
 
         /* Navigation buttons */
         .nav-btn {
-          background: none;
-          border: none;
-          font-size: 22px;
+          background: #f8f9fa;
+          border: 1px solid #e0e0e0;
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          font-size: 18px;
           cursor: pointer;
+          color: #1e3a8a;
+          transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+          background: #1e3a8a;
+          color: white;
+          border-color: #1e3a8a;
         }
 
         /* Calendar grid */
         .kq-calendar-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 40px;
+          gap: 32px;
+        }
+
+        /* Calendar column */
+        .calendar-column {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .calendar-date-label {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1e3a8a;
+          margin-bottom: 8px;
+        }
+
+        #selectedDepartLabel, #selectedReturnLabel {
+          color: #2563eb;
+        }
+
+        /* Weekdays header */
+        .calendar-weekdays {
+          display: grid;
+          grid-template-columns: repeat(7, 1fr);
+          gap: 4px;
+          margin-bottom: 8px;
+        }
+
+        .calendar-weekdays div {
+          font-size: 11px;
+          font-weight: 600;
+          color: #6b7280;
+          text-align: center;
+          text-transform: uppercase;
         }
 
         /* Calendar */
         .calendar {
           display: grid;
           grid-template-columns: repeat(7, 1fr);
-          gap: 10px;
+          gap: 4px;
         }
 
         /* Date cell */
         .calendar-day {
-          height: 64px;
-          border-radius: 12px;
+          height: 50px;
+          border-radius: 8px;
           text-align: center;
-          padding-top: 8px;
+          padding: 6px 4px;
           cursor: pointer;
-          transition: background 0.2s;
+          transition: all 0.2s ease;
+          background: #f8f9fa;
+          border: 1px solid #e0e0e0;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
         }
 
-        .calendar-day:hover {
-          background: rgba(30, 58, 138, 0.08);
+        .calendar-day:hover:not(.disabled) {
+          background: #1e3a8a;
+          color: white;
+          border-color: #1e3a8a;
+          transform: scale(1.05);
+        }
+
+        .calendar-day.disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+          pointer-events: none;
+        }
+
+        .calendar-day.today {
+          background: #2563eb;
+          color: white;
+          border-color: #2563eb;
+          font-weight: 600;
+        }
+
+        .calendar-day.selected {
+          background: #1e3a8a;
+          color: white;
+          border-color: #1e3a8a;
+          font-weight: 600;
+        }
+
+        .calendar-day .day-number {
+          font-size: 14px;
+          font-weight: 500;
+          margin-bottom: 2px;
         }
 
         /* Price */
         .day-price {
-          font-size: 12px;
+          font-size: 10px;
           color: #6b7280;
+          font-weight: 600;
+        }
+
+        .calendar-day:hover .day-price,
+        .calendar-day.today .day-price,
+        .calendar-day.selected .day-price {
+          color: white;
         }
 
         /* Cheapest price highlight */
         .cheapest {
-          background: #e6f7ee;
-          color: #047857;
+          background: #dcfce7;
+          color: #166534;
+          border-color: #22c55e;
+        }
+
+        .cheapest .day-price {
+          color: #166534;
+        }
+
+        .cheapest:hover {
+          background: #22c55e;
+          color: white;
+        }
+
+        .cheapest:hover .day-price {
+          color: white;
         }
 
         /* Done button */
         .kq-done-btn {
-          margin-top: 24px;
-          background: #e11d2e;
+          margin-top: 20px;
+          background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
           color: #fff;
           border: none;
-          padding: 14px 28px;
-          border-radius: 12px;
-          font-size: 16px;
+          padding: 12px 32px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
           cursor: pointer;
+          transition: all 0.3s ease;
+          width: 100%;
+        }
+
+        .kq-done-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
         }
 
         .kq-form-row {
           overflow: visible !important;
+          position: relative;
         }
 
         .booking-card-kq {
           overflow: visible;
         }
+
+    /* ========================= */
+    /* KQ-INSPIRED HERO SECTION     */
+    /* ========================= */
+    .hero-kq {
+        position: relative;
+        min-height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #1e40af 100%);
+        overflow: visible;
+    }
+
+    /* Hero Slideshow */
+    .hero-slideshow-kq {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .hero-slide-kq {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+    }
+
+    .hero-slide-kq.active {
+        opacity: 1;
+    }
+
+    .hero-background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url('/assets/images/heroes/hero-1.jpg');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+
+    .hero-overlay-kq {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(30, 58, 138, 0.75) 0%, rgba(37, 99, 235, 0.65) 50%, rgba(30, 64, 175, 0.75) 100%);
+    }
+
+    .hero-container-kq {
+        position: relative;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 24px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        overflow: visible;
+    }
+
+    .hero-text-kq {
+        margin-bottom: 30px;
+        max-width: 700px;
+    }
+
+    .hero-title-kq {
+        font-size: 42px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 12px;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-subtitle-kq {
+        font-size: 16px;
+        color: #ffffff;
+        line-height: 1.5;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    /* KQ-Style Booking Widget - Compact */
+    .booking-widget-kq-compact {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        width: 100%;
+        max-width: 900px;
+        position: relative;
+        overflow: visible !important;
+    }
+
+    .booking-form-compact {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        overflow: visible !important;
+    }
+
+    .form-row-compact {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+        overflow: visible !important;
+        position: relative;
+    }
+
+    .field-compact {
+        flex: 1;
+        overflow: visible !important;
+        position: relative;
+    }
+
+    .field-label-compact {
+        display: block;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+    }
+
+    /* Compact Dropdown */
+    .dropdown-compact {
+        position: relative;
+    }
+
+    .dropdown-btn-compact {
+        width: 100%;
+        padding: 12px 14px;
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #1f2937;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .dropdown-btn-compact:hover,
+    .dropdown-btn-compact.active {
+        border-color: #1e3a8a;
+        box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+    }
+
+    .dropdown-value {
+        flex: 1;
+        text-align: left;
+    }
+
+    .dropdown-arrow {
+        font-size: 12px;
+        color: #6b7280;
+        transition: transform 0.3s ease;
+    }
+
+    .dropdown-btn-compact.active .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    .dropdown-menu-compact {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        max-height: 350px;
+        overflow-y: auto;
+        z-index: 99999;
+        display: none;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        margin-top: 4px;
+        list-style: none;
+        padding: 8px 0;
+    }
+
+    .dropdown-menu-compact.show {
+        display: block;
+        animation: slideDown 0.2s ease;
+    }
+
+    .dropdown-menu-compact li {
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        font-size: 14px;
+        color: #1f2937;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .dropdown-menu-compact li:last-child {
+        border-bottom: none;
+    }
+
+    .dropdown-menu-compact li:hover {
+        background: #f8f9fa;
+        color: #1e3a8a;
+    }
+
+    /* Enhanced airport dropdown styling */
+    .dropdown-menu-compact.airport-menu li {
+        display: flex;
+        flex-direction: column;
+        padding: 12px 16px;
+    }
+
+    .dropdown-menu-compact.airport-menu li .airport-name {
+        font-weight: 600;
+        color: #1e3a8a;
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .dropdown-menu-compact.airport-menu li .airport-location {
+        font-size: 12px;
+        color: #6b7280;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .dropdown-menu-compact.airport-menu li .airport-code {
+        background: #1e3a8a;
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    /* Swap Button Compact */
+    .swap-btn-compact {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        color: #1e3a8a;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .swap-btn-compact:hover {
+        background: #1e3a8a;
+        color: #ffffff;
+        border-color: #1e3a8a;
+        transform: rotate(180deg);
+    }
+
+    /* Calendar Popup */
+    .calendar-popup {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 16px;
+        z-index: 9999;
+        display: none;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        margin-top: 4px;
+        min-width: 300px;
+    }
+
+    .calendar-popup.show {
+        display: block;
+        animation: slideDown 0.2s ease;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .cal-nav {
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #1e3a8a;
+        transition: all 0.2s ease;
+    }
+
+    .cal-nav:hover {
+        background: #1e3a8a;
+        color: white;
+        border-color: #1e3a8a;
+    }
+
+    .cal-month {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e3a8a;
+    }
+
+    .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 2px;
+    }
+
+    .calendar-day {
+        height: 36px;
+        border-radius: 4px;
+        text-align: center;
+        padding: 6px 2px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        font-size: 12px;
+        font-weight: 500;
+        color: #1f2937;
+    }
+
+    .calendar-day:hover:not(.disabled) {
+        background: #1e3a8a;
+        color: white;
+        border-color: #1e3a8a;
+    }
+
+    .calendar-day.disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .calendar-day.today {
+        background: #2563eb;
+        color: white;
+        border-color: #2563eb;
+        font-weight: 600;
+    }
+
+    .calendar-day.selected {
+        background: #1e3a8a;
+        color: white;
+        border-color: #1e3a8a;
+        font-weight: 600;
+    }
+
+    /* Passengers Popup */
+    .passengers-popup {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 16px;
+        z-index: 9999;
+        display: none;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        margin-top: 4px;
+        min-width: 280px;
+    }
+
+    .passengers-popup.show {
+        display: block;
+        animation: slideDown 0.2s ease;
+    }
+
+    .passenger-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+    }
+
+    .passenger-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .passenger-row label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1f2937;
+    }
+
+    .passenger-counter {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .counter-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        background: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1e3a8a;
+        transition: all 0.2s ease;
+    }
+
+    .counter-btn:hover {
+        background: #1e3a8a;
+        color: white;
+        border-color: #1e3a8a;
+    }
+
+    .counter-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .counter-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e3a8a;
+        min-width: 20px;
+        text-align: center;
+    }
+
+    /* Search Button Compact */
+    .search-btn-compact {
+        width: 100%;
+        padding: 14px 28px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 6px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .search-btn-compact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(30, 58, 138, 0.4);
+    }
+
+    /* Field widths */
+    .trip-type-field {
+        flex: 0 0 120px;
+    }
+
+    .passengers-field {
+        flex: 0 0 140px;
+    }
+
+    .class-field {
+        flex: 0 0 140px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .form-row-compact {
+            flex-direction: column;
+        }
+
+        .trip-type-field,
+        .passengers-field,
+        .class-field {
+            flex: 1;
+        }
+
+        .swap-btn-compact {
+            width: 100%;
+            border-radius: 8px;
+        }
+    }
+
+    /* ========================= */
+    /* BLUE-THEMED HEADER STYLES */
+    /* ========================= */
+
+    /* ========================= */
+    /* KQ-STYLE CONTENT SECTIONS    */
+    /* ========================= */
+    .how-to-book-section,
+    .plan-trip-section,
+    .destinations-section,
+    .features-section {
+        padding: 60px 0;
+    }
+
+    .section-title-kq {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1e3a8a;
+        margin-bottom: 12px;
+        text-align: center;
+    }
+
+    .section-subtitle-kq {
+        font-size: 16px;
+        color: #6b7280;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    /* Destinations Grid */
+    .destinations-grid-kq {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 60px;
+    }
+
+    .destination-card-kq {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        height: 300px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .destination-card-kq:hover {
+        transform: translateY(-8px);
+    }
+
+    .destination-image-kq {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .destination-overlay-kq {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+        padding: 24px;
+        color: #ffffff;
+    }
+
+    .destination-title-kq {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .destination-desc-kq {
+        font-size: 14px;
+        margin-bottom: 12px;
+        opacity: 0.9;
+    }
+
+    .destination-price-kq {
+        font-size: 16px;
+        font-weight: 700;
+        color: #2563eb;
+    }
+
+    /* Features Grid */
+    .features-grid-kq {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 32px;
+        margin-bottom: 60px;
+    }
+
+    .feature-card-kq {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .feature-card-kq:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .feature-icon-kq {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    .feature-title-kq {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e3a8a;
+        margin-bottom: 12px;
+    }
+
+    .feature-desc-kq {
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* Offers Banner */
+    .offers-banner {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        border-radius: 12px;
+        padding: 48px;
+        margin: 60px 0;
+        text-align: center;
+        color: #ffffff;
+    }
+
+    .offer-title {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .offer-desc {
+        font-size: 16px;
+        margin-bottom: 24px;
+        opacity: 0.9;
+    }
+
+    .offer-btn {
+        padding: 14px 32px;
+        background: #ffffff;
+        color: #1e3a8a;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .offer-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Steps Grid */
+    .steps-grid-kq {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 32px;
+        margin-bottom: 40px;
+    }
+
+    .step-card-kq {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 32px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s ease;
+    }
+
+    .step-card-kq:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .step-number-kq {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: #ffffff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+
+    .step-title-kq {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e3a8a;
+        margin-bottom: 12px;
+    }
+
+    .step-desc-kq {
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* Plan Cards Grid */
+    .plan-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    .plan-card-kq {
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 32px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: block;
+    }
+
+    .plan-card-kq:hover {
+        border-color: #1e3a8a;
+        box-shadow: 0 8px 24px rgba(30, 58, 138, 0.15);
+        transform: translateY(-4px);
+    }
+
+    .plan-icon-kq {
+        font-size: 48px;
+        margin-bottom: 16px;
+    }
+
+    .plan-title-kq {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1e3a8a;
+        margin-bottom: 12px;
+    }
+
+    .plan-desc-kq {
+        font-size: 14px;
+        color: #6b7280;
+        line-height: 1.6;
+    }
+
+    /* ========================= */
+    /* KQ-STYLE FOOTER               */
+    /* ========================= */
+    .footer-kq {
+        background: #1e3a8a;
+        color: #ffffff;
+        padding: 60px 0 30px;
+    }
+
+    .footer-container-kq {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+    }
+
+    /* Newsletter Section */
+    .footer-newsletter-kq {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 32px;
+        text-align: center;
+        margin-bottom: 48px;
+    }
+
+    .newsletter-title-kq {
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .newsletter-subtitle-kq {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.8);
+        margin-bottom: 24px;
+    }
+
+    .newsletter-form-kq {
+        display: flex;
+        gap: 12px;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+
+    .newsletter-input-kq {
+        flex: 1;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .newsletter-btn-kq {
+        padding: 12px 24px;
+        background: #ffffff;
+        color: #1e3a8a;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .newsletter-btn-kq:hover {
+        background: #f0f9ff;
+    }
+
+    /* Footer Columns */
+    .footer-columns-kq {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 40px;
+        margin-bottom: 48px;
+    }
+
+    .footer-column-kq h4 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 20px;
+        color: #ffffff;
+    }
+
+    .footer-links-kq {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .footer-links-kq li {
+        margin-bottom: 12px;
+    }
+
+    .footer-links-kq a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        font-size: 14px;
+        transition: color 0.3s ease;
+    }
+
+    .footer-links-kq a:hover {
+        color: #ffffff;
+    }
+
+    /* App Download Section */
+    .footer-apps-kq {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .apps-text-kq {
+        font-size: 16px;
+        margin-bottom: 16px;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .app-buttons-kq {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+    }
+
+    .app-btn-kq {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 8px;
+        color: #ffffff;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .app-btn-kq:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .app-icon-kq {
+        font-size: 24px;
+    }
+
+    .app-text-kq {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    /* Bottom Footer */
+    .footer-bottom-kq {
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        padding-top: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .footer-bottom-links-kq {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 24px;
+    }
+
+    .footer-bottom-links-kq a {
+        color: rgba(255, 255, 255, 0.7);
+        text-decoration: none;
+        font-size: 12px;
+        transition: color 0.3s ease;
+    }
+
+    .footer-bottom-links-kq a:hover {
+        color: #ffffff;
+    }
+
+    .copyright-kq {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-columns-kq {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .app-buttons-kq {
+            flex-direction: column;
+        }
+
+        .footer-bottom-links-kq {
+            flex-direction: column;
+            align-items: center;
+        }
+    }
+
     /* ========================= */
     /* BLUE-THEMED HEADER STYLES */
     /* ========================= */
@@ -176,25 +1275,67 @@
     .kq-dropdown-menu-compact li:hover {
       background: rgba(30, 58, 138, 0.08);
     }
+
     .header {
       position: sticky;
       top: 0;
       width: 100%;
       background: linear-gradient(120deg, #1e3a8a 0%, #2563eb 50%, #1e40af 100%);
-      box-shadow: 0 6px 20px rgba(30, 64, 175, 0.3), 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: none;
       z-index: 1000;
       border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .header.scrolled {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+
+    /* Book Now button scroll adjustment */
+    #booking-section {
+      scroll-margin-top: 100px;
     }
 
     .header-container {
-      max-width: 1400px;
+      max-width: 1600px;
       margin: 0 auto;
-      padding: 0 32px;
-      height: 80px;
+      padding: 0 48px;
+      height: 100px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 24px;
+      gap: 48px;
+    }
+
+    /* Navigation Wrapper - KQ style layout */
+    .nav-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 48px;
+    }
+
+    .nav-wrapper .logo {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-wrapper .mobile-menu-button {
+      display: none;
+      flex-shrink: 0;
+    }
+
+    .nav-wrapper .nav-menu {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+    }
+
+    .nav-wrapper .cta-btn {
+      flex-shrink: 0;
     }
 
     /* Logo Bubble */
@@ -245,8 +1386,10 @@
     /* Navigation Links */
     .nav-links {
       display: flex;
-      gap: 24px;
+      gap: 40px;
       align-items: center;
+      flex: 1;
+      justify-content: center;
     }
 
     .nav-item {
@@ -254,10 +1397,10 @@
     }
 
     .nav-link {
-      font-size: 15px;
-      font-weight: 600;
+      font-size: 16px;
+      font-weight: 500;
       color: #ffffff;
-      padding: 10px 16px;
+      padding: 14px 20px;
       border-radius: 8px;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       cursor: pointer;
@@ -265,6 +1408,7 @@
       display: inline-block;
       position: relative;
       text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     }
 
     .nav-link::after {
@@ -274,22 +1418,19 @@
       bottom: 2px;
       transform: translateX(-50%);
       width: 0%;
-      height: 2px;
+      height: 1px;
       background: #ffffff;
-      border-radius: 2px;
+      border-radius: 1px;
       transition: width 0.3s ease;
     }
 
     .nav-link:hover::after,
     .nav-link.active::after {
-      width: 80%;
+      width: 100%;
     }
 
     .nav-link:hover {
-      transform: scale(1.05);
       color: #ffffff;
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
     }
 
     /* Mega-menu Dropdown */
@@ -346,21 +1487,41 @@
     /* Header Buttons */
     .header-buttons {
       display: flex;
-      gap: 12px;
+      gap: 16px;
       align-items: center;
     }
 
     .btn-primary {
-      padding: 12px 28px;
+      padding: 14px 32px;
       border-radius: 24px;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.3s ease;
-      font-size: 15px;
+      font-size: 16px;
       border: 2px solid #ffffff;
       background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
       color: #1e40af;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    /* CTA Button styling */
+    .cta-btn a {
+      padding: 14px 32px;
+      border-radius: 24px;
+      font-weight: 700;
+      font-size: 16px;
+      border: 2px solid #ffffff;
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+      color: #1e40af;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      display: inline-block;
+    }
+
+    .cta-btn a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     }
 
     .btn-primary:hover {
@@ -373,7 +1534,6 @@
 
     /* Mobile Menu Button */
     .mobile-menu-button {
-      display: none;
       background: none;
       border: none;
       font-size: 28px;
@@ -394,24 +1554,50 @@
     /* ========================= */
     /* RESPONSIVE DESIGN         */
     /* ========================= */
-    @media (max-width: 768px) {
-      .nav-links {
+    @media (max-width: 1024px) {
+      .header-container {
+        padding: 0 24px;
+        height: 80px;
+        gap: 24px;
+      }
+
+      .nav-wrapper {
+        gap: 24px;
+      }
+
+      .nav-wrapper .mobile-menu-button {
+        display: block;
+      }
+
+      .nav-wrapper .nav-menu {
         display: none;
         flex-direction: column;
         background: #1e3a8a;
         position: absolute;
-        top: 70px;
+        top: 80px;
+        left: 0;
         right: 0;
-        width: 240px;
-        padding: 20px;
-        border-radius: 0 0 8px 8px;
+        width: 100%;
+        padding: 24px;
         gap: 16px;
         box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         align-items: stretch;
       }
 
-      .nav-links.show {
+      .nav-menu.show {
         display: flex;
+        animation: slideDown 0.3s ease;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       .nav-item {
@@ -451,14 +1637,16 @@
         font-size: 13px;
       }
 
-      .mobile-menu-button {
-        display: block;
+      .cta-btn a {
+        padding: 10px 20px;
+        font-size: 13px;
       }
     }
 
     @media (max-width: 640px) {
       .header-container {
-        height: 68px;
+        height: 70px;
+        padding: 0 16px;
       }
 
       .logo-text {
@@ -472,6 +1660,10 @@
       }
 
       .btn-primary span {
+        display: none;
+      }
+
+      .cta-btn a span {
         display: none;
       }
 
@@ -846,7 +2038,9 @@
       <span>SmartFly</span>
     </div>
 
-    <nav class="nav-menu">
+    <button class="mobile-menu-button">☰</button>
+
+    <nav class="nav-menu nav-links">
       <div class="nav-item">
         <a href="/explore.html">Explore</a>
         <div class="mega-menu">
@@ -1035,7 +2229,7 @@
     </nav>
 
     <div class="cta-btn">
-      <a href="/booking.html">Book Now</a>
+      <a href="#booking-section" class="book-now-btn">Book Now</a>
     </div>
 
   </div>
@@ -1043,384 +2237,431 @@
 </header>
 
 
-    <!-- Hero Section with Image Slideshow -->
-    <section class="hero">
-        <!-- Image slideshow background -->
-        <div class="hero-slideshow">
-            <div class="hero-slide active" style="background-image: url('/assets/images/heroes/hero-1.jpg');"></div>
-            <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-2.jpg');"></div>
-            <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-3.jpg');"></div>
-            <div class="hero-slide" style="background-image: url('/assets/images/heroes/hero-4.jpg');"></div>
+    <!-- Hero Section with KQ-Inspired Design -->
+    <section class="hero-kq">
+        <!-- Background slideshow -->
+        <div class="hero-slideshow-kq">
+            <div class="hero-slide-kq active" style="background-image: url('/assets/images/heroes/hero-1.jpg');"></div>
+            <div class="hero-slide-kq" style="background-image: url('/assets/images/heroes/hero-2.jpg');"></div>
+            <div class="hero-slide-kq" style="background-image: url('/assets/images/heroes/hero-3.jpg');"></div>
+            <div class="hero-slide-kq" style="background-image: url('/assets/images/heroes/hero-4.jpg');"></div>
         </div>
+        
+        <!-- Hero overlay -->
+        <div class="hero-overlay-kq"></div>
 
-        <!-- Hero overlay gradient -->
-        <div class="hero-overlay"></div>
+        <!-- Hero content -->
+        <div class="hero-container-kq">
+            <div class="hero-text-kq">
+                <h1 class="hero-title-kq">Book a Flight</h1>
+                <p class="hero-subtitle-kq">Search for SmartFly flights and book online. Fly to 50+ destinations across the world with SmartFly and enjoy a World-Class Travel Experience with African Hospitality.</p>
+            </div>
 
-        <!-- Hero content container -->
-        <div class="hero-content">
-          <!-- Booking Card - KQ Compact Style -->
-          <div class="booking-card-kq">
-                <form id="flightSearchForm" class="booking-form-kq">
-                    <!-- Single Row: All fields inline -->
-                    <div class="kq-form-row">
-                        <!-- Trip Type Dropdown -->
-                        <div class="kq-field">
-                            <label class="kq-label">Trip</label>
-                            <div class="kq-dropdown compact" id="tripTypeDropdown">
-                                <button type="button" class="kq-dropdown-btn-compact">
-                                    <span class="kq-value">Return</span>
-                                    <span class="kq-arrow">▾</span>
+            <!-- KQ-Style Booking Form - Compact -->
+            <div class="booking-widget-kq-compact" id="booking-section">
+                <form id="flightSearchForm" class="booking-form-compact">
+                    <!-- Trip Type Dropdown -->
+                    <div class="form-row-compact">
+                        <div class="field-compact trip-type-field">
+                            <label class="field-label-compact">Trip Type</label>
+                            <div class="dropdown-compact" id="tripTypeDropdown">
+                                <button type="button" class="dropdown-btn-compact">
+                                    <span class="dropdown-value">Return</span>
+                                    <span class="dropdown-arrow">▼</span>
                                 </button>
-                                <ul class="kq-dropdown-menu-compact">
-                                  <li data-value="return">Return</li>
-                                  <li data-value="oneway">One-way</li>
-                                  <li data-value="roundtrip">Round Trip</li>
+                                <ul class="dropdown-menu-compact">
+                                    <li data-value="return">Return</li>
+                                    <li data-value="oneway">One-way</li>
+                                    <li data-value="multicity">Multi-city</li>
                                 </ul>
                             </div>
                             <input type="hidden" id="tripType" name="tripType" value="return">
                         </div>
 
-                        <!-- From Input -->
-                        <div class="kq-field kq-field-route flight-field">
-                          
-                          <label for="fromInput" class="kq-label">From</label>
-                          <input 
-                            id="fromInput" 
-                            type="text" 
-                            class="kq-input" 
-                            placeholder="City or airport"
-                            autocomplete="off"
-                            readonly
-                          />      
-                          <div class="kq-airport-dropdown" id="fromDropdown"></div>                 
+                        <!-- From Airport -->
+                        <div class="field-compact airport-field">
+                            <label class="field-label-compact">From</label>
+                            <div class="dropdown-compact" id="fromDropdown">
+                                <button type="button" class="dropdown-btn-compact">
+                                    <span class="dropdown-value">Select departure</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </button>
+                                <ul class="dropdown-menu-compact airport-menu">
+                                    <!-- Airports will be loaded dynamically -->
+                                </ul>
+                            </div>
+                            <input type="hidden" id="fromAirport" name="fromAirport" value="">
                         </div>
 
                         <!-- Swap Button -->
-                        <button type="button" class="swap-btn" id="swapBtn">
+                        <button type="button" class="swap-btn-compact" id="swapBtn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M7 16V4M7 4L3 8M7 4L11 8"></path>
                                 <path d="M17 8V20M17 20L21 16M17 20L13 16"></path>
                             </svg>
                         </button>
 
-                        <!-- To Input -->
-                        <div class="kq-field kq-field-route">
-                            <label for="toInput" class="kq-label">To</label>
-                            <input 
-                                id="toInput" 
-                                type="text" 
-                                class="kq-input" 
-                                placeholder="City or airport"
-                                autocomplete="off"
-                            />
-                            <div class="kq-airport-dropdown" id="toDropdown"></div>
+                        <!-- To Airport -->
+                        <div class="field-compact airport-field">
+                            <label class="field-label-compact">To</label>
+                            <div class="dropdown-compact" id="toDropdown">
+                                <button type="button" class="dropdown-btn-compact">
+                                    <span class="dropdown-value">Select destination</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </button>
+                                <ul class="dropdown-menu-compact airport-menu">
+                                    <!-- Airports will be loaded dynamically -->
+                                </ul>
+                            </div>
+                            <input type="hidden" id="toAirport" name="toAirport" value="">
+                        </div>
+                    </div>
+
+                    <!-- Date Fields -->
+                    <div class="form-row-compact">
+                        <div class="field-compact date-field">
+                            <label class="field-label-compact">Departure</label>
+                            <div class="dropdown-compact" id="departDateDropdown">
+                                <button type="button" class="dropdown-btn-compact date-btn">
+                                    <span class="dropdown-value" id="departDateValue">Select date</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </button>
+                                <div class="calendar-popup" id="departCalendar">
+                                    <div class="calendar-header">
+                                        <button class="cal-nav" data-action="prev">‹</button>
+                                        <span class="cal-month" id="departMonthLabel">January 2026</span>
+                                        <button class="cal-nav" data-action="next">›</button>
+                                    </div>
+                                    <div class="calendar-grid" id="departCalendarGrid"></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="departDate" name="departDate" value="">
                         </div>
 
-                        <!-- Passengers Dropdown -->
-                        <div class="kq-field">
-                            <label class="kq-label">Passengers</label>
-                            <div class="kq-dropdown compact" id="passengersDropdown">
-                                <button type="button" class="kq-dropdown-btn-compact">
-                                    <span class="kq-value">1 Adult</span>
-                                    <span class="kq-arrow">▾</span>
+                        <div class="field-compact date-field" id="returnDateField">
+                            <label class="field-label-compact">Return</label>
+                            <div class="dropdown-compact" id="returnDateDropdown">
+                                <button type="button" class="dropdown-btn-compact date-btn">
+                                    <span class="dropdown-value" id="returnDateValue">Select date</span>
+                                    <span class="dropdown-arrow">▼</span>
                                 </button>
-                                <ul class="kq-dropdown-menu-compact">
-                                    <li data-value="1-0-0" data-display="1 Adult">1 Adult</li>
-                                    <li data-value="2-0-0" data-display="2 Adults">2 Adults</li>
-                                    <li data-value="1-1-0" data-display="1 Adult, 1 Child">1 Adult, 1 Child</li>
-                                    <li data-value="2-1-0" data-display="2 Adults, 1 Child">2 Adults, 1 Child</li>
-                                    <li data-value="2-2-0" data-display="2 Adults, 2 Children">2 Adults, 2 Children</li>
-                                    <li data-value="1-0-1" data-display="1 Adult, 1 Infant">1 Adult, 1 Infant</li>
-                                    <li data-value="2-1-1" data-display="2 Adults, 1 Child, 1 Infant">2 Adults, 1 Child, 1 Infant</li>
-                                </ul>
+                                <div class="calendar-popup" id="returnCalendar">
+                                    <div class="calendar-header">
+                                        <button class="cal-nav" data-action="prev">‹</button>
+                                        <span class="cal-month" id="returnMonthLabel">February 2026</span>
+                                        <button class="cal-nav" data-action="next">›</button>
+                                    </div>
+                                    <div class="calendar-grid" id="returnCalendarGrid"></div>
+                                </div>
+                            </div>
+                            <input type="hidden" id="returnDate" name="returnDate" value="">
+                        </div>
+                    </div>
+
+                    <!-- Passengers and Class -->
+                    <div class="form-row-compact">
+                        <div class="field-compact passengers-field">
+                            <label class="field-label-compact">Passengers</label>
+                            <div class="dropdown-compact" id="passengersDropdown">
+                                <button type="button" class="dropdown-btn-compact">
+                                    <span class="dropdown-value" id="passengersValue">1 Adult</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </button>
+                                <div class="passengers-popup">
+                                    <div class="passenger-row">
+                                        <label>Adults (12+)</label>
+                                        <div class="passenger-counter">
+                                            <button type="button" class="counter-btn minus" data-type="adult">-</button>
+                                            <span class="counter-value" id="adultCount">1</span>
+                                            <button type="button" class="counter-btn plus" data-type="adult">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="passenger-row">
+                                        <label>Children (2-11)</label>
+                                        <div class="passenger-counter">
+                                            <button type="button" class="counter-btn minus" data-type="child">-</button>
+                                            <span class="counter-value" id="childCount">0</span>
+                                            <button type="button" class="counter-btn plus" data-type="child">+</button>
+                                        </div>
+                                    </div>
+                                    <div class="passenger-row">
+                                        <label>Infants (under 2)</label>
+                                        <div class="passenger-counter">
+                                            <button type="button" class="counter-btn minus" data-type="infant">-</button>
+                                            <span class="counter-value" id="infantCount">0</span>
+                                            <button type="button" class="counter-btn plus" data-type="infant">+</button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                             <input type="hidden" id="passengers" name="passengers" value="1-0-0">
                         </div>
 
-                        <!-- Class Dropdown -->
-                        <div class="kq-field">
-                            <label class="kq-label">Class</label>
-                            <div class="kq-dropdown compact" id="classDropdown">
-                                <button type="button" class="kq-dropdown-btn-compact">
-                                    <span class="kq-value">Economy</span>
-                                    <span class="kq-arrow">▾</span>
+                        <div class="field-compact class-field">
+                            <label class="field-label-compact">Class</label>
+                            <div class="dropdown-compact" id="classDropdown">
+                                <button type="button" class="dropdown-btn-compact">
+                                    <span class="dropdown-value">Economy</span>
+                                    <span class="dropdown-arrow">▼</span>
                                 </button>
-                                <ul class="kq-dropdown-menu-compact">
+                                <ul class="dropdown-menu-compact">
                                     <li data-value="economy">Economy</li>
                                     <li data-value="premium">Premium Economy</li>
                                     <li data-value="business">Business</li>
                                     <li data-value="first">First Class</li>
                                 </ul>
                             </div>
-                            <input type="hidden" id="class" name="class" value="economy">
+                            <input type="hidden" id="cabinClass" name="cabinClass" value="economy">
                         </div>
-
-                        <!-- Search Button -->
-                        <button id="searchBtn" type="submit" class="kq-search-btn">
-                            <span>Search Flights</span>
-                        </button>
                     </div>
 
-                    <!-- Calendar Row -->
-                    <div class="kq-date-wrapper" id="datePickerWrapper">
-                        <div class="kq-calendar-header">
-                            <button class="nav-btn" id="prevMonth">‹</button>
-                            <div class="month-labels">
-                                <span id="monthLeft"></span>
-                                <span id="monthRight"></span>
-                            </div>
-                            <button class="nav-btn" id="nextMonth">›</button>
-                        </div>
-
-                        <div class="kq-calendar-grid">
-                            <div class="calendar-column">
-                                <div class="calendar-date-label">Departure Date <span id="selectedDepartLabel"></span></div>
-                                <div class="calendar-weekdays">
-                                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                                </div>
-                                <div class="calendar" id="calendarLeft"></div>
-                            </div>
-                            <div class="calendar-column">
-                                <div class="calendar-date-label">Return Date <span id="selectedReturnLabel"></span></div>
-                                <div class="calendar-weekdays">
-                                    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                                </div>
-                                <div class="calendar" id="calendarRight"></div>
-                            </div>
-                        </div>
-
-                        <button class="kq-done-btn">Done</button>
-                    </div>
-
-                    <input type="hidden" id="departDate" name="departDate" value="">
-                    <input type="hidden" id="returnDate" name="returnDate" value="">
+                    <!-- Search Button -->
+                    <button type="submit" class="search-btn-compact">
+                        <span>Search Flights</span>
+                    </button>
                 </form>
-              </div>
-
-              <div class="hero-chip">Flight booking</div>
-              <h1 class="hero-title">Book smarter, pay with M-Pesa, and breeze through every checkpoint</h1>
-              <p class="hero-subtitle">Real-time availability, M-Pesa mobile payment prompts, and express check-in for your next Kenya Airways itinerary.</p>
-              <div class="hero-login-links">
-                <a href="/members-login.html">Member Login</a>
-                <a href="/staff-login.html">Staff Login</a>
-                <a href="/admin-login.html">Admin Login</a>
-              </div>
-
+            </div>
         </div>
     </section>
+
+    <!-- Content Section -->
     <div class="container">
-        <div class="quick-actions-grid">
-            <a href="/checkin.html" class="quick-action-card simple">
-                <h3>Check In</h3>
-            </a>
-            <a href="/book-manage.html" class="quick-action-card simple">
-                <h3>Manage Booking</h3>
-            </a>
-            <a href="/flight-schedule.html" class="quick-action-card simple">
-                <h3>Flight Schedule</h3>
-            </a>
-            <a href="/flight-status.html" class="quick-action-card simple">
-                <h3>Flight Status</h3>
-            </a>
-        </div>
+        <!-- Popular Destinations with Images -->
+        <section class="destinations-section">
+            <h2 class="section-title-kq">Explore Popular Destinations</h2>
+            <p class="section-subtitle-kq">Discover amazing places around the world with SmartFly</p>
+            <div class="destinations-grid-kq">
+                <div class="destination-card-kq">
+                    <img src="/assets/images/destinations/nairobi.jpg" alt="Nairobi" class="destination-image-kq">
+                    <div class="destination-overlay-kq">
+                        <h3 class="destination-title-kq">Nairobi</h3>
+                        <p class="destination-desc-kq">The Safari Capital of the World</p>
+                        <span class="destination-price-kq">From Ksh 25,000</span>
+                    </div>
+                </div>
+                <div class="destination-card-kq">
+                    <img src="/assets/images/destinations/london.jpg" alt="London" class="destination-image-kq">
+                    <div class="destination-overlay-kq">
+                        <h3 class="destination-title-kq">London</h3>
+                        <p class="destination-desc-kq">Iconic British Heritage</p>
+                        <span class="destination-price-kq">From Ksh 85,000</span>
+                    </div>
+                </div>
+                <div class="destination-card-kq">
+                    <img src="/assets/images/destinations/dubai.jpg" alt="Dubai" class="destination-image-kq">
+                    <div class="destination-overlay-kq">
+                        <h3 class="destination-title-kq">Dubai</h3>
+                        <p class="destination-desc-kq">Luxury in the Desert</p>
+                        <span class="destination-price-kq">From Ksh 65,000</span>
+                    </div>
+                </div>
+                <div class="destination-card-kq">
+                    <img src="/assets/images/destinations/capetown.jpg" alt="Cape Town" class="destination-image-kq">
+                    <div class="destination-overlay-kq">
+                        <h3 class="destination-title-kq">Cape Town</h3>
+                        <p class="destination-desc-kq">Where Oceans Meet Mountains</p>
+                        <span class="destination-price-kq">From Ksh 45,000</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Choose SmartFly -->
+        <section class="features-section">
+            <h2 class="section-title-kq">Why Choose SmartFly</h2>
+            <div class="features-grid-kq">
+                <div class="feature-card-kq">
+                    <div class="feature-icon-kq">✈️</div>
+                    <h3 class="feature-title-kq">Extensive Network</h3>
+                    <p class="feature-desc-kq">Fly to 50+ destinations across Africa, Europe, Asia, and the Americas with our growing network.</p>
+                </div>
+                <div class="feature-card-kq">
+                    <div class="feature-icon-kq">💳</div>
+                    <h3 class="feature-title-kq">M-Pesa Payments</h3>
+                    <p class="feature-desc-kq">Seamless mobile payments with M-Pesa STK Push. Pay securely and conveniently from your phone.</p>
+                </div>
+                <div class="feature-card-kq">
+                    <div class="feature-icon-kq">📱</div>
+                    <h3 class="feature-title-kq">Express Check-in</h3>
+                    <p class="feature-desc-kq">Skip the queues with our digital check-in system. Get your boarding pass instantly on your device.</p>
+                </div>
+                <div class="feature-card-kq">
+                    <div class="feature-icon-kq">🌍</div>
+                    <h3 class="feature-title-kq">African Hospitality</h3>
+                    <p class="feature-desc-kq">Experience warm, genuine African hospitality with our award-winning cabin crew service.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How to Book Section -->
+        <section class="how-to-book-section">
+            <h2 class="section-title-kq">How to Book Online</h2>
+            <div class="steps-grid-kq">
+                <div class="step-card-kq">
+                    <div class="step-number-kq">1</div>
+                    <h3 class="step-title-kq">Enter Your Route</h3>
+                    <p class="step-desc-kq">Select your departure city and destination from our extensive network of airports and cities.</p>
+                </div>
+                <div class="step-card-kq">
+                    <div class="step-number-kq">2</div>
+                    <h3 class="step-title-kq">Choose Dates & Passengers</h3>
+                    <p class="step-desc-kq">Pick your travel dates, select cabin class, and specify the number of passengers traveling.</p>
+                </div>
+                <div class="step-card-kq">
+                    <div class="step-number-kq">3</div>
+                    <h3 class="step-title-kq">Select Your Flight</h3>
+                    <p class="step-desc-kq">Browse available flights, compare prices, and choose the option that best suits your schedule and budget.</p>
+                </div>
+                <div class="step-card-kq">
+                    <div class="step-number-kq">4</div>
+                    <h3 class="step-title-kq">Pay & Confirm</h3>
+                    <p class="step-desc-kq">Complete your booking using M-Pesa or other payment methods. Receive instant confirmation via SMS and email.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Special Offers Banner -->
+        <section class="offers-banner">
+            <div class="offer-content">
+                <h2 class="offer-title">Special Offer: 20% Off Business Class</h2>
+                <p class="offer-desc">Book Business Class flights to any destination and enjoy luxury at a fraction of the price. Use code: FLYSMART20</p>
+                <button class="offer-btn">Book Now</button>
+            </div>
+        </section>
+
+        <!-- Plan Your Trip Section -->
+        <section class="plan-trip-section">
+            <h2 class="section-title-kq">Plan Your Trip</h2>
+            <div class="plan-cards-grid">
+                <a href="/destinations.html" class="plan-card-kq">
+                    <div class="plan-icon-kq">🗺️</div>
+                    <h3 class="plan-title-kq">Discover Where We Fly</h3>
+                    <p class="plan-desc-kq">Explore our extensive network of 50+ destinations across Africa, Europe, Asia, and the Americas.</p>
+                </a>
+                <a href="/special-care.html" class="plan-card-kq">
+                    <div class="plan-icon-kq">❤️</div>
+                    <h3 class="plan-title-kq">Special Care Services</h3>
+                    <p class="plan-desc-kq">Dedicated assistance for unaccompanied minors, expectant mothers, and passengers with special needs.</p>
+                </a>
+                <a href="/baggage.html" class="plan-card-kq">
+                    <div class="plan-icon-kq">🧳</div>
+                    <h3 class="plan-title-kq">Baggage Information</h3>
+                    <p class="plan-desc-kq">Learn about baggage allowances, restrictions, and how to track your luggage throughout your journey.</p>
+                </a>
+                <a href="/travel-requirements.html" class="plan-card-kq">
+                    <div class="plan-icon-kq">📋</div>
+                    <h3 class="plan-title-kq">Travel Requirements</h3>
+                    <p class="plan-desc-kq">Essential information about visas, health requirements, and entry regulations for your destination.</p>
+                </a>
+            </div>
+        </section>
     </div>
 
-    <!-- Content Sections -->
-    <section class="content-section">
-        <div class="container">
-            <h2 class="section-title">Why Choose SmartFly</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">✓</div>
-                    <h3>Best Fares Guaranteed</h3>
-                    <p>Get the lowest prices or we'll match them</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🔒</div>
-                    <h3>Secure Booking</h3>
-                    <p>Industry-standard SSL encryption</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">🌍</div>
-                    <h3>Global Destinations</h3>
-                    <p>Fly to 500+ destinations worldwide</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">📱</div>
-                    <h3>Mobile First</h3>
-                    <p>Book on any device, anytime</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Popular Destinations Gallery -->
-    <section class="content-section destinations-section">
-        <div class="container">
-            <h2 class="section-title">Explore Popular Destinations</h2>
-            <p class="section-subtitle">Discover amazing places around the world</p>
-            
-            <div class="destinations-grid">
-                <div class="destination-card">
-                  <img src="/assets/images/destinations/beach.jpg" alt="Beach Escape" class="destination-image">
-                  <div class="destination-overlay">
-                    <h3 class="destination-title">Beach Escape</h3>
-                    <p class="destination-description">Crystal-clear waters and pristine beaches</p>
-                    <a href="/destinations-beach.html" class="destination-button">Explore →</a>
-                  </div>
-                </div>
-                
-                <div class="destination-card">
-                  <img src="/assets/images/destinations/heritage.jpg" alt="Heritage Trails" class="destination-image">
-                  <div class="destination-overlay">
-                    <h3 class="destination-title">Heritage Trails</h3>
-                    <p class="destination-description">Culture-rich cities and timeless landmarks</p>
-                    <a href="/destinations-heritage.html" class="destination-button">Explore →</a>
-                  </div>
-                </div>
-                
-                <div class="destination-card">
-                  <img src="/assets/images/destinations/london.jpg" alt="London" class="destination-image">
-                  <div class="destination-overlay">
-                    <h3 class="destination-title">London</h3>
-                    <p class="destination-description">Iconic skyline, theatre, and royal landmarks</p>
-                    <a href="/destination-london.html" class="destination-button">Explore →</a>
-                  </div>
-                </div>
-                
-                <div class="destination-card">
-                  <img src="/assets/images/destinations/dubai.jpg" alt="Dubai" class="destination-image">
-                  <div class="destination-overlay">
-                    <h3 class="destination-title">Dubai</h3>
-                    <p class="destination-description">Skyline glamour, desert adventures, and luxury</p>
-                    <a href="/destination-dubai.html" class="destination-button">Explore →</a>
-                  </div>
-                </div>
-                
-                <div class="destination-card">
-                  <img src="/assets/images/destinations/nairobi.jpg" alt="Nairobi" class="destination-image">
-                  <div class="destination-overlay">
-                    <h3 class="destination-title">Nairobi</h3>
-                    <p class="destination-description">Urban energy meets safari escapes</p>
-                    <a href="/destination-nairobi.html" class="destination-button">Explore →</a>
-                  </div>
-                </div>
-                
-                <div class="destination-card">
-                  <img src="/assets/images/destinations/aircraft.jpg" alt="Flight Experience" class="destination-image">
-                  <div class="destination-overlay">
-                    <h3 class="destination-title">Premium Travel</h3>
-                    <p class="destination-description">Comfort, dining, and premium cabins onboard</p>
-                    <a href="/experience.html" class="destination-button">Explore →</a>
-                  </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Additional Information -->
-    <section class="content-section alt-section">
-        <div class="container">
-            <div class="info-grid">
-                <div class="info-card">
-                    <div class="info-label">On-time performance</div>
-                    <div class="info-value">93%</div>
-                    <p>Smart operations with proactive rebooking and real-time alerts.</p>
-                </div>
-                <div class="info-card">
-                    <div class="info-label">Global support</div>
-                    <div class="info-value">24/7</div>
-                    <p>Dedicated agents via chat, phone, and airport desks worldwide.</p>
-                </div>
-                <div class="info-card">
-                    <div class="info-label">Fleet comfort</div>
-                    <div class="info-value">Premium</div>
-                    <p>Quiet cabins, refreshed interiors, Wi‑Fi on key routes, and curated meals.</p>
+    <!-- KQ-Style Footer -->
+    <footer class="footer-kq">
+        <div class="footer-container-kq">
+            <!-- Newsletter Section -->
+            <div class="footer-newsletter-kq">
+                <h3 class="newsletter-title-kq">Get the Latest Offers</h3>
+                <p class="newsletter-subtitle-kq">Subscribe to our newsletter for exclusive deals and travel tips</p>
+                <div class="newsletter-form-kq">
+                    <input type="email" placeholder="Enter your email" class="newsletter-input-kq">
+                    <button class="newsletter-btn-kq">Subscribe</button>
                 </div>
             </div>
 
-            <div class="deep-dive">
-                <div class="deep-card">
-                    <h3>Cabin experience</h3>
-                    <p>Ergonomic seating, generous legroom options, USB power, and mood lighting for better rest.</p>
+            <!-- Footer Columns -->
+            <div class="footer-columns-kq">
+                <!-- SmartFly Airways -->
+                <div class="footer-column-kq">
+                    <h4 class="footer-heading-kq">SmartFly Airways</h4>
+                    <ul class="footer-links-kq">
+                        <li><a href="/about.html">About us</a></li>
+                        <li><a href="/awards.html">Awards</a></li>
+                        <li><a href="/careers.html">Careers</a></li>
+                        <li><a href="/partners.html">Our Partners</a></li>
+                        <li><a href="/press.html">Press Releases</a></li>
+                        <li><a href="/sustainability.html">Sustainability</a></li>
+                    </ul>
                 </div>
-                <div class="deep-card">
-                    <h3>Seamless journeys</h3>
-                    <p>Priority lanes, digital boarding passes, and coordinated transfers at major hubs.</p>
-                </div>
-                <div class="deep-card">
-                    <h3>Loyalty rewards</h3>
-                    <p>Earn and redeem on every fare class with flexible upgrades and partner perks.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-content">
-            <div class="footer-top">
-                <div>
-                    <div class="logo">✈ SmartFly Airways</div>
-                    <p class="footer-text">Smart connections, thoughtful service, and reliable journeys across the globe.</p>
+                <!-- Company -->
+                <div class="footer-column-kq">
+                    <h4 class="footer-heading-kq">Company</h4>
+                    <ul class="footer-links-kq">
+                        <li><a href="/about.html">About</a></li>
+                        <li><a href="/careers.html">Careers</a></li>
+                        <li><a href="/newsroom.html">Newsroom</a></li>
+                    </ul>
                 </div>
-                <div class="footer-columns">
-                    <div class="footer-col">
-                        <h4>Company</h4>
-                        <a href="#">About</a>
-                        <a href="#">Careers</a>
-                        <a href="#">Newsroom</a>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Support</h4>
-                        <a href="#">Help Center</a>
-                        <a href="#">Travel alerts</a>
-                        <a href="#">Baggage</a>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Travel</h4>
-                        <a href="#">Manage booking</a>
-                        <a href="#">Check-in</a>
-                        <a href="#">Loyalty</a>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Connect</h4>
-                        <a href="#">Twitter</a>
-                        <a href="#">Instagram</a>
-                        <a href="#">LinkedIn</a>
-                    </div>
-                    <div class="footer-col footer-signin-section">
-                        <h4>Account Access</h4>
-                        <div class="signin-dropdown-container">
-                            <button class="signin-dropdown-btn" id="signinDropdownBtn">
-                                <span>Sign In</span>
-                                <span class="dropdown-arrow">▼</span>
-                            </button>
-                            <div class="signin-dropdown-menu" id="signinDropdownMenu">
-                                <a href="/members-login.html" class="signin-option">
-                                    <span class="option-icon">👤</span>
-                                    <span class="option-text">Member Login</span>
-                                </a>
-                                <a href="/staff-login.html" class="signin-option">
-                                    <span class="option-icon">✈️</span>
-                                    <span class="option-text">Staff Login</span>
-                                </a>
-                                <a href="/admin-login.html" class="signin-option">
-                                    <span class="option-icon">🔐</span>
-                                    <span class="option-text">Admin Login</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+
+                <!-- Support -->
+                <div class="footer-column-kq">
+                    <h4 class="footer-heading-kq">Help</h4>
+                    <ul class="footer-links-kq">
+                        <li><a href="/feedback.html">Feedback/Complaint</a></li>
+                        <li><a href="/contact.html">Contact us</a></li>
+                        <li><a href="/name-change.html">Name Change</a></li>
+                        <li><a href="/travel-requirements.html">Travel Requirements</a></li>
+                        <li><a href="/special-assistance.html">Special Assistance</a></li>
+                        <li><a href="/faqs.html">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <!-- Travel -->
+                <div class="footer-column-kq">
+                    <h4 class="footer-heading-kq">Manage</h4>
+                    <ul class="footer-links-kq">
+                        <li><a href="/change-booking.html">Change Booking</a></li>
+                        <li><a href="/checkin.html">Check-in</a></li>
+                        <li><a href="/refund.html">Refund Form</a></li>
+                        <li><a href="/upgrade.html">Upgrade Flight</a></li>
+                        <li><a href="/delays.html">Delay and Cancellations</a></li>
+                    </ul>
+                </div>
+
+                <!-- Popular Destinations -->
+                <div class="footer-column-kq">
+                    <h4 class="footer-heading-kq">Popular Destinations</h4>
+                    <ul class="footer-links-kq">
+                        <li><a href="/destinations/nairobi.html">Nairobi</a></li>
+                        <li><a href="/destinations/mombasa.html">Mombasa</a></li>
+                        <li><a href="/destinations/london.html">London Gatwick</a></li>
+                        <li><a href="/destinations/cape-town.html">Cape Town</a></li>
+                        <li><a href="/destinations/new-york.html">New York</a></li>
+                    </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 SmartFly Airways. All rights reserved.</p>
-                <div class="footer-links">
-                    <a href="#">Privacy</a>
-                    <a href="#">Terms</a>
-                    <a href="#">Contact</a>
+
+            <!-- App Download Section -->
+            <div class="footer-apps-kq">
+                <p class="apps-text-kq">Travel made simpler. Book and manage flights on the go!</p>
+                <div class="app-buttons-kq">
+                    <a href="#" class="app-btn-kq">
+                        <span class="app-icon-kq">📱</span>
+                        <span class="app-text-kq">Google Play Store</span>
+                    </a>
+                    <a href="#" class="app-btn-kq">
+                        <span class="app-icon-kq">🍎</span>
+                        <span class="app-text-kq">Apple App Store</span>
+                    </a>
                 </div>
+            </div>
+
+            <!-- Bottom Footer -->
+            <div class="footer-bottom-kq">
+                <div class="footer-bottom-links-kq">
+                    <a href="/privacy.html">Privacy Statement</a>
+                    <a href="/conditions.html">Conditions of Carriage</a>
+                    <a href="/security.html">Website Security Statement</a>
+                    <a href="/browser-compatibility.html">Browser Compatibility</a>
+                    <a href="/cookies.html">Cookie Statement</a>
+                    <a href="/customer-service.html">Customer Service Plan</a>
+                    <a href="/contingency.html">Contingency Plan</a>
+                    <a href="/optional-fees.html">Optional Fees</a>
+                    <a href="/refund-statement.html">24 Hours Refund Statement</a>
+                </div>
+                <p class="copyright-kq">&copy; 2026 SmartFly Airways PLC. All rights reserved.</p>
             </div>
         </div>
     </footer>
@@ -1480,22 +2721,27 @@
         }
 
         // ============================================
-        // SHOW DATE PICKER WHEN ROUTE SELECTED
+        // COMPACT DROPDOWN FUNCTIONALITY
         // ============================================
-        const fromInput = document.getElementById("fromInput");
-        const toInput = document.getElementById("toInput");
-        const datePicker = document.getElementById("datePickerWrapper");
+        // Note: This functionality is now handled in script.js to avoid conflicts
 
-        function checkRouteSelected() {
-          if (fromInput.value.trim() !== "" && toInput.value.trim() !== "") {
-            datePicker.style.display = "block";
-          } else {
-            datePicker.style.display = "none";
-          }
+        // Hero Slideshow
+        const heroSlides = document.querySelectorAll('.hero-slide-kq');
+        let currentSlide = 0;
+
+        function rotateSlides() {
+            heroSlides.forEach((slide, index) => {
+                slide.classList.remove('active');
+                if (index === currentSlide) {
+                    slide.classList.add('active');
+                }
+            });
+            currentSlide = (currentSlide + 1) % heroSlides.length;
         }
 
-        fromInput.addEventListener("input", checkRouteSelected);
-        toInput.addEventListener("input", checkRouteSelected);
+        if (heroSlides.length > 0) {
+            setInterval(rotateSlides, 5000);
+        }
 
         function getDeterministicVariation(date, basePrice) {
           const seed = (date.getFullYear() * 10000) + ((date.getMonth() + 1) * 100) + date.getDate();
@@ -1539,15 +2785,25 @@
           const fromCode = fromInput.value ? fromInput.value.split(',')[0].trim().toUpperCase() : 'NBO';
           const toCode = toInput.value ? toInput.value.split(',')[0].trim().toUpperCase() : 'LHR';
           
-          // Start from the date passed in (could be today or a specific date in next month)
-          const startDay = calendarMonth.getDate();
+          // Get first day of the month and total days
+          const firstDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
+          const lastDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 0);
+          const daysInMonth = lastDay.getDate();
+          const startDayOfWeek = firstDay.getDay(); // 0 = Sunday, 1 = Monday, etc.
+          
           const prices = generatePricesForMonth(calendarMonth, fromCode, toCode);
 
-          for (let day = startDay; day <= 31; day++) {
+          // Add empty cells for days before the first day of the month
+          for (let i = 0; i < startDayOfWeek; i++) {
+            const emptyCell = document.createElement("div");
+            emptyCell.className = "calendar-day";
+            emptyCell.style.visibility = "hidden";
+            container.appendChild(emptyCell);
+          }
+
+          // Add day cells
+          for (let day = 1; day <= daysInMonth; day++) {
             const currentDate = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), day);
-            
-            // Stop at end of month
-            if (currentDate.getMonth() !== calendarMonth.getMonth()) break;
             
             const cell = document.createElement("div");
             cell.className = "calendar-day";
@@ -1558,16 +2814,13 @@
             
             // Disable past dates (except if return and past is allowed)
             if (isPastDate && !isReturnCalendar) {
-              cell.style.opacity = "0.4";
-              cell.style.cursor = "not-allowed";
-              cell.style.pointerEvents = "none";
               cell.classList.add("disabled");
             } else if (isToday) {
               cell.classList.add("today");
             }
 
             cell.innerHTML = `
-              <div>${day}</div>
+              <div class="day-number">${day}</div>
               <div class="day-price">Ksh ${price.toLocaleString()}</div>
             `;
 
@@ -1581,12 +2834,28 @@
             // Add click handler for date selection
             if (!isPastDate || isReturnCalendar) {
               cell.addEventListener("click", () => {
+                // Remove selected class from all cells in this calendar
+                container.querySelectorAll('.calendar-day').forEach(c => c.classList.remove('selected'));
+                cell.classList.add('selected');
+                
                 const dateStr = currentDate.toISOString().split('T')[0];
                 const formattedDate = currentDate.toLocaleDateString('en-US', { 
                   month: 'short', 
                   day: 'numeric', 
                   year: 'numeric' 
                 });
+                
+                // Update the hidden input and display
+                if (isReturnCalendar) {
+                  document.getElementById('returnDate').value = dateStr;
+                  document.getElementById('returnDateDisplay').value = formattedDate;
+                  document.getElementById('selectedReturnLabel').textContent = formattedDate;
+                } else {
+                  document.getElementById('departDate').value = dateStr;
+                  document.getElementById('departDateDisplay').value = formattedDate;
+                  document.getElementById('selectedDepartLabel').textContent = formattedDate;
+                }
+                
                 console.log(`Selected date: ${dateStr} (${formattedDate}) - Price: Ksh ${price}`);
               });
             }
@@ -1595,34 +2864,125 @@
           }
         }
 
-        // Generate calendars for current month and next month
+        // KQ-Style Form Interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Trip Type Tabs
+            const tripTabs = document.querySelectorAll('.trip-tab-kq');
+            const tripTypeInput = document.getElementById('tripType');
+            const returnDateField = document.getElementById('returnDateField');
+
+            tripTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    tripTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const type = this.getAttribute('data-type');
+                    tripTypeInput.value = type;
+                    
+                    // Show/hide return date field
+                    if (type === 'oneway') {
+                        returnDateField.style.display = 'none';
+                    } else {
+                        returnDateField.style.display = 'block';
+                    }
+                });
+            });
+
+            // Date Picker Integration (simplified for KQ style)
+            const departDateDisplay = document.getElementById('departDateDisplay');
+            const returnDateDisplay = document.getElementById('returnDateDisplay');
+            
+            if (departDateDisplay) {
+                departDateDisplay.addEventListener('click', function() {
+                    // Could open a simplified date picker here
+                    // For now, just log
+                    console.log('Departure date clicked');
+                });
+            }
+
+            if (returnDateDisplay) {
+                returnDateDisplay.addEventListener('click', function() {
+                    console.log('Return date clicked');
+                });
+            }
+        });
+
+        // Generate calendars for current month and next month using real-time dates
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         
-        // Start from today's date for the first calendar
-        const currentMonth = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        // Next month calendar starts from today's date in next month
-        const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, today.getDate());
+        // Log current date for verification
+        console.log('Current date (real-time):', today.toLocaleDateString('en-US', { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }));
         
-        generateCalendar("calendarLeft", currentMonth, false); // Departure calendar
-        generateCalendar("calendarRight", nextMonth, true);    // Return calendar
+        // Global month state for navigation - start from 1st of current month
+        let departureMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        let returnMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        
+        // Function to update month labels and regenerate calendars
+        function updateCalendars() {
+            const departLabel = departureMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            const returnLabel = returnMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            
+            const monthLeftEl = document.getElementById('monthLeft');
+            const monthRightEl = document.getElementById('monthRight');
+            
+            if (monthLeftEl) monthLeftEl.textContent = departLabel;
+            if (monthRightEl) monthRightEl.textContent = returnLabel;
+            
+            generateCalendar("calendarLeft", departureMonth, false); // Departure calendar
+            generateCalendar("calendarRight", returnMonth, true);    // Return calendar
+        }
+        
+        // Month navigation handlers
+        const prevMonthBtn = document.getElementById('prevMonth');
+        const nextMonthBtn = document.getElementById('nextMonth');
+        
+        if (prevMonthBtn) {
+            prevMonthBtn.addEventListener('click', () => {
+                departureMonth.setMonth(departureMonth.getMonth() - 1);
+                returnMonth.setMonth(returnMonth.getMonth() - 1);
+                updateCalendars();
+            });
+        }
+        
+        if (nextMonthBtn) {
+            nextMonthBtn.addEventListener('click', () => {
+                departureMonth.setMonth(departureMonth.getMonth() + 1);
+                returnMonth.setMonth(returnMonth.getMonth() + 1);
+                updateCalendars();
+            });
+        }
+        
+        // Initial calendar generation
+        updateCalendars();
+        
+        // Done button functionality (removed - using new KQ style)
+    })();
+
     // ============================================
     // MOBILE MENU TOGGLE
     // ============================================
     const mobileBtn = document.querySelector('.mobile-menu-button');
-    const navLinks = document.querySelector('.nav-links');
+    const navLinks = document.querySelector('.nav-menu');
     
-    mobileBtn.addEventListener('click', () => {
-      navLinks.classList.toggle('show');
-      mobileBtn.classList.toggle('active');
-      
-      // Update icon
-      if (navLinks.classList.contains('show')) {
-        mobileBtn.innerHTML = '✕';
-      } else {
-        mobileBtn.innerHTML = '☰';
-      }
-    });
+    if (mobileBtn && navLinks) {
+      mobileBtn.addEventListener('click', () => {
+        navLinks.classList.toggle('show');
+        mobileBtn.classList.toggle('active');
+        
+        // Update icon
+        if (navLinks.classList.contains('show')) {
+          mobileBtn.innerHTML = '✕';
+        } else {
+          mobileBtn.innerHTML = '☰';
+        }
+      });
+    }
 
     // ============================================
     // MOBILE MEGA-MENU DROPDOWN TOGGLE
@@ -1636,10 +2996,15 @@
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => {
-        if(window.innerWidth > 768) {
-          navLinks.classList.remove('show');
-          mobileBtn.classList.remove('active');
-          mobileBtn.innerHTML = '☰';
+        if(window.innerWidth > 1024) {
+          const navMenu = document.querySelector('.nav-menu');
+          if (navMenu) {
+            navMenu.classList.remove('show');
+          }
+          if (mobileBtn) {
+            mobileBtn.classList.remove('active');
+            mobileBtn.innerHTML = '☰';
+          }
           document.querySelectorAll('.mega-menu').forEach(m => m.classList.remove('show'));
         }
       }, 250);
@@ -1652,13 +3017,31 @@
     
     megaMenuLinks.forEach(link => {
       link.addEventListener('click', () => {
-        if (window.innerWidth <= 768) {
-          navLinks.classList.remove('show');
-          mobileBtn.classList.remove('active');
-          mobileBtn.innerHTML = '☰';
+        if (window.innerWidth <= 1024) {
+          const navMenu = document.querySelector('.nav-menu');
+          if (navMenu) {
+            navMenu.classList.remove('show');
+          }
+          if (mobileBtn) {
+            mobileBtn.classList.remove('active');
+            mobileBtn.innerHTML = '☰';
+          }
           document.querySelectorAll('.mega-menu').forEach(m => m.classList.remove('show'));
         }
       });
+    });
+
+    // ============================================
+    // HEADER SCROLL SHADOW
+    // ============================================
+    const header = document.querySelector('.header');
+    
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        header.classList.add('scrolled');
+      } else {
+        header.classList.remove('scrolled');
+      }
     });
 
     // ============================================
@@ -1692,111 +3075,7 @@
     // ============================================
     // KQ COMPACT DROPDOWNS (TRIP TYPE, PASSENGERS, CLASS)
     // ============================================
-    function initKQDropdown(dropdownId, hiddenInputId, displayFormat) {
-      const dropdown = document.getElementById(dropdownId);
-      if (!dropdown) return;
-      
-      const btn = dropdown.querySelector('.kq-dropdown-btn-compact');
-      const menu = dropdown.querySelector('.kq-dropdown-menu-compact');
-      const valueSpan = btn.querySelector('.kq-value');
-      const hiddenInput = document.getElementById(hiddenInputId);
-
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isVisible = menu.style.display === 'block';
-        
-        // Close all other dropdowns
-        document.querySelectorAll('.kq-dropdown-menu-compact').forEach(m => {
-          if (m !== menu) m.style.display = 'none';
-        });
-        document.querySelectorAll('.kq-dropdown-btn-compact').forEach(b => {
-          if (b !== btn) b.classList.remove('active');
-        });
-        
-        menu.style.display = isVisible ? 'none' : 'block';
-        btn.classList.toggle('active', !isVisible);
-      });
-
-      menu.querySelectorAll('li').forEach(item => {
-        item.addEventListener('click', () => {
-          const value = item.getAttribute('data-value');
-          const text = item.textContent;
-          const displayAttr = item.getAttribute('data-display');
-          const displayText = displayFormat ? displayFormat(value, text, displayAttr) : text;
-          valueSpan.textContent = displayText;
-          hiddenInput.value = value;
-          menu.style.display = 'none';
-          btn.classList.remove('active');
-          
-          // Store selected class in sessionStorage when changed
-          if (hiddenInputId === 'class') {
-            sessionStorage.setItem('selectedClass', value);
-            sessionStorage.setItem('selectedClassName', displayText);
-          }
-          
-          // Handle trip type change - show/hide return date
-          if (hiddenInputId === 'tripType') {
-            const returnField = document.getElementById('returnDateField');
-            if (returnField) {
-              const isReturnTrip = value === 'return' || value === 'roundtrip';
-              returnField.style.display = isReturnTrip ? 'flex' : 'none';
-            }
-          }
-        });
-      });
-
-      document.addEventListener('click', e => {
-        if (!dropdown.contains(e.target)) {
-          menu.style.display = 'none';
-          btn.classList.remove('active');
-        }
-      });
-    }
-
-    // Initialize dropdowns
-    initKQDropdown('tripTypeDropdown', 'tripType');
-    initKQDropdown('passengersDropdown', 'passengers', (value, text, displayAttr) => {
-      return displayAttr || text;
-    });
-    initKQDropdown('classDropdown', 'class');
-
-    // ============================================
-    // SHOW/HIDE DATE FIELDS BASED ON FROM/TO
-    // ============================================
-    const departDateField = document.getElementById('departDateField');
-    const returnDateField = document.getElementById('returnDateField');
-    const tripTypeInput = document.getElementById('tripType');
-    const datePickerWrapper = document.getElementById('datePickerWrapper');
-
-    function updateDateFieldsVisibility() {
-      const fromSelected = fromInput && fromInput.dataset.selected === 'true';
-      const toSelected = toInput && toInput.dataset.selected === 'true';
-      const bothSelected = fromSelected && toSelected;
-      
-      if (departDateField) {
-        departDateField.style.display = bothSelected ? 'flex' : 'none';
-      }
-
-      if (datePickerWrapper) {
-        datePickerWrapper.style.display = bothSelected ? 'block' : 'none';
-      }
-      
-      if (returnDateField && tripTypeInput) {
-        const isReturn = tripTypeInput.value === 'return' || tripTypeInput.value === 'roundtrip';
-        returnDateField.style.display = (bothSelected && isReturn) ? 'flex' : 'none';
-      }
-    }
-
-    // Listen to input changes
-    if (fromInput) {
-      fromInput.addEventListener('input', updateDateFieldsVisibility);
-      fromInput.addEventListener('change', updateDateFieldsVisibility);
-    }
-    
-    if (toInput) {
-      toInput.addEventListener('input', updateDateFieldsVisibility);
-      toInput.addEventListener('change', updateDateFieldsVisibility);
-    }
+    // Note: This functionality is now handled in script.js to avoid conflicts
 
     // ============================================
     // MEGA MENU CLICK TOGGLE (DESKTOP & MOBILE)
@@ -1837,9 +3116,6 @@
         navItems.forEach(item => item.classList.remove('open'));
       }
     });
-
-    // Initial check
-    updateDateFieldsVisibility();
     </script>
 </body>
 </html>

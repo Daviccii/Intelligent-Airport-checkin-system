@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dropdowns</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        .dropdown-compact {
+            position: relative;
+            margin-bottom: 10px;
+        }
+        
+        .dropdown-btn-compact {
+            width: 100%;
+            padding: 12px 14px;
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dropdown-btn-compact:hover,
+        .dropdown-btn-compact.active {
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+        }
+        
+        .dropdown-value {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .dropdown-arrow {
+            font-size: 12px;
+            color: #6b7280;
+            transition: transform 0.3s ease;
+        }
+        
+        .dropdown-btn-compact.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-menu-compact {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+            margin-top: 4px;
+            list-style: none;
+            padding: 8px 0;
+        }
+        
+        .dropdown-menu-compact.show {
+            display: block;
+            animation: slideDown 0.2s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .dropdown-menu-compact li {
+            padding: 10px 16px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            font-size: 14px;
+            color: #1f2937;
+        }
+        
+        .dropdown-menu-compact li:hover {
+            background: #f8f9fa;
+            color: #1e3a8a;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dropdown Functionality Test</h1>
+    
+    <div class="test-section">
+        <h2>Trip Type Dropdown</h2>
+        <div class="dropdown-compact" id="tripTypeDropdown">
+            <button type="button" class="dropdown-btn-compact">
+                <span class="dropdown-value">Return</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <ul class="dropdown-menu-compact">
+                <li data-value="return">Return</li>
+                <li data-value="oneway">One-way</li>
+                <li data-value="multicity">Multi-city</li>
+            </ul>
+        </div>
+        <div class="status" id="tripTypeStatus">Click the dropdown to test</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>From Airport Dropdown</h2>
+        <div class="dropdown-compact" id="fromDropdown">
+            <button type="button" class="dropdown-btn-compact">
+                <span class="dropdown-value">Nairobi (NBO)</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <ul class="dropdown-menu-compact airport-menu">
+                <li data-value="NBO" data-display="Nairobi (NBO)">Nairobi (NBO)</li>
+                <li data-value="MBA" data-display="Mombasa (MBA)">Mombasa (MBA)</li>
+                <li data-value="LHR" data-display="London (LHR)">London (LHR)</li>
+                <li data-value="DXB" data-display="Dubai (DXB)">Dubai (DXB)</li>
+            </ul>
+        </div>
+        <div class="status" id="fromStatus">Click the dropdown to test</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Class Dropdown</h2>
+        <div class="dropdown-compact" id="classDropdown">
+            <button type="button" class="dropdown-btn-compact">
+                <span class="dropdown-value">Economy</span>
+                <span class="dropdown-arrow">▼</span>
+            </button>
+            <ul class="dropdown-menu-compact">
+                <li data-value="economy">Economy</li>
+                <li data-value="premium">Premium Economy</li>
+                <li data-value="business">Business</li>
+                <li data-value="first">First Class</li>
+            </ul>
+        </div>
+        <div class="status" id="classStatus">Click the dropdown to test</div>
+    </div>
+    
+    <script>
+        // Test dropdown functionality
+        function initTestDropdowns() {
+            // Trip type dropdown
+            const tripTypeDropdown = document.getElementById('tripTypeDropdown');
+            if (tripTypeDropdown) {
+                const dropdownBtn = tripTypeDropdown.querySelector('.dropdown-btn-compact');
+                const dropdownMenu = tripTypeDropdown.querySelector('.dropdown-menu-compact');
+                const valueDisplay = dropdownBtn.querySelector('.dropdown-value');
+                const status = document.getElementById('tripTypeStatus');
+                
+                if (dropdownBtn && dropdownMenu) {
+                    dropdownBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        closeAllDropdowns(tripTypeDropdown);
+                        dropdownBtn.classList.toggle('active');
+                        dropdownMenu.classList.toggle('show');
+                        status.textContent = 'Dropdown clicked! Menu should be visible.';
+                        status.className = 'status success';
+                    });
+                    
+                    const options = dropdownMenu.querySelectorAll('li');
+                    options.forEach(option => {
+                        option.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const value = option.dataset.value;
+                            const display = option.textContent;
+                            
+                            valueDisplay.textContent = display;
+                            dropdownBtn.classList.remove('active');
+                            dropdownMenu.classList.remove('show');
+                            status.textContent = `Selected: ${display} (${value})`;
+                            status.className = 'status success';
+                        });
+                    });
+                }
+            }
+            
+            // From airport dropdown
+            const fromDropdown = document.getElementById('fromDropdown');
+            if (fromDropdown) {
+                const dropdownBtn = fromDropdown.querySelector('.dropdown-btn-compact');
+                const dropdownMenu = fromDropdown.querySelector('.dropdown-menu-compact');
+                const valueDisplay = dropdownBtn.querySelector('.dropdown-value');
+                const status = document.getElementById('fromStatus');
+                
+                if (dropdownBtn && dropdownMenu) {
+                    dropdownBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        closeAllDropdowns(fromDropdown);
+                        dropdownBtn.classList.toggle('active');
+                        dropdownMenu.classList.toggle('show');
+                        status.textContent = 'Dropdown clicked! Menu should be visible.';
+                        status.className = 'status success';
+                    });
+                    
+                    const options = dropdownMenu.querySelectorAll('li');
+                    options.forEach(option => {
+                        option.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const value = option.dataset.value;
+                            const display = option.dataset.display;
+                            
+                            valueDisplay.textContent = display;
+                            dropdownBtn.classList.remove('active');
+                            dropdownMenu.classList.remove('show');
+                            status.textContent = `Selected: ${display} (${value})`;
+                            status.className = 'status success';
+                        });
+                    });
+                }
+            }
+            
+            // Class dropdown
+            const classDropdown = document.getElementById('classDropdown');
+            if (classDropdown) {
+                const dropdownBtn = classDropdown.querySelector('.dropdown-btn-compact');
+                const dropdownMenu = classDropdown.querySelector('.dropdown-menu-compact');
+                const valueDisplay = dropdownBtn.querySelector('.dropdown-value');
+                const status = document.getElementById('classStatus');
+                
+                if (dropdownBtn && dropdownMenu) {
+                    dropdownBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        closeAllDropdowns(classDropdown);
+                        dropdownBtn.classList.toggle('active');
+                        dropdownMenu.classList.toggle('show');
+                        status.textContent = 'Dropdown clicked! Menu should be visible.';
+                        status.className = 'status success';
+                    });
+                    
+                    const options = dropdownMenu.querySelectorAll('li');
+                    options.forEach(option => {
+                        option.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            const value = option.dataset.value;
+                            const display = option.textContent;
+                            
+                            valueDisplay.textContent = display;
+                            dropdownBtn.classList.remove('active');
+                            dropdownMenu.classList.remove('show');
+                            status.textContent = `Selected: ${display} (${value})`;
+                            status.className = 'status success';
+                        });
+                    });
+                }
+            }
+        }
+        
+        function closeAllDropdowns(exceptDropdown) {
+            const allDropdowns = document.querySelectorAll('.dropdown-compact');
+            allDropdowns.forEach(dropdown => {
+                if (dropdown !== exceptDropdown) {
+                    const btn = dropdown.querySelector('.dropdown-btn-compact');
+                    const menu = dropdown.querySelector('.dropdown-menu-compact');
+                    
+                    if (btn) btn.classList.remove('active');
+                    if (menu) menu.classList.remove('show');
+                }
+            });
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown-compact')) {
+                closeAllDropdowns(null);
+            }
+        });
+        
+        // Initialize
+        initTestDropdowns();
+    </script>
+</body>
+</html>

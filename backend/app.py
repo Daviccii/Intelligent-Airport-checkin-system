@@ -20,16 +20,28 @@ import urllib.parse
 import qrcode
 import secrets
 import time
+import logging
+from mpesa_integration import mpesa_integration, sms_integration, email_integration
 
 # Load environment variables from .env file
 load_dotenv()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Try to initialize RQ queue for background jobs (optional)
 RQ_QUEUE = None
 try:
     import redis
     from rq import Queue
-    redis_conn = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'), port=int(os.getenv('REDIS_PORT', 6379)), db=0)
+    redis_port_str = os.getenv('REDIS_PORT', '6379')
+    try:
+        redis_port = int(redis_port_str)
+    except (ValueError, TypeError):
+        logger.warning(f"Invalid REDIS_PORT value: {redis_port_str}, using default 6379")
+        redis_port = 6379
+    redis_conn = redis.Redis(host=os.getenv('REDIS_HOST', 'localhost'), port=redis_port, db=0)
     RQ_QUEUE = Queue(connection=redis_conn)
 except Exception:
     # RQ/Redis not available; will fall back to threading
@@ -4076,34 +4088,32 @@ def api_admin_login():
     
     if username in users:
         stored_hash = users[username]['password_hash']
-        try:
-                if password == stored_hash:
-                    # admin sessions have a short TTL for the admin portal (seconds), configurable via ADMIN_SESSION_TTL_SECONDS
-                    try:
-                        # Default admin session TTL to 1 hour unless overridden
-                        admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '3600'))
-                    except Exception:
-                        admin_ttl = 3600.0
-                    token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
-                log_event({
-                    'type': 'admin_login',
-                    'username': username,
-                    'timestamp': datetime.utcnow().isoformat() + 'Z'
-                })
-                resp = jsonify({
-                    'token': token,
-                    'role': 'admin',
-                    'expires': expires,
-                    'username': username
-                })
-                try:
-                    # set a cookie so browser navigation to admin pages includes session
-                    resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax')
-                except Exception:
-                    pass
-                return resp, 200
-        except Exception:
-            pass
+        if password == stored_hash:
+            # admin sessions have a short TTL for the admin portal (seconds), configurable via ADMIN_SESSION_TTL_SECONDS
+            try:
+                # Default admin session TTL to 1 hour unless overridden
+                admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '10800  '))
+            except Exception:
+                admin_ttl = 3600.0
+
+            token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
+            log_event({
+                'type': 'admin_login',
+                'username': username,
+                'timestamp': datetime.utcnow().isoformat() + 'Z'
+            })
+            resp = jsonify({
+                'token': token,
+                'role': 'admin',
+                'expires': expires,
+                'username': username
+            })
+            try:
+                # set a cookie so browser navigation to admin pages includes session
+                resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax')
+            except Exception:
+                pass
+            return resp, 200
     
     return jsonify({'error': 'Invalid credentials'}), 401
 
@@ -5461,6 +5471,358 @@ def api_get_users():
         
     except Exception as e:
         return jsonify({'users': [], 'count': 0}), 200
+
+
+# ============================================
+# M-PESA INTEGRATION ENDPOINTS
+# ============================================
+
+@app.route('/api/mpesa/stkpush', methods=['POST'])
+def mpesa_stk_push():
+    """
+    Initiate M-Pesa STK Push payment
+    Request body: {
+        "phone_number": "2547XXXXXXXXX",
+        "amount": 1000,
+        "account_reference": "BOOKING123",
+        "transaction_desc": "Flight booking payment"
+    }
+    """
+    try:
+        if not mpesa_integration:
+            return jsonify({
+                'success': False,
+                'message': 'M-Pesa integration not available. Please check configuration.'
+            }), 503
+        
+        data = request.get_json()
+        
+        phone_number = data.get('phone_number')
+        amount = data.get('amount')
+        account_reference = data.get('account_reference')
+        transaction_desc = data.get('transaction_desc', 'Flight booking payment')
+        
+        # Validate required fields
+        if not all([phone_number, amount, account_reference]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required fields: phone_number, amount, account_reference'
+            }), 400
+        
+        # Construct callback URL
+        callback_url = f"{request.host_url}api/mpesa/callback"
+        
+        # Initiate STK Push
+        result = mpesa_integration.stk_push_payment(
+            phone_number=phone_number,
+            amount=amount,
+            callback_url=callback_url,
+            account_reference=account_reference,
+            transaction_desc=transaction_desc
+        )
+        
+        if result.get('success'):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Error in STK Push: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/mpesa/callback', methods=['POST'])
+def mpesa_callback():
+    """
+    Handle M-Pesa payment callback
+    This endpoint receives payment confirmation from M-Pesa
+    """
+    try:
+        data = request.get_json()
+        
+        # Log the callback for debugging
+        logger.info(f"M-Pesa callback received: {json.dumps(data, indent=2)}")
+        
+        # Extract transaction details
+        body = data.get('Body', {})
+        stk_callback = body.get('stkCallback', {})
+        
+        merchant_request_id = stk_callback.get('MerchantRequestID')
+        checkout_request_id = stk_callback.get('CheckoutRequestID')
+        result_code = stk_callback.get('ResultCode')
+        result_desc = stk_callback.get('ResultDesc')
+        
+        callback_metadata = stk_callback.get('CallbackMetadata', {}).get('Item', [])
+        
+        # Extract payment details
+        amount = None
+        mpesa_receipt = None
+        transaction_date = None
+        phone_number = None
+        
+        for item in callback_metadata:
+            name = item.get('Name')
+            value = item.get('Value')
+            
+            if name == 'Amount':
+                amount = value
+            elif name == 'MpesaReceiptNumber':
+                mpesa_receipt = value
+            elif name == 'TransactionDate':
+                transaction_date = value
+            elif name == 'PhoneNumber':
+                phone_number = value
+        
+        # Check if payment was successful
+        if result_code == 0:
+            # Payment successful - send SMS confirmation
+            if amount and mpesa_receipt and phone_number:
+                booking_reference = merchant_request_id  # Use merchant request ID as booking reference
+                
+                # Send SMS payment confirmation if SMS integration is available
+                if sms_integration:
+                    sms_result = sms_integration.send_payment_confirmation(
+                        phone_number=phone_number,
+                        amount=amount,
+                        transaction_id=mpesa_receipt,
+                        booking_reference=booking_reference,
+                        flight_details={'route': 'NBO-JKQ', 'date': 'TBD', 'time': 'TBD'}
+                    )
+                    logger.info(f"SMS confirmation sent: {sms_result}")
+                else:
+                    logger.warning("SMS integration not available, skipping SMS confirmation")
+            
+            return jsonify({
+                'success': True,
+                'message': 'Payment processed successfully',
+                'result_code': result_code,
+                'result_desc': result_desc
+            }), 200
+        else:
+            # Payment failed
+            return jsonify({
+                'success': False,
+                'message': result_desc,
+                'result_code': result_code
+            }), 400
+            
+    except Exception as e:
+        logger.error(f"Error processing M-Pesa callback: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/mpesa/c2b/register', methods=['POST'])
+def mpesa_c2b_register():
+    """
+    Register C2B callback URLs with M-Pesa
+    Request body: {
+        "validation_url": "https://yourdomain.com/api/mpesa/c2b/validation",
+        "confirmation_url": "https://yourdomain.com/api/mpesa/c2b/confirmation",
+        "response_type": "Completed"
+    }
+    """
+    try:
+        if not mpesa_integration:
+            return jsonify({
+                'success': False,
+                'message': 'M-Pesa integration not available. Please check configuration.'
+            }), 503
+        
+        data = request.get_json()
+        
+        validation_url = data.get('validation_url')
+        confirmation_url = data.get('confirmation_url')
+        response_type = data.get('response_type', 'Completed')
+        
+        if not all([validation_url, confirmation_url]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required fields: validation_url, confirmation_url'
+            }), 400
+        
+        result = mpesa_integration.c2b_register_url(
+            validation_url=validation_url,
+            confirmation_url=confirmation_url,
+            response_type=response_type
+        )
+        
+        if result.get('success'):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Error registering C2B URLs: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/mpesa/b2c/payment', methods=['POST'])
+def mpesa_b2c_payment():
+    """
+    Initiate B2C payment (refunds/payouts)
+    Request body: {
+        "phone_number": "2547XXXXXXXXX",
+        "amount": 1000,
+        "command_id": "BusinessPayment",
+        "remarks": "Flight refund",
+        "occasion": "Refund"
+    }
+    """
+    try:
+        if not mpesa_integration:
+            return jsonify({
+                'success': False,
+                'message': 'M-Pesa integration not available. Please check configuration.'
+            }), 503
+        
+        data = request.get_json()
+        
+        phone_number = data.get('phone_number')
+        amount = data.get('amount')
+        command_id = data.get('command_id', 'BusinessPayment')
+        remarks = data.get('remarks', 'Payment')
+        occasion = data.get('occasion', '')
+        
+        if not all([phone_number, amount]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required fields: phone_number, amount'
+            }), 400
+        
+        result = mpesa_integration.b2c_payment(
+            phone_number=phone_number,
+            amount=amount,
+            command_id=command_id,
+            remarks=remarks,
+            occasion=occasion,
+            recipient_type='MSISDN'
+        )
+        
+        if result.get('success'):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Error in B2C payment: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ============================================
+# SMS INTEGRATION ENDPOINTS
+# ============================================
+
+@app.route('/api/sms/payment-confirmation', methods=['POST'])
+def send_payment_confirmation_sms():
+    """
+    Send payment confirmation SMS manually
+    Request body: {
+        "phone_number": "2547XXXXXXXXX",
+        "amount": 1000,
+        "transaction_id": "ABC123",
+        "booking_reference": "BOOKING123",
+        "flight_details": {
+            "route": "NBO-JKQ",
+            "date": "2026-06-30",
+            "time": "14:00"
+        }
+    }
+    """
+    try:
+        if not sms_integration:
+            return jsonify({
+                'success': False,
+                'message': 'SMS integration not available. Please check configuration.'
+            }), 503
+        
+        data = request.get_json()
+        
+        phone_number = data.get('phone_number')
+        amount = data.get('amount')
+        transaction_id = data.get('transaction_id')
+        booking_reference = data.get('booking_reference')
+        flight_details = data.get('flight_details', {})
+        
+        if not all([phone_number, amount, transaction_id, booking_reference]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required fields'
+            }), 400
+        
+        result = sms_integration.send_payment_confirmation(
+            phone_number=phone_number,
+            amount=amount,
+            transaction_id=transaction_id,
+            booking_reference=booking_reference,
+            flight_details=flight_details
+        )
+        
+        if result.get('success'):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Error sending SMS: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+# ============================================
+# EMAIL INTEGRATION ENDPOINTS
+# ============================================
+
+@app.route('/api/email/checkin-reminder', methods=['POST'])
+def send_checkin_reminder_email():
+    """
+    Send check-in reminder email to passenger
+    Request body: {
+        "recipient_email": "passenger@example.com",
+        "passenger_name": "John Doe",
+        "flight_number": "SF123",
+        "flight_date": "2026-06-30",
+        "flight_time": "14:00",
+        "departure_gate": "A12"
+    }
+    """
+    try:
+        if not email_integration:
+            return jsonify({
+                'success': False,
+                'message': 'Email integration not available. Please check configuration.'
+            }), 503
+        
+        data = request.get_json()
+        
+        recipient_email = data.get('recipient_email')
+        passenger_name = data.get('passenger_name')
+        flight_number = data.get('flight_number')
+        flight_date = data.get('flight_date')
+        flight_time = data.get('flight_time')
+        departure_gate = data.get('departure_gate')
+        
+        if not all([recipient_email, passenger_name, flight_number, flight_date, flight_time, departure_gate]):
+            return jsonify({
+                'success': False,
+                'message': 'Missing required fields'
+            }), 400
+        
+        result = email_integration.send_checkin_reminder(
+            recipient_email=recipient_email,
+            passenger_name=passenger_name,
+            flight_number=flight_number,
+            flight_date=flight_date,
+            flight_time=flight_time,
+            departure_gate=departure_gate
+        )
+        
+        if result.get('success'):
+            return jsonify(result), 200
+        else:
+            return jsonify(result), 400
+            
+    except Exception as e:
+        logger.error(f"Error sending email: {str(e)}")
+        return jsonify({'success': False, 'message': str(e)}), 500
 
 
 # Simple CORS for local development

@@ -263,10 +263,12 @@
                 <div class="form-group">
                     <label for="email">Email Address *</label>
                     <input type="email" id="email" required placeholder="john@example.com">
+                    <small id="emailError" style="color: #c8102e; display: none; font-size: 12px;">Please enter a valid email address</small>
                 </div>
                 <div class="form-group">
                     <label for="phone">Phone Number *</label>
-                    <input type="tel" id="phone" required placeholder="+1 (555) 123-4567">
+                    <input type="tel" id="phone" required placeholder="+254 712 345 678">
+                    <small id="phoneError" style="color: #c8102e; display: none; font-size: 12px;">Please enter a valid phone number with country code</small>
                 </div>
             </div>
 
@@ -366,6 +368,83 @@
             console.log('🎫 Passenger Details Loaded:', params);
         }
 
+        // Phone number validation with country code detection
+        function validatePhoneNumber(phone) {
+            // Remove all non-digit characters except + at the start
+            const cleaned = phone.replace(/[^\d+]/g, '');
+            
+            // Check if it starts with + (country code)
+            if (!cleaned.startsWith('+')) {
+                return { valid: false, message: 'Phone number must start with country code (e.g., +254)' };
+            }
+            
+            // Remove the + and check remaining digits
+            const digits = cleaned.substring(1);
+            
+            // Check if we have enough digits (minimum 8, maximum 15)
+            if (digits.length < 8 || digits.length > 15) {
+                return { valid: false, message: 'Phone number must have 8-15 digits after country code' };
+            }
+            
+            // Check if all remaining characters are digits
+            if (!/^\d+$/.test(digits)) {
+                return { valid: false, message: 'Phone number must contain only digits after country code' };
+            }
+            
+            // Common country code patterns
+            const countryPatterns = {
+                '254': { name: 'Kenya', pattern: /^(254)(7|1)[0-9]{8}$/ },
+                '1': { name: 'USA/Canada', pattern: /^(1)[2-9][0-9]{9}$/ },
+                '44': { name: 'UK', pattern: /^(44)[1-9][0-9]{9}$/ },
+                '27': { name: 'South Africa', pattern: /^(27)[6-8][0-9]{8}$/ },
+                '234': { name: 'Nigeria', pattern: /^(234)[7-9][0-9]{8}$/ },
+                '233': { name: 'Ghana', pattern: /^(233)[2-9][0-9]{8}$/ },
+                '256': { name: 'Uganda', pattern: /^(256)[7-9][0-9]{8}$/ },
+                '255': { name: 'Tanzania', pattern: /^(255)[6-7][0-9]{8}$/ },
+                '250': { name: 'Rwanda', pattern: /^(250)[7-8][0-9]{8}$/ },
+                '251': { name: 'Ethiopia', pattern: /^(251)[9][0-9]{8}$/ }
+            };
+            
+            // Check against known country patterns
+            for (const [code, info] of Object.entries(countryPatterns)) {
+                if (cleaned.startsWith(code)) {
+                    if (info.pattern.test(cleaned)) {
+                        return { valid: true, country: info.name };
+                    } else {
+                        return { valid: false, message: `Invalid ${info.name} phone number format` };
+                    }
+                }
+            }
+            
+            // If no specific pattern matched but format is valid, accept it
+            return { valid: true, country: 'International' };
+        }
+
+        // Email validation with domain checking
+        function validateEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            if (!emailRegex.test(email)) {
+                return { valid: false, message: 'Please enter a valid email address' };
+            }
+            
+            // Check for common fake email domains
+            const fakeDomains = ['test.com', 'example.com', 'fake.com', 'temp.com', 'throwaway.com'];
+            const domain = email.split('@')[1].toLowerCase();
+            
+            if (fakeDomains.includes(domain)) {
+                return { valid: false, message: 'Please use a real email address' };
+            }
+            
+            // Check for common disposable email services
+            const disposableDomains = ['tempmail.com', 'guerrillamail.com', 'mailinator.com', '10minutemail.com'];
+            if (disposableDomains.some(d => domain.includes(d))) {
+                return { valid: false, message: 'Disposable email addresses are not allowed' };
+            }
+            
+            return { valid: true };
+        }
+
         // Submit passenger details
         function submitPassengerDetails() {
             const firstName = document.getElementById('firstName').value.trim();
@@ -377,14 +456,31 @@
             const passportNumber = document.getElementById('passportNumber').value.trim();
             const passportExpiry = document.getElementById('passportExpiry').value;
 
+            // Reset error messages
+            document.getElementById('emailError').style.display = 'none';
+            document.getElementById('phoneError').style.display = 'none';
+
             // Validation
             if (!firstName || !lastName || !email || !phone || !dateOfBirth || !nationality || !passportNumber || !passportExpiry) {
                 alert('Please fill in all required fields');
                 return;
             }
 
-            if (!email.includes('@')) {
-                alert('Please enter a valid email address');
+            // Email validation
+            const emailValidation = validateEmail(email);
+            if (!emailValidation.valid) {
+                document.getElementById('emailError').textContent = emailValidation.message;
+                document.getElementById('emailError').style.display = 'block';
+                document.getElementById('email').style.borderColor = '#c8102e';
+                return;
+            }
+
+            // Phone validation
+            const phoneValidation = validatePhoneNumber(phone);
+            if (!phoneValidation.valid) {
+                document.getElementById('phoneError').textContent = phoneValidation.message;
+                document.getElementById('phoneError').style.display = 'block';
+                document.getElementById('phone').style.borderColor = '#c8102e';
                 return;
             }
 
@@ -397,7 +493,8 @@
                 dateOfBirth,
                 nationality,
                 passportNumber,
-                passportExpiry
+                passportExpiry,
+                phoneCountry: phoneValidation.country
             };
 
             console.log('👤 Passenger Details Submitted:', passengerDetails);
@@ -417,6 +514,24 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', initializePage);
+
+        // Add real-time validation
+        document.addEventListener('DOMContentLoaded', () => {
+            const emailInput = document.getElementById('email');
+            const phoneInput = document.getElementById('phone');
+
+            // Clear email error when user starts typing
+            emailInput.addEventListener('input', () => {
+                document.getElementById('emailError').style.display = 'none';
+                emailInput.style.borderColor = '#e0e0e0';
+            });
+
+            // Clear phone error when user starts typing
+            phoneInput.addEventListener('input', () => {
+                document.getElementById('phoneError').style.display = 'none';
+                phoneInput.style.borderColor = '#e0e0e0';
+            });
+        });
     </script>
 </body>
 </html>

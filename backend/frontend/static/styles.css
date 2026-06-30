@@ -1862,22 +1862,24 @@ button {
     overflow: visible;
 }
 
-/* Top bar */
-.top-bar {
-  background: #f5f7fa;
-  padding: 8px 60px;
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  color: #555;
+/* ===== TOP BAR ===== */
+:root{
+    --sf-blue: #0A3D91;  /* Your blue */
 }
 
-.top-bar span,
-.top-bar a {
-  margin-right: 15px;
-  text-decoration: none;
-  color: #555;
+.container { max-width: 1200px; margin: 0 auto; padding: 0 16px; }
+
+.top-bar {
+    background: #fff;
+    font-size: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #E6EAF0;
 }
+.top-bar .container { display:flex; justify-content:space-between; align-items:center; }
+.top-bar-right { display:flex; gap:24px; }
+.top-bar a { color: #444; text-decoration:none; font-weight:500; }
+.top-bar a:hover { color: var(--sf-blue); }
+.lang-switch { font-weight:600; color: var(--sf-blue); }
 
 /* Nav */
 .nav-wrapper {
@@ -2005,4 +2007,14 @@ button {
 
 .nav-item > a:hover::after {
   width: 100%;
+}
+
+body {
+    background: red !important;
+}
+
+.top-bar {
+    background-color: black;
+    color: white;
+    padding: 10px 20px;
 }

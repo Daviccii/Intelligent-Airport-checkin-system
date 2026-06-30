@@ -441,6 +441,445 @@ class AirportDropdown {
 const airportDropdown = new AirportDropdown();
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM Content Loaded - Initializing dropdowns...');
+    
+    // ========== BOOKING WIDGET DROPDOWN FUNCTIONALITY ==========
+    
+    // Initialize all dropdowns in the booking widget
+    function initBookingWidgetDropdowns() {
+        console.log('Setting up dropdowns...');
+        
+        // Trip type dropdown
+        const tripTypeDropdown = document.getElementById('tripTypeDropdown');
+        console.log('Trip type dropdown found:', !!tripTypeDropdown);
+        if (tripTypeDropdown) {
+            const dropdownBtn = tripTypeDropdown.querySelector('.dropdown-btn-compact');
+            const dropdownMenu = tripTypeDropdown.querySelector('.dropdown-menu-compact');
+            const hiddenInput = document.getElementById('tripType');
+            const valueDisplay = dropdownBtn.querySelector('.dropdown-value');
+            
+            console.log('Trip type elements:', { dropdownBtn: !!dropdownBtn, dropdownMenu: !!dropdownMenu, hiddenInput: !!hiddenInput });
+            
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    console.log('Trip type dropdown clicked');
+                    e.stopPropagation();
+                    closeAllDropdowns(tripTypeDropdown);
+                    dropdownBtn.classList.toggle('active');
+                    dropdownMenu.classList.toggle('show');
+                    console.log('Dropdown classes:', dropdownBtn.classList.toString(), dropdownMenu.classList.toString());
+                });
+                
+                // Handle option selection
+                const options = dropdownMenu.querySelectorAll('li');
+                options.forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const value = option.dataset.value;
+                        const display = option.textContent;
+                        
+                        valueDisplay.textContent = display;
+                        if (hiddenInput) hiddenInput.value = value;
+                        
+                        dropdownBtn.classList.remove('active');
+                        dropdownMenu.classList.remove('show');
+                        
+                        // Handle return date visibility based on trip type
+                        updateReturnDateVisibility(value);
+                    });
+                });
+            }
+        }
+        
+        // From airport dropdown - click handler only (options loaded dynamically)
+        const fromDropdown = document.getElementById('fromDropdown');
+        if (fromDropdown) {
+            const dropdownBtn = fromDropdown.querySelector('.dropdown-btn-compact');
+            const dropdownMenu = fromDropdown.querySelector('.dropdown-menu-compact');
+            
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeAllDropdowns(fromDropdown);
+                    dropdownBtn.classList.toggle('active');
+                    dropdownMenu.classList.toggle('show');
+                });
+            }
+        }
+        
+        // To airport dropdown - click handler only (options loaded dynamically)
+        const toDropdown = document.getElementById('toDropdown');
+        if (toDropdown) {
+            const dropdownBtn = toDropdown.querySelector('.dropdown-btn-compact');
+            const dropdownMenu = toDropdown.querySelector('.dropdown-menu-compact');
+            
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeAllDropdowns(toDropdown);
+                    dropdownBtn.classList.toggle('active');
+                    dropdownMenu.classList.toggle('show');
+                });
+            }
+        }
+        
+        // Departure date dropdown
+        const departDateDropdown = document.getElementById('departDateDropdown');
+        if (departDateDropdown) {
+            const dropdownBtn = departDateDropdown.querySelector('.dropdown-btn-compact');
+            const calendarPopup = departDateDropdown.querySelector('.calendar-popup');
+            const hiddenInput = document.getElementById('departDate');
+            const valueDisplay = document.getElementById('departDateValue');
+            
+            if (dropdownBtn && calendarPopup) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeAllDropdowns(departDateDropdown);
+                    dropdownBtn.classList.toggle('active');
+                    calendarPopup.classList.toggle('show');
+                    
+                    // Initialize calendar if not already done
+                    if (calendarPopup.classList.contains('show')) {
+                        initDepartureCalendar();
+                    }
+                });
+            }
+        }
+        
+        // Return date dropdown
+        const returnDateDropdown = document.getElementById('returnDateDropdown');
+        if (returnDateDropdown) {
+            const dropdownBtn = returnDateDropdown.querySelector('.dropdown-btn-compact');
+            const calendarPopup = returnDateDropdown.querySelector('.calendar-popup');
+            const hiddenInput = document.getElementById('returnDate');
+            const valueDisplay = document.getElementById('returnDateValue');
+            
+            if (dropdownBtn && calendarPopup) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeAllDropdowns(returnDateDropdown);
+                    dropdownBtn.classList.toggle('active');
+                    calendarPopup.classList.toggle('show');
+                    
+                    // Initialize calendar if not already done
+                    if (calendarPopup.classList.contains('show')) {
+                        initReturnCalendar();
+                    }
+                });
+            }
+        }
+        
+        // Passengers dropdown
+        const passengersDropdown = document.getElementById('passengersDropdown');
+        if (passengersDropdown) {
+            const dropdownBtn = passengersDropdown.querySelector('.dropdown-btn-compact');
+            const passengersPopup = passengersDropdown.querySelector('.passengers-popup');
+            const hiddenInput = document.getElementById('passengers');
+            const valueDisplay = document.getElementById('passengersValue');
+            
+            if (dropdownBtn && passengersPopup) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeAllDropdowns(passengersDropdown);
+                    dropdownBtn.classList.toggle('active');
+                    passengersPopup.classList.toggle('show');
+                });
+                
+                // Handle passenger counter buttons
+                const counterBtns = passengersPopup.querySelectorAll('.counter-btn');
+                counterBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const type = btn.dataset.type;
+                        const isPlus = btn.classList.contains('plus');
+                        const countEl = document.getElementById(`${type}Count`);
+                        let count = parseInt(countEl.textContent);
+                        
+                        if (isPlus) {
+                            count++;
+                        } else if (count > 0) {
+                            count--;
+                        }
+                        
+                        // Update count display
+                        countEl.textContent = count;
+                        
+                        // Update dropdown value display
+                        updatePassengersDisplay();
+                        
+                        // Update hidden input
+                        if (hiddenInput) {
+                            const adults = document.getElementById('adultCount').textContent;
+                            const children = document.getElementById('childCount').textContent;
+                            const infants = document.getElementById('infantCount').textContent;
+                            hiddenInput.value = `${adults}-${children}-${infants}`;
+                        }
+                    });
+                });
+            }
+        }
+        
+        // Class dropdown
+        const classDropdown = document.getElementById('classDropdown');
+        if (classDropdown) {
+            const dropdownBtn = classDropdown.querySelector('.dropdown-btn-compact');
+            const dropdownMenu = classDropdown.querySelector('.dropdown-menu-compact');
+            const hiddenInput = document.getElementById('cabinClass');
+            const valueDisplay = dropdownBtn.querySelector('.dropdown-value');
+            
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    closeAllDropdowns(classDropdown);
+                    dropdownBtn.classList.toggle('active');
+                    dropdownMenu.classList.toggle('show');
+                });
+                
+                // Handle option selection
+                const options = dropdownMenu.querySelectorAll('li');
+                options.forEach(option => {
+                    option.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const value = option.dataset.value;
+                        const display = option.textContent;
+                        
+                        valueDisplay.textContent = display;
+                        if (hiddenInput) hiddenInput.value = value;
+                        
+                        dropdownBtn.classList.remove('active');
+                        dropdownMenu.classList.remove('show');
+                    });
+                });
+            }
+        }
+    }
+    
+    // Close all dropdowns except the one specified
+    function closeAllDropdowns(exceptDropdown) {
+        const allDropdowns = document.querySelectorAll('.dropdown-compact');
+        allDropdowns.forEach(dropdown => {
+            if (dropdown !== exceptDropdown) {
+                const btn = dropdown.querySelector('.dropdown-btn-compact');
+                const menu = dropdown.querySelector('.dropdown-menu-compact, .calendar-popup, .passengers-popup');
+                
+                if (btn) btn.classList.remove('active');
+                if (menu) menu.classList.remove('show');
+            }
+        });
+    }
+    
+    // Update passengers display text
+    function updatePassengersDisplay() {
+        const adults = document.getElementById('adultCount').textContent;
+        const children = document.getElementById('childCount').textContent;
+        const infants = document.getElementById('infantCount').textContent;
+        const valueDisplay = document.getElementById('passengersValue');
+        
+        let display = '';
+        const totalPassengers = parseInt(adults) + parseInt(children) + parseInt(infants);
+        
+        if (totalPassengers === 1) {
+            display = '1 Adult';
+        } else {
+            const parts = [];
+            if (parseInt(adults) > 0) parts.push(`${adults} Adult${parseInt(adults) > 1 ? 's' : ''}`);
+            if (parseInt(children) > 0) parts.push(`${children} Child${parseInt(children) > 1 ? 'ren' : ''}`);
+            if (parseInt(infants) > 0) parts.push(`${infants} Infant${parseInt(infants) > 1 ? 's' : ''}`);
+            display = parts.join(', ');
+        }
+        
+        if (valueDisplay) valueDisplay.textContent = display;
+    }
+    
+    // Update return date visibility based on trip type
+    function updateReturnDateVisibility(tripType) {
+        const returnDateField = document.getElementById('returnDateField');
+        if (returnDateField) {
+            if (tripType === 'oneway') {
+                returnDateField.style.display = 'none';
+            } else {
+                returnDateField.style.display = 'flex';
+            }
+        }
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.dropdown-compact')) {
+            closeAllDropdowns(null);
+        }
+    });
+    
+    // Initialize booking widget dropdowns
+    console.log('Initializing booking widget dropdowns...');
+    initBookingWidgetDropdowns();
+    
+    // Load airports and populate dropdowns
+    loadAirportsData();
+    
+    // Function to load airports from JSON and populate dropdowns
+    async function loadAirportsData() {
+        try {
+            const response = await fetch('/assets/data/airports.json');
+            if (!response.ok) throw new Error('Failed to load airports');
+            const airports = await response.json();
+            
+            console.log('Loaded airports:', airports.length);
+            
+            // Populate from and to dropdowns
+            populateAirportDropdown('fromDropdown', 'fromAirport', airports);
+            populateAirportDropdown('toDropdown', 'toAirport', airports);
+            
+        } catch (error) {
+            console.error('Error loading airports:', error);
+            // Fallback to hardcoded airports
+            const fallbackAirports = [
+                { code: 'NBO', name: 'Jomo Kenyatta International Airport', city: 'Nairobi', country: 'Kenya' },
+                { code: 'MBA', name: 'Moi International Airport', city: 'Mombasa', country: 'Kenya' },
+                { code: 'LHR', name: 'Heathrow Airport', city: 'London', country: 'United Kingdom' },
+                { code: 'JFK', name: 'John F. Kennedy International Airport', city: 'New York', country: 'USA' },
+                { code: 'DXB', name: 'Dubai International', city: 'Dubai', country: 'UAE' },
+                { code: 'JNB', name: 'O.R. Tambo International Airport', city: 'Johannesburg', country: 'South Africa' },
+                { code: 'CDG', name: 'Charles de Gaulle Airport', city: 'Paris', country: 'France' },
+                { code: 'AMS', name: 'Amsterdam Schiphol', city: 'Amsterdam', country: 'Netherlands' }
+            ];
+            
+            populateAirportDropdown('fromDropdown', 'fromAirport', fallbackAirports);
+            populateAirportDropdown('toDropdown', 'toAirport', fallbackAirports);
+        }
+    }
+    
+    function populateAirportDropdown(dropdownId, hiddenInputId, airports) {
+        const dropdown = document.getElementById(dropdownId);
+        if (!dropdown) return;
+        
+        const menu = dropdown.querySelector('.dropdown-menu-compact');
+        if (!menu) return;
+        
+        // Clear existing options
+        menu.innerHTML = '';
+        
+        // Group airports by city
+        const airportsByCity = {};
+        airports.forEach(airport => {
+            if (!airportsByCity[airport.city]) {
+                airportsByCity[airport.city] = [];
+            }
+            airportsByCity[airport.city].push(airport);
+        });
+        
+        // Sort cities alphabetically
+        const sortedCities = Object.keys(airportsByCity).sort();
+        
+        // Prioritize Kenyan cities first
+        const kenyanCities = sortedCities.filter(city => {
+            const airport = airportsByCity[city][0];
+            return airport.country === 'Kenya';
+        });
+        const otherCities = sortedCities.filter(city => {
+            const airport = airportsByCity[city][0];
+            return airport.country !== 'Kenya';
+        });
+        const prioritizedCities = [...kenyanCities, ...otherCities];
+        
+        // Create dropdown items
+        prioritizedCities.forEach(city => {
+            const cityAirports = airportsByCity[city];
+            
+            if (cityAirports.length === 1) {
+                // Single airport in city
+                const airport = cityAirports[0];
+                const li = document.createElement('li');
+                li.dataset.value = airport.code;
+                li.dataset.display = `${city} (${airport.code})`;
+                li.innerHTML = `
+                    <div class="airport-name">${airport.name}</div>
+                    <div class="airport-location">
+                        <span class="airport-code">${airport.code}</span>
+                        <span>${city}, ${airport.country}</span>
+                    </div>
+                `;
+                li.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const valueDisplay = dropdown.querySelector('.dropdown-value');
+                    const hiddenInput = document.getElementById(hiddenInputId);
+                    const dropdownBtn = dropdown.querySelector('.dropdown-btn-compact');
+                    
+                    valueDisplay.textContent = `${city} (${airport.code})`;
+                    hiddenInput.value = airport.code;
+                    
+                    dropdownBtn.classList.remove('active');
+                    menu.classList.remove('show');
+                });
+                menu.appendChild(li);
+            } else {
+                // Multiple airports in city - create city header and sub-items
+                const cityHeader = document.createElement('li');
+                cityHeader.className = 'city-header';
+                cityHeader.innerHTML = `<strong>${city}</strong>`;
+                cityHeader.style.background = '#f8f9fa';
+                cityHeader.style.fontWeight = '600';
+                cityHeader.style.color = '#1e3a8a';
+                cityHeader.style.padding = '8px 16px';
+                cityHeader.style.cursor = 'default';
+                menu.appendChild(cityHeader);
+                
+                cityAirports.forEach(airport => {
+                    const li = document.createElement('li');
+                    li.dataset.value = airport.code;
+                    li.dataset.display = `${city} (${airport.code})`;
+                    li.innerHTML = `
+                        <div class="airport-name">${airport.name}</div>
+                        <div class="airport-location">
+                            <span class="airport-code">${airport.code}</span>
+                            <span>${airport.country}</span>
+                        </div>
+                    `;
+                    li.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const valueDisplay = dropdown.querySelector('.dropdown-value');
+                        const hiddenInput = document.getElementById(hiddenInputId);
+                        const dropdownBtn = dropdown.querySelector('.dropdown-btn-compact');
+                        
+                        valueDisplay.textContent = `${city} (${airport.code})`;
+                        hiddenInput.value = airport.code;
+                        
+                        dropdownBtn.classList.remove('active');
+                        menu.classList.remove('show');
+                    });
+                    menu.appendChild(li);
+                });
+            }
+        });
+    }
+    
+    // Swap button functionality
+    const swapBtn = document.getElementById('swapBtn');
+    if (swapBtn) {
+        console.log('Setting up swap button...');
+        swapBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const fromDropdown = document.getElementById('fromDropdown');
+            const toDropdown = document.getElementById('toDropdown');
+            const fromAirport = document.getElementById('fromAirport');
+            const toAirport = document.getElementById('toAirport');
+            
+            if (fromDropdown && toDropdown && fromAirport && toAirport) {
+                // Swap the values
+                const fromValue = fromDropdown.querySelector('.dropdown-value').textContent;
+                const toValue = toDropdown.querySelector('.dropdown-value').textContent;
+                const fromCode = fromAirport.value;
+                const toCode = toAirport.value;
+                
+                fromDropdown.querySelector('.dropdown-value').textContent = toValue;
+                toDropdown.querySelector('.dropdown-value').textContent = fromValue;
+                fromAirport.value = toCode;
+                toAirport.value = fromCode;
+                console.log('Swapped airports:', fromValue, '<->', toValue);
+            }
+        });
+    }
+    
     // Header mega-menu: open only on click
     const navItems = Array.from(document.querySelectorAll('.nav-menu .nav-item'));
     navItems.forEach(item => {
@@ -470,27 +909,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Attach airport autocomplete
-    airportDropdown.attachAutocomplete('fromInput');
-    airportDropdown.attachAutocomplete('toInput');
-    
-    // Swap button
-    const swapBtn = document.getElementById('swapBtn');
-    if (swapBtn) {
-        swapBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const fromInput = document.getElementById('fromInput');
-            const toInput = document.getElementById('toInput');
-            
-            if (fromInput.value && toInput.value) {
-                // Swap values
-                [fromInput.value, toInput.value] = [toInput.value, fromInput.value];
-                [fromInput.dataset.selected, toInput.dataset.selected] = [toInput.dataset.selected, fromInput.dataset.selected];
-                [fromInput.dataset.city, toInput.dataset.city] = [toInput.dataset.city, fromInput.dataset.city];
-                [fromInput.dataset.name, toInput.dataset.name] = [toInput.dataset.name, fromInput.dataset.name];
-            }
-        });
-    }
+    // Attach airport autocomplete (for different inputs if they exist)
+    const fromInput = document.getElementById('fromInput');
+    const toInput = document.getElementById('toInput');
+    if (fromInput) airportDropdown.attachAutocomplete('fromInput');
+    if (toInput) airportDropdown.attachAutocomplete('toInput');
     
     // Trip type change
     const tripType = document.getElementById('tripType');
@@ -511,6 +934,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const departDate = document.getElementById('departDate');
             const returnDate = document.getElementById('returnDate');
             const tripType = document.getElementById('tripType');
+            
+            if (!fromInput || !toInput) {
+                // Use the dropdown values instead
+                const fromAirport = document.getElementById('fromAirport');
+                const toAirport = document.getElementById('toAirport');
+                
+                if (!fromAirport || !fromAirport.value || !toAirport || !toAirport.value) {
+                    alert('Please select both departure and arrival airports');
+                    return;
+                }
+                
+                if (!departDate || !departDate.value) {
+                    alert('Please select a departure date');
+                    return;
+                }
+                
+                if ((tripType && (tripType.value === 'return' || tripType.value === 'roundtrip')) && (!returnDate || !returnDate.value)) {
+                    alert('Please select a return date for round trip');
+                    return;
+                }
+                
+                // Build query parameters
+                const params = new URLSearchParams({
+                    from: fromAirport.value,
+                    to: toAirport.value,
+                    departDate: departDate ? departDate.value : '',
+                    tripType: tripType ? tripType.value : 'return'
+                });
+                
+                if (returnDate && returnDate.value) {
+                    params.append('returnDate', returnDate.value);
+                }
+                
+                console.log('🔍 Redirecting to availability page with params:', params.toString());
+                
+                // Redirect to availability page
+                window.location.href = `/availability.html?${params.toString()}`;
+                return;
+            }
             
             if (!fromInput.dataset.code || !toInput.dataset.code) {
                 alert('Please select both departure and arrival airports');
@@ -549,242 +1011,173 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     airportDropdown.initModal();
-    
-    // ========== CALENDAR FUNCTIONALITY ==========
-    
-    // Calendar state
-    let currentMonthOffset = 0; // 0 = current month, 1 = next month
-    let selectedDepartDate = null;
-    let selectedReturnDate = null;
-    
-    // Get month data with prices
-    function getCurrentMonthData(monthOffset) {
-        const now = new Date();
-        const targetDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
-        const year = targetDate.getFullYear();
-        const month = targetDate.getMonth();
-        const monthName = targetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-        
-        // Generate sample prices for the month
-        const daysInMonth = new Date(year, month + 1, 0).getDate();
-        const prices = {};
-        for (let day = 1; day <= daysInMonth; day++) {
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            prices[dateStr] = Math.floor(Math.random() * 200) + 100;
-        }
-        
-        return { year, month, monthName, prices };
-    }
-    
-    // Generate calendar with prices
-    function generateCalendar(containerId, prices) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        
-        const dates = Object.keys(prices).sort();
-        if (dates.length === 0) return;
-        
-        // Find cheapest price
-        const minPrice = Math.min(...Object.values(prices));
-
-        const today = new Date();
-        today.setHours(0,0,0,0);
-
-        dates.forEach(dateStr => {
-            const price = prices[dateStr];
-            const dateObj = new Date(dateStr);
-            dateObj.setHours(0,0,0,0);
-            const day = dateObj.getDate();
-
-            const dayCell = document.createElement('div');
-            dayCell.className = 'calendar-day';
-            dayCell.dataset.date = dateStr;
-
-            if (price === minPrice) {
-                dayCell.classList.add('cheapest');
-            }
-
-            // Disable past dates
-            if (dateObj < today) {
-                dayCell.classList.add('disabled');
-                dayCell.title = 'Past dates cannot be selected';
-            } else {
-                // Add click handler for date selection
-                dayCell.addEventListener('click', function() {
-                    selectCalendarDate(dateStr);
-                });
-            }
-
-            dayCell.innerHTML = `
-                <div class="calendar-date">${day}</div>
-                <div class="calendar-price">KES ${price.toLocaleString()}</div>
-            `;
-
-            container.appendChild(dayCell);
-        });
-    }
-    
-    // Handle calendar date selection
-    function selectCalendarDate(dateStr) {
-        const departInput = document.getElementById('departDate');
-        const returnInput = document.getElementById('returnDate');
-        const departLabel = document.getElementById('selectedDepartLabel');
-        const returnLabel = document.getElementById('selectedReturnLabel');
-        const tripTypeBtn = document.querySelector('#tripTypeDropdown .kq-dropdown-btn');
-        const isOneWay = tripTypeBtn && tripTypeBtn.textContent.trim().includes('One Way');
-        
-        // Determine if selecting depart or return date
-        if (!selectedDepartDate || (selectedDepartDate && selectedReturnDate)) {
-            // First selection or reset - set depart date
-            selectedDepartDate = dateStr;
-            selectedReturnDate = null;
-            departInput.value = dateStr;
-            returnInput.value = '';
-            
-            // Update labels
-            const dateObj = new Date(dateStr);
-            departLabel.textContent = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            returnLabel.textContent = '';
-            
-            // Highlight selected depart date
-            document.querySelectorAll('.calendar-day').forEach(cell => {
-                cell.classList.remove('selected-depart', 'selected-return');
-                if (cell.dataset.date === dateStr) {
-                    cell.classList.add('selected-depart');
-                }
-            });
-            
-            // If one-way, we're done
-            if (isOneWay) {
-                selectedReturnDate = null;
-            }
-        } else if (selectedDepartDate && !selectedReturnDate) {
-            // Second selection - set return date
-            const departTime = new Date(selectedDepartDate).getTime();
-            const returnTime = new Date(dateStr).getTime();
-            
-            if (returnTime < departTime) {
-                // Return date before depart date - swap them
-                selectedReturnDate = selectedDepartDate;
-                selectedDepartDate = dateStr;
-                departInput.value = dateStr;
-                returnInput.value = selectedReturnDate;
-                
-                // Update labels
-                const departObj = new Date(dateStr);
-                const returnObj = new Date(selectedReturnDate);
-                departLabel.textContent = departObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                returnLabel.textContent = returnObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            } else {
-                selectedReturnDate = dateStr;
-                returnInput.value = dateStr;
-                
-                // Update label
-                const returnObj = new Date(dateStr);
-                returnLabel.textContent = returnObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            }
-            
-            // Highlight both dates
-            document.querySelectorAll('.calendar-day').forEach(cell => {
-                cell.classList.remove('selected-depart', 'selected-return');
-                if (cell.dataset.date === selectedDepartDate) {
-                    cell.classList.add('selected-depart');
-                }
-                if (cell.dataset.date === selectedReturnDate) {
-                    cell.classList.add('selected-return');
-                }
-            });
-        }
-    }
-    
-    // Update both calendars
-    function updateCalendars() {
-        const leftData = getCurrentMonthData(currentMonthOffset);
-        const rightData = getCurrentMonthData(currentMonthOffset + 1);
-        
-        // Update month labels
-        const monthLeftEl = document.getElementById('monthLeft');
-        const monthRightEl = document.getElementById('monthRight');
-        if (monthLeftEl) monthLeftEl.textContent = leftData.monthName;
-        if (monthRightEl) monthRightEl.textContent = rightData.monthName;
-        
-        // Clear and regenerate calendars
-        const calendarLeft = document.getElementById('calendarLeft');
-        const calendarRight = document.getElementById('calendarRight');
-        if (calendarLeft) calendarLeft.innerHTML = '';
-        if (calendarRight) calendarRight.innerHTML = '';
-        
-        generateCalendar('calendarLeft', leftData.prices);
-        generateCalendar('calendarRight', rightData.prices);
-        
-        // Restore selections
-        if (selectedDepartDate || selectedReturnDate) {
-            document.querySelectorAll('.calendar-day').forEach(cell => {
-                if (cell.dataset.date === selectedDepartDate) {
-                    cell.classList.add('selected-depart');
-                }
-                if (cell.dataset.date === selectedReturnDate) {
-                    cell.classList.add('selected-return');
-                }
-            });
-        }
-    }
-    
-    // Initialize calendars
-    updateCalendars();
-    
-    // Month navigation
-    const prevBtn = document.getElementById('prevMonth');
-    const nextBtn = document.getElementById('nextMonth');
-    
-    if (prevBtn) {
-        prevBtn.addEventListener('click', function() {
-            if (currentMonthOffset > 0) {
-                currentMonthOffset--;
-                updateCalendars();
-            }
-        });
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', function() {
-            currentMonthOffset++;
-            updateCalendars();
-        });
-    }
-    
-    // Done button
-    const doneBtn = document.querySelector('.kq-done-btn');
-    if (doneBtn) {
-        doneBtn.addEventListener('click', function() {
-            const departInput = document.getElementById('departDate');
-            const tripTypeBtn = document.querySelector('#tripTypeDropdown .kq-dropdown-btn');
-            const isOneWay = tripTypeBtn && tripTypeBtn.textContent.trim().includes('One Way');
-            
-            // Validate: must have depart date
-            if (!departInput.value) {
-                alert('Please select a departure date');
-                return;
-            }
-            
-            // For return trips, must have return date
-            const returnInput = document.getElementById('returnDate');
-            if (!isOneWay && !returnInput.value) {
-                alert('Please select a return date');
-                return;
-            }
-            
-            // Hide calendar
-            const datePickerWrapper = document.getElementById('datePickerWrapper');
-            if (datePickerWrapper) {
-                datePickerWrapper.style.display = 'none';
-            }
-            
-            // Trigger search
-            const searchForm = document.getElementById('flightSearchForm');
-            if (searchForm) {
-                searchForm.dispatchEvent(new Event('submit'));
-            }
-        });
-    }
+    console.log('Dropdown initialization complete');
 });
+
+// Calendar state
+let currentMonthOffset = 0;
+let selectedDepartDate = null;
+let selectedReturnDate = null;
+
+// Get month data with prices
+function getCurrentMonthData(monthOffset) {
+    const now = new Date();
+    const targetDate = new Date(now.getFullYear(), now.getMonth() + monthOffset, 1);
+    const year = targetDate.getFullYear();
+    const month = targetDate.getMonth();
+    const monthName = targetDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const prices = {};
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        prices[dateStr] = Math.floor(Math.random() * 200) + 100;
+    }
+    
+    return { year, month, monthName, prices };
+}
+
+// Generate calendar with prices
+function generateCalendar(containerId, prices) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    const dates = Object.keys(prices).sort();
+    if (dates.length === 0) return;
+    
+    const minPrice = Math.min(...Object.values(prices));
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    dates.forEach(dateStr => {
+        const price = prices[dateStr];
+        const dateObj = new Date(dateStr);
+        dateObj.setHours(0,0,0,0);
+        const day = dateObj.getDate();
+
+        const dayCell = document.createElement('div');
+        dayCell.className = 'calendar-day';
+        dayCell.dataset.date = dateStr;
+
+        if (price === minPrice) {
+            dayCell.classList.add('cheapest');
+        }
+
+        if (dateObj < today) {
+            dayCell.classList.add('disabled');
+            dayCell.title = 'Past dates cannot be selected';
+        } else {
+            dayCell.addEventListener('click', function() {
+                selectCalendarDate(dateStr, containerId);
+            });
+        }
+
+        dayCell.innerHTML = `
+            <div class="day-number">${day}</div>
+            <div class="day-price">KES ${price.toLocaleString()}</div>
+        `;
+
+        container.appendChild(dayCell);
+    });
+}
+
+// Handle calendar date selection
+function selectCalendarDate(dateStr, containerId) {
+    const isDeparture = containerId === 'departCalendarGrid';
+    const dateInput = isDeparture ? document.getElementById('departDate') : document.getElementById('returnDate');
+    const valueDisplay = isDeparture ? document.getElementById('departDateValue') : document.getElementById('returnDateValue');
+    const calendarPopup = isDeparture ? document.getElementById('departCalendar') : document.getElementById('returnCalendar');
+    const dropdownBtn = isDeparture ? document.getElementById('departDateDropdown').querySelector('.dropdown-btn-compact') : document.getElementById('returnDateDropdown').querySelector('.dropdown-btn-compact');
+    
+    if (dateInput) {
+        dateInput.value = dateStr;
+    }
+    
+    if (valueDisplay) {
+        const dateObj = new Date(dateStr);
+        const formattedDate = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        valueDisplay.textContent = formattedDate;
+    }
+    
+    if (calendarPopup) {
+        calendarPopup.classList.remove('show');
+    }
+    
+    if (dropdownBtn) {
+        dropdownBtn.classList.remove('active');
+    }
+    
+    if (isDeparture) {
+        const tripType = document.getElementById('tripType');
+        if (tripType && tripType.value !== 'oneway') {
+            const returnDateField = document.getElementById('returnDateField');
+            if (returnDateField && returnDateField.style.display !== 'none') {
+                setTimeout(() => {
+                    const returnDropdownBtn = document.getElementById('returnDateDropdown').querySelector('.dropdown-btn-compact');
+                    if (returnDropdownBtn) returnDropdownBtn.click();
+                }, 200);
+            }
+        }
+    }
+}
+
+// Calendar initialization functions
+function initDepartureCalendar() {
+    const calendarGrid = document.getElementById('departCalendarGrid');
+    if (!calendarGrid) return;
+    
+    calendarGrid.innerHTML = '';
+    const monthData = getCurrentMonthData(0);
+    
+    const monthLabel = document.getElementById('departMonthLabel');
+    if (monthLabel) monthLabel.textContent = monthData.monthName;
+    
+    generateCalendar('departCalendarGrid', monthData.prices);
+    setupCalendarNavigation('departCalendarGrid', 'departMonthLabel', 0);
+}
+
+function initReturnCalendar() {
+    const calendarGrid = document.getElementById('returnCalendarGrid');
+    if (!calendarGrid) return;
+    
+    calendarGrid.innerHTML = '';
+    const monthData = getCurrentMonthData(1);
+    
+    const monthLabel = document.getElementById('returnMonthLabel');
+    if (monthLabel) monthLabel.textContent = monthData.monthName;
+    
+    generateCalendar('returnCalendarGrid', monthData.prices);
+    setupCalendarNavigation('returnCalendarGrid', 'returnMonthLabel', 1);
+}
+
+function setupCalendarNavigation(gridId, labelId, initialOffset) {
+    const container = document.getElementById(gridId);
+    if (!container) return;
+    
+    let monthOffset = initialOffset;
+    const popup = container.closest('.calendar-popup');
+    if (!popup) return;
+    
+    const navButtons = popup.querySelectorAll('.cal-nav');
+    
+    navButtons.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const action = btn.dataset.action;
+            if (action === 'prev' && monthOffset > 0) {
+                monthOffset--;
+            } else if (action === 'next') {
+                monthOffset++;
+            }
+            
+            const monthData = getCurrentMonthData(monthOffset);
+            const monthLabel = document.getElementById(labelId);
+            if (monthLabel) monthLabel.textContent = monthData.monthName;
+            
+            container.innerHTML = '';
+            generateCalendar(gridId, monthData.prices);
+        });
+    });
+}
