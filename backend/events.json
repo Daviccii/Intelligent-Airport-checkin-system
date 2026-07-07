@@ -1451,5 +1451,31 @@
     "role": "admin",
     "username": "Riley Gabi",
     "timestamp": "2026-06-29T15:16:06.974772Z"
+  },
+  {
+    "type": "booking_email_rq_enqueue_failed",
+    "passport": "AO54321",
+    "booking_ref": "SF0001",
+    "error": "Error 10061 connecting to localhost:6379. No connection could be made because the target machine actively refused it.",
+    "timestamp": "2026-06-30T13:44:44.898618Z"
+  },
+  {
+    "type": "booking_email_not_configured",
+    "passport": "AO54321",
+    "booking_ref": "SF0001",
+    "timestamp": "2026-06-30T13:44:44.947322Z"
+  },
+  {
+    "type": "booking_sms_send_attempt",
+    "passport": "AO54321",
+    "booking_ref": "SF0001",
+    "to": "+254715348430",
+    "timestamp": "2026-06-30T13:44:45.001734Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-01T10:51:00.887004Z"
   }
 ]

@@ -1,0 +1,497 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --kq-red: #c8102e;
+    --kq-dark-red: #9e0c24;
+    --kq-blue: #1e3a8a;
+    --kq-light-blue: #2563eb;
+    --kq-gray-50: #fafafa;
+    --kq-gray-100: #f5f5f5;
+    --kq-gray-200: #eeeeee;
+    --kq-gray-300: #e0e0e0;
+    --kq-gray-600: #757575;
+    --kq-gray-900: #212121;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--kq-gray-50);
+    color: var(--kq-gray-900);
+    line-height: 1.5;
+}
+
+/* Header */
+.kq-header {
+    background: white;
+    border-bottom: 1px solid var(--kq-gray-200);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.kq-header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+}
+
+.kq-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--kq-red);
+}
+
+.kq-logo-icon {
+    font-size: 28px;
+}
+
+.kq-logo-text {
+    color: var(--kq-gray-900);
+}
+
+.kq-header-nav {
+    display: flex;
+    gap: 32px;
+}
+
+.kq-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--kq-gray-600);
+    position: relative;
+}
+
+.kq-nav-item.active {
+    color: var(--kq-red);
+    font-weight: 600;
+}
+
+.kq-nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -16px;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--kq-red);
+    border-radius: 2px 2px 0 0;
+}
+
+.kq-nav-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--kq-gray-200);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.kq-nav-item.active .kq-nav-number {
+    background: var(--kq-red);
+    color: white;
+}
+
+.kq-nav-label {
+    font-size: 14px;
+}
+
+/* Main Container */
+.kq-main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+.kq-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+}
+
+/* Traveler Form Section */
+.kq-traveler-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.kq-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.kq-page-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--kq-gray-900);
+}
+
+.kq-modify-btn {
+    padding: 10px 20px;
+    background: white;
+    border: 2px solid var(--kq-gray-300);
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--kq-gray-900);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.kq-modify-btn:hover {
+    border-color: var(--kq-red);
+    color: var(--kq-red);
+}
+
+/* Mini Trip Summary */
+.kq-trip-mini-summary {
+    background: linear-gradient(135deg, var(--kq-blue) 0%, var(--kq-light-blue) 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 24px;
+}
+
+.kq-mini-route {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.kq-mini-code {
+    font-size: 32px;
+}
+
+.kq-mini-arrow {
+    font-size: 20px;
+}
+
+.kq-mini-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+.kq-mini-dates {
+    font-weight: 600;
+}
+
+/* Form Container */
+.kq-form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.kq-form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 2px solid var(--kq-gray-200);
+}
+
+.kq-form-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--kq-gray-900);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--kq-gray-200);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kq-form-badge {
+    background: var(--kq-blue);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.kq-form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.kq-form-row:last-child {
+    margin-bottom: 0;
+}
+
+.kq-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.kq-form-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--kq-gray-900);
+}
+
+.kq-form-input,
+.kq-form-select {
+    padding: 12px 14px;
+    border: 2px solid var(--kq-gray-200);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.kq-form-input:focus,
+.kq-form-select:focus {
+    outline: none;
+    border-color: var(--kq-blue);
+    box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
+}
+
+.kq-form-input::placeholder {
+    color: var(--kq-gray-600);
+}
+
+/* Form Actions */
+.kq-form-actions {
+    display: flex;
+    gap: 16px;
+    padding-top: 24px;
+    border-top: 1px solid var(--kq-gray-200);
+}
+
+.kq-btn {
+    padding: 14px 28px;
+    border-radius: 8px;
+    border: none;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kq-btn-primary {
+    background: linear-gradient(135deg, var(--kq-red) 0%, var(--kq-dark-red) 100%);
+    color: white;
+    flex: 1;
+    justify-content: center;
+}
+
+.kq-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(200, 16, 46, 0.4);
+}
+
+.kq-btn-secondary {
+    background: white;
+    color: var(--kq-gray-900);
+    border: 2px solid var(--kq-gray-300);
+}
+
+.kq-btn-secondary:hover {
+    border-color: var(--kq-red);
+    color: var(--kq-red);
+}
+
+.kq-btn-arrow {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+/* Loading State */
+.kq-loading-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--kq-gray-600);
+}
+
+.kq-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--kq-gray-200);
+    border-top-color: var(--kq-red);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Flight Summary Sidebar */
+.kq-flight-summary-sidebar {
+    position: sticky;
+    top: 100px;
+}
+
+.kq-summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border: 2px solid var(--kq-gray-200);
+}
+
+.kq-summary-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--kq-gray-900);
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--kq-gray-200);
+}
+
+.kq-summary-route {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--kq-blue);
+    margin-bottom: 20px;
+}
+
+.kq-summary-code {
+    font-size: 28px;
+}
+
+.kq-summary-arrow {
+    font-size: 18px;
+}
+
+.kq-summary-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.kq-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kq-summary-label {
+    font-size: 13px;
+    color: var(--kq-gray-600);
+    font-weight: 600;
+}
+
+.kq-summary-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--kq-gray-900);
+}
+
+.kq-summary-divider {
+    height: 1px;
+    background: var(--kq-gray-200);
+    margin: 16px 0;
+}
+
+.kq-summary-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kq-summary-total-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--kq-gray-900);
+}
+
+.kq-summary-total-value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--kq-red);
+}
+
+/* Responsive */
+@media (max-width: 968px) {
+    .kq-content-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .kq-flight-summary-sidebar {
+        position: static;
+    }
+    
+    .kq-header-nav {
+        gap: 16px;
+    }
+    
+    .kq-nav-label {
+        display: none;
+    }
+    
+    .kq-form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .kq-header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .kq-page-title {
+        font-size: 24px;
+    }
+    
+    .kq-mini-code {
+        font-size: 24px;
+    }
+    
+    .kq-mini-info {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .kq-form-actions {
+        flex-direction: column;
+    }
+    
+    .kq-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}

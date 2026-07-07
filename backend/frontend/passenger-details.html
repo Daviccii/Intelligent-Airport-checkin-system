@@ -3,420 +3,251 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passenger Details - SmartFly Airways</title>
+    <title>Traveler Details - SmartFly Airways</title>
+    <link rel="stylesheet" href="/passenger-details.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            color: #212121;
-        }
-
-        /* Header */
-        .header {
-            background: white;
-            padding: 20px 0;
-            border-bottom: 1px solid #e0e0e0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: 800;
-            color: #c8102e;
-        }
-
-        .header-title {
-            font-size: 16px;
-            color: #757575;
-        }
-
-        /* Main Container */
-        .container {
-            max-width: 900px;
-            margin: 32px auto;
-            padding: 0 24px;
-        }
-
-        /* Flight Summary Box */
-        .flight-summary {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .flight-summary-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 24px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid #eeeeee;
-        }
-
-        .flight-summary-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .summary-item {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .summary-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #757575;
-            text-transform: uppercase;
-        }
-
-        .summary-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #212121;
-        }
-
-        .summary-value.price {
-            color: #c8102e;
-            font-size: 24px;
-        }
-
-        /* Form Section */
-        .form-section {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .form-section h2 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #212121;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #212121;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 12px 14px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #c8102e;
-            box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-        }
-
-        /* Action Buttons */
-        .actions {
-            display: flex;
-            gap: 16px;
-            padding-top: 24px;
-            border-top: 1px solid #eeeeee;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            border: none;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: #c8102e;
-            color: white;
-            flex: 1;
-        }
-
-        .btn-primary:hover {
-            background: #9e0c24;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #212121;
-            border: 2px solid #e0e0e0;
-        }
-
-        .btn-secondary:hover {
-            border-color: #c8102e;
-            color: #c8102e;
-        }
-
-        /* Loading State */
-        .loading-message {
-            text-align: center;
-            padding: 40px;
-            color: #757575;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #eeeeee;
-            border-top-color: #c8102e;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        /* Minimal inline styles for backward compatibility */
+        body { margin: 0; }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <div class="header">
-        <div class="header-content">
-            <div class="logo">✈ SmartFly Airways</div>
-            <div class="header-title">Passenger Details</div>
+    <div class="kq-header">
+        <div class="kq-header-container">
+            <div class="kq-logo">
+                <span class="kq-logo-icon">✈</span>
+                <span class="kq-logo-text">SmartFly Airways</span>
+            </div>
+            <div class="kq-header-nav">
+                <div class="kq-nav-item">
+                    <span class="kq-nav-number">1</span>
+                    <span class="kq-nav-label">Select</span>
+                </div>
+                <div class="kq-nav-item">
+                    <span class="kq-nav-number">2</span>
+                    <span class="kq-nav-label">Cart</span>
+                </div>
+                <div class="kq-nav-item active">
+                    <span class="kq-nav-number">3</span>
+                    <span class="kq-nav-label">Traveler</span>
+                </div>
+                <div class="kq-nav-item">
+                    <span class="kq-nav-number">4</span>
+                    <span class="kq-nav-label">Payment</span>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Flight Summary -->
-        <div class="flight-summary" id="flightSummary">
-            <div class="flight-summary-row">
-                <div class="summary-item">
-                    <div class="summary-label">Route</div>
-                    <div class="summary-value" id="summaryRoute">—</div>
+    <!-- Main Content -->
+    <div class="kq-main-container">
+        <div class="kq-content-grid">
+            <!-- Left Column - Traveler Form -->
+            <div class="kq-traveler-form">
+                <div class="kq-section-header">
+                    <h1 class="kq-page-title">Traveler Details</h1>
+                    <button class="kq-modify-btn" onclick="goBack()">Back to Cart</button>
                 </div>
-                <div class="summary-item">
-                    <div class="summary-label">Departure</div>
-                    <div class="summary-value" id="summaryDate">—</div>
+
+                <!-- Trip Summary Mini -->
+                <div class="kq-trip-mini-summary">
+                    <div class="kq-mini-route">
+                        <span class="kq-mini-code" id="miniFrom">NBO</span>
+                        <span class="kq-mini-arrow">→</span>
+                        <span class="kq-mini-code" id="miniTo">MBA</span>
+                    </div>
+                    <div class="kq-mini-info">
+                        <span class="kq-mini-dates" id="miniDates">Jul 3 - Jul 6, 2026</span>
+                        <span class="kq-mini-passengers" id="miniPassengers">1 Adult</span>
+                    </div>
                 </div>
-                <div class="summary-item">
-                    <div class="summary-label">Cabin Class</div>
-                    <div class="summary-value" id="summaryClass">—</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-label">Total Price</div>
-                    <div class="summary-value price" id="summaryPrice">Ksh 0</div>
+
+                <!-- Passenger Form -->
+                <form id="travelerForm" class="kq-form-container">
+                    <div class="kq-form-section">
+                        <h2 class="kq-form-title">Adult 1 <span class="kq-form-badge">Primary</span></h2>
+                        
+                        <div class="kq-form-row">
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Title *</label>
+                                <select class="kq-form-select" id="title" required>
+                                    <option value="">Select title</option>
+                                    <option value="Mr">Mr</option>
+                                    <option value="Mrs">Mrs</option>
+                                    <option value="Ms">Ms</option>
+                                    <option value="Dr">Dr</option>
+                                </select>
+                            </div>
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">First Name *</label>
+                                <input type="text" class="kq-form-input" id="firstName" required placeholder="John">
+                            </div>
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Last Name *</label>
+                                <input type="text" class="kq-form-input" id="lastName" required placeholder="Doe">
+                            </div>
+                        </div>
+
+                        <div class="kq-form-row">
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Date of Birth *</label>
+                                <input type="date" class="kq-form-input" id="dateOfBirth" required>
+                            </div>
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Gender *</label>
+                                <select class="kq-form-select" id="gender" required>
+                                    <option value="">Select gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Nationality *</label>
+                                <select class="kq-form-select" id="nationality" required>
+                                    <option value="">Select nationality</option>
+                                    <option value="KE">Kenya</option>
+                                    <option value="US">United States</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="IN">India</option>
+                                    <option value="ZA">South Africa</option>
+                                    <option value="NG">Nigeria</option>
+                                    <option value="GH">Ghana</option>
+                                    <option value="UG">Uganda</option>
+                                    <option value="TZ">Tanzania</option>
+                                    <option value="RW">Rwanda</option>
+                                    <option value="ET">Ethiopia</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kq-form-section">
+                        <h2 class="kq-form-title">Contact Information</h2>
+                        
+                        <div class="kq-form-row">
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Email Address *</label>
+                                <input type="email" class="kq-form-input" id="email" required placeholder="john@example.com">
+                            </div>
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Phone Number *</label>
+                                <input type="tel" class="kq-form-input" id="phone" required placeholder="+254 700 000 000">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kq-form-section">
+                        <h2 class="kq-form-title">Passport Information</h2>
+                        
+                        <div class="kq-form-row">
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Passport Number *</label>
+                                <input type="text" class="kq-form-input" id="passportNumber" required placeholder="A12345678">
+                            </div>
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Passport Expiry *</label>
+                                <input type="date" class="kq-form-input" id="passportExpiry" required>
+                            </div>
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Issuing Country *</label>
+                                <select class="kq-form-select" id="issuingCountry" required>
+                                    <option value="">Select country</option>
+                                    <option value="KE">Kenya</option>
+                                    <option value="US">United States</option>
+                                    <option value="GB">United Kingdom</option>
+                                    <option value="CA">Canada</option>
+                                    <option value="AU">Australia</option>
+                                    <option value="IN">India</option>
+                                    <option value="ZA">South Africa</option>
+                                    <option value="NG">Nigeria</option>
+                                    <option value="GH">Ghana</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kq-form-section">
+                        <h2 class="kq-form-title">Frequent Flyer Program (Optional)</h2>
+                        
+                        <div class="kq-form-row">
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Program</label>
+                                <select class="kq-form-select" id="ffProgram">
+                                    <option value="">None</option>
+                                    <option value="KQ">Kenya Airways Asante</option>
+                                    <option value="ET">Ethiopian ShebaMiles</option>
+                                    <option value="QR">Qatar Privilege Club</option>
+                                    <option value="EK">Emirates Skywards</option>
+                                    <option value="BA">British Airways Executive Club</option>
+                                </select>
+                            </div>
+                            <div class="kq-form-group">
+                                <label class="kq-form-label">Membership Number</label>
+                                <input type="text" class="kq-form-input" id="ffNumber" placeholder="1234567890">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="kq-form-actions">
+                        <button type="button" class="kq-btn kq-btn-secondary" onclick="goBack()">Back</button>
+                        <button type="submit" class="kq-btn kq-btn-primary">
+                            <span class="kq-btn-text">Continue to Payment</span>
+                            <span class="kq-btn-arrow">→</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Loading State -->
+                <div class="kq-loading-state" id="loadingState" style="display: none;">
+                    <div class="kq-spinner"></div>
+                    <p>Processing your booking...</p>
                 </div>
             </div>
-        </div>
 
-        <!-- Passenger Form -->
-        <div class="form-section" id="passengerForm">
-            <h2>Passenger Information</h2>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="firstName">First Name *</label>
-                    <input type="text" id="firstName" required placeholder="John">
-                </div>
-                <div class="form-group">
-                    <label for="lastName">Last Name *</label>
-                    <input type="text" id="lastName" required placeholder="Doe">
+            <!-- Right Column - Flight Summary -->
+            <div class="kq-flight-summary-sidebar">
+                <div class="kq-summary-card">
+                    <h3 class="kq-summary-title">Your Trip</h3>
+                    
+                    <div class="kq-summary-route">
+                        <span class="kq-summary-code" id="summaryFrom">NBO</span>
+                        <span class="kq-summary-arrow">→</span>
+                        <span class="kq-summary-code" id="summaryTo">MBA</span>
+                    </div>
+                    
+                    <div class="kq-summary-info">
+                        <div class="kq-summary-item">
+                            <span class="kq-summary-label">Dates</span>
+                            <span class="kq-summary-value" id="summaryDates">Jul 3 - Jul 6, 2026</span>
+                        </div>
+                        <div class="kq-summary-item">
+                            <span class="kq-summary-label">Trip Type</span>
+                            <span class="kq-summary-value" id="summaryTripType">Return</span>
+                        </div>
+                        <div class="kq-summary-item">
+                            <span class="kq-summary-label">Passengers</span>
+                            <span class="kq-summary-value" id="summaryPassengers">1 Adult</span>
+                        </div>
+                        <div class="kq-summary-item">
+                            <span class="kq-summary-label">Class</span>
+                            <span class="kq-summary-value" id="summaryClass">Economy</span>
+                        </div>
+                    </div>
+                    
+                    <div class="kq-summary-divider"></div>
+                    
+                    <div class="kq-summary-total">
+                        <span class="kq-summary-total-label">Total</span>
+                        <span class="kq-summary-total-value" id="summaryTotal">Ksh 27,700</span>
+                    </div>
                 </div>
             </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="email">Email Address *</label>
-                    <input type="email" id="email" required placeholder="john@example.com">
-                </div>
-                <div class="form-group">
-                    <label for="phone">Phone Number *</label>
-                    <input type="tel" id="phone" required placeholder="+1 (555) 123-4567">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="dateOfBirth">Date of Birth *</label>
-                    <input type="date" id="dateOfBirth" required>
-                </div>
-                <div class="form-group">
-                    <label for="nationality">Nationality *</label>
-                    <select id="nationality" required>
-                        <option value="">Select nationality</option>
-                        <option value="KE">Kenya</option>
-                        <option value="US">United States</option>
-                        <option value="GB">United Kingdom</option>
-                        <option value="CA">Canada</option>
-                        <option value="AU">Australia</option>
-                        <option value="NZ">New Zealand</option>
-                        <option value="IN">India</option>
-                        <option value="ZA">South Africa</option>
-                        <option value="NG">Nigeria</option>
-                        <option value="GH">Ghana</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="passportNumber">Passport Number *</label>
-                    <input type="text" id="passportNumber" required placeholder="A00123456">
-                </div>
-                <div class="form-group">
-                    <label for="passportExpiry">Passport Expiry *</label>
-                    <input type="date" id="passportExpiry" required>
-                </div>
-            </div>
-
-            <div class="actions">
-                <button type="button" class="btn btn-secondary" onclick="window.history.back()">Back</button>
-                <button type="submit" class="btn btn-primary" onclick="submitPassengerDetails()">Continue to Payment</button>
-            </div>
-        </div>
-
-        <!-- Loading State (hidden by default) -->
-        <div class="loading-message" id="loadingMessage" style="display: none;">
-            <div class="spinner"></div>
-            <p>Processing your booking...</p>
         </div>
     </div>
 
-    <script>
-        // Parse URL parameters
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                from: params.get('from'),
-                to: params.get('to'),
-                date: params.get('date'),
-                fare: params.get('fare'),
-                price: params.get('price')
-            };
-        }
-
-        // Get selected flight from sessionStorage
-        function getSelectedFlight() {
-            const stored = sessionStorage.getItem('selectedFlight');
-            return stored ? JSON.parse(stored) : null;
-        }
-
-        // Format date for display
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-        }
-
-        // Initialize page
-        function initializePage() {
-            const params = getUrlParams();
-            const flight = getSelectedFlight();
-
-            if (!params.from || !params.to || !params.price) {
-                document.getElementById('passengerForm').style.display = 'none';
-                document.getElementById('flightSummary').innerHTML = '<p style="color: #c8102e; padding: 24px;">Flight details not found. <a href="/availability.html">Go back to search</a></p>';
-                return;
-            }
-
-            // Update summary
-            document.getElementById('summaryRoute').textContent = `${params.from} → ${params.to}`;
-            document.getElementById('summaryDate').textContent = formatDate(params.date);
-            document.getElementById('summaryClass').textContent = params.fare.charAt(0).toUpperCase() + params.fare.slice(1);
-            const numericPrice = parseFloat(params.price);
-            document.getElementById('summaryPrice').textContent = isNaN(numericPrice)
-                ? 'Ksh 0'
-                : `Ksh ${numericPrice.toLocaleString()}`;
-
-            console.log('🎫 Passenger Details Loaded:', params);
-        }
-
-        // Submit passenger details
-        function submitPassengerDetails() {
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const dateOfBirth = document.getElementById('dateOfBirth').value;
-            const nationality = document.getElementById('nationality').value;
-            const passportNumber = document.getElementById('passportNumber').value.trim();
-            const passportExpiry = document.getElementById('passportExpiry').value;
-
-            // Validation
-            if (!firstName || !lastName || !email || !phone || !dateOfBirth || !nationality || !passportNumber || !passportExpiry) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            if (!email.includes('@')) {
-                alert('Please enter a valid email address');
-                return;
-            }
-
-            // Store passenger details
-            const passengerDetails = {
-                firstName,
-                lastName,
-                email,
-                phone,
-                dateOfBirth,
-                nationality,
-                passportNumber,
-                passportExpiry
-            };
-
-            console.log('👤 Passenger Details Submitted:', passengerDetails);
-            sessionStorage.setItem('passengerDetails', JSON.stringify(passengerDetails));
-
-            // Show loading state
-            document.getElementById('passengerForm').style.display = 'none';
-            document.getElementById('loadingMessage').style.display = 'block';
-
-            // Simulate processing and redirect with all required parameters
-            setTimeout(() => {
-                const params = getUrlParams();
-                const fullName = `${firstName} ${lastName}`;
-                window.location.href = `/payment.html?from=${params.from}&to=${params.to}&price=${params.price}&fare=${params.fare}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&passport=${encodeURIComponent(passportNumber)}&phone=${encodeURIComponent(phone)}`;
-            }, 1500);
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initializePage);
-    </script>
+    <script src="/passenger-details.js"></script>
 </body>
 </html>

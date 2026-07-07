@@ -914,6 +914,146 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
 
+    /* Live Offers Banner */
+    .live-offers-banner {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    .offers-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .offers-icon {
+        font-size: 24px;
+    }
+
+    .offers-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e3a8a;
+        flex: 1;
+    }
+
+    .offers-count {
+        background: #1e3a8a;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .offers-carousel {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 8px 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .offers-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+    .offer-card {
+        flex-shrink: 0;
+        width: 280px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .offer-card:hover {
+        border-color: #1e3a8a;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(30, 58, 138, 0.15);
+    }
+
+    .offer-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #1e3a8a, #2563eb);
+    }
+
+    .offer-card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .offer-airline-logo {
+        font-size: 20px;
+    }
+
+    .offer-airline-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e3a8a;
+    }
+
+    .offer-card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .offer-card-description {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+
+    .offer-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .offer-discount {
+        font-size: 18px;
+        font-weight: 800;
+        color: #c8102e;
+    }
+
+    .offer-countdown {
+        font-size: 11px;
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .offer-countdown .time-value {
+        color: #1e3a8a;
+        font-weight: 700;
+    }
+
     /* Steps Grid */
     .steps-grid-kq {
         display: grid;
@@ -2257,6 +2397,18 @@
                 <p class="hero-subtitle-kq">Search for SmartFly flights and book online. Fly to 50+ destinations across the world with SmartFly and enjoy a World-Class Travel Experience with African Hospitality.</p>
             </div>
 
+            <!-- Live Offers Banner -->
+            <div class="live-offers-banner" id="liveOffersBanner">
+                <div class="offers-header">
+                    <span class="offers-icon">🎉</span>
+                    <span class="offers-title">Limited Time Offers</span>
+                    <span class="offers-count" id="offersCount">Loading...</span>
+                </div>
+                <div class="offers-carousel" id="offersCarousel">
+                    <!-- Offers will be loaded dynamically -->
+                </div>
+            </div>
+
             <!-- KQ-Style Booking Form - Compact -->
             <div class="booking-widget-kq-compact" id="booking-section">
                 <form id="flightSearchForm" class="booking-form-compact">
@@ -3116,6 +3268,144 @@
         navItems.forEach(item => item.classList.remove('open'));
       }
     });
+
+    // ============================================
+    // LIVE OFFERS BANNER FUNCTIONALITY
+    // ============================================
+    
+    // Load flight utilities
+    function loadFlightUtils() {
+        return new Promise((resolve, reject) => {
+            if (typeof getRouteCategory !== 'undefined') {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = '/assets/js/flight-utils.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // Countdown timer for offers
+    function updateCountdown(offerId, validTo) {
+        const countdownElement = document.getElementById(`countdown-${offerId}`);
+        if (!countdownElement) return;
+
+        const timeRemaining = getTimeRemaining(validTo);
+        
+        if (timeRemaining.total <= 0) {
+            countdownElement.innerHTML = 'Expired';
+            return;
+        }
+
+        const days = timeRemaining.days > 0 ? `${timeRemaining.days}d ` : '';
+        const hours = timeRemaining.hours > 0 ? `${timeRemaining.hours}h ` : '';
+        const minutes = `${timeRemaining.minutes}m`;
+        const seconds = `${timeRemaining.seconds}s`;
+
+        countdownElement.innerHTML = `<span class="time-value">${days}${hours}${minutes}</span> ${seconds}`;
+    }
+
+    // Time remaining helper function
+    function getTimeRemaining(validTo) {
+        const total = Date.parse(validTo) - Date.parse(new Date());
+        const seconds = Math.floor((total / 1000) % 60);
+        const minutes = Math.floor((total / 1000 / 60) % 60);
+        const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+        const days = Math.floor(total / (1000 * 60 * 60 * 24));
+        
+        return { total, days, hours, minutes, seconds };
+    }
+
+    // Render offers in the carousel
+    function renderOffers(offers) {
+        const carousel = document.getElementById('offersCarousel');
+        const countElement = document.getElementById('offersCount');
+        
+        if (!carousel || !countElement) return;
+
+        countElement.textContent = `${offers.length} Active`;
+
+        if (offers.length === 0) {
+            carousel.innerHTML = '<p style="color: #6b7280; padding: 20px;">No active offers at the moment.</p>';
+            return;
+        }
+
+        carousel.innerHTML = offers.map(offer => {
+            const discountText = offer.discount > 0 ? `${offer.discount}% OFF` : 'Special Offer';
+            const airlineInfo = offer.airlineCode || '✈️';
+            
+            return `
+                <div class="offer-card" data-offer-id="${offer.id}">
+                    <div class="offer-card-header">
+                        <span class="offer-airline-logo">${airlineInfo}</span>
+                        <span class="offer-airline-name">${offer.airline}</span>
+                    </div>
+                    <div class="offer-card-title">${offer.title}</div>
+                    <div class="offer-card-description">${offer.description}</div>
+                    <div class="offer-card-footer">
+                        <span class="offer-discount">${discountText}</span>
+                        <span class="offer-countdown" id="countdown-${offer.id}">Loading...</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Start countdown timers
+        offers.forEach(offer => {
+            updateCountdown(offer.id, offer.validTo);
+            setInterval(() => updateCountdown(offer.id, offer.validTo), 1000);
+        });
+
+        // Add click handlers for offer cards
+        document.querySelectorAll('.offer-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const offerId = card.dataset.offerId;
+                console.log('Offer clicked:', offerId);
+                // Could scroll to booking section or pre-fill search
+                document.getElementById('booking-section').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    }
+
+    // Load and display offers
+    async function loadOffers() {
+        try {
+            await loadFlightUtils();
+            
+            if (typeof getAllActiveOffers === 'function') {
+                const offers = await getAllActiveOffers();
+                renderOffers(offers);
+            } else {
+                // Fallback: load offers directly
+                const response = await fetch('/assets/data/airline-offers.json');
+                const data = await response.json();
+                const offers = (data.offers || []).filter(offer => {
+                    if (!offer.active) return false;
+                    const now = new Date();
+                    const validFrom = new Date(offer.validFrom);
+                    const validTo = new Date(offer.validTo);
+                    return now >= validFrom && now <= validTo;
+                });
+                renderOffers(offers);
+            }
+        } catch (error) {
+            console.error('Error loading offers:', error);
+            const carousel = document.getElementById('offersCarousel');
+            if (carousel) {
+                carousel.innerHTML = '<p style="color: #6b7280; padding: 20px;">Unable to load offers at this time.</p>';
+            }
+        }
+    }
+
+    // Initialize offers when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadOffers);
+    } else {
+        loadOffers();
+    }
     </script>
 </body>
 </html>

@@ -1,0 +1,185 @@
+{
+  "offers": [
+    {
+      "id": "KQ-DOM-001",
+      "airline": "Kenya Airways",
+      "airlineCode": "KQ",
+      "title": "Domestic Flight Special",
+      "description": "Fly to any domestic destination at 20% off",
+      "discount": 20,
+      "validFrom": "2026-07-01",
+      "validTo": "2026-07-31",
+      "routes": ["NBO-MBA", "MBA-NBO", "NBO-KIS", "KIS-NBO", "NBO-ELD", "ELD-NBO"],
+      "class": ["Economy", "Premium Economy"],
+      "terms": "Valid for bookings made at least 7 days in advance",
+      "active": true,
+      "priority": 1
+    },
+    {
+      "id": "KQ-INT-001",
+      "airline": "Kenya Airways",
+      "airlineCode": "KQ",
+      "title": "Asante Rewards Bonus",
+      "description": "Earn double Asante miles on all international flights",
+      "discount": 0,
+      "bonusMiles": 2,
+      "validFrom": "2026-07-01",
+      "validTo": "2026-09-30",
+      "routes": ["international"],
+      "class": ["Business", "First"],
+      "terms": "Valid for KQ Asante members only",
+      "active": true,
+      "priority": 2
+    },
+    {
+      "id": "QR-INT-001",
+      "airline": "Qatar Airways",
+      "airlineCode": "QR",
+      "title": "Summer Sale to Dubai",
+      "description": "Fly to Dubai from KES 45,000",
+      "discount": 25,
+      "validFrom": "2026-07-01",
+      "validTo": "2026-07-15",
+      "routes": ["NBO-DXB", "DXB-NBO"],
+      "class": ["Economy"],
+      "terms": "Limited seats available. Valid for travel until September 2026",
+      "active": true,
+      "priority": 1
+    },
+    {
+      "id": "EK-INT-001",
+      "airline": "Emirates",
+      "airlineCode": "EK",
+      "title": "Business Class Upgrade",
+      "description": "Upgrade to Business Class for only KES 25,000 extra",
+      "discount": 0,
+      "upgradePrice": 25000,
+      "validFrom": "2026-07-01",
+      "validTo": "2026-08-31",
+      "routes": ["international"],
+      "class": ["Business"],
+      "terms": "Subject to availability. Valid on Emirates flights only",
+      "active": true,
+      "priority": 2
+    },
+    {
+      "id": "BA-INT-001",
+      "airline": "British Airways",
+      "airlineCode": "BA",
+      "title": "London Special",
+      "description": "Return flights to London from KES 78,000",
+      "discount": 30,
+      "validFrom": "2026-07-01",
+      "validTo": "2026-07-20",
+      "routes": ["NBO-LHR", "LHR-NBO"],
+      "class": ["Economy", "Premium Economy"],
+      "terms": "Valid for travel until December 2026",
+      "active": true,
+      "priority": 1
+    },
+    {
+      "id": "ET-REG-001",
+      "airline": "Ethiopian Airlines",
+      "airlineCode": "ET",
+      "title": "East Africa Explorer",
+      "description": "15% off all regional flights within East Africa",
+      "discount": 15,
+      "validFrom": "2026-07-01",
+      "validTo": "2026-12-31",
+      "routes": ["NBO-EBB", "EBB-NBO", "NBO-DAR", "DAR-NBO", "NBO-JRO", "JRO-NBO"],
+      "class": ["Economy", "Business"],
+      "terms": "Valid for Ethiopian Airlines flights only",
+      "active": true,
+      "priority": 3
+    },
+    {
+      "id": "KQ-DOM-002",
+      "airline": "Kenya Airways",
+      "airlineCode": "KQ",
+      "title": "Weekend Getaway",
+      "description": "Book domestic flights for Friday-Sunday travel and save 15%",
+      "discount": 15,
+      "validFrom": "2026-07-01",
+      "validTo": "2026-08-31",
+      "routes": ["domestic"],
+      "class": ["Economy", "Premium Economy", "Business"],
+      "terms": "Valid for Friday departures and Sunday returns only",
+      "active": true,
+      "priority": 2
+    }
+  ],
+  "airlineInfo": {
+    "Kenya Airways": {
+      "code": "KQ",
+      "logo": "✈️",
+      "primaryHub": "NBO",
+      "operates": "domestic,international",
+      "specializations": ["domestic", "african_routes", "middle_east", "europe", "asia"],
+      "basePriceMultiplier": 1.0,
+      "features": ["Asante Rewards", "Priority Boarding", "In-flight Meals"]
+    },
+    "Qatar Airways": {
+      "code": "QR",
+      "logo": "🛬",
+      "primaryHub": "DOH",
+      "operates": "international",
+      "specializations": ["middle_east", "europe", "asia", "americas"],
+      "basePriceMultiplier": 1.15,
+      "features": ["Qsuite", "Onboard WiFi", "Award-winning Service"]
+    },
+    "Emirates": {
+      "code": "EK",
+      "logo": "✈️",
+      "primaryHub": "DXB",
+      "operates": "international",
+      "specializations": ["middle_east", "europe", "asia", "americas", "australia"],
+      "basePriceMultiplier": 1.2,
+      "features": ["First Class Suites", "Onboard Lounge", "ICE Entertainment"]
+    },
+    "British Airways": {
+      "code": "BA",
+      "logo": "🛫",
+      "primaryHub": "LHR",
+      "operates": "international",
+      "specializations": ["europe", "americas", "africa", "asia"],
+      "basePriceMultiplier": 1.18,
+      "features": ["Club World", "Avios Rewards", "Executive Lounges"]
+    },
+    "Ethiopian Airlines": {
+      "code": "ET",
+      "logo": "✈️",
+      "primaryHub": "ADD",
+      "operates": "regional,international",
+      "specializations": ["african_routes", "middle_east", "europe", "asia", "americas"],
+      "basePriceMultiplier": 0.95,
+      "features": ["ShebaMiles", "African Network", "Competitive Pricing"]
+    },
+    "RwandAir": {
+      "code": "WB",
+      "logo": "✈️",
+      "primaryHub": "KGL",
+      "operates": "regional,international",
+      "specializations": ["east_africa", "west_africa", "middle_east", "europe"],
+      "basePriceMultiplier": 0.88,
+      "features": ["Dream Miles", "New Fleet", "Regional Connectivity"]
+    },
+    "JamboJet": {
+      "code": "JM",
+      "logo": "✈️",
+      "primaryHub": "NBO",
+      "operates": "domestic",
+      "specializations": ["domestic"],
+      "basePriceMultiplier": 0.75,
+      "features": ["Low Cost", "Domestic Specialist", "Quick Turnaround"]
+    },
+    "SmartFly": {
+      "code": "SF",
+      "logo": "✈️",
+      "primaryHub": "NBO",
+      "operates": "domestic",
+      "specializations": ["domestic"],
+      "basePriceMultiplier": 0.85,
+      "features": ["Budget Friendly", "Domestic Routes", "Online Check-in"]
+    }
+  }
+}

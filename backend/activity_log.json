@@ -668,5 +668,35 @@
       "status": "completed",
       "timestamp": "2026-06-25T18:54:09.593Z"
     }
+  },
+  {
+    "id": 49,
+    "type": "booking",
+    "timestamp": "2026-06-30T16:43:55.721975",
+    "data": {
+      "passenger_name": "Gabriel kebiro",
+      "flight_number": "NBO-EDL",
+      "from": "NBO",
+      "to": "EDL",
+      "amount": 42792,
+      "payment_method": "M-Pesa",
+      "mpesa_phone": "+254715348430",
+      "timestamp": "2026-06-30T13:43:55.707830Z"
+    }
+  },
+  {
+    "id": 50,
+    "type": "payment",
+    "timestamp": "2026-06-30T16:43:55.762257",
+    "data": {
+      "passenger_name": "Gabriel kebiro",
+      "flight": "NBO-EDL",
+      "amount": 42792,
+      "payment_method": "M-Pesa",
+      "status": "completed",
+      "booking_ref": "SF0001",
+      "mpesa_phone": "+254715348430",
+      "timestamp": "2026-06-30T13:43:55.759815Z"
+    }
   }
 ]

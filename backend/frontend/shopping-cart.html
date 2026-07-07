@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - SmartFly Airways</title>
+    <link rel="stylesheet" href="/shopping-cart.css">
+    <style>
+        /* Minimal inline styles for backward compatibility */
+        body { margin: 0; }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="kq-header">
+        <div class="kq-header-container">
+            <div class="kq-logo">
+                <span class="kq-logo-icon">✈</span>
+                <span class="kq-logo-text">SmartFly Airways</span>
+            </div>
+            <div class="kq-header-nav">
+                <div class="kq-nav-item active">
+                    <span class="kq-nav-number">1</span>
+                    <span class="kq-nav-label">Select</span>
+                </div>
+                <div class="kq-nav-item active">
+                    <span class="kq-nav-number">2</span>
+                    <span class="kq-nav-label">Cart</span>
+                </div>
+                <div class="kq-nav-item">
+                    <span class="kq-nav-number">3</span>
+                    <span class="kq-nav-label">Traveler</span>
+                </div>
+                <div class="kq-nav-item">
+                    <span class="kq-nav-number">4</span>
+                    <span class="kq-nav-label">Payment</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="kq-main-container">
+        <div class="kq-content-grid">
+            <!-- Left Column - Flight Details -->
+            <div class="kq-flight-details">
+                <div class="kq-section-header">
+                    <h1 class="kq-page-title">Your Selection</h1>
+                    <button class="kq-modify-btn" onclick="goBack()">Modify Search</button>
+                </div>
+
+                <!-- Trip Summary -->
+                <div class="kq-trip-summary">
+                    <div class="kq-trip-route">
+                        <span class="kq-route-code" id="fromCode">NBO</span>
+                        <span class="kq-route-arrow">→</span>
+                        <span class="kq-route-code" id="toCode">MBA</span>
+                    </div>
+                    <div class="kq-trip-info">
+                        <span class="kq-trip-dates" id="tripDates">Jul 3 - Jul 6, 2026</span>
+                        <span class="kq-trip-type" id="tripType">Return</span>
+                        <span class="kq-passenger-count" id="passengerCount">1 Adult</span>
+                    </div>
+                </div>
+
+                <!-- Outbound Flight -->
+                <div class="kq-flight-card" id="outboundFlight">
+                    <div class="kq-flight-header">
+                        <span class="kq-flight-label">Outbound</span>
+                        <span class="kq-flight-date" id="outboundDate">Fri, Jul 3, 2026</span>
+                    </div>
+                    <div class="kq-flight-body">
+                        <div class="kq-flight-segment">
+                            <div class="kq-flight-time-info">
+                                <div class="kq-depart-time" id="outboundDepart">06:30</div>
+                                <div class="kq-depart-airport" id="outboundFrom">NBO</div>
+                            </div>
+                            <div class="kq-flight-duration">
+                                <div class="kq-duration-line"></div>
+                                <div class="kq-duration-text" id="outboundDuration">1h 05m</div>
+                                <div class="kq-stops-info" id="outboundStops">Nonstop</div>
+                            </div>
+                            <div class="kq-flight-time-info">
+                                <div class="kq-arrive-time" id="outboundArrive">07:35</div>
+                                <div class="kq-arrive-airport" id="outboundTo">MBA</div>
+                            </div>
+                        </div>
+                        <div class="kq-flight-airline">
+                            <span class="kq-airline-logo" id="outboundAirlineLogo">✈️</span>
+                            <span class="kq-airline-name" id="outboundAirline">Kenya Airways</span>
+                            <span class="kq-flight-number" id="outboundFlightNumber">KQ 511</span>
+                            <span class="kq-cabin-class" id="outboundClass">Economy</span>
+                        </div>
+                    </div>
+                    <div class="kq-flight-footer">
+                        <span class="kq-flight-price" id="outboundPrice">Ksh 12,100</span>
+                    </div>
+                </div>
+
+                <!-- Return Flight (shown if return trip) -->
+                <div class="kq-flight-card" id="returnFlight" style="display: none;">
+                    <div class="kq-flight-header">
+                        <span class="kq-flight-label">Return</span>
+                        <span class="kq-flight-date" id="returnDate">Mon, Jul 6, 2026</span>
+                    </div>
+                    <div class="kq-flight-body">
+                        <div class="kq-flight-segment">
+                            <div class="kq-flight-time-info">
+                                <div class="kq-depart-time" id="returnDepart">18:30</div>
+                                <div class="kq-depart-airport" id="returnFrom">MBA</div>
+                            </div>
+                            <div class="kq-flight-duration">
+                                <div class="kq-duration-line"></div>
+                                <div class="kq-duration-text" id="returnDuration">1h 05m</div>
+                                <div class="kq-stops-info" id="returnStops">Nonstop</div>
+                            </div>
+                            <div class="kq-flight-time-info">
+                                <div class="kq-arrive-time" id="returnArrive">19:35</div>
+                                <div class="kq-arrive-airport" id="returnTo">NBO</div>
+                            </div>
+                        </div>
+                        <div class="kq-flight-airline">
+                            <span class="kq-airline-logo" id="returnAirlineLogo">✈️</span>
+                            <span class="kq-airline-name" id="returnAirline">Kenya Airways</span>
+                            <span class="kq-flight-number" id="returnFlightNumber">KQ 516</span>
+                            <span class="kq-cabin-class" id="returnClass">Economy</span>
+                        </div>
+                    </div>
+                    <div class="kq-flight-footer">
+                        <span class="kq-flight-price" id="returnPrice">Ksh 12,100</span>
+                    </div>
+                </div>
+
+                <!-- Offer Applied (if any) -->
+                <div class="kq-offer-applied" id="offerApplied" style="display: none;">
+                    <span class="kq-offer-icon">🎉</span>
+                    <span class="kq-offer-text" id="offerText">20% Domestic Flight Discount Applied</span>
+                </div>
+            </div>
+
+            <!-- Right Column - Price Summary -->
+            <div class="kq-price-summary">
+                <div class="kq-price-card">
+                    <h2 class="kq-price-title">Price Summary</h2>
+                    
+                    <div class="kq-price-row">
+                        <span class="kq-price-label">Base Fare</span>
+                        <span class="kq-price-value" id="baseFare">Ksh 24,200</span>
+                    </div>
+                    
+                    <div class="kq-price-row">
+                        <span class="kq-price-label">Taxes & Fees</span>
+                        <span class="kq-price-value" id="taxesFees">Ksh 3,500</span>
+                    </div>
+                    
+                    <div class="kq-price-row discount" id="discountRow" style="display: none;">
+                        <span class="kq-price-label">Discount</span>
+                        <span class="kq-price-value" id="discountAmount">-Ksh 4,840</span>
+                    </div>
+                    
+                    <div class="kq-price-divider"></div>
+                    
+                    <div class="kq-price-row total">
+                        <span class="kq-price-label">Total</span>
+                        <span class="kq-price-value" id="totalPrice">Ksh 27,700</span>
+                    </div>
+                    
+                    <div class="kq-price-note">Includes all taxes and fees</div>
+                    
+                    <button class="kq-continue-btn" onclick="proceedToTraveler()">
+                        <span class="kq-btn-text">Continue to Traveler Details</span>
+                        <span class="kq-btn-arrow">→</span>
+                    </button>
+                    
+                    <div class="kq-security-note">
+                        <span class="kq-security-icon">🔒</span>
+                        <span class="kq-security-text">Secure booking. No payment required yet.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/shopping-cart.js"></script>
+</body>
+</html>

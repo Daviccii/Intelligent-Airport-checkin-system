@@ -416,6 +416,50 @@ body {
     color: var(--gray-600);
 }
 
+.route-category {
+    font-size: 11px;
+    color: var(--primary-red);
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+/* Offer Badge */
+.offer-badge {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, #c8102e 0%, #9e0c24 100%);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.offer-tag {
+    background: white;
+    color: var(--primary-red);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.offer-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Original Price Display */
+.original-price {
+    font-size: 14px;
+    color: var(--gray-600);
+    text-decoration: line-through;
+    margin-right: 8px;
+}
+
 .view-details-btn {
     background: none;
     border: none;

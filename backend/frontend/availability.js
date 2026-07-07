@@ -1,3 +1,14 @@
+// Load flight utilities
+function loadFlightUtils() {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = '/assets/js/flight-utils.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
 // Parse URL parameters
 function getSearchParams() {
     const params = new URLSearchParams(window.location.search);
@@ -131,38 +142,94 @@ function getCalendarPriceForDate(date, from, to) {
     return Math.round(finalPrice);
 }
 
-// Generate mock flight data
-function generateFlights(from, to, date) {
-    const airlines = [
+// Generate mock flight data with intelligent airline assignment
+async function generateFlights(from, to, date) {
+    // Use flight utilities if available
+    let category = 'international';
+    let availableAirlines = [
         { name: 'Kenya Airways', code: 'KQ', logo: '✈️' },
         { name: 'British Airways', code: 'BA', logo: '🛫' },
         { name: 'Emirates', code: 'EK', logo: '✈️' },
         { name: 'Qatar Airways', code: 'QR', logo: '🛬' },
         { name: 'Ethiopian Airlines', code: 'ET', logo: '✈️' }
     ];
+    
+    if (typeof getRouteCategory === 'function' && typeof getAirlinesForRoute === 'function') {
+        category = getRouteCategory(from, to);
+        availableAirlines = getAirlinesForRoute(from, to);
+    }
 
     const flights = [];
     const numFlights = 8 + Math.floor(Math.random() * 5); // 8-12 flights
 
     for (let i = 0; i < numFlights; i++) {
-        const airline = airlines[Math.floor(Math.random() * airlines.length)];
+        // Select airline based on probability
+        let airline;
+        if (typeof selectAirlineByProbability === 'function') {
+            airline = selectAirlineByProbability(availableAirlines);
+        } else {
+            airline = availableAirlines[Math.floor(Math.random() * availableAirlines.length)];
+        }
+        
+        // Adjust duration based on route category
+        let durationHours, durationMins;
+        if (category === 'domestic') {
+            durationHours = 1 + Math.floor(Math.random() * 2); // 1-2 hours
+            durationMins = Math.random() > 0.5 ? 0 : 30;
+        } else if (category === 'regional') {
+            durationHours = 2 + Math.floor(Math.random() * 3); // 2-4 hours
+            durationMins = Math.random() > 0.5 ? 0 : 30;
+        } else {
+            durationHours = 6 + Math.floor(Math.random() * 8); // 6-13 hours
+            durationMins = Math.random() > 0.5 ? 0 : 30;
+        }
+        
         const departHour = 6 + Math.floor(Math.random() * 18); // 6am - 11pm
         const departMin = Math.random() > 0.5 ? '00' : '30';
-        const durationHours = 8 + Math.floor(Math.random() * 6); // 8-13 hours
-        const durationMins = Math.random() > 0.5 ? 0 : 30;
         
         const departTime = `${departHour.toString().padStart(2, '0')}:${departMin}`;
         const arriveHour = (departHour + durationHours + (departMin === '30' && durationMins === 30 ? 1 : 0)) % 24;
         const arriveMins = (departMin === '30' && durationMins === 30) ? '00' : (durationMins === 30 ? '30' : departMin);
         const arriveTime = `${arriveHour.toString().padStart(2, '0')}:${arriveMins}`;
 
-        const stops = Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 2);
+        // Adjust stops based on route category
+        let stops;
+        if (category === 'domestic') {
+            stops = 0; // Domestic flights are usually nonstop
+        } else if (category === 'regional') {
+            stops = Math.random() > 0.7 ? 0 : 1;
+        } else {
+            stops = Math.random() > 0.5 ? 0 : (Math.random() > 0.5 ? 1 : 2);
+        }
         const stopText = stops === 0 ? 'Nonstop' : `${stops} stop${stops > 1 ? 's' : ''}`;
         
         const basePrice = getCalendarPriceForDate(new Date(date), from, to);
-        const stopSurcharge = 3500;
+        const stopSurcharge = category === 'domestic' ? 1500 : (category === 'regional' ? 2500 : 3500);
         const economyPrice = basePrice + (stops * stopSurcharge);
         const businessPrice = Math.floor(economyPrice * (2.5 + Math.random() * 0.5));
+
+        // Get applicable offers for this flight
+        let applicableOffers = [];
+        if (typeof getApplicableOffers === 'function') {
+            try {
+                applicableOffers = await getApplicableOffers(from, to, airline.name, date);
+            } catch (error) {
+                console.error('Error getting offers:', error);
+            }
+        }
+
+        // Apply best offer discount if available
+        let finalEconomyPrice = economyPrice;
+        let finalBusinessPrice = businessPrice;
+        let bestOffer = null;
+        
+        if (applicableOffers.length > 0) {
+            bestOffer = applicableOffers.sort((a, b) => b.discount - a.discount)[0];
+            if (bestOffer.discount > 0) {
+                finalEconomyPrice = applyOfferDiscount ? applyOfferDiscount(economyPrice, bestOffer) : economyPrice;
+                finalBusinessPrice = applyOfferDiscount ? applyOfferDiscount(businessPrice, bestOffer) : businessPrice;
+            }
+        }
 
         flights.push({
             airline: airline.name,
@@ -174,10 +241,15 @@ function generateFlights(from, to, date) {
             durationMinutes: durationHours * 60 + durationMins,
             stops,
             stopText,
-            terminal: `Terminal ${Math.floor(Math.random() * 3) + 1}`,
-            economyPrice,
-            businessPrice,
-            seatsLeft: Math.floor(Math.random() * 5) + 3
+            terminal: category === 'domestic' ? 'Terminal 1' : `Terminal ${Math.floor(Math.random() * 3) + 1}`,
+            economyPrice: finalEconomyPrice,
+            businessPrice: finalBusinessPrice,
+            originalEconomyPrice: economyPrice,
+            originalBusinessPrice: businessPrice,
+            seatsLeft: Math.floor(Math.random() * 5) + 3,
+            category: category,
+            offer: bestOffer,
+            routeCategory: category
         });
     }
 
@@ -245,7 +317,7 @@ function renderDateSlider(dates, onDateSelect) {
     });
 }
 
-// Render flight cards
+// Render flight cards with offers
 function renderFlights(flights) {
     const container = document.getElementById('flightResults');
     container.innerHTML = '';
@@ -258,7 +330,29 @@ function renderFlights(flights) {
     flights.forEach(flight => {
         const card = document.createElement('div');
         card.className = 'flight-card';
+        
+        // Build offer badge HTML if offer exists
+        let offerBadge = '';
+        if (flight.offer && flight.offer.discount > 0) {
+            offerBadge = `
+                <div class="offer-badge">
+                    <span class="offer-tag">${flight.offer.discount}% OFF</span>
+                    <span class="offer-title">${flight.offer.title}</span>
+                </div>
+            `;
+        }
+        
+        // Build price display with original/discounted pricing
+        const economyPriceDisplay = flight.offer && flight.offer.discount > 0 
+            ? `<span class="original-price">Ksh ${flight.originalEconomyPrice.toLocaleString()}</span> Ksh ${flight.economyPrice.toLocaleString()}`
+            : `Ksh ${flight.economyPrice.toLocaleString()}`;
+            
+        const businessPriceDisplay = flight.offer && flight.offer.discount > 0
+            ? `<span class="original-price">Ksh ${flight.originalBusinessPrice.toLocaleString()}</span> Ksh ${flight.businessPrice.toLocaleString()}`
+            : `Ksh ${flight.businessPrice.toLocaleString()}`;
+        
         card.innerHTML = `
+            ${offerBadge}
             <div class="flight-times">
                 <div class="time-row">
                     <div class="time-info">
@@ -277,6 +371,7 @@ function renderFlights(flights) {
                 <div class="airline-info">
                     <div class="airline-logo">${flight.airlineLogo}</div>
                     <div class="airline-name">${flight.airline}</div>
+                    <div class="route-category">${flight.routeCategory || ''}</div>
                 </div>
                 <button class="view-details-btn">View Details</button>
             </div>
@@ -293,13 +388,13 @@ function renderFlights(flights) {
             <div class="flight-fares" style="grid-column: 1 / -1;">
                 <div class="fare-card" onclick="selectFlight('economy', ${flight.economyPrice})">
                     <div class="fare-class">Economy</div>
-                    <div class="fare-price">Ksh ${flight.economyPrice}</div>
+                    <div class="fare-price">${economyPriceDisplay}</div>
                     <div class="fare-currency">KES</div>
                 </div>
                 <div class="fare-card business" onclick="selectFlight('business', ${flight.businessPrice})">
                     ${flight.seatsLeft <= 5 ? `<span class="seats-left-badge">${flight.seatsLeft} seats left</span>` : ''}
                     <div class="fare-class">Business</div>
-                    <div class="fare-price">Ksh ${flight.businessPrice}</div>
+                    <div class="fare-price">${businessPriceDisplay}</div>
                     <div class="fare-currency">KES</div>
                 </div>
             </div>
@@ -307,8 +402,9 @@ function renderFlights(flights) {
         container.appendChild(card);
     });
     
-    // Update results count
-    document.getElementById('resultsCount').textContent = `${flights.length} flights found`;
+    // Update results count with route category
+    const category = flights[0]?.routeCategory || 'flights';
+    document.getElementById('resultsCount').textContent = `${flights.length} ${category} flights found`;
 }
 
 // Sort flights
@@ -371,7 +467,15 @@ let currentFlights = [];
 let currentDateData = [];
 let selectedDate = '';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    // Load flight utilities first
+    try {
+        await loadFlightUtils();
+        console.log('Flight utilities loaded successfully');
+    } catch (error) {
+        console.error('Failed to load flight utilities:', error);
+    }
+    
     const params = getSearchParams();
     
     // Render summary
@@ -380,27 +484,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generate and render date slider
     selectedDate = params.departDate;
     currentDateData = generateDateSlider(params.departDate, params.tripType, params.from, params.to);
-    renderDateSlider(currentDateData, (date) => {
+    renderDateSlider(currentDateData, async (date) => {
         selectedDate = date;
         // Update date cards
         currentDateData.forEach(d => d.selected = d.date === date);
-        renderDateSlider(currentDateData, (date) => {
+        renderDateSlider(currentDateData, async (date) => {
             selectedDate = date;
             currentDateData.forEach(d => d.selected = d.date === date);
             renderDateSlider(currentDateData, arguments.callee);
             // Regenerate flights for new date
-            currentFlights = generateFlights(params.from, params.to, date);
+            currentFlights = await generateFlights(params.from, params.to, date);
             const sortBy = document.getElementById('sortSelect').value;
             renderFlights(sortFlights(currentFlights, sortBy));
         });
         // Regenerate flights for new date
-        currentFlights = generateFlights(params.from, params.to, date);
+        currentFlights = await generateFlights(params.from, params.to, date);
         const sortBy = document.getElementById('sortSelect').value;
         renderFlights(sortFlights(currentFlights, sortBy));
     });
     
     // Generate initial flights
-    currentFlights = generateFlights(params.from, params.to, params.departDate);
+    currentFlights = await generateFlights(params.from, params.to, params.departDate);
     renderFlights(sortFlights(currentFlights, 'recommended'));
     
     // Sort dropdown handler
