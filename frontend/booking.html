@@ -391,15 +391,20 @@
           <div class="form-grid">
             <div class="form-group">
               <label for="p_name">Full Name <span class="required">*</span></label>
-              <input id="p_name" name="name" type="text" placeholder="First and last name" required />
+              <input id="p_name" name="name" type="text" placeholder="First and last name" required 
+                     pattern="[a-zA-Z\s\-']{2,50}" minlength="2" maxlength="50"
+                     title="Name must be 2-50 characters and contain only letters, spaces, hyphens, and apostrophes" />
             </div>
             <div class="form-group">
               <label for="p_email">Email Address <span class="required">*</span></label>
-              <input id="p_email" name="email" type="email" placeholder="your@email.com" required />
+              <input id="p_email" name="email" type="email" placeholder="your@email.com" required 
+                     maxlength="100" title="Please enter a valid email address" />
             </div>
             <div class="form-group">
               <label for="p_passport">Passport Number <span class="required">*</span></label>
-              <input id="p_passport" name="passport" type="text" placeholder="e.g., AA123456" required />
+              <input id="p_passport" name="passport" type="text" placeholder="e.g., AA123456" required 
+                     pattern="[A-Z0-9]{6,12}" minlength="6" maxlength="12"
+                     title="Passport must be 6-12 alphanumeric characters" />
             </div>
           </div>
         </div>
@@ -1058,6 +1063,116 @@
         }
       }catch(e){ console.warn('initLocaleDefaults failed', e); }
     }
+  </script>
+  
+  <!-- Validation CSS and JS -->
+  <link rel="stylesheet" href="/css/validation.css">
+  <script src="/js/validation.js"></script>
+  
+  <script>
+    // Form validation for booking form
+    document.addEventListener('DOMContentLoaded', function() {
+      const bookingForm = document.getElementById('bookingForm');
+      
+      // Define validation rules for booking form
+      const bookingValidationRules = {
+        name: {
+          validator: 'validateName',
+          fieldName: 'Full Name',
+          required: true
+        },
+        email: {
+          validator: 'validateEmail',
+          fieldName: 'Email Address',
+          required: true
+        },
+        passport: {
+          validator: 'validatePassport',
+          fieldName: 'Passport Number',
+          required: true
+        },
+        country: {
+          validator: 'validateRequiredField',
+          fieldName: 'Country',
+          required: true
+        },
+        phone: {
+          validator: 'validatePhone',
+          fieldName: 'Phone Number',
+          required: true,
+          isKenyan: false // Allow international format
+        }
+      };
+      
+      // Add form submit validation
+      if (bookingForm) {
+        bookingForm.addEventListener('submit', function(event) {
+          const formData = new FormData(bookingForm);
+          const data = {};
+          formData.forEach((value, key) => {
+            data[key] = value;
+          });
+          
+          const result = validator.validateFormData(data, bookingValidationRules);
+          
+          if (!result.isValid) {
+            event.preventDefault();
+            validator.displayErrors(bookingForm, result.errors);
+            
+            // Scroll to first error
+            const firstErrorField = bookingForm.querySelector('.has-error');
+            if (firstErrorField) {
+              firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          } else {
+            validator.clearErrors(bookingForm);
+          }
+        });
+        
+        // Add real-time validation on blur
+        const fieldsToValidate = ['name', 'email', 'passport', 'phone'];
+        fieldsToValidate.forEach(fieldName => {
+          const field = bookingForm.querySelector(`[name="${fieldName}"]`);
+          if (field) {
+            field.addEventListener('blur', function() {
+              const rule = bookingValidationRules[fieldName];
+              if (rule) {
+                try {
+                  const validatorFunc = validator[rule.validator];
+                  if (typeof validatorFunc === 'function') {
+                    const params = { ...rule };
+                    delete params.validator;
+                    delete params.fieldName;
+                    delete params.required;
+                    
+                    validatorFunc.call(validator, field.value, rule.fieldName, params);
+                    
+                    // Clear error if validation passes
+                    field.classList.remove('has-error');
+                    const errorDiv = field.parentNode.querySelector('.error-message');
+                    if (errorDiv) {
+                      errorDiv.remove();
+                    }
+                  }
+                } catch (e) {
+                  if (e instanceof ValidationError) {
+                    field.classList.add('has-error');
+                    
+                    let errorDiv = field.parentNode.querySelector('.error-message');
+                    if (!errorDiv) {
+                      errorDiv = document.createElement('div');
+                      errorDiv.className = 'error-message';
+                      field.parentNode.appendChild(errorDiv);
+                    }
+                    errorDiv.textContent = e.message;
+                  }
+                }
+              }
+            });
+          }
+        });
+      }
+    });
   </script>
 </body>
 </html>

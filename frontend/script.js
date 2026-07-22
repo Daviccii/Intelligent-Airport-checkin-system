@@ -595,11 +595,30 @@ document.addEventListener('DOMContentLoaded', () => {
                         const countEl = document.getElementById(`${type}Count`);
                         let count = parseInt(countEl.textContent);
                         
+                        // Calculate current total before change
+                        const adults = parseInt(document.getElementById('adultCount').textContent);
+                        const children = parseInt(document.getElementById('childCount').textContent);
+                        const infants = parseInt(document.getElementById('infantCount').textContent);
+                        const currentTotal = adults + children + infants;
+                        
                         if (isPlus) {
+                            // Check maximum passengers (9 total)
+                            if (currentTotal >= 9) {
+                                showPassengerValidation('Maximum 9 passengers allowed per booking', 'error');
+                                return;
+                            }
                             count++;
                         } else if (count > 0) {
+                            // Check if this would make total zero
+                            if (currentTotal - 1 <= 0) {
+                                showPassengerValidation('At least 1 passenger is required', 'error');
+                                return;
+                            }
                             count--;
                         }
+                        
+                        // Clear validation message if valid
+                        hidePassengerValidation();
                         
                         // Update count display
                         countEl.textContent = count;
@@ -668,6 +687,32 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    // Show passenger validation message
+    function showPassengerValidation(message, type = 'error') {
+        const validationMsg = document.getElementById('passengerValidationMessage');
+        if (validationMsg) {
+            validationMsg.textContent = message;
+            validationMsg.style.display = 'block';
+            if (type === 'error') {
+                validationMsg.style.background = '#fee';
+                validationMsg.style.color = '#c33';
+                validationMsg.style.border = '1px solid #fcc';
+            } else {
+                validationMsg.style.background = '#efe';
+                validationMsg.style.color = '#3c3';
+                validationMsg.style.border = '1px solid #cfc';
+            }
+        }
+    }
+    
+    // Hide passenger validation message
+    function hidePassengerValidation() {
+        const validationMsg = document.getElementById('passengerValidationMessage');
+        if (validationMsg) {
+            validationMsg.style.display = 'none';
+        }
+    }
+    
     // Update passengers display text
     function updatePassengersDisplay() {
         const adults = document.getElementById('adultCount').textContent;
@@ -677,6 +722,25 @@ document.addEventListener('DOMContentLoaded', () => {
         
         let display = '';
         const totalPassengers = parseInt(adults) + parseInt(children) + parseInt(infants);
+        
+        // Validation: Ensure at least 1 passenger
+        if (totalPassengers <= 0) {
+            valueDisplay.textContent = 'Select passengers';
+            valueDisplay.style.color = '#e74c3c';
+            showPassengerValidation('At least 1 passenger is required', 'error');
+            return;
+        }
+        
+        // Validation: Ensure maximum 9 passengers
+        if (totalPassengers > 9) {
+            valueDisplay.textContent = 'Too many passengers';
+            valueDisplay.style.color = '#e74c3c';
+            showPassengerValidation('Maximum 9 passengers allowed per booking', 'error');
+            return;
+        }
+        
+        valueDisplay.style.color = '#1f2937';
+        hidePassengerValidation();
         
         if (totalPassengers === 1) {
             display = '1 Adult';
@@ -709,6 +773,85 @@ document.addEventListener('DOMContentLoaded', () => {
             closeAllDropdowns(null);
         }
     });
+    
+    // Validate booking form before submission
+    function validateBookingForm(form) {
+        const origin = document.getElementById('origin')?.value;
+        const destination = document.getElementById('destination')?.value;
+        const departDate = document.getElementById('departDate')?.value;
+        const passengers = document.getElementById('passengers')?.value;
+        const tripType = document.getElementById('tripType')?.value;
+        
+        let errors = [];
+        
+        // Validate origin
+        if (!origin || origin === '') {
+            errors.push('Please select departure airport');
+        }
+        
+        // Validate destination
+        if (!destination || destination === '') {
+            errors.push('Please select destination airport');
+        }
+        
+        // Validate route (origin != destination)
+        if (origin && destination && origin === destination) {
+            errors.push('Departure and destination airports cannot be the same');
+        }
+        
+        // Validate departure date
+        if (!departDate || departDate === '') {
+            errors.push('Please select departure date');
+        }
+        
+        // Validate return date for round-trip
+        if (tripType === 'roundtrip') {
+            const returnDate = document.getElementById('returnDate')?.value;
+            if (!returnDate || returnDate === '') {
+                errors.push('Please select return date');
+            }
+        }
+        
+        // Validate passengers
+        if (!passengers || passengers === '') {
+            errors.push('Please select number of passengers');
+        } else {
+            const [adults, children, infants] = passengers.split('-').map(Number);
+            const total = adults + children + infants;
+            
+            if (total <= 0) {
+                errors.push('At least 1 passenger is required');
+            }
+            
+            if (total > 9) {
+                errors.push('Maximum 9 passengers allowed per booking');
+            }
+            
+            // Validate that adults accompany children/infants
+            if ((children > 0 || infants > 0) && adults === 0) {
+                errors.push('At least 1 adult must accompany children or infants');
+            }
+        }
+        
+        return errors;
+    }
+    
+    // Add form submission validation
+    const bookingForm = document.querySelector('.booking-form-compact');
+    if (bookingForm) {
+        bookingForm.addEventListener('submit', (e) => {
+            const errors = validateBookingForm(bookingForm);
+            
+            if (errors.length > 0) {
+                e.preventDefault();
+                alert('Please fix the following errors:\n\n' + errors.join('\n'));
+                return false;
+            }
+            
+            // If validation passes, allow form submission
+            return true;
+        });
+    }
     
     // Initialize booking widget dropdowns
     console.log('Initializing booking widget dropdowns...');

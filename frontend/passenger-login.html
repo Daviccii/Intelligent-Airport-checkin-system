@@ -585,6 +585,10 @@
                 name="fullName"
                 placeholder="Enter your full name"
                 required
+                pattern="[a-zA-Z\s\-']{2,50}"
+                minlength="2"
+                maxlength="50"
+                title="Name must be 2-50 characters and contain only letters, spaces, hyphens, and apostrophes"
               >
             </div>
 
@@ -597,6 +601,8 @@
                 name="registerEmail"
                 placeholder="Enter your email"
                 required
+                maxlength="100"
+                title="Please enter a valid email address"
               >
             </div>
 
@@ -609,6 +615,8 @@
                 name="phone"
                 placeholder="Enter your phone number"
                 required
+                pattern="^(\+254|0)?[7][0-9]{8}$"
+                title="Please enter a valid Kenyan phone number (e.g., +2547XXXXXXXX or 07XXXXXXXX)"
               >
             </div>
 
@@ -621,6 +629,9 @@
                 name="registerPassword"
                 placeholder="Create a strong password"
                 required
+                minlength="8"
+                maxlength="128"
+                title="Password must be at least 8 characters long"
               >
             </div>
 
@@ -813,7 +824,109 @@
         document.getElementById('email').value = rememberEmail;
         document.getElementById('rememberMe').checked = true;
       }
+      
+      // Add validation to forms
+      addValidationToForms();
     });
+    
+    function addValidationToForms() {
+      // Login form validation
+      const loginForm = document.getElementById('loginForm');
+      if (loginForm) {
+        const loginValidationRules = {
+          email: {
+            validator: 'validateEmail',
+            fieldName: 'Email Address',
+            required: true
+          },
+          password: {
+            validator: 'validatePassword',
+            fieldName: 'Password',
+            required: true,
+            minLength: 8,
+            requireSpecial: false
+          }
+        };
+        
+        loginForm.addEventListener('submit', function(event) {
+          const formData = new FormData(loginForm);
+          const data = {};
+          formData.forEach((value, key) => {
+            data[key] = value;
+          });
+          
+          const result = validator.validateFormData(data, loginValidationRules);
+          
+          if (!result.isValid) {
+            event.preventDefault();
+            validator.displayErrors(loginForm, result.errors);
+          } else {
+            validator.clearErrors(loginForm);
+          }
+        });
+      }
+      
+      // Register form validation
+      const registerForm = document.getElementById('registerForm');
+      if (registerForm) {
+        const registerValidationRules = {
+          fullName: {
+            validator: 'validateName',
+            fieldName: 'Full Name',
+            required: true
+          },
+          registerEmail: {
+            validator: 'validateEmail',
+            fieldName: 'Email Address',
+            required: true
+          },
+          phone: {
+            validator: 'validatePhone',
+            fieldName: 'Phone Number',
+            required: true,
+            isKenyan: true
+          },
+          registerPassword: {
+            validator: 'validatePassword',
+            fieldName: 'Password',
+            required: true,
+            minLength: 8,
+            requireSpecial: true
+          }
+        };
+        
+        registerForm.addEventListener('submit', function(event) {
+          const formData = new FormData(registerForm);
+          const data = {};
+          formData.forEach((value, key) => {
+            data[key] = value;
+          });
+          
+          // Check password confirmation
+          const password = data.registerPassword;
+          const confirmPassword = data.confirmPassword;
+          if (password !== confirmPassword) {
+            event.preventDefault();
+            const error = { confirmPassword: 'Passwords do not match' };
+            validator.displayErrors(registerForm, error);
+            return;
+          }
+          
+          const result = validator.validateFormData(data, registerValidationRules);
+          
+          if (!result.isValid) {
+            event.preventDefault();
+            validator.displayErrors(registerForm, result.errors);
+          } else {
+            validator.clearErrors(registerForm);
+          }
+        });
+      }
+    }
   </script>
+  
+  <!-- Validation CSS and JS -->
+  <link rel="stylesheet" href="/css/validation.css">
+  <script src="/js/validation.js"></script>
 </body>
 </html>

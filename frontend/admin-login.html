@@ -138,10 +138,14 @@
         <label for="username">Username</label>
         <input 
           id="username" 
+          name="username"
           type="text" 
           placeholder="e.g., Riley Gabi" 
           required
           autocomplete="username"
+          minlength="3"
+          maxlength="50"
+          title="Username must be 3-50 characters"
         >
       </div>
 
@@ -149,10 +153,14 @@
         <label for="password">Password</label>
         <input 
           id="password" 
+          name="password"
           type="password" 
           placeholder="Enter your password" 
           required
           autocomplete="current-password"
+          minlength="8"
+          maxlength="128"
+          title="Password must be at least 8 characters"
         >
       </div>
 
@@ -254,6 +262,53 @@
     // Auto-focus username on load
     window.addEventListener('load', () => {
       usernameInput.focus();
+    });
+  </script>
+  
+  <!-- Validation CSS and JS -->
+  <link rel="stylesheet" href="/css/validation.css">
+  <script src="/js/validation.js"></script>
+  
+  <script>
+    // Form validation for admin login
+    document.addEventListener('DOMContentLoaded', function() {
+      const adminLoginForm = document.getElementById('adminLoginForm');
+      
+      // Define validation rules for admin login
+      const adminLoginValidationRules = {
+        username: {
+          validator: 'validateRequiredField',
+          fieldName: 'Username',
+          required: true
+        },
+        password: {
+          validator: 'validatePassword',
+          fieldName: 'Password',
+          required: true,
+          minLength: 8,
+          requireSpecial: false
+        }
+      };
+      
+      // Add form submit validation
+      if (adminLoginForm) {
+        adminLoginForm.addEventListener('submit', function(event) {
+          const formData = new FormData(adminLoginForm);
+          const data = {};
+          formData.forEach((value, key) => {
+            data[key] = value;
+          });
+          
+          const result = validator.validateFormData(data, adminLoginValidationRules);
+          
+          if (!result.isValid) {
+            event.preventDefault();
+            validator.displayErrors(adminLoginForm, result.errors);
+          } else {
+            validator.clearErrors(adminLoginForm);
+          }
+        });
+      }
     });
   </script>
 </body>

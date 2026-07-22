@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Passenger Details - SmartFly Airways</title>
+    <link rel="stylesheet" href="/css/improvements.css">
     <style>
         * {
             margin: 0;
@@ -15,34 +16,7 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             background: #f5f5f5;
             color: #212121;
-        }
-
-        /* Header */
-        .header {
-            background: white;
-            padding: 20px 0;
-            border-bottom: 1px solid #e0e0e0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            gap: 24px;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: 800;
-            color: #c8102e;
-        }
-
-        .header-title {
-            font-size: 16px;
-            color: #757575;
+            padding-top: 70px; /* Account for fixed header */
         }
 
         /* Main Container */
@@ -212,13 +186,11 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="header-content">
-            <div class="logo">✈ SmartFly Airways</div>
-            <div class="header-title">Passenger Details</div>
-        </div>
-    </div>
+    <!-- Consistent Navigation Header -->
+    <div id="navigation-placeholder"></div>
+    
+    <!-- Booking Progress Indicator -->
+    <div id="booking-progress-placeholder"></div>
 
     <!-- Main Container -->
     <div class="container">
@@ -278,6 +250,19 @@
                     <input type="date" id="dateOfBirth" required>
                 </div>
                 <div class="form-group">
+                    <label for="gender">Gender *</label>
+                    <select id="gender" required>
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
                     <label for="nationality">Nationality *</label>
                     <select id="nationality" required>
                         <option value="">Select nationality</option>
@@ -306,9 +291,16 @@
                 </div>
             </div>
 
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="passportIssueDate">Passport Issue Date *</label>
+                    <input type="date" id="passportIssueDate" required>
+                </div>
+            </div>
+
             <div class="actions">
-                <button type="button" class="btn btn-secondary" onclick="window.history.back()">Back</button>
-                <button type="submit" class="btn btn-primary" onclick="submitPassengerDetails()">Continue to Payment</button>
+                <button type="button" class="btn btn-secondary" onclick="window.history.back()">← Back</button>
+                <button type="submit" class="btn btn-primary" onclick="submitPassengerDetails()">Continue to Payment →</button>
             </div>
         </div>
 
@@ -319,6 +311,29 @@
         </div>
     </div>
 
+    <script src="/js/validation.js"></script>
+    <script src="/js/improvements.js"></script>
+    <script>
+        // Load navigation and progress components
+        async function loadComponents() {
+            try {
+                // Load navigation
+                const navResponse = await fetch('/includes/navigation.html');
+                const navHTML = await navResponse.text();
+                document.getElementById('navigation-placeholder').innerHTML = navHTML;
+                
+                // Load booking progress
+                const progressResponse = await fetch('/includes/booking-progress.html');
+                const progressHTML = await progressResponse.text();
+                document.getElementById('booking-progress-placeholder').innerHTML = progressHTML;
+            } catch (error) {
+                console.error('Error loading components:', error);
+            }
+        }
+        
+        // Load components on page load
+        document.addEventListener('DOMContentLoaded', loadComponents);
+    </script>
     <script>
         // Parse URL parameters
         function getUrlParams() {
@@ -368,148 +383,181 @@
             console.log('🎫 Passenger Details Loaded:', params);
         }
 
-        // Phone number validation with country code detection
-        function validatePhoneNumber(phone) {
-            // Remove all non-digit characters except + at the start
-            const cleaned = phone.replace(/[^\d+]/g, '');
+        // Display validation error for a field
+        function showError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(`${fieldId}Error`);
             
-            // Check if it starts with + (country code)
-            if (!cleaned.startsWith('+')) {
-                return { valid: false, message: 'Phone number must start with country code (e.g., +254)' };
+            if (errorElement) {
+                errorElement.textContent = message;
+                errorElement.style.display = 'block';
             }
             
-            // Remove the + and check remaining digits
-            const digits = cleaned.substring(1);
-            
-            // Check if we have enough digits (minimum 8, maximum 15)
-            if (digits.length < 8 || digits.length > 15) {
-                return { valid: false, message: 'Phone number must have 8-15 digits after country code' };
-            }
-            
-            // Check if all remaining characters are digits
-            if (!/^\d+$/.test(digits)) {
-                return { valid: false, message: 'Phone number must contain only digits after country code' };
-            }
-            
-            // Common country code patterns
-            const countryPatterns = {
-                '254': { name: 'Kenya', pattern: /^(254)(7|1)[0-9]{8}$/ },
-                '1': { name: 'USA/Canada', pattern: /^(1)[2-9][0-9]{9}$/ },
-                '44': { name: 'UK', pattern: /^(44)[1-9][0-9]{9}$/ },
-                '27': { name: 'South Africa', pattern: /^(27)[6-8][0-9]{8}$/ },
-                '234': { name: 'Nigeria', pattern: /^(234)[7-9][0-9]{8}$/ },
-                '233': { name: 'Ghana', pattern: /^(233)[2-9][0-9]{8}$/ },
-                '256': { name: 'Uganda', pattern: /^(256)[7-9][0-9]{8}$/ },
-                '255': { name: 'Tanzania', pattern: /^(255)[6-7][0-9]{8}$/ },
-                '250': { name: 'Rwanda', pattern: /^(250)[7-8][0-9]{8}$/ },
-                '251': { name: 'Ethiopia', pattern: /^(251)[9][0-9]{8}$/ }
-            };
-            
-            // Check against known country patterns
-            for (const [code, info] of Object.entries(countryPatterns)) {
-                if (cleaned.startsWith(code)) {
-                    if (info.pattern.test(cleaned)) {
-                        return { valid: true, country: info.name };
-                    } else {
-                        return { valid: false, message: `Invalid ${info.name} phone number format` };
-                    }
-                }
-            }
-            
-            // If no specific pattern matched but format is valid, accept it
-            return { valid: true, country: 'International' };
+            field.style.borderColor = '#c8102e';
+            field.classList.add('has-error');
         }
 
-        // Email validation with domain checking
-        function validateEmail(email) {
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Clear validation error for a field
+        function clearError(fieldId) {
+            const field = document.getElementById(fieldId);
+            const errorElement = document.getElementById(`${fieldId}Error`);
             
-            if (!emailRegex.test(email)) {
-                return { valid: false, message: 'Please enter a valid email address' };
+            if (errorElement) {
+                errorElement.style.display = 'none';
             }
             
-            // Check for common fake email domains
-            const fakeDomains = ['test.com', 'example.com', 'fake.com', 'temp.com', 'throwaway.com'];
-            const domain = email.split('@')[1].toLowerCase();
-            
-            if (fakeDomains.includes(domain)) {
-                return { valid: false, message: 'Please use a real email address' };
-            }
-            
-            // Check for common disposable email services
-            const disposableDomains = ['tempmail.com', 'guerrillamail.com', 'mailinator.com', '10minutemail.com'];
-            if (disposableDomains.some(d => domain.includes(d))) {
-                return { valid: false, message: 'Disposable email addresses are not allowed' };
-            }
-            
-            return { valid: true };
+            field.style.borderColor = '#e0e0e0';
+            field.classList.remove('has-error');
         }
 
-        // Submit passenger details
-        function submitPassengerDetails() {
+        // Submit passenger details with comprehensive validation
+        async function submitPassengerDetails() {
+            const validator = new ValidationUtils();
+            const params = getUrlParams();
+            
             const firstName = document.getElementById('firstName').value.trim();
             const lastName = document.getElementById('lastName').value.trim();
             const email = document.getElementById('email').value.trim();
             const phone = document.getElementById('phone').value.trim();
             const dateOfBirth = document.getElementById('dateOfBirth').value;
+            const gender = document.getElementById('gender').value;
             const nationality = document.getElementById('nationality').value;
             const passportNumber = document.getElementById('passportNumber').value.trim();
             const passportExpiry = document.getElementById('passportExpiry').value;
+            const passportIssueDate = document.getElementById('passportIssueDate').value;
 
-            // Reset error messages
-            document.getElementById('emailError').style.display = 'none';
-            document.getElementById('phoneError').style.display = 'none';
+            // Clear all errors
+            clearError('firstName');
+            clearError('lastName');
+            clearError('email');
+            clearError('phone');
+            clearError('dateOfBirth');
+            clearError('gender');
+            clearError('nationality');
+            clearError('passportNumber');
+            clearError('passportExpiry');
+            clearError('passportIssueDate');
 
-            // Validation
-            if (!firstName || !lastName || !email || !phone || !dateOfBirth || !nationality || !passportNumber || !passportExpiry) {
-                alert('Please fill in all required fields');
+            let hasErrors = false;
+
+            // Validate first name
+            try {
+                validator.validateName(firstName, 'First Name');
+            } catch (e) {
+                showError('firstName', e.message);
+                hasErrors = true;
+            }
+
+            // Validate last name
+            try {
+                validator.validateName(lastName, 'Last Name');
+            } catch (e) {
+                showError('lastName', e.message);
+                hasErrors = true;
+            }
+
+            // Validate email
+            try {
+                validator.validateEmail(email, 'Email');
+            } catch (e) {
+                showError('email', e.message);
+                hasErrors = true;
+            }
+
+            // Validate phone (Kenyan format)
+            try {
+                validator.validatePhone(phone, true, 'Phone');
+            } catch (e) {
+                showError('phone', e.message);
+                hasErrors = true;
+            }
+
+            // Validate date of birth
+            try {
+                validator.validateDateOfBirth(dateOfBirth, 'YYYY-MM-DD', 'Date of Birth', 18);
+            } catch (e) {
+                showError('dateOfBirth', e.message);
+                hasErrors = true;
+            }
+
+            // Validate gender
+            try {
+                validator.validateGender(gender, 'Gender');
+            } catch (e) {
+                showError('gender', e.message);
+                hasErrors = true;
+            }
+
+            // Validate nationality
+            if (!nationality) {
+                showError('nationality', 'Nationality is required');
+                hasErrors = true;
+            }
+
+            // Validate passport number
+            try {
+                validator.validatePassport(passportNumber, 'Passport Number');
+            } catch (e) {
+                showError('passportNumber', e.message);
+                hasErrors = true;
+            }
+
+            // Validate passport expiry
+            try {
+                validator.validatePassportExpiry(passportExpiry, 'YYYY-MM-DD', params.date, 'Passport Expiry');
+            } catch (e) {
+                showError('passportExpiry', e.message);
+                hasErrors = true;
+            }
+
+            // Validate passport issue date
+            try {
+                validator.validatePassportIssueDate(passportIssueDate, 'YYYY-MM-DD', passportExpiry, 'Passport Issue Date');
+            } catch (e) {
+                showError('passportIssueDate', e.message);
+                hasErrors = true;
+            }
+
+            if (hasErrors) {
+                toast.error('Please fix the validation errors before proceeding');
                 return;
             }
 
-            // Email validation
-            const emailValidation = validateEmail(email);
-            if (!emailValidation.valid) {
-                document.getElementById('emailError').textContent = emailValidation.message;
-                document.getElementById('emailError').style.display = 'block';
-                document.getElementById('email').style.borderColor = '#c8102e';
-                return;
+            // Show loading state with improvements
+            const submitBtn = document.querySelector('.btn-primary');
+            const loaderId = loading.show(submitBtn, 'Processing...');
+
+            try {
+                // Store passenger details
+                const passengerDetails = {
+                    firstName,
+                    lastName,
+                    email,
+                    phone,
+                    dateOfBirth,
+                    gender,
+                    nationality,
+                    passportNumber,
+                    passportExpiry,
+                    passportIssueDate
+                };
+
+                console.log('👤 Passenger Details Submitted:', passengerDetails);
+                sessionStorage.setItem('passengerDetails', JSON.stringify(passengerDetails));
+
+                // Show success message
+                toast.success('Passenger details validated successfully');
+
+                // Simulate processing and redirect with all required parameters
+                setTimeout(() => {
+                    const fullName = `${firstName} ${lastName}`;
+                    window.location.href = `/payment.html?from=${params.from}&to=${params.to}&price=${params.price}&fare=${params.fare}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&passport=${encodeURIComponent(passportNumber)}&phone=${encodeURIComponent(phone)}`;
+                }, 1500);
+            } catch (error) {
+                console.error('Error processing passenger details:', error);
+                toast.error('An error occurred. Please try again.');
+                loading.hide(loaderId);
             }
-
-            // Phone validation
-            const phoneValidation = validatePhoneNumber(phone);
-            if (!phoneValidation.valid) {
-                document.getElementById('phoneError').textContent = phoneValidation.message;
-                document.getElementById('phoneError').style.display = 'block';
-                document.getElementById('phone').style.borderColor = '#c8102e';
-                return;
-            }
-
-            // Store passenger details
-            const passengerDetails = {
-                firstName,
-                lastName,
-                email,
-                phone,
-                dateOfBirth,
-                nationality,
-                passportNumber,
-                passportExpiry,
-                phoneCountry: phoneValidation.country
-            };
-
-            console.log('👤 Passenger Details Submitted:', passengerDetails);
-            sessionStorage.setItem('passengerDetails', JSON.stringify(passengerDetails));
-
-            // Show loading state
-            document.getElementById('passengerForm').style.display = 'none';
-            document.getElementById('loadingMessage').style.display = 'block';
-
-            // Simulate processing and redirect with all required parameters
-            setTimeout(() => {
-                const params = getUrlParams();
-                const fullName = `${firstName} ${lastName}`;
-                window.location.href = `/payment.html?from=${params.from}&to=${params.to}&price=${params.price}&fare=${params.fare}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&passport=${encodeURIComponent(passportNumber)}&phone=${encodeURIComponent(phone)}`;
-            }, 1500);
         }
 
         // Initialize on page load
@@ -517,19 +565,186 @@
 
         // Add real-time validation
         document.addEventListener('DOMContentLoaded', () => {
-            const emailInput = document.getElementById('email');
-            const phoneInput = document.getElementById('phone');
+            const validator = new ValidationUtils();
+            const params = getUrlParams();
 
-            // Clear email error when user starts typing
-            emailInput.addEventListener('input', () => {
-                document.getElementById('emailError').style.display = 'none';
-                emailInput.style.borderColor = '#e0e0e0';
+            // Add error message elements if they don't exist
+            const fields = ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'gender', 'nationality', 'passportNumber', 'passportExpiry', 'passportIssueDate'];
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field && !document.getElementById(`${fieldId}Error`)) {
+                    const errorDiv = document.createElement('small');
+                    errorDiv.id = `${fieldId}Error`;
+                    errorDiv.style.color = '#c8102e';
+                    errorDiv.style.display = 'none';
+                    errorDiv.style.fontSize = '12px';
+                    field.parentNode.appendChild(errorDiv);
+                }
             });
 
-            // Clear phone error when user starts typing
-            phoneInput.addEventListener('input', () => {
-                document.getElementById('phoneError').style.display = 'none';
-                phoneInput.style.borderColor = '#e0e0e0';
+            // Real-time validation for first name
+            document.getElementById('firstName').addEventListener('input', function() {
+                clearError('firstName');
+                try {
+                    validator.validateName(this.value.trim(), 'First Name');
+                } catch (e) {
+                    // Don't show error while typing, just clear if valid
+                }
+            });
+
+            document.getElementById('firstName').addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    try {
+                        validator.validateName(this.value.trim(), 'First Name');
+                        clearError('firstName');
+                    } catch (e) {
+                        showError('firstName', e.message);
+                    }
+                }
+            });
+
+            // Real-time validation for last name
+            document.getElementById('lastName').addEventListener('input', function() {
+                clearError('lastName');
+                try {
+                    validator.validateName(this.value.trim(), 'Last Name');
+                } catch (e) {
+                    // Don't show error while typing, just clear if valid
+                }
+            });
+
+            document.getElementById('lastName').addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    try {
+                        validator.validateName(this.value.trim(), 'Last Name');
+                        clearError('lastName');
+                    } catch (e) {
+                        showError('lastName', e.message);
+                    }
+                }
+            });
+
+            // Real-time validation for email
+            document.getElementById('email').addEventListener('input', function() {
+                clearError('email');
+                try {
+                    validator.validateEmail(this.value.trim(), 'Email');
+                } catch (e) {
+                    // Don't show error while typing, just clear if valid
+                }
+            });
+
+            document.getElementById('email').addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    try {
+                        validator.validateEmail(this.value.trim(), 'Email');
+                        clearError('email');
+                    } catch (e) {
+                        showError('email', e.message);
+                    }
+                }
+            });
+
+            // Real-time validation for phone
+            document.getElementById('phone').addEventListener('input', function() {
+                clearError('phone');
+                try {
+                    validator.validatePhone(this.value.trim(), true, 'Phone');
+                } catch (e) {
+                    // Don't show error while typing, just clear if valid
+                }
+            });
+
+            document.getElementById('phone').addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    try {
+                        validator.validatePhone(this.value.trim(), true, 'Phone');
+                        clearError('phone');
+                    } catch (e) {
+                        showError('phone', e.message);
+                    }
+                }
+            });
+
+            // Real-time validation for date of birth
+            document.getElementById('dateOfBirth').addEventListener('change', function() {
+                if (this.value) {
+                    try {
+                        validator.validateDateOfBirth(this.value, 'YYYY-MM-DD', 'Date of Birth', 18);
+                        clearError('dateOfBirth');
+                    } catch (e) {
+                        showError('dateOfBirth', e.message);
+                    }
+                }
+            });
+
+            // Real-time validation for gender
+            document.getElementById('gender').addEventListener('change', function() {
+                if (this.value) {
+                    try {
+                        validator.validateGender(this.value, 'Gender');
+                        clearError('gender');
+                    } catch (e) {
+                        showError('gender', e.message);
+                    }
+                } else {
+                    showError('gender', 'Gender is required');
+                }
+            });
+
+            // Real-time validation for nationality
+            document.getElementById('nationality').addEventListener('change', function() {
+                if (this.value) {
+                    clearError('nationality');
+                } else {
+                    showError('nationality', 'Nationality is required');
+                }
+            });
+
+            // Real-time validation for passport number
+            document.getElementById('passportNumber').addEventListener('input', function() {
+                clearError('passportNumber');
+                try {
+                    validator.validatePassport(this.value.trim(), 'Passport Number');
+                } catch (e) {
+                    // Don't show error while typing, just clear if valid
+                }
+            });
+
+            document.getElementById('passportNumber').addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    try {
+                        validator.validatePassport(this.value.trim(), 'Passport Number');
+                        clearError('passportNumber');
+                    } catch (e) {
+                        showError('passportNumber', e.message);
+                    }
+                }
+            });
+
+            // Real-time validation for passport expiry
+            document.getElementById('passportExpiry').addEventListener('change', function() {
+                if (this.value) {
+                    try {
+                        validator.validatePassportExpiry(this.value, 'YYYY-MM-DD', params.date, 'Passport Expiry');
+                        clearError('passportExpiry');
+                    } catch (e) {
+                        showError('passportExpiry', e.message);
+                    }
+                }
+            });
+
+            // Real-time validation for passport issue date
+            document.getElementById('passportIssueDate').addEventListener('change', function() {
+                if (this.value) {
+                    try {
+                        const passportExpiry = document.getElementById('passportExpiry').value;
+                        validator.validatePassportIssueDate(this.value, 'YYYY-MM-DD', passportExpiry, 'Passport Issue Date');
+                        clearError('passportIssueDate');
+                    } catch (e) {
+                        showError('passportIssueDate', e.message);
+                    }
+                }
             });
         });
     </script>

@@ -1451,5 +1451,67 @@
     "role": "admin",
     "username": "Riley Gabi",
     "timestamp": "2026-06-29T15:16:06.974772Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-18T07:18:28.489948Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-19T11:09:14.982751Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-19T11:09:20.327213Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-19T11:09:25.372940Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-19T16:51:49.236321Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-19T16:53:22.705540Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-19T16:53:31.235793Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-19T17:07:02.753871Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-21T18:49:34.717219Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "EX54321",
+    "flight": "NBO-BLR",
+    "seat": 1,
+    "baggage_count": 1,
+    "timestamp": "2026-07-22T11:34:20.551557Z"
   }
 ]

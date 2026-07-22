@@ -22,6 +22,7 @@ import secrets
 import time
 import logging
 from mpesa_integration import mpesa_integration, sms_integration, email_integration
+from validation_utils import ValidationUtils, ValidationError, validate_form_data
 
 # Load environment variables from .env file
 load_dotenv()
@@ -459,19 +460,23 @@ def api_staff_list():
     elif request.method == 'POST':
         try:
             payload = request.get_json(silent=True) or {}
+            validator = ValidationUtils()
             
-            # Validate required fields
-            name = payload.get('name', '').strip()
-            username = payload.get('username', '').strip()
-            password = payload.get('password', '').strip()
-            email = payload.get('email', '').strip()
+            # Validate required fields using comprehensive validation
+            try:
+                name = validator.validate_name(payload.get('name'), field_name="name")
+                username = validator.validate_required_field(payload.get('username'), field_name="username")
+                password = validator.validate_password(payload.get('password'), field_name="password", min_length=8, require_special=False)
+                
+                # Optional email validation
+                email = None
+                if payload.get('email'):
+                    email = validator.validate_email(payload.get('email'), field_name="email")
+                    
+            except ValidationError as e:
+                return jsonify({'error': 'validation_error', 'field': e.field, 'detail': e.message}), 400
+            
             permissions = payload.get('permissions', [])
-            
-            if not name or not username or not password:
-                return jsonify({'error': 'missing_required_fields'}), 400
-            
-            if len(password) < 8:
-                return jsonify({'error': 'password_too_short'}), 400
             
             # Load existing staff
             staff_list = _load_json_file(STAFF_FILE, [])
@@ -495,7 +500,7 @@ def api_staff_list():
             staff_record = {
                 'username': username,
                 'name': name,
-                'email': email or None,
+                'email': email,
                 'password_hash': password_hash,
                 'role': 'staff',
                 'system_id': _generate_staff_id(),
@@ -548,10 +553,12 @@ def api_reset_staff_password(username):
         return jsonify({'error': 'admin_auth_required'}), 401
     try:
         payload = request.get_json(silent=True) or {}
-        password = payload.get('password', '').strip()
+        validator = ValidationUtils()
         
-        if not password or len(password) < 8:
-            return jsonify({'error': 'invalid_password'}), 400
+        try:
+            password = validator.validate_password(payload.get('password'), field_name="password", min_length=8, require_special=False)
+        except ValidationError as e:
+            return jsonify({'error': 'validation_error', 'field': e.field, 'detail': e.message}), 400
         
         staff_list = _load_json_file(STAFF_FILE, [])
         if not isinstance(staff_list, list):
@@ -1580,19 +1587,51 @@ def api_admin_events():
 @app.route("/api/register", methods=["POST"])
 def api_register():
     data = request.get_json() or {}
-    name = sanitize_input(data.get("name") or '')
-    passport = sanitize_input(data.get("passport") or '')
-    email = sanitize_input(data.get("email") or '')
-    phone = sanitize_input(data.get("phone") or '')
-    flight = sanitize_input(data.get("flight") or '')
-
-    if not (name and passport and flight):
-        return jsonify({"error": "name, passport and flight are required"}), 400
-
-    # validate passport format
-    ok, reason = validate_passport(passport)
-    if not ok:
-        return jsonify({"error": "invalid_passport", "detail": reason}), 400
+    validator = ValidationUtils()
+    
+    try:
+        # Validate all required fields using comprehensive validation
+        name = validator.validate_name(data.get("name") or '', field_name="name")
+        passport = validator.validate_passport(data.get("passport") or '', field_name="passport")
+        flight = validator.validate_flight_number(data.get("flight") or '', field_name="flight")
+        
+        # Validate optional fields if provided
+        email = None
+        if data.get("email"):
+            email = validator.validate_email(data.get("email"), field_name="email")
+        
+        phone = None
+        if data.get("phone"):
+            phone = validator.validate_phone(data.get("phone"), is_kenyan=True, field_name="phone")
+        
+        # Validate date of birth if provided
+        date_of_birth = None
+        if data.get("date_of_birth"):
+            date_of_birth = validator.validate_date_of_birth(data.get("date_of_birth"), field_name="date_of_birth", min_age=18)
+        
+        # Validate gender if provided
+        gender = None
+        if data.get("gender"):
+            gender = validator.validate_gender(data.get("gender"), field_name="gender")
+        
+        # Validate nationality if provided
+        nationality = None
+        if data.get("nationality"):
+            nationality = validator.validate_country_code(data.get("nationality"), field_name="nationality")
+        
+        # Validate passport expiry date if provided
+        passport_expiry = None
+        if data.get("passport_expiry"):
+            departure_date = data.get("departure_date")  # Get departure date if available
+            passport_expiry = validator.validate_passport_expiry(data.get("passport_expiry"), departure_date=departure_date, field_name="passport_expiry")
+        
+        # Validate passport issue date if provided
+        passport_issue_date = None
+        if data.get("passport_issue_date"):
+            passport_issue_date = validator.validate_passport_issue_date(data.get("passport_issue_date"), expiry_date=passport_expiry, field_name="passport_issue_date")
+        
+    except ValidationError as e:
+        return jsonify({"error": "validation_error", "field": e.field, "detail": e.message}), 400
 
     if find_duplicate(passport, flight):
         # For demo purposes, allow re-booking the same flight (maybe updating details)
@@ -1613,15 +1652,30 @@ def api_register():
             return jsonify({"error": "flight_full", "detail": "flight has reached capacity"}), 400
 
     seat = sum(1 for p in passengers if p.get("flight") == flight) + 1
-    payment_method = (data.get("payment_method") or "card").strip().lower()
-    mpesa_phone = sanitize_input(data.get("mpesa_phone") or '')
-    payment_method_display = payment_method.title()
-    if payment_method == 'mpesa':
-        mpesa_phone = _normalize_phone(mpesa_phone)
-        digits = ''.join(ch for ch in mpesa_phone if ch.isdigit())
-        if not mpesa_phone or len(digits) < 10:
-            return jsonify({"error": "mpesa_phone_required", "detail": "Valid M-Pesa phone number is required."}), 400
-        payment_method_display = 'M-Pesa'
+    
+    try:
+        # Validate payment method
+        payment_method = validator.validate_payment_method(data.get("payment_method") or "card", field_name="payment_method")
+        payment_method_display = payment_method.title()
+        
+        # Validate amount
+        amount = validator.validate_amount(float(data.get("amount") or 0), field_name="amount")
+        
+        # Validate currency if provided
+        currency = sanitize_input(data.get("currency") or "USD")
+        
+        # Handle M-Pesa specific validation
+        mpesa_phone = None
+        if payment_method == 'mpesa':
+            mpesa_phone_input = data.get("mpesa_phone") or ''
+            if mpesa_phone_input:
+                mpesa_phone = validator.validate_phone(mpesa_phone_input, is_kenyan=True, field_name="mpesa_phone")
+            else:
+                return jsonify({"error": "validation_error", "field": "mpesa_phone", "detail": "M-Pesa phone number is required for M-Pesa payments"}), 400
+            payment_method_display = 'M-Pesa'
+            
+    except ValidationError as e:
+        return jsonify({"error": "validation_error", "field": e.field, "detail": e.message}), 400
 
     passenger = {
         "name": name,
@@ -1629,15 +1683,28 @@ def api_register():
         "flight": flight,
         "seat": seat,
         "payment_method": payment_method_display,
-        "currency": sanitize_input(data.get("currency") or "USD"),
-        "amount": float(data.get("amount") or 0)
+        "currency": currency,
+        "amount": amount
     }
+    
+    # Add optional fields if provided
     if email:
         passenger['email'] = email
     if phone:
         passenger['phone'] = phone
+    if date_of_birth:
+        passenger['date_of_birth'] = date_of_birth
+    if gender:
+        passenger['gender'] = gender
+    if nationality:
+        passenger['nationality'] = nationality
+    if passport_expiry:
+        passenger['passport_expiry'] = passport_expiry
+    if passport_issue_date:
+        passenger['passport_issue_date'] = passport_issue_date
     if mpesa_phone:
         passenger['mpesa_phone'] = mpesa_phone
+    
     passengers.append(passenger)
     save_passengers()
 
@@ -1998,38 +2065,109 @@ def api_bookings():
     if request.method == 'POST':
         # Handle new booking from payment page (no session required - public endpoint)
         data = request.get_json() or {}
+        validator = ValidationUtils()
         
-        # Validate required fields
-        required_fields = ['id', 'name', 'email', 'passport', 'phone', 'from', 'to', 'depart', 'payment_method']
-        missing = [f for f in required_fields if not data.get(f)]
-        if missing:
-            return jsonify({'error': 'missing_required_fields', 'missing': missing}), 400
+        try:
+            # Validate all required fields using comprehensive validation
+            booking_id = validator.validate_required_field(data.get('id'), field_name="booking_id")
+            name = validator.validate_name(data.get('name'), field_name="name")
+            email = validator.validate_email(data.get('email'), field_name="email")
+            passport = validator.validate_passport(data.get('passport'), field_name="passport")
+            phone = validator.validate_phone(data.get('phone'), is_kenyan=True, field_name="phone")
+            origin = validator.validate_airport_code(data.get('from'), field_name="origin")
+            destination = validator.validate_airport_code(data.get('to'), field_name="destination")
+            depart_date = validator.validate_date(data.get('depart'), field_name="depart_date", allow_past=False)
+            payment_method = validator.validate_payment_method(data.get('payment_method'), field_name="payment_method")
+            
+            # Validate flight route (origin != destination)
+            origin, destination = validator.validate_flight_route(origin, destination, field_name="route")
+            
+            # Optional fields with validation if provided
+            country = None
+            if data.get('country'):
+                country = validator.validate_country_code(data.get('country'), field_name="country")
+            
+            flight_number = None
+            if data.get('flight_number') or data.get('flight'):
+                flight_input = data.get('flight_number') or data.get('flight')
+                flight_number = validator.validate_flight_number(flight_input, field_name="flight_number")
+            
+            return_date = None
+            if data.get('return'):
+                return_date = validator.validate_return_date(depart_date, data.get('return'), field_name="return_date")
+            
+            # Validate amount
+            amount = validator.validate_amount(float(data.get('amount') or 0), field_name="amount")
+            
+            # Validate class of service
+            service_class = validator.validate_class_of_service(data.get('class') or 'economy', field_name="class")
+            
+            # Validate card details if payment method is card
+            if payment_method == 'card':
+                card_number = None
+                card_holder = None
+                cvv = None
+                card_expiry = None
+                
+                if data.get('card_number'):
+                    card_number = validator.validate_card_number(data.get('card_number'), field_name="card_number")
+                if data.get('card_holder'):
+                    card_holder = validator.validate_card_holder(data.get('card_holder'), field_name="card_holder")
+                if data.get('cvv'):
+                    cvv = validator.validate_cvv(data.get('cvv'), field_name="cvv")
+                if data.get('card_expiry'):
+                    card_expiry = validator.validate_card_expiry(data.get('card_expiry'), field_name="card_expiry")
+                
+                # Ensure all card details are provided for card payments
+                if not (card_number and card_holder and cvv and card_expiry):
+                    raise ValidationError('card_details', 'All card details (number, holder, CVV, expiry) are required for card payments')
+            
+            # Validate M-Pesa phone if payment method is mpesa
+            if payment_method == 'mpesa':
+                mpesa_phone = None
+                if data.get('mpesa_phone'):
+                    mpesa_phone = validator.validate_phone(data.get('mpesa_phone'), is_kenyan=True, field_name="mpesa_phone")
+                else:
+                    raise ValidationError('mpesa_phone', 'M-Pesa phone number is required for M-Pesa payments')
+            
+        except ValidationError as e:
+            return jsonify({'error': 'validation_error', 'field': e.field, 'detail': e.message}), 400
         
         # Create booking record in bookings.json
         booking = {
-            'id': data.get('id'),
-            'passenger_name': sanitize_input(data.get('name') or ''),
-            'name': sanitize_input(data.get('name') or ''),
-            'email': sanitize_input(data.get('email') or ''),
-            'passport': sanitize_input(data.get('passport') or ''),
-            'phone': sanitize_input(data.get('phone') or ''),
-            'country': sanitize_input(data.get('country') or ''),
-            'from': sanitize_input(data.get('from') or ''),
-            'to': sanitize_input(data.get('to') or ''),
-            'depart': sanitize_input(data.get('depart') or ''),
-            'flight_number': sanitize_input(data.get('flight_number') or data.get('flight') or 'N/A'),
-            'return': sanitize_input(data.get('return') or ''),
-            'class': sanitize_input(data.get('class') or 'economy'),
+            'id': booking_id,
+            'passenger_name': name,
+            'name': name,
+            'email': email,
+            'passport': passport,
+            'phone': phone,
+            'country': country or '',
+            'from': origin,
+            'to': destination,
+            'depart': depart_date,
+            'flight_number': flight_number or 'N/A',
+            'return': return_date or '',
+            'class': service_class,
             'fare': sanitize_input(data.get('fare') or '0'),
-            'total_amount': float(data.get('amount') or 0),
-            'amount': float(data.get('amount') or 0),
+            'total_amount': amount,
+            'amount': amount,
             'currency': sanitize_input(data.get('currency') or 'USD'),
-            'payment_method': sanitize_input(data.get('payment_method') or ''),
+            'payment_method': payment_method,
             'payment_status': 'completed',
             'status': 'completed',
             'booking_date': datetime.utcnow().isoformat() + 'Z',
             'created_at': datetime.utcnow().isoformat() + 'Z',
         }
+        
+        # Add payment details to booking if card payment
+        if payment_method == 'card':
+            booking['card_number'] = card_number if card_number else ''
+            booking['card_holder'] = card_holder if card_holder else ''
+            booking['card_expiry'] = card_expiry if card_expiry else ''
+        
+        # Add M-Pesa phone if applicable
+        if payment_method == 'mpesa' and mpesa_phone:
+            booking['mpesa_phone'] = mpesa_phone
         
         # Save booking
         saved_booking = _add_booking(booking)
@@ -4128,10 +4266,13 @@ def api_admin_users():
         return jsonify({'users': list(users.keys())}), 200
     data = request.get_json() or {}
     if request.method == 'POST':
-        username = (data.get('username') or '').strip()
-        password = data.get('password')
-        if not (username and password):
-            return jsonify({'error': 'username_and_password_required'}), 400
+        validator = ValidationUtils()
+        try:
+            username = validator.validate_required_field(data.get('username'), field_name="username")
+            password = validator.validate_password(data.get('password'), field_name="password", min_length=8, require_special=False)
+        except ValidationError as e:
+            return jsonify({'error': 'validation_error', 'field': e.field, 'detail': e.message}), 400
+        
         users = _load_admin_users()
         try:
             ph = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -4165,6 +4306,7 @@ def api_login():
     role = (data.get('role') or '').lower()
 
     if role == 'passenger':
+        validator = ValidationUtils()
         # Passenger may login/register with either (1) name+passport, or (2) email or phone.
         passport = (data.get('passport') or '').strip()
         name = (data.get('name') or '').strip()
@@ -4174,11 +4316,25 @@ def api_login():
         if not ((passport and name) or email or phone):
             return jsonify({'error': 'provide passport+name, or email, or phone to login/register'}), 400
 
-        # validate passport format if provided
-        if passport:
-            ok, reason = validate_passport(passport)
-            if not ok:
-                return jsonify({'error': 'invalid_passport', 'detail': reason}), 400
+        try:
+            # Validate passport format if provided
+            if passport:
+                passport = validator.validate_passport(passport, field_name="passport")
+            
+            # Validate name if provided
+            if name:
+                name = validator.validate_name(name, field_name="name")
+            
+            # Validate email if provided
+            if email:
+                email = validator.validate_email(email, field_name="email")
+            
+            # Validate phone if provided
+            if phone:
+                phone = validator.validate_phone(phone, is_kenyan=True, field_name="phone")
+                
+        except ValidationError as e:
+            return jsonify({'error': 'validation_error', 'field': e.field, 'detail': e.message}), 400
 
         p = None
         # Try to find by passport

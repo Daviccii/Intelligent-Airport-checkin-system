@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartFly Airways - Book Your Flight</title>
-    <link rel="stylesheet" href="/styles.css">
+     <!-- Font Awesome Icons -->
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <style>
         /* Global smooth scrolling */
         html {
@@ -370,10 +373,25 @@
         position: relative;
     }
 
+    #dateSelection {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        align-items: flex-start;
+    }
+
     .field-compact {
         flex: 1;
         overflow: visible !important;
         position: relative;
+    }
+
+    .field-compact.date-field {
+        min-width: 0;
+    }
+
+    .dropdown-btn-compact.date-btn {
+        min-height: 56px;
     }
 
     .field-label-compact {
@@ -537,6 +555,8 @@
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         margin-top: 4px;
         min-width: 300px;
+        width: calc(100% + 4px);
+        box-sizing: border-box;
     }
 
     .calendar-popup.show {
@@ -733,6 +753,85 @@
         flex: 0 0 140px;
     }
 
+    /* Airport suggestions styling */
+    .airport-suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #ffffff;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 99999;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        margin-top: 4px;
+        list-style: none;
+        padding: 8px 0;
+    }
+
+    .airport-suggestion {
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background 0.2s ease;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .airport-suggestion:last-child {
+        border-bottom: none;
+    }
+
+    .airport-suggestion:hover,
+    .airport-suggestion.highlight {
+        background: #f8f9fa;
+    }
+
+    .airport-suggestion .as-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .airport-suggestion .as-code {
+        background: #1e3a8a;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .airport-suggestion .as-info {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .airport-suggestion .as-name {
+        font-weight: 600;
+        color: #1e3a8a;
+        font-size: 14px;
+    }
+
+    .airport-suggestion .as-city {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
+    .airport-suggestion .as-right {
+        text-align: right;
+    }
+
+    .airport-suggestion .as-datetime {
+        font-size: 12px;
+        color: #6b7280;
+    }
+
     /* Responsive */
     @media (max-width: 768px) {
         .form-row-compact {
@@ -912,6 +1011,146 @@
     .offer-btn:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Live Offers Banner */
+    .live-offers-banner {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 20px 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(10px);
+    }
+
+    .offers-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .offers-icon {
+        font-size: 24px;
+    }
+
+    .offers-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #1e3a8a;
+        flex: 1;
+    }
+
+    .offers-count {
+        background: #1e3a8a;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .offers-carousel {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        padding: 8px 0;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .offers-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+    .offer-card {
+        flex-shrink: 0;
+        width: 280px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 16px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .offer-card:hover {
+        border-color: #1e3a8a;
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(30, 58, 138, 0.15);
+    }
+
+    .offer-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #1e3a8a, #2563eb);
+    }
+
+    .offer-card-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+
+    .offer-airline-logo {
+        font-size: 20px;
+    }
+
+    .offer-airline-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #1e3a8a;
+    }
+
+    .offer-card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    .offer-card-description {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 12px;
+        line-height: 1.4;
+    }
+
+    .offer-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .offer-discount {
+        font-size: 18px;
+        font-weight: 800;
+        color: #c8102e;
+    }
+
+    .offer-countdown {
+        font-size: 11px;
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .offer-countdown .time-value {
+        color: #1e3a8a;
+        font-weight: 700;
     }
 
     /* Steps Grid */
@@ -2015,26 +2254,29 @@
 <header class="main-header">
 
   <!-- TOP BAR -->
-  <div class="top-bar">
-    <div class="top-left">
-      <span>EN | KE</span>
-      <span>Help</span>
-    </div>
-    <div class="top-right">
-      <span>+254 700 000 000</span>
-      <div class="login-links">
-        <a href="/members-login.html">Member</a>
-        <a href="/staff-login.html">Staff</a>
-        <a href="/admin-login.html">Admin</a>
-      </div>
-    </div>
-  </div>
+  <div class="top-left">
+
+    <span>SmartFly Holidays</span>
+
+    <span>About Us</span>
+
+    <span>Contact</span>
+
+</div>
+
+<div class="top-right">
+
+    <span>EN | KE</span>
+
+    <span>+254 700 000 000</span>
+
+</div>
 
   <!-- MAIN NAV -->
   <div class="nav-wrapper">
 
     <div class="logo">
-      <img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly">
+     <img class="logo-mark" src="{{ url_for('static', filename='images/logos/smartfly-mark.png') }}" alt="SmartFly">
       <span>SmartFly</span>
     </div>
 
@@ -2228,6 +2470,12 @@
       </div>
     </nav>
 
+    <div class="nav-actions">
+
+    <button class="search-btn">
+        <i class="fas fa-search"></i>
+    </button>
+
     <div class="cta-btn">
       <a href="#booking-section" class="book-now-btn">Book Now</a>
     </div>
@@ -2236,7 +2484,7 @@
 
 </header>
 
-
+   <h1 style="color:red;font-size:60px;">TEST 123</h1>
     <!-- Hero Section with KQ-Inspired Design -->
     <section class="hero-kq">
         <!-- Background slideshow -->
@@ -2255,6 +2503,18 @@
             <div class="hero-text-kq">
                 <h1 class="hero-title-kq">Book a Flight</h1>
                 <p class="hero-subtitle-kq">Search for SmartFly flights and book online. Fly to 50+ destinations across the world with SmartFly and enjoy a World-Class Travel Experience with African Hospitality.</p>
+            </div>
+
+            <!-- Live Offers Banner -->
+            <div class="live-offers-banner" id="liveOffersBanner">
+                <div class="offers-header">
+                    <span class="offers-icon">🎉</span>
+                    <span class="offers-title">Limited Time Offers</span>
+                    <span class="offers-count" id="offersCount">Loading...</span>
+                </div>
+                <div class="offers-carousel" id="offersCarousel">
+                    <!-- Offers will be loaded dynamically -->
+                </div>
             </div>
 
             <!-- KQ-Style Booking Form - Compact -->
@@ -2281,16 +2541,9 @@
                         <!-- From Airport -->
                         <div class="field-compact airport-field">
                             <label class="field-label-compact">From</label>
-                            <div class="dropdown-compact" id="fromDropdown">
-                                <button type="button" class="dropdown-btn-compact">
-                                    <span class="dropdown-value">Select departure</span>
-                                    <span class="dropdown-arrow">▼</span>
-                                </button>
-                                <ul class="dropdown-menu-compact airport-menu">
-                                    <!-- Airports will be loaded dynamically -->
-                                </ul>
-                            </div>
-                            <input type="hidden" id="fromAirport" name="fromAirport" value="">
+                            <input type="text" id="airportFromInput" class="dropdown-btn-compact" placeholder="Type city or airport..." autocomplete="off">
+                            <input type="hidden" id="airportFromCode" name="fromAirport" value="">
+                            <div class="airport-suggestions" id="fromSuggestions" role="listbox" hidden aria-hidden="true"></div>
                         </div>
 
                         <!-- Swap Button -->
@@ -2304,21 +2557,14 @@
                         <!-- To Airport -->
                         <div class="field-compact airport-field">
                             <label class="field-label-compact">To</label>
-                            <div class="dropdown-compact" id="toDropdown">
-                                <button type="button" class="dropdown-btn-compact">
-                                    <span class="dropdown-value">Select destination</span>
-                                    <span class="dropdown-arrow">▼</span>
-                                </button>
-                                <ul class="dropdown-menu-compact airport-menu">
-                                    <!-- Airports will be loaded dynamically -->
-                                </ul>
-                            </div>
-                            <input type="hidden" id="toAirport" name="toAirport" value="">
+                            <input type="text" id="airportToInput" class="dropdown-btn-compact" placeholder="Type city or airport..." autocomplete="off">
+                            <input type="hidden" id="airportToCode" name="toAirport" value="">
+                            <div class="airport-suggestions" id="toSuggestions" role="listbox" hidden aria-hidden="true"></div>
                         </div>
                     </div>
 
                     <!-- Date Fields -->
-                    <div class="form-row-compact">
+                    <div class="form-row-compact" id="dateSelection" style="display: none;">
                         <div class="field-compact date-field">
                             <label class="field-label-compact">Departure</label>
                             <div class="dropdown-compact" id="departDateDropdown">
@@ -2679,7 +2925,8 @@
       <ul id="airportList" class="airport-list"></ul>
     </div>
 
-    <script src="/script.js"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/booking-widget.js') }}"></script>
     <script>
         // ============================================
         // ROUTE DISTANCE & PRICING CONFIGURATION
@@ -2782,8 +3029,10 @@
           today.setHours(0, 0, 0, 0);
           
           // Get airport codes from input values
-          const fromCode = fromInput.value ? fromInput.value.split(',')[0].trim().toUpperCase() : 'NBO';
-          const toCode = toInput.value ? toInput.value.split(',')[0].trim().toUpperCase() : 'LHR';
+          const fromCodeEl = document.getElementById('airportFromCode');
+          const toCodeEl = document.getElementById('airportToCode');
+          const fromCode = fromCodeEl && fromCodeEl.value ? fromCodeEl.value.trim().toUpperCase() : 'NBO';
+          const toCode = toCodeEl && toCodeEl.value ? toCodeEl.value.trim().toUpperCase() : 'LHR';
           
           // Get first day of the month and total days
           const firstDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
@@ -2866,6 +3115,77 @@
 
         // KQ-Style Form Interactions
         document.addEventListener('DOMContentLoaded', function() {
+            // Airport input typeahead and date visibility
+            const fromInput = document.getElementById('airportFromInput');
+            const toInput = document.getElementById('airportToInput');
+            const fromCodeInput = document.getElementById('airportFromCode');
+            const toCodeInput = document.getElementById('airportToCode');
+            const dateSelection = document.getElementById('dateSelection');
+            const swapBtn = document.getElementById('swapBtn');
+
+            // Show/hide date selection only after valid airport selection
+            function updateDateVisibility() {
+                const fromSelected = fromInput && fromInput.dataset.selected === 'true' && fromCodeInput && fromCodeInput.value.trim() !== '';
+                const toSelected = toInput && toInput.dataset.selected === 'true' && toCodeInput && toCodeInput.value.trim() !== '';
+                
+                if (fromSelected && toSelected && dateSelection) {
+                    dateSelection.style.display = 'flex';
+                } else if (dateSelection) {
+                    dateSelection.style.display = 'none';
+                }
+            }
+
+            // Add event listeners for airport inputs
+            if (fromInput) {
+                fromInput.addEventListener('input', () => {
+                    if (fromInput.dataset.selected === 'true') {
+                        fromInput.dataset.selected = 'false';
+                        if (fromCodeInput) {
+                            fromCodeInput.value = '';
+                        }
+                    }
+                    updateDateVisibility();
+                });
+                fromInput.addEventListener('change', updateDateVisibility);
+                fromInput.addEventListener('click', function() {
+                    if (fromInput.dataset.selected !== 'true') {
+                        airportDropdown.openModal('airportFromInput');
+                    }
+                });
+            }
+            if (toInput) {
+                toInput.addEventListener('input', () => {
+                    if (toInput.dataset.selected === 'true') {
+                        toInput.dataset.selected = 'false';
+                        if (toCodeInput) {
+                            toCodeInput.value = '';
+                        }
+                    }
+                    updateDateVisibility();
+                });
+                toInput.addEventListener('change', updateDateVisibility);
+                toInput.addEventListener('click', function() {
+                    if (toInput.dataset.selected !== 'true') {
+                        airportDropdown.openModal('airportToInput');
+                    }
+                });
+            }
+
+            // Swap button functionality
+            if (swapBtn && fromInput && toInput) {
+                swapBtn.addEventListener('click', function() {
+                    const tempValue = fromInput.value;
+                    fromInput.value = toInput.value;
+                    toInput.value = tempValue;
+                    
+                    const tempCode = fromCodeInput ? fromCodeInput.value : '';
+                    if (fromCodeInput) fromCodeInput.value = toCodeInput ? toCodeInput.value : '';
+                    if (toCodeInput) toCodeInput.value = tempCode;
+                    
+                    updateDateVisibility();
+                });
+            }
+
             // Trip Type Tabs
             const tripTabs = document.querySelectorAll('.trip-tab-kq');
             const tripTypeInput = document.getElementById('tripType');
@@ -3116,6 +3436,144 @@
         navItems.forEach(item => item.classList.remove('open'));
       }
     });
+
+    // ============================================
+    // LIVE OFFERS BANNER FUNCTIONALITY
+    // ============================================
+    
+    // Load flight utilities
+    function loadFlightUtils() {
+        return new Promise((resolve, reject) => {
+            if (typeof getRouteCategory !== 'undefined') {
+                resolve();
+                return;
+            }
+            const script = document.createElement('script');
+            script.src = '/assets/js/flight-utils.js';
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    }
+
+    // Countdown timer for offers
+    function updateCountdown(offerId, validTo) {
+        const countdownElement = document.getElementById(`countdown-${offerId}`);
+        if (!countdownElement) return;
+
+        const timeRemaining = getTimeRemaining(validTo);
+        
+        if (timeRemaining.total <= 0) {
+            countdownElement.innerHTML = 'Expired';
+            return;
+        }
+
+        const days = timeRemaining.days > 0 ? `${timeRemaining.days}d ` : '';
+        const hours = timeRemaining.hours > 0 ? `${timeRemaining.hours}h ` : '';
+        const minutes = `${timeRemaining.minutes}m`;
+        const seconds = `${timeRemaining.seconds}s`;
+
+        countdownElement.innerHTML = `<span class="time-value">${days}${hours}${minutes}</span> ${seconds}`;
+    }
+
+    // Time remaining helper function
+    function getTimeRemaining(validTo) {
+        const total = Date.parse(validTo) - Date.parse(new Date());
+        const seconds = Math.floor((total / 1000) % 60);
+        const minutes = Math.floor((total / 1000 / 60) % 60);
+        const hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+        const days = Math.floor(total / (1000 * 60 * 60 * 24));
+        
+        return { total, days, hours, minutes, seconds };
+    }
+
+    // Render offers in the carousel
+    function renderOffers(offers) {
+        const carousel = document.getElementById('offersCarousel');
+        const countElement = document.getElementById('offersCount');
+        
+        if (!carousel || !countElement) return;
+
+        countElement.textContent = `${offers.length} Active`;
+
+        if (offers.length === 0) {
+            carousel.innerHTML = '<p style="color: #6b7280; padding: 20px;">No active offers at the moment.</p>';
+            return;
+        }
+
+        carousel.innerHTML = offers.map(offer => {
+            const discountText = offer.discount > 0 ? `${offer.discount}% OFF` : 'Special Offer';
+            const airlineInfo = offer.airlineCode || '✈️';
+            
+            return `
+                <div class="offer-card" data-offer-id="${offer.id}">
+                    <div class="offer-card-header">
+                        <span class="offer-airline-logo">${airlineInfo}</span>
+                        <span class="offer-airline-name">${offer.airline}</span>
+                    </div>
+                    <div class="offer-card-title">${offer.title}</div>
+                    <div class="offer-card-description">${offer.description}</div>
+                    <div class="offer-card-footer">
+                        <span class="offer-discount">${discountText}</span>
+                        <span class="offer-countdown" id="countdown-${offer.id}">Loading...</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        // Start countdown timers
+        offers.forEach(offer => {
+            updateCountdown(offer.id, offer.validTo);
+            setInterval(() => updateCountdown(offer.id, offer.validTo), 1000);
+        });
+
+        // Add click handlers for offer cards
+        document.querySelectorAll('.offer-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const offerId = card.dataset.offerId;
+                console.log('Offer clicked:', offerId);
+                // Could scroll to booking section or pre-fill search
+                document.getElementById('booking-section').scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+    }
+
+    // Load and display offers
+    async function loadOffers() {
+        try {
+            await loadFlightUtils();
+            
+            if (typeof getAllActiveOffers === 'function') {
+                const offers = await getAllActiveOffers();
+                renderOffers(offers);
+            } else {
+                // Fallback: load offers directly
+                const response = await fetch('/assets/data/airline-offers.json');
+                const data = await response.json();
+                const offers = (data.offers || []).filter(offer => {
+                    if (!offer.active) return false;
+                    const now = new Date();
+                    const validFrom = new Date(offer.validFrom);
+                    const validTo = new Date(offer.validTo);
+                    return now >= validFrom && now <= validTo;
+                });
+                renderOffers(offers);
+            }
+        } catch (error) {
+            console.error('Error loading offers:', error);
+            const carousel = document.getElementById('offersCarousel');
+            if (carousel) {
+                carousel.innerHTML = '<p style="color: #6b7280; padding: 20px;">Unable to load offers at this time.</p>';
+            }
+        }
+    }
+
+    // Initialize offers when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', loadOffers);
+    } else {
+        loadOffers();
+    }
     </script>
 </body>
 </html>
