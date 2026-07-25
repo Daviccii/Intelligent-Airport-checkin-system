@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="en">
 <head>
         <meta charset="utf-8" />
@@ -932,8 +932,29 @@
                     if(!searchBtn) return;
                     searchBtn.addEventListener('click', function(){
                         try{
-                            var from = (document.getElementById('airportFromCode') || {value:''}).value || (document.getElementById('airportFromInput') || {value:''}).value;
-                            var to = (document.getElementById('airportToCode') || {value:''}).value || (document.getElementById('airportToInput') || {value:''}).value;
+                            var fromInput = document.getElementById('airportFromInput');
+                            var toInput = document.getElementById('airportToInput');
+                            var from = (document.getElementById('airportFromCode') || {value:''}).value || (fromInput || {value:''}).value;
+                            var to = (document.getElementById('airportToCode') || {value:''}).value || (toInput || {value:''}).value;
+
+                            // Reset previous validation styles
+                            if (fromInput) fromInput.style.borderColor = '#e6eef6';
+                            if (toInput) toInput.style.borderColor = '#e6eef6';
+
+                            if (!from.trim() || !to.trim()) {
+                                alert('Please select an origin and a destination.');
+                                if (!from.trim() && fromInput) fromInput.style.borderColor = 'red';
+                                if (!to.trim() && toInput) toInput.style.borderColor = 'red';
+                                return;
+                            }
+
+                            if (from.trim().toLowerCase() === to.trim().toLowerCase()) {
+                                alert('Origin and destination cannot be the same.');
+                                if (fromInput) fromInput.style.borderColor = 'red';
+                                if (toInput) toInput.style.borderColor = 'red';
+                                return;
+                            }
+
                             var dep = (document.getElementById('departureDate') || {value:''}).value;
                             var ret = (document.getElementById('returnDate') || {value:''}).value;
                             var params = {};
@@ -941,7 +962,9 @@
                             if(to) params.destination = to;
                             if(dep) params.departure = dep;
                             if(ret) params.return = ret;
-                            fetchFlightsAndShow(params);
+
+                            var queryString = new URLSearchParams(params).toString();
+                            window.location.href = 'availability.html?' + queryString;
                         }catch(e){ console.error(e); }
                     });
                 });

@@ -85,6 +85,14 @@ def get_checkins_log():
     """Get all check-in activities"""
     return get_activities('checkin', limit=500)
 
+def get_payments_log():
+    """Get all payment activities"""
+    return get_activities('payment', limit=500)
+
+def get_bookings_log():
+    """Get all booking activities"""
+    return get_activities('booking', limit=500)
+
 def save_activities(activities):
     """Save activities to file"""
     try:
@@ -94,14 +102,6 @@ def save_activities(activities):
     except Exception as e:
         print(f"Error saving activities: {e}")
         return False
-
-def get_payments_log():
-    """Get all payment activities"""
-    return get_activities('payment', limit=500)
-
-def get_bookings_log():
-    """Get all booking activities"""
-    return get_activities('booking', limit=500)
 
 def clear_activities():
     """Clear all activities"""

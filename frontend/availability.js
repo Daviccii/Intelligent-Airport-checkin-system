@@ -401,27 +401,23 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render summary
     renderSummary(params);
     
-    // Generate and render date slider
-    selectedDate = params.departDate;
-    currentDateData = generateDateSlider(params.departDate, params.tripType, params.from, params.to);
-    renderDateSlider(currentDateData, (date) => {
+    // Define a handler for date selection to avoid arguments.callee
+    const onDateSelect = (date) => {
         selectedDate = date;
-        // Update date cards
-        currentDateData.forEach(d => d.selected = d.date === date);
-        renderDateSlider(currentDateData, (date) => {
-            selectedDate = date;
-            currentDateData.forEach(d => d.selected = d.date === date);
-            renderDateSlider(currentDateData, arguments.callee);
-            // Regenerate flights for new date
-            currentFlights = generateFlights(params.from, params.to, date);
-            const sortBy = document.getElementById('sortSelect').value;
-            renderFlights(sortFlights(currentFlights, sortBy));
-        });
-        // Regenerate flights for new date
+        // Update which date card is marked as selected
+        currentDateData.forEach(d => d.selected = (d.date === date));
+        renderDateSlider(currentDateData, onDateSelect);
+        
+        // Regenerate and render flights for the newly selected date
         currentFlights = generateFlights(params.from, params.to, date);
         const sortBy = document.getElementById('sortSelect').value;
         renderFlights(sortFlights(currentFlights, sortBy));
-    });
+    };
+
+    // Generate and render the initial date slider
+    selectedDate = params.departDate;
+    currentDateData = generateDateSlider(params.departDate, params.tripType, params.from, params.to);
+    renderDateSlider(currentDateData, onDateSelect);
     
     // Generate initial flights
     currentFlights = generateFlights(params.from, params.to, params.departDate);

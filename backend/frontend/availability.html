@@ -78,5 +78,45 @@
     </div>
 
     <script src="/availability.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const params = new URLSearchParams(window.location.search);
+
+            const origin = params.get('origin');
+            const destination = params.get('destination');
+            const departure = params.get('departure');
+            const returnDate = params.get('return');
+            const passengers = params.get('passengers'); // e.g., "1-0-0"
+
+            // --- Update Summary Bar ---
+            if (origin) document.getElementById('fromCode').textContent = origin;
+            if (destination) document.getElementById('toCode').textContent = destination;
+
+            const travelDatesEl = document.getElementById('travelDates');
+            if (departure && returnDate) {
+                travelDatesEl.textContent = `${formatDisplayDate(departure)} - ${formatDisplayDate(returnDate)}`;
+            } else if (departure) {
+                travelDatesEl.textContent = formatDisplayDate(departure);
+            }
+
+            const passengerCountEl = document.getElementById('passengerCount');
+            if (passengers) {
+                const [adults, children, infants] = passengers.split('-').map(Number);
+                let text = `${adults} Adult${adults > 1 ? 's' : ''}`;
+                if (children > 0) text += `, ${children} Child${children > 1 ? 'ren' : ''}`;
+                if (infants > 0) text += `, ${infants} Infant${infants > 1 ? 's' : ''}`;
+                passengerCountEl.textContent = text;
+            }
+
+            console.log('Page loaded for flight search:', { origin, destination, departure, returnDate, passengers });
+        });
+
+        function formatDisplayDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const adjustedDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+            return adjustedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+    </script>
 </body>
 </html>

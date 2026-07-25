@@ -315,20 +315,20 @@
     <script>
         let selectedSeats = [];
         let passengers = 1;
+        let bookingSession = {};
 
-        function getFlightParams() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                flight: params.get('flight') || sessionStorage.getItem('selected_flight') || '',
-                class: params.get('class') || sessionStorage.getItem('selected_class') || 'Y',
-                price: parseFloat(params.get('price') || sessionStorage.getItem('selected_price') || 0)
-            };
+        function getBookingSession() {
+            const stored = sessionStorage.getItem('smartflyBookingSession');
+            return stored ? JSON.parse(stored) : null;
         }
 
         function generateSeats() {
-            const flightParams = getFlightParams();
             const seatMap = document.getElementById('seatMap');
             seatMap.innerHTML = '';
+
+            if (!bookingSession || !bookingSession.selectedFlight) {
+                return; // Don't generate seats if no data
+            }
 
             // Generate seats: 6 columns (A-F), 20 rows
             const cols = ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -360,18 +360,7 @@
         function toggleSeat(event, seatCode) {
             const seat = event.target;
             
-            // Get number of passengers from session
-            try {
-                const passengerSelect = document.getElementById('passengerSelect');
-                if (passengerSelect) {
-                    const inputs = passengerSelect.querySelectorAll('.passenger-type input');
-                    passengers = parseInt(inputs[0]?.value || 1) + 
-                                parseInt(inputs[1]?.value || 0) + 
-                                parseInt(inputs[2]?.value || 0);
-                }
-            } catch (e) {
-                passengers = 1;
-            }
+            passengers = bookingSession.passengers.length || 1;
 
             if (seat.classList.contains('selected')) {
                 seat.classList.remove('selected');
@@ -389,36 +378,42 @@
         }
 
         function updateSummary() {
-            const flightParams = getFlightParams();
+            if (!bookingSession || !bookingSession.selectedFlight) return;
+
+            const flight = bookingSession.selectedFlight;
             const seat = document.getElementById('summarySeats');
             const continueBtn = document.getElementById('continueBtn');
 
             seat.textContent = selectedSeats.length > 0 ? selectedSeats.join(', ') : '—';
-            continueBtn.disabled = selectedSeats.length === 0;
+            // User must select a seat for each passenger
+            continueBtn.disabled = selectedSeats.length !== (bookingSession.passengers.length || 1);
 
-            document.getElementById('summaryFlight').textContent = flightParams.flight;
-            document.getElementById('summaryClass').textContent = flightParams.class === 'Y' ? 'Economy' : 
-                                                                 flightParams.class === 'W' ? 'Premium Economy' :
-                                                                 flightParams.class === 'J' ? 'Business' : 'First';
-            const basePrice = Number(flightParams.price || 0);
+            document.getElementById('summaryFlight').textContent = flight.flightNumber;
+            document.getElementById('summaryClass').textContent = flight.fareClass;
+            const basePrice = Number(flight.price || 0);
             document.getElementById('summaryPrice').textContent = `Ksh ${basePrice.toLocaleString()}`;
-            document.getElementById('totalPrice').textContent = `Ksh ${(basePrice * selectedSeats.length).toLocaleString()}`;
+            document.getElementById('totalPrice').textContent = `Ksh ${basePrice.toLocaleString()}`;
 
-            document.getElementById('flightInfo').textContent = `Flight: ${flightParams.flight} | Class: ${flightParams.class}`;
+            document.getElementById('flightInfo').textContent = `Flight: ${flight.flightNumber} | Class: ${flight.fareClass}`;
         }
 
 		function skipSeat() {
-			sessionStorage.setItem('selected_seats', JSON.stringify([]));
-			// Build URL with all booking parameters
-			const params = new URLSearchParams(window.location.search);
-			window.location.href = '/booking.html?' + params.toString();
-		}		function continueToBaggage() {
-			sessionStorage.setItem('selected_seats', JSON.stringify(selectedSeats));
-			// Build URL with all booking parameters including selected seats
-			const params = new URLSearchParams(window.location.search);
-			params.set('seats', selectedSeats.join(','));
-			window.location.href = '/booking.html?' + params.toString();
-		}        function showToast(message, type = 'success') {
+            bookingSession.selectedSeats = [];
+            sessionStorage.setItem('smartflyBookingSession', JSON.stringify(bookingSession));
+			window.location.href = 'payment.html';
+		}
+        
+        function continueToBaggage() {
+            if (selectedSeats.length !== (bookingSession.passengers.length || 1)) {
+                showToast(`Please select a seat for all ${bookingSession.passengers.length} passengers.`, 'error');
+                return;
+            }
+			bookingSession.selectedSeats = selectedSeats;
+            sessionStorage.setItem('smartflyBookingSession', JSON.stringify(bookingSession));
+			window.location.href = 'payment.html';
+		}
+        
+        function showToast(message, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.textContent = message;
@@ -427,8 +422,17 @@
         }
 
         // Initialize
-        generateSeats();
-        updateSummary();
+        document.addEventListener('DOMContentLoaded', () => {
+            bookingSession = getBookingSession();
+            // Security Check
+            if (!bookingSession || !bookingSession.passengers || bookingSession.passengers.length === 0) {
+                alert('Passenger details not found. Redirecting...');
+                window.location.href = 'passenger-details.html';
+                return;
+            }
+            generateSeats();
+            updateSummary();
+        });
     </script>
 </body>
 </html>

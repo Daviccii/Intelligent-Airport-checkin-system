@@ -2006,3 +2006,58 @@ button {
 .nav-item > a:hover::after {
   width: 100%;
 }
+/* ========================
+   CLEAN FORM ERROR BANNER
+   Kenya Airways Inspired
+   ======================== */
+
+.error-banner {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    color: #b91c1c;
+    font-size: 14.5px;
+    line-height: 1.5;
+    display: none;
+    box-shadow: 0 2px 6px rgba(185, 28, 28, 0.1);
+}
+
+.error-banner.show {
+    display: block;
+    animation: errorPop 0.4s ease forwards;
+}
+
+@keyframes errorPop {
+    0% {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.error-banner ul {
+    margin: 0;
+    padding-left: 22px;
+    list-style-type: disc;
+}
+
+.error-banner li {
+    margin: 4px 0;
+}
+
+/* Optional: Make individual field errors red too */
+.field-error {
+    color: #dc2626;
+    font-size: 13px;
+    margin-top: 4px;
+    display: none;
+}
+
+.field-error.show {
+    display: block;
+}

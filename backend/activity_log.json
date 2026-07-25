@@ -668,5 +668,49 @@
       "status": "completed",
       "timestamp": "2026-06-25T18:54:09.593Z"
     }
+  },
+  {
+    "id": 49,
+    "type": "checkin",
+    "timestamp": "2026-07-24T08:48:09.142301",
+    "data": {
+      "passenger_name": "Gabriel Onsomu",
+      "flight_number": "KQ456",
+      "seat": 1,
+      "timestamp": "2026-07-24T05:48:09.135821Z"
+    }
+  },
+  {
+    "id": 50,
+    "type": "checkin",
+    "timestamp": "2026-07-24T10:45:08.448338",
+    "data": {
+      "passenger_name": "Gabriel Onsomu",
+      "flight_number": "KQ456",
+      "seat": 2,
+      "timestamp": "2026-07-24T07:45:08.437964Z"
+    }
+  },
+  {
+    "id": 51,
+    "type": "checkin",
+    "timestamp": "2026-07-24T10:46:24.950251",
+    "data": {
+      "passenger_name": "fchjghguykhb",
+      "flight_number": "KQ456",
+      "seat": 3,
+      "timestamp": "2026-07-24T07:46:24.949673Z"
+    }
+  },
+  {
+    "id": 52,
+    "type": "checkin",
+    "timestamp": "2026-07-24T11:08:07.375985",
+    "data": {
+      "passenger_name": "fchjghguykhb",
+      "flight_number": "KQ456",
+      "seat": 4,
+      "timestamp": "2026-07-24T08:08:07.375089Z"
+    }
   }
 ]

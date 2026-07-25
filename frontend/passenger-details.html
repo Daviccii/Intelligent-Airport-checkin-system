@@ -1,752 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Passenger Details - SmartFly Airways</title>
-    <link rel="stylesheet" href="/css/improvements.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartFly — Passenger Details</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: #f5f5f5;
-            color: #212121;
-            padding-top: 70px; /* Account for fixed header */
-        }
+  <style>
+    :root {
+      --primary-blue: #2563EB;
+      --primary-blue-dark: #1E40AF;
+      --blue-accent: #3B82F6;
+      --blue-light: #EFF6FF;
+      --dark-slate: #0F172A;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --bg-light: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --border-color: #E2E8F0;
+      --success: #10B981;
+      --error: #EF4444;
+    }
 
-        /* Main Container */
-        .container {
-            max-width: 900px;
-            margin: 32px auto;
-            padding: 0 24px;
-        }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-light); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
 
-        /* Flight Summary Box */
-        .flight-summary {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 32px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
+    /* NAVBAR */
+    .navbar {
+      background: var(--dark-slate);
+      color: #fff;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid var(--primary-blue);
+    }
+    .brand-logo { font-size: 1.5rem; font-weight: 700; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+    .brand-logo span { color: var(--blue-accent); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: #CBD5E1; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+    .nav-links a.active { color: var(--blue-accent); }
 
-        .flight-summary-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 24px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid #eeeeee;
-        }
+    /* STEPPER */
+    .stepper-bar { background: #fff; padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: center; gap: 2rem; }
+    .step { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .step.completed { color: var(--success); }
+    .step.active { color: var(--primary-blue); }
+    .step-number { width: 26px; height: 26px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    .step.active .step-number { background: var(--primary-blue); color: #fff; }
+    .step.completed .step-number { background: var(--success); color: #fff; }
 
-        .flight-summary-row:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
+    /* LAYOUT CONTAINER */
+    .container { max-width: 900px; margin: 2rem auto; padding: 0 1rem; width: 100%; flex: 1; }
+    .form-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 2rem; }
 
-        .summary-item {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
+    .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem; color: var(--dark-slate); border-bottom: 2px solid var(--bg-light); padding-bottom: 0.75rem; }
+    .card-title i { color: var(--primary-blue); }
 
-        .summary-label {
-            font-size: 12px;
-            font-weight: 600;
-            color: #757575;
-            text-transform: uppercase;
-        }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    @media (max-width: 600px) { .form-grid { grid-template-columns: 1fr; } }
 
-        .summary-value {
-            font-size: 18px;
-            font-weight: 700;
-            color: #212121;
-        }
+    .form-group { margin-bottom: 1.25rem; position: relative; }
+    .form-group.full-width { grid-column: span 2; }
+    @media (max-width: 600px) { .form-group.full-width { grid-column: span 1; } }
 
-        .summary-value.price {
-            color: #c8102e;
-            font-size: 24px;
-        }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-main); }
+    .form-input, .form-select { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; outline: none; transition: border 0.2s; background: #fff; }
+    .form-input:focus, .form-select:focus { border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    
+    /* VALIDATION STYLES */
+    .form-input.is-invalid, .form-select.is-invalid { border-color: var(--error) !important; background-color: #FEF2F2; }
+    .form-input.is-valid, .form-select.is-valid { border-color: var(--success) !important; }
+    .error-feedback { color: var(--error); font-size: 0.75rem; margin-top: 0.35rem; display: none; font-weight: 500; }
+    .form-group.invalid .error-feedback { display: block; }
 
-        /* Form Section */
-        .form-section {
-            background: white;
-            border-radius: 12px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-        }
-
-        .form-section h2 {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            color: #212121;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            font-size: 14px;
-            font-weight: 600;
-            color: #212121;
-        }
-
-        .form-group input,
-        .form-group select {
-            padding: 12px 14px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            font-family: inherit;
-            transition: all 0.3s ease;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #c8102e;
-            box-shadow: 0 0 0 3px rgba(200, 16, 46, 0.1);
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 16px;
-        }
-
-        /* Action Buttons */
-        .actions {
-            display: flex;
-            gap: 16px;
-            padding-top: 24px;
-            border-top: 1px solid #eeeeee;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border-radius: 8px;
-            border: none;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: #c8102e;
-            color: white;
-            flex: 1;
-        }
-
-        .btn-primary:hover {
-            background: #9e0c24;
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #212121;
-            border: 2px solid #e0e0e0;
-        }
-
-        .btn-secondary:hover {
-            border-color: #c8102e;
-            color: #c8102e;
-        }
-
-        /* Loading State */
-        .loading-message {
-            text-align: center;
-            padding: 40px;
-            color: #757575;
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid #eeeeee;
-            border-top-color: #c8102e;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 16px;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-    </style>
+    .submit-btn {
+      width: 100%;
+      background: var(--primary-blue);
+      color: #fff;
+      border: none;
+      padding: 1rem;
+      border-radius: 6px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      transition: background 0.2s;
+    }
+    .submit-btn:hover { background: var(--primary-blue-dark); }
+  </style>
 </head>
 <body>
-    <!-- Consistent Navigation Header -->
-    <div id="navigation-placeholder"></div>
-    
-    <!-- Booking Progress Indicator -->
-    <div id="booking-progress-placeholder"></div>
 
-    <!-- Main Container -->
-    <div class="container">
-        <!-- Flight Summary -->
-        <div class="flight-summary" id="flightSummary">
-            <div class="flight-summary-row">
-                <div class="summary-item">
-                    <div class="summary-label">Route</div>
-                    <div class="summary-value" id="summaryRoute">—</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-label">Departure</div>
-                    <div class="summary-value" id="summaryDate">—</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-label">Cabin Class</div>
-                    <div class="summary-value" id="summaryClass">—</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-label">Total Price</div>
-                    <div class="summary-value price" id="summaryPrice">Ksh 0</div>
-                </div>
-            </div>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="brand-logo"><i class="fa-solid fa-plane-up"></i> Smart<span>Fly</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="flight-search.html">Book Flight</a></li>
+      <li><a href="my-bookings.html">My Bookings</a></li>
+      <li><a href="checkin.html">Check-in</a></li>
+    </ul>
+  </nav>
+
+  <!-- STEPPER -->
+  <div class="stepper-bar">
+    <div class="step completed"><span class="step-number"><i class="fa-solid fa-check"></i></span> Flight</div>
+    <div class="step active"><span class="step-number">2</span> Passengers</div>
+    <div class="step"><span class="step-number">3</span> Payment</div>
+    <div class="step"><span class="step-number">4</span> Confirmation</div>
+  </div>
+
+  <!-- PASSENGER FORM -->
+  <div class="container">
+    <div class="form-card">
+      <div class="card-title">
+        <i class="fa-solid fa-user-gear"></i> Passenger Contact & Booking Details
+      </div>
+
+      <form id="passenger-form" novalidate>
+        <div class="form-grid">
+          
+          <div class="form-group" id="group-first-name">
+            <label for="first-name">First Name</label>
+            <input type="text" id="first-name" class="form-input" placeholder="e.g. John">
+            <div class="error-feedback">Please enter a valid first name (letters only, min 2 characters).</div>
+          </div>
+
+          <div class="form-group" id="group-middle-name">
+            <label for="middle-name">Middle Name (Optional)</label>
+            <input type="text" id="middle-name" class="form-input" placeholder="e.g. Fitzgerald">
+            <div class="error-feedback">Middle name can only contain letters.</div>
+          </div>
+
+          <div class="form-group" id="group-last-name">
+            <label for="last-name">Last Name</label>
+            <input type="text" id="last-name" class="form-input" placeholder="e.g. Doe">
+            <div class="error-feedback">Please enter a valid last name (letters only, min 2 characters).</div>
+          </div>
+
+          <div class="form-group" id="group-gender">
+            <label for="gender">Gender</label>
+            <select id="gender" class="form-select">
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+            <div class="error-feedback">Please select a gender.</div>
+          </div>
+
+          <div class="form-group" id="group-dob">
+            <label for="dob">Date of Birth</label>
+            <input type="date" id="dob" class="form-input">
+            <div class="error-feedback">Please enter a valid date of birth. You must be at least 18.</div>
+          </div>
+
+          <div class="form-group" id="group-nationality">
+            <label for="nationality">Nationality</label>
+            <input type="text" id="nationality" class="form-input" placeholder="e.g. Kenyan">
+            <div class="error-feedback">Please enter your nationality.</div>
+          </div>
+
+          <div class="form-group" id="group-passport">
+            <label for="passport">Passport Number</label>
+            <input type="text" id="passport" class="form-input" placeholder="e.g. A12345678">
+            <div class="error-feedback">Please enter a valid passport number (6-12 alphanumeric characters).</div>
+          </div>
+
+          <div class="form-group" id="group-national-id">
+            <label for="national-id">National ID (Kenyan, if applicable)</label>
+            <input type="text" id="national-id" class="form-input" placeholder="e.g. 12345678">
+            <div class="error-feedback">Please enter a valid 7-8 digit National ID.</div>
+          </div>
+
+          <div class="form-group" id="group-emergency-contact-name">
+            <label for="emergency-contact-name">Emergency Contact Name</label>
+            <input type="text" id="emergency-contact-name" class="form-input" placeholder="e.g. Jane Doe">
+            <div class="error-feedback">Please enter a valid name.</div>
+          </div>
+
+          <div class="form-group" id="group-emergency-contact-phone">
+            <label for="emergency-contact-phone">Emergency Contact Phone</label>
+            <input type="tel" id="emergency-contact-phone" class="form-input" placeholder="+1 555 123 4567">
+            <div class="error-feedback">Please enter a valid phone number.</div>
+          </div>
+
+          <div class="form-group" id="group-email">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" class="form-input" placeholder="john.doe@example.com">
+            <div class="error-feedback">Please enter a valid email address.</div>
+          </div>
+
+          <div class="form-group" id="group-phone">
+            <label for="phone">Phone Number</label>
+            <input type="tel" id="phone" class="form-input" placeholder="+254 712 345 678">
+            <div class="error-feedback">Please enter a valid Kenyan phone number (e.g., 0712345678).</div>
+          </div>
+
+          <div class="form-group full-width" id="group-address">
+            <label for="address">Address</label>
+            <textarea id="address" class="form-input" rows="3" placeholder="123 Main St, Nairobi, Kenya"></textarea>
+            <div class="error-feedback">Please enter your address.</div>
+          </div>
+
+          <div class="form-group">
+            <label for="route">Flight Route</label>
+            <select id="route" class="form-select" onchange="updateFare()">
+              <option value="NBO (Nairobi) → MBA (Mombasa)">Nairobi (NBO) → Mombasa (MBA)</option>
+              <option value="NBO (Nairobi) → KIS (Kisumu)">Nairobi (NBO) → Kisumu (KIS)</option>
+              <option value="NBO (Nairobi) → LHR (London Heathrow)">Nairobi (NBO) → London (LHR)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="cabin-class">Cabin Class</label>
+            <select id="cabin-class" class="form-select" onchange="updateFare()">
+              <option value="Economy Comfort">Economy Comfort</option>
+              <option value="Business Class">Business Class</option>
+            </select>
+          </div>
+
         </div>
 
-        <!-- Passenger Form -->
-        <div class="form-section" id="passengerForm">
-            <h2>Passenger Information</h2>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="firstName">First Name *</label>
-                    <input type="text" id="firstName" required placeholder="John">
-                </div>
-                <div class="form-group">
-                    <label for="lastName">Last Name *</label>
-                    <input type="text" id="lastName" required placeholder="Doe">
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="email">Email Address *</label>
-                    <input type="email" id="email" required placeholder="john@example.com">
-                    <small id="emailError" style="color: #c8102e; display: none; font-size: 12px;">Please enter a valid email address</small>
-                </div>
-                <div class="form-group">
-                    <label for="phone">Phone Number *</label>
-                    <input type="tel" id="phone" required placeholder="+254 712 345 678">
-                    <small id="phoneError" style="color: #c8102e; display: none; font-size: 12px;">Please enter a valid phone number with country code</small>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="dateOfBirth">Date of Birth *</label>
-                    <input type="date" id="dateOfBirth" required>
-                </div>
-                <div class="form-group">
-                    <label for="gender">Gender *</label>
-                    <select id="gender" required>
-                        <option value="">Select gender</option>
-                        <option value="male">Male</option>
-                        <option value="female">Female</option>
-                        <option value="other">Other</option>
-                        <option value="prefer_not_to_say">Prefer not to say</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="nationality">Nationality *</label>
-                    <select id="nationality" required>
-                        <option value="">Select nationality</option>
-                        <option value="KE">Kenya</option>
-                        <option value="US">United States</option>
-                        <option value="GB">United Kingdom</option>
-                        <option value="CA">Canada</option>
-                        <option value="AU">Australia</option>
-                        <option value="NZ">New Zealand</option>
-                        <option value="IN">India</option>
-                        <option value="ZA">South Africa</option>
-                        <option value="NG">Nigeria</option>
-                        <option value="GH">Ghana</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="passportNumber">Passport Number *</label>
-                    <input type="text" id="passportNumber" required placeholder="A00123456">
-                </div>
-                <div class="form-group">
-                    <label for="passportExpiry">Passport Expiry *</label>
-                    <input type="date" id="passportExpiry" required>
-                </div>
-            </div>
-
-            <div class="form-row">
-                <div class="form-group">
-                    <label for="passportIssueDate">Passport Issue Date *</label>
-                    <input type="date" id="passportIssueDate" required>
-                </div>
-            </div>
-
-            <div class="actions">
-                <button type="button" class="btn btn-secondary" onclick="window.history.back()">← Back</button>
-                <button type="submit" class="btn btn-primary" onclick="submitPassengerDetails()">Continue to Payment →</button>
-            </div>
-        </div>
-
-        <!-- Loading State (hidden by default) -->
-        <div class="loading-message" id="loadingMessage" style="display: none;">
-            <div class="spinner"></div>
-            <p>Processing your booking...</p>
-        </div>
+        <button type="submit" class="submit-btn">
+          Proceed to Payment (<span id="fare-display">KES 14,850</span>) <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
     </div>
+  </div>
 
-    <script src="/js/validation.js"></script>
-    <script src="/js/improvements.js"></script>
-    <script>
-        // Load navigation and progress components
-        async function loadComponents() {
-            try {
-                // Load navigation
-                const navResponse = await fetch('/includes/navigation.html');
-                const navHTML = await navResponse.text();
-                document.getElementById('navigation-placeholder').innerHTML = navHTML;
-                
-                // Load booking progress
-                const progressResponse = await fetch('/includes/booking-progress.html');
-                const progressHTML = await progressResponse.text();
-                document.getElementById('booking-progress-placeholder').innerHTML = progressHTML;
-            } catch (error) {
-                console.error('Error loading components:', error);
-            }
-        }
-        
-        // Load components on page load
-        document.addEventListener('DOMContentLoaded', loadComponents);
-    </script>
-    <script>
-        // Parse URL parameters
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                from: params.get('from'),
-                to: params.get('to'),
-                date: params.get('date'),
-                fare: params.get('fare'),
-                price: params.get('price')
-            };
-        }
-
-        // Get selected flight from sessionStorage
-        function getSelectedFlight() {
-            const stored = sessionStorage.getItem('selectedFlight');
-            return stored ? JSON.parse(stored) : null;
-        }
-
-        // Format date for display
-        function formatDate(dateStr) {
-            const date = new Date(dateStr);
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-            return `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`;
-        }
-
-        // Initialize page
-        function initializePage() {
-            const params = getUrlParams();
-            const flight = getSelectedFlight();
-
-            if (!params.from || !params.to || !params.price) {
-                document.getElementById('passengerForm').style.display = 'none';
-                document.getElementById('flightSummary').innerHTML = '<p style="color: #c8102e; padding: 24px;">Flight details not found. <a href="/availability.html">Go back to search</a></p>';
-                return;
-            }
-
-            // Update summary
-            document.getElementById('summaryRoute').textContent = `${params.from} → ${params.to}`;
-            document.getElementById('summaryDate').textContent = formatDate(params.date);
-            document.getElementById('summaryClass').textContent = params.fare.charAt(0).toUpperCase() + params.fare.slice(1);
-            const numericPrice = parseFloat(params.price);
-            document.getElementById('summaryPrice').textContent = isNaN(numericPrice)
-                ? 'Ksh 0'
-                : `Ksh ${numericPrice.toLocaleString()}`;
-
-            console.log('🎫 Passenger Details Loaded:', params);
-        }
-
-        // Display validation error for a field
-        function showError(fieldId, message) {
-            const field = document.getElementById(fieldId);
-            const errorElement = document.getElementById(`${fieldId}Error`);
-            
-            if (errorElement) {
-                errorElement.textContent = message;
-                errorElement.style.display = 'block';
-            }
-            
-            field.style.borderColor = '#c8102e';
-            field.classList.add('has-error');
-        }
-
-        // Clear validation error for a field
-        function clearError(fieldId) {
-            const field = document.getElementById(fieldId);
-            const errorElement = document.getElementById(`${fieldId}Error`);
-            
-            if (errorElement) {
-                errorElement.style.display = 'none';
-            }
-            
-            field.style.borderColor = '#e0e0e0';
-            field.classList.remove('has-error');
-        }
-
-        // Submit passenger details with comprehensive validation
-        async function submitPassengerDetails() {
-            const validator = new ValidationUtils();
-            const params = getUrlParams();
-            
-            const firstName = document.getElementById('firstName').value.trim();
-            const lastName = document.getElementById('lastName').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const phone = document.getElementById('phone').value.trim();
-            const dateOfBirth = document.getElementById('dateOfBirth').value;
-            const gender = document.getElementById('gender').value;
-            const nationality = document.getElementById('nationality').value;
-            const passportNumber = document.getElementById('passportNumber').value.trim();
-            const passportExpiry = document.getElementById('passportExpiry').value;
-            const passportIssueDate = document.getElementById('passportIssueDate').value;
-
-            // Clear all errors
-            clearError('firstName');
-            clearError('lastName');
-            clearError('email');
-            clearError('phone');
-            clearError('dateOfBirth');
-            clearError('gender');
-            clearError('nationality');
-            clearError('passportNumber');
-            clearError('passportExpiry');
-            clearError('passportIssueDate');
-
-            let hasErrors = false;
-
-            // Validate first name
-            try {
-                validator.validateName(firstName, 'First Name');
-            } catch (e) {
-                showError('firstName', e.message);
-                hasErrors = true;
-            }
-
-            // Validate last name
-            try {
-                validator.validateName(lastName, 'Last Name');
-            } catch (e) {
-                showError('lastName', e.message);
-                hasErrors = true;
-            }
-
-            // Validate email
-            try {
-                validator.validateEmail(email, 'Email');
-            } catch (e) {
-                showError('email', e.message);
-                hasErrors = true;
-            }
-
-            // Validate phone (Kenyan format)
-            try {
-                validator.validatePhone(phone, true, 'Phone');
-            } catch (e) {
-                showError('phone', e.message);
-                hasErrors = true;
-            }
-
-            // Validate date of birth
-            try {
-                validator.validateDateOfBirth(dateOfBirth, 'YYYY-MM-DD', 'Date of Birth', 18);
-            } catch (e) {
-                showError('dateOfBirth', e.message);
-                hasErrors = true;
-            }
-
-            // Validate gender
-            try {
-                validator.validateGender(gender, 'Gender');
-            } catch (e) {
-                showError('gender', e.message);
-                hasErrors = true;
-            }
-
-            // Validate nationality
-            if (!nationality) {
-                showError('nationality', 'Nationality is required');
-                hasErrors = true;
-            }
-
-            // Validate passport number
-            try {
-                validator.validatePassport(passportNumber, 'Passport Number');
-            } catch (e) {
-                showError('passportNumber', e.message);
-                hasErrors = true;
-            }
-
-            // Validate passport expiry
-            try {
-                validator.validatePassportExpiry(passportExpiry, 'YYYY-MM-DD', params.date, 'Passport Expiry');
-            } catch (e) {
-                showError('passportExpiry', e.message);
-                hasErrors = true;
-            }
-
-            // Validate passport issue date
-            try {
-                validator.validatePassportIssueDate(passportIssueDate, 'YYYY-MM-DD', passportExpiry, 'Passport Issue Date');
-            } catch (e) {
-                showError('passportIssueDate', e.message);
-                hasErrors = true;
-            }
-
-            if (hasErrors) {
-                toast.error('Please fix the validation errors before proceeding');
-                return;
-            }
-
-            // Show loading state with improvements
-            const submitBtn = document.querySelector('.btn-primary');
-            const loaderId = loading.show(submitBtn, 'Processing...');
-
-            try {
-                // Store passenger details
-                const passengerDetails = {
-                    firstName,
-                    lastName,
-                    email,
-                    phone,
-                    dateOfBirth,
-                    gender,
-                    nationality,
-                    passportNumber,
-                    passportExpiry,
-                    passportIssueDate
-                };
-
-                console.log('👤 Passenger Details Submitted:', passengerDetails);
-                sessionStorage.setItem('passengerDetails', JSON.stringify(passengerDetails));
-
-                // Show success message
-                toast.success('Passenger details validated successfully');
-
-                // Simulate processing and redirect with all required parameters
-                setTimeout(() => {
-                    const fullName = `${firstName} ${lastName}`;
-                    window.location.href = `/payment.html?from=${params.from}&to=${params.to}&price=${params.price}&fare=${params.fare}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&passport=${encodeURIComponent(passportNumber)}&phone=${encodeURIComponent(phone)}`;
-                }, 1500);
-            } catch (error) {
-                console.error('Error processing passenger details:', error);
-                toast.error('An error occurred. Please try again.');
-                loading.hide(loaderId);
-            }
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', initializePage);
-
-        // Add real-time validation
-        document.addEventListener('DOMContentLoaded', () => {
-            const validator = new ValidationUtils();
-            const params = getUrlParams();
-
-            // Add error message elements if they don't exist
-            const fields = ['firstName', 'lastName', 'email', 'phone', 'dateOfBirth', 'gender', 'nationality', 'passportNumber', 'passportExpiry', 'passportIssueDate'];
-            fields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                if (field && !document.getElementById(`${fieldId}Error`)) {
-                    const errorDiv = document.createElement('small');
-                    errorDiv.id = `${fieldId}Error`;
-                    errorDiv.style.color = '#c8102e';
-                    errorDiv.style.display = 'none';
-                    errorDiv.style.fontSize = '12px';
-                    field.parentNode.appendChild(errorDiv);
-                }
-            });
-
-            // Real-time validation for first name
-            document.getElementById('firstName').addEventListener('input', function() {
-                clearError('firstName');
-                try {
-                    validator.validateName(this.value.trim(), 'First Name');
-                } catch (e) {
-                    // Don't show error while typing, just clear if valid
-                }
-            });
-
-            document.getElementById('firstName').addEventListener('blur', function() {
-                if (this.value.trim()) {
-                    try {
-                        validator.validateName(this.value.trim(), 'First Name');
-                        clearError('firstName');
-                    } catch (e) {
-                        showError('firstName', e.message);
-                    }
-                }
-            });
-
-            // Real-time validation for last name
-            document.getElementById('lastName').addEventListener('input', function() {
-                clearError('lastName');
-                try {
-                    validator.validateName(this.value.trim(), 'Last Name');
-                } catch (e) {
-                    // Don't show error while typing, just clear if valid
-                }
-            });
-
-            document.getElementById('lastName').addEventListener('blur', function() {
-                if (this.value.trim()) {
-                    try {
-                        validator.validateName(this.value.trim(), 'Last Name');
-                        clearError('lastName');
-                    } catch (e) {
-                        showError('lastName', e.message);
-                    }
-                }
-            });
-
-            // Real-time validation for email
-            document.getElementById('email').addEventListener('input', function() {
-                clearError('email');
-                try {
-                    validator.validateEmail(this.value.trim(), 'Email');
-                } catch (e) {
-                    // Don't show error while typing, just clear if valid
-                }
-            });
-
-            document.getElementById('email').addEventListener('blur', function() {
-                if (this.value.trim()) {
-                    try {
-                        validator.validateEmail(this.value.trim(), 'Email');
-                        clearError('email');
-                    } catch (e) {
-                        showError('email', e.message);
-                    }
-                }
-            });
-
-            // Real-time validation for phone
-            document.getElementById('phone').addEventListener('input', function() {
-                clearError('phone');
-                try {
-                    validator.validatePhone(this.value.trim(), true, 'Phone');
-                } catch (e) {
-                    // Don't show error while typing, just clear if valid
-                }
-            });
-
-            document.getElementById('phone').addEventListener('blur', function() {
-                if (this.value.trim()) {
-                    try {
-                        validator.validatePhone(this.value.trim(), true, 'Phone');
-                        clearError('phone');
-                    } catch (e) {
-                        showError('phone', e.message);
-                    }
-                }
-            });
-
-            // Real-time validation for date of birth
-            document.getElementById('dateOfBirth').addEventListener('change', function() {
-                if (this.value) {
-                    try {
-                        validator.validateDateOfBirth(this.value, 'YYYY-MM-DD', 'Date of Birth', 18);
-                        clearError('dateOfBirth');
-                    } catch (e) {
-                        showError('dateOfBirth', e.message);
-                    }
-                }
-            });
-
-            // Real-time validation for gender
-            document.getElementById('gender').addEventListener('change', function() {
-                if (this.value) {
-                    try {
-                        validator.validateGender(this.value, 'Gender');
-                        clearError('gender');
-                    } catch (e) {
-                        showError('gender', e.message);
-                    }
-                } else {
-                    showError('gender', 'Gender is required');
-                }
-            });
-
-            // Real-time validation for nationality
-            document.getElementById('nationality').addEventListener('change', function() {
-                if (this.value) {
-                    clearError('nationality');
-                } else {
-                    showError('nationality', 'Nationality is required');
-                }
-            });
-
-            // Real-time validation for passport number
-            document.getElementById('passportNumber').addEventListener('input', function() {
-                clearError('passportNumber');
-                try {
-                    validator.validatePassport(this.value.trim(), 'Passport Number');
-                } catch (e) {
-                    // Don't show error while typing, just clear if valid
-                }
-            });
-
-            document.getElementById('passportNumber').addEventListener('blur', function() {
-                if (this.value.trim()) {
-                    try {
-                        validator.validatePassport(this.value.trim(), 'Passport Number');
-                        clearError('passportNumber');
-                    } catch (e) {
-                        showError('passportNumber', e.message);
-                    }
-                }
-            });
-
-            // Real-time validation for passport expiry
-            document.getElementById('passportExpiry').addEventListener('change', function() {
-                if (this.value) {
-                    try {
-                        validator.validatePassportExpiry(this.value, 'YYYY-MM-DD', params.date, 'Passport Expiry');
-                        clearError('passportExpiry');
-                    } catch (e) {
-                        showError('passportExpiry', e.message);
-                    }
-                }
-            });
-
-            // Real-time validation for passport issue date
-            document.getElementById('passportIssueDate').addEventListener('change', function() {
-                if (this.value) {
-                    try {
-                        const passportExpiry = document.getElementById('passportExpiry').value;
-                        validator.validatePassportIssueDate(this.value, 'YYYY-MM-DD', passportExpiry, 'Passport Issue Date');
-                        clearError('passportIssueDate');
-                    } catch (e) {
-                        showError('passportIssueDate', e.message);
-                    }
-                }
-            });
-        });
-    </script>
+  <script src="passenger-validation.js" defer></script>
 </body>
 </html>

@@ -22,8 +22,8 @@ class ValidationUtils:
     # Regular expression patterns
     NAME_PATTERN = r"^[a-zA-Z\s\-']{2,50}$"
     EMAIL_PATTERN = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-    KENYAN_PHONE_PATTERN = r"^(\+254|0)?[7][0-9]{8}$"
-    INTERNATIONAL_PHONE_PATTERN = r"^\+?[1-9]\d{1,14}$"
+    KENYAN_PHONE_PATTERN = r"^(?:254|\+254|0)?(7\d{8})$"
+    INTERNATIONAL_PHONE_PATTERN = r"^\+?[1-9]\d{1,14}$"  # E.164
     PASSPORT_PATTERN = r"^[A-Z0-9]{6,12}$"
     KENYAN_ID_PATTERN = r"^\d{7,8}$"
     FLIGHT_NUMBER_PATTERN = r"^[A-Z]{2,3}\d{3,4}$"
@@ -108,18 +108,15 @@ class ValidationUtils:
         if not phone or not phone.strip():
             raise ValidationError(field_name, "Phone number is required")
         
-        phone = phone.strip()
+        phone_cleaned = phone.strip().replace(" ", "")
         
         if is_kenyan:
             # Validate Kenyan phone number format
-            if not re.match(ValidationUtils.KENYAN_PHONE_PATTERN, phone):
-                raise ValidationError(field_name, "Invalid Kenyan phone number format. Use format: +2547XXXXXXXX or 07XXXXXXXX")
-            
+            match = re.match(ValidationUtils.KENYAN_PHONE_PATTERN, phone_cleaned)
+            if not match:
+                raise ValidationError(field_name, "Invalid Kenyan phone number format. Use format: +2547..., 2547... or 07...")
             # Normalize to +254 format
-            if phone.startswith('0'):
-                phone = '+254' + phone[1:]
-            elif phone.startswith('7'):
-                phone = '+254' + phone
+            phone = '+254' + match.group(1)
         else:
             # Validate international phone number
             if not re.match(ValidationUtils.INTERNATIONAL_PHONE_PATTERN, phone):
@@ -285,18 +282,21 @@ class ValidationUtils:
         except ValueError:
             raise ValidationError(field_name, f"Invalid date format. Expected format: {date_format}")
         
+        today = datetime.now()
+
         # Check if date is in the past
-        if not allow_past and date_obj < datetime.now():
+        if not allow_past and date_obj.date() < today.date():
             raise ValidationError(field_name, "Date cannot be in the past")
         
         # Check minimum days in future
         if min_days_future > 0:
-            min_date = datetime.now() + timedelta(days=min_days_future)
+            min_date = today + timedelta(days=min_days_future)
             if date_obj < min_date:
                 raise ValidationError(field_name, f"Date must be at least {min_days_future} days in the future")
         
         # Check if date is too far in the future (max 1 year)
-        max_date = datetime.now() + timedelta(days=365)
+        # This is more accurate than timedelta(days=365) as it handles leap years.
+        max_date = today.replace(year=today.year + 1)
         if date_obj > max_date:
             raise ValidationError(field_name, "Date cannot be more than 1 year in the future")
         
@@ -564,17 +564,20 @@ class ValidationUtils:
         except ValueError:
             raise ValidationError(field_name, f"Invalid date format. Expected format: {date_format}")
         
+        today = datetime.now()
+
         # Check if date is in the future
-        if date_obj > datetime.now():
+        if date_obj > today:
             raise ValidationError(field_name, "Date of birth cannot be in the future")
         
         # Check minimum age requirement
-        min_birth_date = datetime.now() - timedelta(days=min_age * 365)
+        # This is more accurate than timedelta(days=365 * min_age) as it handles leap years.
+        min_birth_date = today.replace(year=today.year - min_age)
         if date_obj > min_birth_date:
             raise ValidationError(field_name, f"Passenger must be at least {min_age} years old to make a booking")
         
         # Check if date is too far in the past (max 120 years)
-        max_birth_date = datetime.now() - timedelta(days=120 * 365)
+        max_birth_date = today.replace(year=today.year - 120)
         if date_obj < max_birth_date:
             raise ValidationError(field_name, "Date of birth is invalid")
         
@@ -608,12 +611,15 @@ class ValidationUtils:
         except ValueError:
             raise ValidationError(field_name, f"Invalid date format. Expected format: {date_format}")
         
+        today = datetime.now()
+
         # Check if expiry date is today or in the past
-        if expiry_obj <= datetime.now():
+        if expiry_obj.date() <= today.date():
             raise ValidationError(field_name, "Passport cannot be expired. Expiry date must be in the future")
         
         # Check if expiry date is too far in the future (max 10 years)
-        max_expiry = datetime.now() + timedelta(days=365 * 10)
+        # This is more accurate than timedelta(days=365 * 10) as it handles leap years.
+        max_expiry = today.replace(year=today.year + 10)
         if expiry_obj > max_expiry:
             raise ValidationError(field_name, "Passport expiry date cannot be more than 10 years in the future")
         

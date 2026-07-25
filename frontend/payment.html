@@ -1,1197 +1,364 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Payment — SmartFly</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SmartFly — Secure Payment</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    :root {
+      --primary-blue: #2563EB;
+      --primary-blue-dark: #1E40AF;
+      --blue-accent: #3B82F6;
+      --blue-light: #EFF6FF;
+      --dark-slate: #0F172A;
+      --text-main: #1E293B;
+      --text-muted: #64748B;
+      --bg-light: #F8FAFC;
+      --card-bg: #FFFFFF;
+      --border-color: #E2E8F0;
+      --success: #10B981;
     }
 
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 40px 20px;
-      color: #222;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-light); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
 
-    .container {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      color: white;
-    }
-
-    .header h1 {
-      font-size: 36px;
-      font-weight: 700;
-      margin-bottom: 8px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
-
-    .header p {
-      font-size: 16px;
-      opacity: 0.95;
-    }
-
-    .main-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-      margin-bottom: 24px;
-    }
-
-    @media (max-width: 768px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      background: white;
-      border-radius: 16px;
-      padding: 32px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
-    }
-
-    .card h2 {
-      font-size: 20px;
-      font-weight: 700;
-      color: #222;
-      margin-bottom: 20px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .summary-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      border-bottom: 1px solid #f0f0f0;
-    }
-
-    .summary-item:last-child {
-      border-bottom: none;
-    }
-
-    .summary-label {
-      font-weight: 500;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .summary-value {
-      font-weight: 600;
-      color: #222;
-      font-size: 14px;
-      text-align: right;
-    }
-
-    .total-section {
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 2px solid #667eea;
-    }
-
-    .total-item {
+    /* --- NAVBAR --- */
+    .navbar {
+      background: var(--dark-slate);
+      color: #fff;
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-top: 10px;
+      border-bottom: 3px solid var(--primary-blue);
     }
+    .brand-logo { font-size: 1.5rem; font-weight: 700; color: #fff; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+    .brand-logo span { color: var(--blue-accent); }
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; }
+    .nav-links a { color: #CBD5E1; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+    .nav-links a.active { color: var(--blue-accent); }
 
-    .total-label {
-      font-size: 18px;
-      font-weight: 700;
-      color: #222;
-    }
+    /* --- STEPPER --- */
+    .stepper-bar { background: #fff; padding: 1rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: center; gap: 2rem; }
+    .step { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
+    .step.completed { color: var(--success); }
+    .step.active { color: var(--primary-blue); }
+    .step-number { width: 26px; height: 26px; border-radius: 50%; background: var(--border-color); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+    .step.active .step-number { background: var(--primary-blue); color: #fff; }
+    .step.completed .step-number { background: var(--success); color: #fff; }
 
-    .total-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: #667eea;
-    }
+    /* --- MAIN LAYOUT --- */
+    .container { max-width: 1200px; margin: 2rem auto; padding: 0 1rem; width: 100%; display: grid; grid-template-columns: 1fr 1.6fr; gap: 2rem; flex: 1; }
+    @media (max-width: 868px) { .container { grid-template-columns: 1fr; } }
 
-    .form-group {
-      margin-bottom: 20px;
-    }
+    /* --- CARDS & SUMMARY --- */
+    .summary-card, .payment-card { background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); padding: 1.5rem; height: fit-content; }
+    .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.6rem; color: var(--dark-slate); border-bottom: 2px solid var(--bg-light); padding-bottom: 0.75rem; }
+    .card-title i { color: var(--primary-blue); }
+    .flight-badge { background: var(--blue-light); color: var(--primary-blue); font-size: 0.75rem; font-weight: 700; padding: 0.25rem 0.5rem; border-radius: 4px; margin-left: auto; }
+    .detail-row { display: flex; justify-content: space-between; margin-bottom: 0.85rem; font-size: 0.9rem; }
+    .detail-label { color: var(--text-muted); font-weight: 500; }
+    .detail-value { font-weight: 600; color: var(--text-main); text-align: right; }
+    .divider { border-top: 1px dashed var(--border-color); margin: 1.25rem 0; }
+    .total-row { display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; font-weight: 700; color: var(--dark-slate); }
+    .total-price { font-size: 1.5rem; color: var(--primary-blue); }
 
-    .form-group label {
-      display: block;
-      font-size: 14px;
-      font-weight: 600;
-      color: #444;
-      margin-bottom: 8px;
-    }
+    /* --- PAYMENT METHODS --- */
+    .method-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+    .method-btn { border: 2px solid var(--border-color); background: #fff; border-radius: 8px; padding: 0.85rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s ease; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); height: 75px; }
+    .method-btn.active { border-color: var(--primary-blue); background: var(--blue-light); color: var(--primary-blue-dark); }
+    .mpesa-logo { font-weight: 800; font-size: 0.85rem; }
+    .mpesa-green { color: #00A859; } .mpesa-red { color: #E31837; }
 
-    .form-group input {
-      width: 100%;
-      padding: 14px 16px;
-      border: 1.5px solid #e6e9ef;
-      border-radius: 10px;
-      font-size: 15px;
-      font-family: inherit;
-      transition: all 0.3s;
-    }
+    .form-group { margin-bottom: 1.25rem; }
+    .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .form-input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.95rem; outline: none; }
+    .form-input:focus { border-color: var(--primary-blue); }
+    .inline-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
-    .form-group input:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
+    .pay-btn { width: 100%; background: var(--primary-blue); color: #fff; border: none; padding: 1rem; border-radius: 6px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; }
+    .pay-btn:hover { background: var(--primary-blue-dark); }
 
-    .card-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
+    /* --- PROCESSING LOADER --- */
+    .loader-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; color: #fff; }
+    .spinner { width: 50px; height: 50px; border: 4px solid rgba(255, 255, 255, 0.2); border-top-color: var(--blue-accent); border-radius: 50%; animation: spin 1s infinite linear; margin-bottom: 1rem; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .security-badge {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 12px 16px;
-      background: #f8f9fa;
-      border-radius: 10px;
-      margin-top: 16px;
-      font-size: 13px;
-      color: #666;
-    }
+    /* --- REAL-TIME RECEIPT MODAL --- */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1100; padding: 1rem; overflow-y: auto; }
+    .modal-content { background: #fff; border-radius: 12px; max-width: 600px; width: 100%; padding: 2rem; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-top: 6px solid var(--primary-blue); }
+    .receipt-header { text-align: center; border-bottom: 2px dashed var(--border-color); padding-bottom: 1.25rem; margin-bottom: 1.25rem; }
+    .receipt-logo { font-size: 1.8rem; font-weight: 800; color: var(--dark-slate); }
+    .receipt-logo span { color: var(--primary-blue); }
+    .receipt-status { display: inline-flex; align-items: center; gap: 0.4rem; background: #ECFDF5; color: var(--success); font-weight: 700; font-size: 0.85rem; padding: 0.3rem 0.75rem; border-radius: 20px; margin-top: 0.5rem; }
 
-    .security-badge svg {
-      width: 20px;
-      height: 20px;
-      fill: #28a745;
-    }
+    .notice-box { background: var(--blue-light); border-left: 4px solid var(--primary-blue); padding: 1rem; border-radius: 6px; margin: 1.25rem 0; font-size: 0.85rem; color: #1E3A8A; }
+    .notice-box h4 { font-size: 0.9rem; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
 
-    .actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 28px;
-    }
+    .btn-group { display: flex; gap: 1rem; margin-top: 1.5rem; }
+    .btn-secondary { background: #F1F5F9; color: var(--text-main); border: 1px solid var(--border-color); padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; flex: 1; }
+    .btn-primary { background: var(--primary-blue); color: #fff; border: none; padding: 0.75rem 1.25rem; border-radius: 6px; font-weight: 600; cursor: pointer; flex: 1; }
 
-    .btn {
-      flex: 1;
-      padding: 16px 24px;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn-secondary {
-      background: white;
-      color: #667eea;
-      border: 2px solid #667eea;
-    }
-
-    .btn-secondary:hover {
-      background: #f8f9fa;
-    }
-
-    .result {
-      margin-top: 20px;
-      padding: 16px;
-      border-radius: 10px;
-      font-size: 14px;
-    }
-
-    .result.success {
-      background: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-
-    .result.error {
-      background: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-
-    .payment-methods {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-top: 20px;
-      padding-top: 20px;
-      border-top: 1px solid #e6e9ef;
-    }
-
-    .payment-method {
-      padding: 16px 12px;
-      border: 2px solid #e6e9ef;
-      border-radius: 12px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      background: white;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .payment-method:hover {
-      border-color: #667eea;
-      background: #f8f9fa;
-      transform: translateY(-2px);
-    }
-
-    .payment-method.active {
-      border-color: #667eea;
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.05));
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-    }
-
-    .payment-method img {
-      height: 24px;
-      object-fit: contain;
-      margin-bottom: 6px;
-      display: block;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .payment-form {
-      display: none;
-    }
-
-    .payment-form.active {
-      display: block;
-      animation: fadeIn 0.3s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    @media (max-width: 768px) {
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-      .payment-methods {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .footer {
-      text-align: center;
-      color: white;
-      margin-top: 40px;
-      font-size: 14px;
-      opacity: 0.9;
-    }
-
-    .icon {
-      display: inline-block;
-      width: 24px;
-      height: 24px;
+    @media print {
+      body * { visibility: hidden; }
+      #printable-receipt, #printable-receipt * { visibility: visible; }
+      #printable-receipt { position: absolute; left: 0; top: 0; width: 100%; padding: 0; border-top: none; }
+      .btn-group { display: none; }
     }
   </style>
-  <script src="/js/validation.js"></script>
 </head>
 <body>
+
+  <!-- NAVIGATION NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="brand-logo"><i class="fa-solid fa-plane-up"></i> Smart<span>Fly</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="flight-search.html">Book Flight</a></li>
+      <li><a href="my-bookings.html">My Bookings</a></li>
+      <li><a href="checkin.html">Check-in</a></li>
+    </ul>
+  </nav>
+
+  <!-- STEPPER -->
+  <div class="stepper-bar">
+    <div class="step completed"><span class="step-number"><i class="fa-solid fa-check"></i></span> Flight</div>
+    <div class="step completed"><span class="step-number"><i class="fa-solid fa-check"></i></span> Passengers</div>
+    <div class="step active"><span class="step-number">3</span> Payment</div>
+    <div class="step"><span class="step-number">4</span> Confirmation</div>
+  </div>
+
+  <!-- MAIN CONTAINER -->
   <div class="container">
-    <div class="header">
-      <h1>💳 Secure Payment</h1>
-      <p>Complete your booking with our secure payment system</p>
-    </div>
-
-    <div class="main-grid">
-      <!-- Booking Summary -->
-      <div class="card">
-        <h2>
-          <span class="icon">📋</span>
-          Booking Summary
-        </h2>
-        <div id="summaryContent">
-          <div class="summary-item">
-            <span class="summary-label">Passenger</span>
-            <span class="summary-value" id="passengerName">—</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Route</span>
-            <span class="summary-value" id="routeInfo">—</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Departure Date</span>
-            <span class="summary-value" id="departDate">—</span>
-          </div>
-          <div class="summary-item" id="returnDateRow" style="display: none;">
-            <span class="summary-label">Return Date</span>
-            <span class="summary-value" id="returnDate">—</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Class</span>
-            <span class="summary-value" id="classInfo">—</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Email</span>
-            <span class="summary-value" id="emailInfo">—</span>
-          </div>
-          <div class="summary-item">
-            <span class="summary-label">Phone</span>
-            <span class="summary-value" id="phoneInfo">—</span>
-          </div>
-        </div>
-
-        <div class="total-section">
-          <div class="total-item">
-            <span class="total-label">Total Amount</span>
-            <span class="total-value" id="totalAmount">$0.00</span>
-          </div>
-        </div>
+    
+    <!-- PASSENGER & FLIGHT SUMMARY -->
+    <div class="summary-card">
+      <div class="card-title">
+        <i class="fa-solid fa-plane-departure"></i> Flight Summary
+        <span class="flight-badge" id="display-flight-no">KQ-482</span>
       </div>
 
-      <!-- Payment Form -->
-      <div class="card">
-        <h2>
-          <span class="icon">💳</span>
-          Payment Method
-        </h2>
-        
-        <p style="color: #666; font-size: 14px; margin-bottom: 20px;">
-          Select your preferred payment method below
-        </p>
+      <div class="detail-row"><span class="detail-label">Passenger Name</span><span class="detail-value" id="display-name">Loading...</span></div>
+      <div class="detail-row"><span class="detail-label">Route</span><span class="detail-value" id="display-route">Loading...</span></div>
+      <div class="detail-row"><span class="detail-label">Departure Date</span><span class="detail-value" id="display-date">Loading...</span></div>
+      <div class="detail-row"><span class="detail-label">Cabin Class</span><span class="detail-value" id="display-class">Loading...</span></div>
+      <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value" id="display-email">Loading...</span></div>
+      <div class="detail-row"><span class="detail-label">Phone</span><span class="detail-value" id="display-phone">Loading...</span></div>
 
-        <div class="payment-methods">
-          <div class="payment-method active" data-method="card" title="Credit/Debit Card">
-            <div style="font-size: 24px; margin-bottom: 4px;">💳</div>
-            <div>Card</div>
-          </div>
-          <div class="payment-method" data-method="mpesa" title="M-Pesa Mobile Money">
-            <div style="font-size: 24px; margin-bottom: 4px;">📱</div>
-            <div>M-Pesa</div>
-          </div>
-          <div class="payment-method" data-method="bank" title="Bank Transfer">
-            <div style="font-size: 24px; margin-bottom: 4px;">🏦</div>
-            <div>Bank</div>
-          </div>
-          <div class="payment-method" data-method="paypal" title="PayPal">
-            <div style="font-size: 24px; margin-bottom: 4px;">🅿️</div>
-            <div>PayPal</div>
-          </div>
-        </div>
+      <div class="divider"></div>
 
-        <!-- Card Payment Form -->
-        <div class="payment-form active" id="cardForm">
-          <h3 style="font-size: 16px; margin: 24px 0 16px 0; color: #222;">💳 Card Details</h3>
-          
-          <div class="form-group">
-            <label>Card Number</label>
-            <input 
-              type="text" 
-              id="cardNumber" 
-              placeholder="4242 4242 4242 4242"
-              maxlength="19"
-            />
-            <small id="cardNumberError" style="color: #c8102e; display: none; font-size: 12px;">Please enter a valid card number</small>
-          </div>
-
-          <div class="form-group">
-            <label>Cardholder Name</label>
-            <input 
-              type="text" 
-              id="cardName" 
-              placeholder="John Doe"
-            />
-            <small id="cardNameError" style="color: #c8102e; display: none; font-size: 12px;">Please enter the cardholder name</small>
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Expiry Date</label>
-              <input 
-                type="text" 
-                id="cardExp" 
-                placeholder="MM/YY"
-                maxlength="5"
-              />
-              <small id="cardExpError" style="color: #c8102e; display: none; font-size: 12px;">Please enter valid expiry (MM/YY)</small>
-            </div>
-            <div class="form-group">
-              <label>CVC</label>
-              <input 
-                type="text" 
-                id="cardCVC" 
-                placeholder="123"
-                maxlength="4"
-              />
-              <small id="cardCVCError" style="color: #c8102e; display: none; font-size: 12px;">Please enter valid CVC (3-4 digits)</small>
-            </div>
-          </div>
-        </div>
-
-        <!-- M-Pesa Payment Form -->
-        <div class="payment-form" id="mpesaForm">
-          <h3 style="font-size: 16px; margin: 24px 0 16px 0; color: #222;">📱 M-Pesa Details</h3>
-          
-          <div class="form-group">
-            <label>Phone Number</label>
-            <input 
-              type="tel" 
-              id="mpesaPhone" 
-              placeholder="+254 712 345 678"
-            />
-            <small id="mpesaPhoneError" style="color: #c8102e; display: none; font-size: 12px;">Please enter a valid M-Pesa phone number (+254 format)</small>
-          </div>
-
-          <div class="form-group">
-            <label>Full Name</label>
-            <input 
-              type="text" 
-              id="mpesaName" 
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div style="background: #e3f2fd; border-left: 4px solid #2196f3; padding: 12px; border-radius: 6px; margin-top: 16px; font-size: 13px; color: #1565c0;">
-            <strong>ℹ️ How M-Pesa works:</strong><br>
-            You'll receive an M-Pesa prompt on your phone. Enter your M-Pesa PIN to complete the payment.
-          </div>
-        </div>
-
-        <!-- Bank Transfer Payment Form -->
-        <div class="payment-form" id="bankForm">
-          <h3 style="font-size: 16px; margin: 24px 0 16px 0; color: #222;">🏦 Bank Transfer Details</h3>
-          
-          <div class="form-group">
-            <label>Account Holder Name</label>
-            <input 
-              type="text" 
-              id="bankName" 
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Bank Name</label>
-            <input 
-              type="text" 
-              id="bankNameField" 
-              placeholder="Your Bank Name"
-            />
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label>Account Number</label>
-              <input 
-                type="text" 
-                id="accountNumber" 
-                placeholder="1234567890"
-              />
-            </div>
-            <div class="form-group">
-              <label>Routing Number</label>
-              <input 
-                type="text" 
-                id="routingNumber" 
-                placeholder="021000021"
-              />
-            </div>
-          </div>
-
-          <div style="background: #fff3e0; border-left: 4px solid #ff9800; padding: 12px; border-radius: 6px; margin-top: 16px; font-size: 13px; color: #e65100;">
-            <strong>ℹ️ Bank Transfer Info:</strong><br>
-            Bank transfer may take 1-3 business days to process. You'll receive a confirmation once the payment is received.
-          </div>
-        </div>
-
-        <!-- PayPal Payment Form -->
-        <div class="payment-form" id="paypalForm">
-          <h3 style="font-size: 16px; margin: 24px 0 16px 0; color: #222;">🅿️ PayPal Account</h3>
-          
-          <div class="form-group">
-            <label>PayPal Email</label>
-            <input 
-              type="email" 
-              id="paypalEmail" 
-              placeholder="your.email@paypal.com"
-            />
-          </div>
-
-          <div class="form-group">
-            <label>Full Name</label>
-            <input 
-              type="text" 
-              id="paypalName" 
-              placeholder="John Doe"
-            />
-          </div>
-
-          <div style="background: #f3e5f5; border-left: 4px solid #9c27b0; padding: 12px; border-radius: 6px; margin-top: 16px; font-size: 13px; color: #6a1b9a;">
-            <strong>ℹ️ PayPal Payment:</strong><br>
-            You'll be redirected to PayPal to securely complete your payment. Your information is never shared with us.
-          </div>
-        </div>
-
-        <div class="security-badge">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/>
-          </svg>
-          <span>Your payment information is encrypted and secure</span>
-        </div>
-
-        <div class="actions">
-          <button id="cancelBtn" class="btn btn-secondary">← Back</button>
-          <button id="payBtn" class="btn btn-primary">Pay Now →</button>
-        </div>
-
-        <div id="result"></div>
+      <div class="total-row">
+        <span>Total Fare</span>
+        <span class="total-price" id="display-total">KES 0.00</span>
       </div>
     </div>
 
-    <div class="footer">
-      <p>🔒 SmartFly © 2025 • Secure Payment Gateway • All transactions are encrypted</p>
+    <!-- PAYMENT SELECTION & FORM -->
+    <div class="payment-card">
+      <div class="card-title"><i class="fa-solid fa-credit-card"></i> Payment Method</div>
+
+      <div class="method-grid">
+        <div class="method-btn active" onclick="selectMethod('card', this)">
+          <div style="display:flex; gap:4px;">
+            <i class="fa-brands fa-cc-visa" style="font-size:1.5rem; color:#1A1F71;"></i>
+            <i class="fa-brands fa-cc-mastercard" style="font-size:1.5rem; color:#EB001B;"></i>
+          </div>
+          <span>Card</span>
+        </div>
+        <div class="method-btn" onclick="selectMethod('mpesa', this)">
+          <div class="mpesa-logo"><span class="mpesa-green">M-</span><span class="mpesa-red">PESA</span></div>
+          <span>M-Pesa</span>
+        </div>
+        <div class="method-btn" onclick="selectMethod('bank', this)">
+          <i class="fa-solid fa-building-columns" style="font-size:1.3rem; color:var(--primary-blue);"></i>
+          <span>Bank</span>
+        </div>
+        <div class="method-btn" onclick="selectMethod('paypal', this)">
+          <i class="fa-brands fa-paypal" style="font-size:1.4rem; color:#003087;"></i>
+          <span>PayPal</span>
+        </div>
+      </div>
+
+      <form id="payment-form" onsubmit="processPayment(event)">
+        <!-- Dynamic Payment Inputs -->
+        <div id="card-fields">
+          <div class="form-group"><label>Card Number</label><input type="text" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19"></div>
+          <div class="form-group"><label>Cardholder Name</label><input type="text" class="form-input" placeholder="John Doe"></div>
+          <div class="inline-fields">
+            <div class="form-group"><label>Expiry Date</label><input type="text" class="form-input" placeholder="MM/YY" maxlength="5"></div>
+            <div class="form-group"><label>CVC / CVV</label><input type="password" class="form-input" placeholder="123" maxlength="4"></div>
+          </div>
+        </div>
+
+        <div id="mpesa-fields" style="display:none;">
+          <div class="form-group"><label>M-Pesa Phone Number</label><input type="tel" class="form-input" id="mpesa-phone" placeholder="07XX XXX XXX"></div>
+          <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">An STK Push prompt will be sent directly to your phone to complete the transaction.</p>
+        </div>
+
+        <div id="bank-fields" style="display:none;"><p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">You will be redirected securely to your banking institution to verify funds.</p></div>
+        <div id="paypal-fields" style="display:none;"><p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">You will be redirected to PayPal to complete authorization.</p></div>
+
+        <button type="submit" class="pay-btn" id="pay-submit-btn"><i class="fa-solid fa-lock"></i> Pay Securely</button>
+      </form>
+    </div>
+
+  </div>
+
+  <!-- LOADER OVERLAY -->
+  <div class="loader-overlay" id="loader">
+    <div class="spinner"></div>
+    <p style="font-weight:600; font-size:1.1rem;">Processing Transaction...</p>
+    <p style="font-size:0.85rem; opacity:0.8; margin-top:0.25rem;">Communicating with SmartFly payment servers.</p>
+  </div>
+
+  <!-- REAL-TIME E-RECEIPT MODAL -->
+  <div class="modal-overlay" id="receipt-modal">
+    <div class="modal-content" id="printable-receipt">
+      
+      <div class="receipt-header">
+        <div class="receipt-logo"><i class="fa-solid fa-plane-up"></i> Smart<span>Fly</span></div>
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-top:4px;">Official Payment E-Receipt & Booking Voucher</p>
+        <div class="receipt-status"><i class="fa-solid fa-circle-check"></i> Paid & Confirmed</div>
+      </div>
+
+      <div class="detail-row"><span class="detail-label">Booking Reference (PNR)</span><span class="detail-value" style="color:var(--primary-blue); font-size:1.1rem;" id="receipt-pnr">-</span></div>
+      <div class="detail-row"><span class="detail-label">Transaction Reference</span><span class="detail-value" id="receipt-txn">-</span></div>
+      <div class="detail-row"><span class="detail-label">Issued On</span><span class="detail-value" id="receipt-timestamp">-</span></div>
+      <div class="detail-row"><span class="detail-label">Passenger Name</span><span class="detail-value" id="receipt-passenger-name">-</span></div>
+      <div class="detail-row"><span class="detail-label">Flight Route</span><span class="detail-value" id="receipt-route">-</span></div>
+      <div class="detail-row"><span class="detail-label">Payment Method</span><span class="detail-value" id="receipt-method">CARD</span></div>
+      
+      <div class="divider"></div>
+
+      <div class="detail-row"><span class="detail-label" style="font-size:1rem; font-weight:700; color:var(--dark-slate);">Total Amount Paid</span><span class="detail-value" style="font-size:1.2rem; color:var(--primary-blue);" id="receipt-amount">-</span></div>
+
+      <!-- MANDATORY CHECK-IN PROMPT -->
+      <div class="notice-box">
+        <h4><i class="fa-solid fa-clock"></i> Mandatory Airport Check-In Deadlines</h4>
+        <p style="margin-top:0.25rem;">Please present this receipt along with a valid ID at the airport:</p>
+        <ul style="margin-left: 1.2rem; margin-top:0.4rem; line-height: 1.5;">
+          <li><strong>Domestic Flights:</strong> Check-in closes <strong>60 to 45 minutes</strong> before scheduled departure.</li>
+          <li><strong>International Flights:</strong> Check-in closes <strong>90 to 60 minutes</strong> before scheduled departure.</li>
+        </ul>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn-secondary" onclick="window.print()"><i class="fa-solid fa-download"></i> Download / Print E-Receipt</button>
+        <button class="btn-primary" onclick="finishBooking()">Return to Home</button>
+      </div>
+
     </div>
   </div>
 
   <script>
-    function getParam(n) { 
-      return new URLSearchParams(window.location.search).get(n); 
-    }
+    let activeMethod = 'CARD';
+    let bookingSession = {};
 
-    function fmtCurrency(amt) { 
-      try { 
-        return new Intl.NumberFormat(undefined, {
-          style: 'currency', 
-          currency: 'KES'
-        }).format(Number(amt)); 
-      } catch(e) { 
-        return amt ? `Ksh ${amt}` : 'Ksh 0'; 
-      } 
-    }
+    // 1. LOAD DATA FROM PASSENGER DETAILS PAGE ON LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      const bookingDataString = sessionStorage.getItem('smartflyBookingSession');
 
-    function fmtDate(iso) { 
-      try { 
-        if (!iso) return '—';
-        return new Date(iso).toLocaleDateString('en-US', {
-          month: 'short', 
-          day: 'numeric', 
-          year: 'numeric'
-        }); 
-      } catch(e) { 
-        return iso; 
-      } 
-    }
-
-    // Get booking context from URL params
-    const rawPrice = getParam('price');
-    const rawFare = getParam('fare');
-    
-    // Parse price - prefer price parameter, fallback to fare if it's numeric
-    let finalPrice = 0;
-    if (rawPrice && !isNaN(parseFloat(rawPrice))) {
-      finalPrice = parseFloat(rawPrice);
-    } else if (rawFare && !isNaN(parseFloat(rawFare))) {
-      finalPrice = parseFloat(rawFare);
-    }
-    
-    console.log('Payment page debug:', { rawPrice, rawFare, finalPrice });
-    
-    const ctx = {
-      from: getParam('from'),
-      to: getParam('to'),
-      depart: getParam('depart'),
-      ret: getParam('return'),
-      cls: getParam('class') || rawFare, // fare might be class type like 'business'
-      fare: finalPrice,
-      name: getParam('name'),
-      email: getParam('email'),
-      passport: getParam('passport'),
-      phone: getParam('phone'),
-      currency: getParam('currency') || 'KES'
-    };
-
-    // Extract airport codes from full airport strings
-    function getAirportCode(str) {
-      if (!str) return '—';
-      const match = str.match(/\(([A-Za-z]{3})\)$/);
-      return match ? match[1] : str.slice(0, 3).toUpperCase();
-    }
-
-    // Populate booking summary
-    document.getElementById('passengerName').textContent = ctx.name || '—';
-    document.getElementById('routeInfo').textContent = 
-      `${getAirportCode(ctx.from)} → ${getAirportCode(ctx.to)}`;
-    document.getElementById('departDate').textContent = fmtDate(ctx.depart);
-    
-    if (ctx.ret) {
-      document.getElementById('returnDateRow').style.display = 'flex';
-      document.getElementById('returnDate').textContent = fmtDate(ctx.ret);
-    }
-    
-    document.getElementById('classInfo').textContent = ctx.cls || '—';
-    document.getElementById('emailInfo').textContent = ctx.email || '—';
-    document.getElementById('phoneInfo').textContent = ctx.phone || '—';
-    
-    // Display total with fallback
-    const displayAmount = ctx.fare > 0 ? fmtCurrency(ctx.fare) : 'Ksh 0';
-    document.getElementById('totalAmount').textContent = displayAmount;
-    console.log('Total amount set to:', displayAmount);
-
-    // Payment method selection and form switching
-    let currentPaymentMethod = 'card';
-
-    document.querySelectorAll('.payment-method').forEach(method => {
-      method.addEventListener('click', function() {
-        document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('active'));
-        this.classList.add('active');
-        
-        const methodId = this.getAttribute('data-method');
-        currentPaymentMethod = methodId;
-        
-        // Hide all payment forms
-        document.querySelectorAll('.payment-form').forEach(form => {
-          form.classList.remove('active');
-        });
-        
-        // Show selected payment form
-        const formId = methodId + 'Form';
-        const form = document.getElementById(formId);
-        if (form) {
-          form.classList.add('active');
-        }
-      });
-    });
-
-    // Card number formatting
-    const cardNumberEl = document.getElementById('cardNumber');
-    if (cardNumberEl) {
-      cardNumberEl.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\s/g, '');
-        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
-        e.target.value = formattedValue;
-      });
-    }
-
-    // Expiry date formatting
-    const cardExpEl = document.getElementById('cardExp');
-    if (cardExpEl) {
-      cardExpEl.addEventListener('input', function(e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length >= 2) {
-          value = value.slice(0, 2) + '/' + value.slice(2, 4);
-        }
-        e.target.value = value;
-      });
-    }
-
-    // CVC validation (numbers only)
-    const cardCVCEl = document.getElementById('cardCVC');
-    if (cardCVCEl) {
-      cardCVCEl.addEventListener('input', function(e) {
-        e.target.value = e.target.value.replace(/\D/g, '');
-      });
-    }
-
-    // M-Pesa phone validation (real-time)
-    const mpesaPhoneEl = document.getElementById('mpesaPhone');
-    if (mpesaPhoneEl) {
-      mpesaPhoneEl.addEventListener('input', function() {
-        // Clear error when user starts typing
-        document.getElementById('mpesaPhoneError').style.display = 'none';
-        mpesaPhoneEl.style.borderColor = '#e6e9ef';
-      });
-      
-      // Real-time validation on blur
-      mpesaPhoneEl.addEventListener('blur', function() {
-        if (this.value.trim()) {
-          try {
-            validator.validatePhone(this.value.trim(), true, 'M-Pesa Phone');
-            document.getElementById('mpesaPhoneError').style.display = 'none';
-            mpesaPhoneEl.style.borderColor = '#e6e9ef';
-          } catch (e) {
-            document.getElementById('mpesaPhoneError').textContent = e.message;
-            document.getElementById('mpesaPhoneError').style.display = 'block';
-            mpesaPhoneEl.style.borderColor = '#c8102e';
-          }
-        }
-      });
-    }
-
-    // Card validation (real-time)
-    const cardNumberEl = document.getElementById('cardNumber');
-    if (cardNumberEl) {
-      cardNumberEl.addEventListener('input', function() {
-        document.getElementById('cardNumberError').style.display = 'none';
-        cardNumberEl.style.borderColor = '#e6e9ef';
-      });
-      
-      cardNumberEl.addEventListener('blur', function() {
-        if (this.value.trim()) {
-          try {
-            validator.validateCardNumber(this.value.trim(), 'Card Number');
-            document.getElementById('cardNumberError').style.display = 'none';
-            cardNumberEl.style.borderColor = '#e6e9ef';
-          } catch (e) {
-            document.getElementById('cardNumberError').textContent = e.message;
-            document.getElementById('cardNumberError').style.display = 'block';
-            cardNumberEl.style.borderColor = '#c8102e';
-          }
-        }
-      });
-    }
-
-    const cardNameEl = document.getElementById('cardName');
-    if (cardNameEl) {
-      cardNameEl.addEventListener('input', function() {
-        document.getElementById('cardNameError').style.display = 'none';
-        cardNameEl.style.borderColor = '#e6e9ef';
-      });
-      
-      cardNameEl.addEventListener('blur', function() {
-        if (this.value.trim()) {
-          try {
-            validator.validateCardHolder(this.value.trim(), 'Cardholder Name');
-            document.getElementById('cardNameError').style.display = 'none';
-            cardNameEl.style.borderColor = '#e6e9ef';
-          } catch (e) {
-            document.getElementById('cardNameError').textContent = e.message;
-            document.getElementById('cardNameError').style.display = 'block';
-            cardNameEl.style.borderColor = '#c8102e';
-          }
-        }
-      });
-    }
-
-    const cardExpEl = document.getElementById('cardExp');
-    if (cardExpEl) {
-      cardExpEl.addEventListener('input', function() {
-        document.getElementById('cardExpError').style.display = 'none';
-        cardExpEl.style.borderColor = '#e6e9ef';
-      });
-      
-      cardExpEl.addEventListener('blur', function() {
-        if (this.value.trim()) {
-          try {
-            validator.validateCardExpiry(this.value.trim(), 'Expiry Date');
-            document.getElementById('cardExpError').style.display = 'none';
-            cardExpEl.style.borderColor = '#e6e9ef';
-          } catch (e) {
-            document.getElementById('cardExpError').textContent = e.message;
-            document.getElementById('cardExpError').style.display = 'block';
-            cardExpEl.style.borderColor = '#c8102e';
-          }
-        }
-      });
-    }
-
-    const cardCVCEl = document.getElementById('cardCVC');
-    if (cardCVCEl) {
-      cardCVCEl.addEventListener('input', function() {
-        document.getElementById('cardCVCError').style.display = 'none';
-        cardCVCEl.style.borderColor = '#e6e9ef';
-      });
-      
-      cardCVCEl.addEventListener('blur', function() {
-        if (this.value.trim()) {
-          try {
-            validator.validateCVV(this.value.trim(), 'CVC');
-            document.getElementById('cardCVCError').style.display = 'none';
-            cardCVCEl.style.borderColor = '#e6e9ef';
-          } catch (e) {
-            document.getElementById('cardCVCError').textContent = e.message;
-            document.getElementById('cardCVCError').style.display = 'block';
-            cardCVCEl.style.borderColor = '#c8102e';
-          }
-        }
-      });
-    }
-
-    // M-Pesa phone validation
-    function validateMpesaPhone(phone) {
-      const cleaned = phone.replace(/[^\d+]/g, '');
-      
-      // Must start with +254 for Kenya M-Pesa
-      if (!cleaned.startsWith('+254')) {
-        return { valid: false, message: 'M-Pesa requires a Kenyan phone number (+254 format)' };
-      }
-      
-      // Check Kenya M-Pesa format: +254 followed by 7 or 1, then 8 digits
-      const kenyaPattern = /^\+254(7|1)[0-9]{8}$/;
-      if (!kenyaPattern.test(cleaned)) {
-        return { valid: false, message: 'Invalid Kenyan phone number format. Use format: +254 7XX XXX XXX' };
-      }
-      
-      return { valid: true };
-    }
-
-    // Payment validation function using comprehensive validation
-    function validatePaymentForm() {
-      const validator = new ValidationUtils();
-      const resEl = document.getElementById('result');
-      
-      // Clear all payment errors
-      const paymentFields = ['cardNumber', 'cardName', 'cardExp', 'cardCVC', 'mpesaPhone', 'mpesaName', 'bankName', 'bankNameField', 'accountNumber', 'routingNumber', 'paypalEmail', 'paypalName'];
-      paymentFields.forEach(fieldId => {
-        const field = document.getElementById(fieldId);
-        if (field) {
-          field.style.borderColor = '#e6e9ef';
-          const errorEl = document.getElementById(`${fieldId}Error`);
-          if (errorEl) {
-            errorEl.style.display = 'none';
-          }
-        }
-      });
-      
-      if (currentPaymentMethod === 'card') {
-        const cardNumber = document.getElementById('cardNumber').value.trim();
-        const cardName = document.getElementById('cardName').value.trim();
-        const cardExp = document.getElementById('cardExp').value.trim();
-        const cardCVC = document.getElementById('cardCVC').value.trim();
-        
-        let hasErrors = false;
-        
-        // Validate card number
-        try {
-          validator.validateCardNumber(cardNumber, 'Card Number');
-        } catch (e) {
-          document.getElementById('cardNumberError').textContent = e.message;
-          document.getElementById('cardNumberError').style.display = 'block';
-          document.getElementById('cardNumber').style.borderColor = '#c8102e';
-          hasErrors = true;
-        }
-        
-        // Validate card holder name
-        try {
-          validator.validateCardHolder(cardName, 'Cardholder Name');
-        } catch (e) {
-          document.getElementById('cardNameError').textContent = e.message;
-          document.getElementById('cardNameError').style.display = 'block';
-          document.getElementById('cardName').style.borderColor = '#c8102e';
-          hasErrors = true;
-        }
-        
-        // Validate card expiry
-        try {
-          validator.validateCardExpiry(cardExp, 'Expiry Date');
-        } catch (e) {
-          document.getElementById('cardExpError').textContent = e.message;
-          document.getElementById('cardExpError').style.display = 'block';
-          document.getElementById('cardExp').style.borderColor = '#c8102e';
-          hasErrors = true;
-        }
-        
-        // Validate CVC
-        try {
-          validator.validateCVV(cardCVC, 'CVC');
-        } catch (e) {
-          document.getElementById('cardCVCError').textContent = e.message;
-          document.getElementById('cardCVCError').style.display = 'block';
-          document.getElementById('cardCVC').style.borderColor = '#c8102e';
-          hasErrors = true;
-        }
-        
-        if (hasErrors) {
-          resEl.className = 'result error';
-          resEl.innerHTML = '❌ Please fix the validation errors';
-          return false;
-        }
-        return true;
-        
-      } else if (currentPaymentMethod === 'mpesa') {
-        const mpesaPhone = document.getElementById('mpesaPhone').value.trim();
-        const mpesaName = document.getElementById('mpesaName').value.trim();
-        
-        let hasErrors = false;
-        
-        // Validate M-Pesa phone number (Kenyan format)
-        try {
-          validator.validatePhone(mpesaPhone, true, 'M-Pesa Phone');
-        } catch (e) {
-          document.getElementById('mpesaPhoneError').textContent = e.message;
-          document.getElementById('mpesaPhoneError').style.display = 'block';
-          document.getElementById('mpesaPhone').style.borderColor = '#c8102e';
-          hasErrors = true;
-        }
-        
-        // Validate name
-        try {
-          validator.validateName(mpesaName, 'Full Name');
-        } catch (e) {
-          // Create error element if it doesn't exist
-          let errorEl = document.getElementById('mpesaNameError');
-          if (!errorEl) {
-            errorEl = document.createElement('small');
-            errorEl.id = 'mpesaNameError';
-            errorEl.style.color = '#c8102e';
-            errorEl.style.display = 'none';
-            errorEl.style.fontSize = '12px';
-            document.getElementById('mpesaName').parentNode.appendChild(errorEl);
-          }
-          errorEl.textContent = e.message;
-          errorEl.style.display = 'block';
-          document.getElementById('mpesaName').style.borderColor = '#c8102e';
-          hasErrors = true;
-        }
-        
-        if (hasErrors) {
-          resEl.className = 'result error';
-          resEl.innerHTML = '❌ Please fix the validation errors';
-          return false;
-        }
-        return true;
-        
-      } else if (currentPaymentMethod === 'bank') {
-        const bankName = document.getElementById('bankName').value.trim();
-        const bankNameField = document.getElementById('bankNameField').value.trim();
-        const accountNumber = document.getElementById('accountNumber').value.trim();
-        const routingNumber = document.getElementById('routingNumber').value.trim();
-        
-        if (!bankName || !bankNameField || !accountNumber || !routingNumber) {
-          resEl.className = 'result error';
-          resEl.innerHTML = '❌ Please fill in all bank details';
-          return false;
-        }
-        return true;
-        
-      } else if (currentPaymentMethod === 'paypal') {
-        const paypalEmail = document.getElementById('paypalEmail').value.trim();
-        const paypalName = document.getElementById('paypalName').value.trim();
-        
-        let hasErrors = false;
-        
-        // Validate PayPal email
-        try {
-          validator.validateEmail(paypalEmail, 'PayPal Email');
-        } catch (e) {
-          // Create error element if it doesn't exist
-          let errorEl = document.getElementById('paypalEmailError');
-          if (!errorEl) {
-            errorEl = document.createElement('small');
-            errorEl.id = 'paypalEmailError';
-            errorEl.style.color = '#c8102e';
-            errorEl.style.display = 'none';
-            errorEl.style.fontSize = '12px';
-            document.getElementById('paypalEmail').parentNode.appendChild(errorEl);
-          }
-          errorEl.textContent = e.message;
-          errorEl.style.display = 'block';
-          document.getElementById('paypalEmail').style.borderColor = '#c8102e';
-          hasErrors = true;
-        }
-        
-        // Validate PayPal name
-        try {
-          validator.validateName(paypalName, 'PayPal Name');
-        } catch (e) {
-          // Create error element if it doesn't exist
-          let errorEl = document.getElementById('paypalNameError');
-          if (!errorEl) {
-            errorEl = document.createElement('small');
-            errorEl.id = 'paypalNameError';
-            errorEl.style.color = '#c8102e';
-            errorEl.style.display = 'none';
-            errorEl.style.fontSize = '12px';
-            document.getElementById('paypalName').parentNode.appendChild(errorEl);
-          }
-          errorEl.textContent = e.message;
-          errorEl.style.display = 'block';
-          document.getElementById('paypalName').style.borderColor = '#c8102e';
-          hasErrors = true;
-        }
-        
-        if (hasErrors) {
-          resEl.className = 'result error';
-          resEl.innerHTML = '❌ Please fix the validation errors';
-          return false;
-        }
-        return true;
-      }
-      return false;
-    }
-
-    // Pay button handler
-    document.getElementById('payBtn').addEventListener('click', async () => {
-      const btn = document.getElementById('payBtn');
-      const resEl = document.getElementById('result');
-      
-      if (!validatePaymentForm()) {
+      if (!bookingDataString) {
+        document.body.innerHTML = '<div style="text-align:center; padding: 40px;"><h1>Booking Session Expired</h1><p>Your session has expired. Please start a new search.</p><a href="index.html">Go to Homepage</a></div>';
         return;
       }
 
-      btn.disabled = true;
-      resEl.className = 'result';
-      resEl.innerHTML = '⏳ Processing ' + currentPaymentMethod.toUpperCase() + ' payment...';
+      bookingSession = JSON.parse(bookingDataString);
+      const flight = bookingSession.selectedFlight;
+      const passenger = bookingSession.passengers[0]; // Assuming one passenger for now
+      const search = bookingSession.searchParams;
 
-      // For M-Pesa, show specific message about STK push
-      if (currentPaymentMethod === 'mpesa') {
-        resEl.innerHTML = '📱 Sending M-Pesa STK Push prompt to your phone...';
-      }
+      // Populate Summary Sidebar
+      document.getElementById('display-name').innerText = `${passenger.firstName} ${passenger.lastName}`;
+      document.getElementById('display-route').innerText = `${search.origin} → ${search.destination}`;
+      document.getElementById('display-date').innerText = new Date(search.departure).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      document.getElementById('display-class').innerText = flight.fareClass;
+      document.getElementById('display-email').innerText = passenger.email;
+      document.getElementById('display-phone').innerText = passenger.phone;
+      document.getElementById('display-total').innerText = `Ksh ${flight.price.toLocaleString()}`;
+      document.getElementById('display-flight-no').innerText = flight.flightNumber;
+      document.getElementById('pay-submit-btn').innerHTML = `<i class="fa-solid fa-lock"></i> Pay Ksh ${flight.price.toLocaleString()} Securely`;
+    });
 
-      // Simulate payment processing
-      setTimeout(async () => {
-        let bookingRef = 'BK' + Math.random().toString(36).slice(2, 9).toUpperCase();
-        
-        // Prepare booking data to send to backend
-        const bookingData = {
-          id: bookingRef,
-          name: ctx.name || '',
-          email: ctx.email || '',
-          passport: ctx.passport || '',
-          phone: ctx.phone || '',
-          mpesa_phone: currentPaymentMethod === 'mpesa' ? document.getElementById('mpesaPhone').value.trim() : ctx.phone || '',
-          country: ctx.country || '',
-          from: ctx.from || '',
-          to: ctx.to || '',
-          depart: ctx.depart || '',
-          return: ctx.ret || '',
-          class: ctx.cls || 'economy',
-          fare: ctx.fare || '0',
-          amount: parseFloat(ctx.fare) || 0,
-          currency: ctx.currency || 'KES',
-          payment_method: currentPaymentMethod
-        };
+    // 2. TAB METHOD SWITCHER
+    function selectMethod(method, element) {
+      document.querySelectorAll('.method-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+      activeMethod = method.toUpperCase();
 
-        // Send booking data to backend
-        try {
-          // Validate required fields
-          const passengerName = ctx.name || 'Test User';
-          const passengerPassport = ctx.passport || 'TEST123';
-          
-          if (!passengerName || !passengerPassport) {
-            throw new Error('Missing required information: name and passport are required');
-          }
+      document.getElementById('card-fields').style.display = method === 'card' ? 'block' : 'none';
+      document.getElementById('mpesa-fields').style.display = method === 'mpesa' ? 'block' : 'none';
+      document.getElementById('bank-fields').style.display = method === 'bank' ? 'block' : 'none';
+      document.getElementById('paypal-fields').style.display = method === 'paypal' ? 'block' : 'none';
+    }
 
-          console.log('Sending booking data:', {
-            name: passengerName,
-            passport: passengerPassport,
-            flight: 'KQ500',
-            email: ctx.email || 'test@example.com',
-            amount: parseFloat(ctx.fare) || 0,
-            payment_method: currentPaymentMethod,
-            phone: bookingData.mpesa_phone
-          });
+    // 3. PROCESS PAYMENT & SAVE TO ADMIN DATABASE IN REAL TIME
+    async function processPayment(e) {
+      e.preventDefault();
+      
+      const loader = document.getElementById('loader');
+      loader.style.display = 'flex';
 
-          const response = await fetch('/api/register', {
+      const flight = bookingSession.selectedFlight;
+      const passenger = bookingSession.passengers[0];
+
+      // Prepare data for the backend API
+      const apiPayload = {
+          passenger_name: `${passenger.firstName} ${passenger.lastName}`,
+          passport_number: passenger.passportNumber,
+          flight_id: flight.flightNumber,
+          seat: bookingSession.selectedSeats.join(',') || "AUTO",
+          amount: flight.price,
+          payment_method: activeMethod,
+          email: passenger.email,
+          phone: passenger.phone
+      };
+
+      try {
+        const response = await fetch('/api/bookings', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              name: passengerName,
-              passport: passengerPassport,
-              flight: ctx.from && ctx.to ? `${ctx.from}-${ctx.to}` : 'KQ500',
-              from: ctx.from || 'NBO',
-              to: ctx.to || 'LHR',
-              email: ctx.email || 'test@example.com',
-              seat_class: ctx.cls || 'Economy',
-              amount: parseFloat(ctx.fare) || 0,
-              payment_method: currentPaymentMethod,
-              currency: 'KES',
-              phone: bookingData.mpesa_phone,
-              mpesa_phone: bookingData.mpesa_phone
-            })
-          });
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(apiPayload)
+        });
 
-          console.log('API Response status:', response.status);
+        const result = await response.json();
 
-          if (response.ok) {
-            const bookingData = await response.json();
-            bookingRef = bookingData.booking_ref || bookingRef; // Use API response booking ref
-            console.log('Booking registered successfully:', bookingData);
-          } else {
-            const errorData = await response.json();
-            console.error('Failed to register booking:', errorData);
-            throw new Error(errorData.error || errorData.detail || 'Booking registration failed');
-          }
-        } catch (err) {
-          console.error('Error registering booking:', err);
-          resEl.className = 'result error';
-          resEl.innerHTML = `❌ Booking failed: ${err.message}`;
-          btn.disabled = false;
-          return;
-        }
-
-        // Store in localStorage for reference
-        try {
-          localStorage.setItem('lastBooking', JSON.stringify({
-            ref: bookingRef,
-            ctx: ctx,
-            paymentMethod: currentPaymentMethod
-          }));
-        } catch(e) {}
-
-        const params = new URLSearchParams();
-        params.set('ref', bookingRef);
-        params.set('method', currentPaymentMethod);
-        if (ctx.from) params.set('from', ctx.from);
-        if (ctx.to) params.set('to', ctx.to);
-        if (ctx.depart) params.set('depart', ctx.depart);
-        if (ctx.ret) params.set('return', ctx.ret);
-        if (ctx.cls) params.set('class', ctx.cls);
-        if (ctx.fare) params.set('fare', ctx.fare);
-        if (ctx.name) params.set('name', ctx.name);
-        if (ctx.email) params.set('email', ctx.email);
-        if (ctx.passport) params.set('passport', ctx.passport);
-        if (ctx.phone) params.set('phone', ctx.phone);
-
-        const methodEmoji = {
-          'card': '💳',
-          'mpesa': '📱',
-          'bank': '🏦',
-          'paypal': '🅿️'
-        };
-
-        resEl.className = 'result success';
-        
-        if (currentPaymentMethod === 'mpesa') {
-          resEl.innerHTML = `✅ M-Pesa STK Push sent successfully!<br>Check your phone for the payment prompt.<br>Booking reference: <strong>${bookingRef}</strong><br>Redirecting to your booking...`;
-        } else {
-          resEl.innerHTML = `✅ Payment successful via ${methodEmoji[currentPaymentMethod]} ${currentPaymentMethod.toUpperCase()}!<br>Booking reference: <strong>${bookingRef}</strong><br>Redirecting to your booking...`;
+        if (!response.ok) {
+            throw new Error(result.error || 'Booking failed on the server.');
         }
         
-        setTimeout(() => {
-          window.location.href = '/payment-success.html?' + params.toString();
-        }, 3000);
-      }, 2000);
-    });
+        // Payment successful, show receipt
+        loader.style.display = 'none';
+        
+        // Stamp current timestamp
+        const now = new Date();
+        const formattedTimestamp = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    // Cancel button handler
-    document.getElementById('cancelBtn').addEventListener('click', () => {
-      if (confirm('Are you sure you want to cancel this payment?')) {
-        window.location.href = '/booking.html';
+        // Populate Receipt Modal
+        document.getElementById('receipt-pnr').innerText = result.booking.pnr;
+        document.getElementById('receipt-txn').innerText = result.booking.transaction_id;
+        document.getElementById('receipt-timestamp').innerText = formattedTimestamp;
+        document.getElementById('receipt-passenger-name').innerText = apiPayload.passenger_name;
+        document.getElementById('receipt-route').innerText = `${bookingSession.searchParams.origin} → ${bookingSession.searchParams.destination}`;
+        document.getElementById('receipt-method').innerText = activeMethod;
+        document.getElementById('receipt-amount').innerText = `Ksh ${apiPayload.amount.toLocaleString()}`;
+
+        // Display Receipt Modal
+        document.getElementById('receipt-modal').style.display = 'flex';
+
+      } catch (error) {
+          loader.style.display = 'none';
+          alert(`An error occurred: ${error.message}`);
       }
-    });
+    }
+
+    function finishBooking() {
+      sessionStorage.clear(); // Clear all session data after successful booking
+      window.location.href = 'index.html';
+    }
   </script>
 </body>
 </html>

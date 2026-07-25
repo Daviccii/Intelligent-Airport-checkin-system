@@ -1,4 +1,4 @@
-# ...existing code...
+
 import csv
 from flask import Flask, request, jsonify, send_from_directory, redirect, send_file, Response, stream_with_context
 from flask_cors import CORS
@@ -10,7 +10,7 @@ import json
 import os
 from dotenv import load_dotenv
 import threading
-from PIL import Image, ImageChops, ImageStat
+from PIL import Image, ImageChops, ImageStat, ImageDraw, ImageFont
 import io
 import random
 from datetime import datetime, timedelta, timezone
@@ -51,12 +51,17 @@ except Exception:
 # Basic file/directory configuration (safe defaults)
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend'))
+# Portal-specific directories
+PASSENGER_DIR = os.path.join(FRONTEND_DIR, 'passenger')
 ADMIN_DIR = os.path.join(FRONTEND_DIR, 'admin')
+STAFF_DIR = os.path.join(FRONTEND_DIR, 'staff')
+MEMBER_DIR = os.path.join(FRONTEND_DIR, 'member')
 EVENTS_FILE = os.path.join(BASE_DIR, 'events.json')
 PASSENGER_FILE = os.path.join(BASE_DIR, 'passengers.json')
 SESSIONS_FILE = os.path.join(BASE_DIR, 'sessions.json')
 ACCESS_CODES_FILE = os.path.join(BASE_DIR, 'access_codes.json')
 ADMIN_USERS_FILE = os.path.join(BASE_DIR, 'admin_users.json')
+MEMBER_USERS_FILE = os.path.join(BASE_DIR, 'member_users.json')
 HOLDS_FILE = os.path.join(BASE_DIR, 'holds.json')
 OPENAPI_FILE = os.path.join(BASE_DIR, 'openapi.json')
 BOOKINGS_FILE = os.path.join(BASE_DIR, 'bookings.json')
@@ -93,6 +98,7 @@ CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
 # ---------------------------------------------------------------------------
 # Helper Functions
+# ---------------------------------------------------------------------------
 def _load_json_file(filepath, default=None):
     """Load JSON from file, return default if not found or invalid."""
     try:
@@ -113,7 +119,6 @@ def _save_json_file(filepath, data):
         print(f'Error saving to {filepath}: {e}')
         return False
 
-
 def _normalize_phone(phone):
     if not phone:
         return ''
@@ -121,7 +126,6 @@ def _normalize_phone(phone):
     if normalized.startswith('00'):
         normalized = '+' + normalized[2:]
     return normalized
-
 
 def _smtp_send_message(msg):
     smtp_host = os.getenv('SMTP_HOST')
@@ -152,7 +156,6 @@ def _smtp_send_message(msg):
         except Exception:
             pass
 
-
 def _send_sms_via_gateway(phone, message):
     gateway = os.getenv('SMS_GATEWAY_DOMAIN')
     if not gateway:
@@ -165,7 +168,6 @@ def _send_sms_via_gateway(phone, message):
     msg.set_content(message)
     _smtp_send_message(msg)
     return True
-
 
 def _send_sms_via_twilio(phone, message):
     import base64
@@ -194,7 +196,6 @@ def _send_sms_via_twilio(phone, message):
             raise RuntimeError(f'Twilio SMS failed with status {resp.status}')
     return True
 
-
 def _send_sms_message(phone, message):
     phone = _normalize_phone(phone)
     if not phone:
@@ -204,7 +205,6 @@ def _send_sms_message(phone, message):
     if os.getenv('SMS_GATEWAY_DOMAIN'):
         return _send_sms_via_gateway(phone, message)
     raise RuntimeError('No SMS provider configured')
-
 
 def send_booking_confirmation_sms(passenger, booking_ref, flight_details):
     """Send booking confirmation SMS to the passenger."""
@@ -264,7 +264,6 @@ def send_booking_confirmation_sms(passenger, booking_ref, flight_details):
     })
     return True
 
-
 def _get_session_from_request(request):
     """Extract session token from request headers or cookies."""
     token = request.headers.get('X-SESSION') or request.headers.get('Authorization', '')
@@ -291,7 +290,7 @@ def _require_session(request, require_role=None):
     expires_at = session_data.get('expires_at')
     if expires_at:
         try:
-            exp_dt = datetime.fromisoformat(expires_at)
+            exp_dt = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
             if exp_dt < datetime.now(timezone.utc):
                 sessions.pop(token, None)
                 _save_json_file(SESSIONS_FILE, sessions)
@@ -305,8 +304,7 @@ def _require_session(request, require_role=None):
     
     return session_data
 
-
-def _create_session(username, role='staff', ttl_seconds=86400):
+def _create_session(user_identifier, role, extra_data=None, ttl_seconds=86400):
     """Create a session token and persist it to sessions.json."""
     try:
         sessions = _load_json_file(SESSIONS_FILE, {})
@@ -314,29 +312,90 @@ def _create_session(username, role='staff', ttl_seconds=86400):
             sessions = {}
     except Exception:
         sessions = {}
-
+    
     token = secrets.token_urlsafe(32)
     now = datetime.now(timezone.utc)
     session_entry = {
-        'username': username,
+        'user_id': user_identifier,
+        'username': user_identifier,
         'role': role,
         'created_at': now.isoformat(),
         'expires_at': (now + timedelta(seconds=ttl_seconds)).isoformat()
     }
+    if extra_data:
+        session_entry.update(extra_data)
 
     sessions[token] = session_entry
     _save_json_file(SESSIONS_FILE, sessions)
-    return token, session_entry
+    
+    public_session_entry = {
+        'expires': session_entry['expires_at'],
+        'role': session_entry['role'],
+        'username': session_entry.get('username'),
+        'user_id': session_entry.get('user_id')
+    }
+    return token, public_session_entry
 
-# Register booking endpoints after helper functions are defined
-# ---------------------------------------------------------------------------
-# Helper: minimal admin session check for protected admin HTML pages.
-# Accepts either the session cookie set by the frontend login flow or a Bearer
-# token header, and only controls access to static admin HTML. API routes still
-# rely on their own auth decorators.
+def _init_admin_users_from_env():
+    # If no admin user file exists, but env vars present, create hashed entry
+    users = _load_json_file(ADMIN_USERS_FILE, {})
+    if users:
+        return users
+    admin_user = os.getenv('ADMIN_USER')
+    admin_pass = os.getenv('ADMIN_PASS')
+    if admin_user and admin_pass:
+        try:
+            ph = bcrypt.hashpw(admin_pass.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            users = {admin_user: {'password_hash': ph}}
+            _save_json_file(ADMIN_USERS_FILE, users)
+            return users
+        except Exception:
+            return {}
+    return {}
+def _delete_session(token):
+    """Delete a session token."""
+    try:
+        sessions = _load_json_file(SESSIONS_FILE, {})
+        if token in sessions:
+            del sessions[token]
+            _save_json_file(SESSIONS_FILE, sessions)
+    except Exception:
+        pass
+
+def _compute_baggage_fee(baggage_count: int):
+    """Simple baggage fee rule: first bag free, each extra bag $50."""
+    try:
+        n = int(baggage_count or 0)
+    except Exception:
+        n = 0
+    if n <= 1:
+        return 0
+    return 50 * (n - 1)
+
+def _write_env_file(updates: dict):
+    """Write key-value pairs to .env file (best-effort)."""
+    # This is a simplified implementation. A more robust one would parse existing .env.
+    with open(os.path.join(BASE_DIR, '.env'), 'a') as f:
+        f.write('\n' + '\n'.join(f'{k}="{v}"' for k, v in updates.items() if v is not None))
+
+
 def _has_admin_session():
     try:
         return bool(_require_session(request, require_role='admin'))
+    except Exception:
+        return False
+
+
+def _has_staff_session():
+    try:
+        return bool(_require_session(request, require_role='staff'))
+    except Exception:
+        return False
+
+
+def _has_member_session():
+    try:
+        return bool(_require_session(request, require_role='member'))
     except Exception:
         return False
 
@@ -373,6 +432,10 @@ def _generate_staff_id():
         # Fallback to random ID if anything fails
         return f"SF-{datetime.now(timezone.utc).year}-{secrets.token_hex(4).upper()}"
 
+# ---------------------------------------------------------------------------
+# API Routes
+# ---------------------------------------------------------------------------
+
 @app.route('/api/admin/settings', methods=['GET', 'POST'])
 def api_admin_settings():
     """Get or save admin settings"""
@@ -395,6 +458,22 @@ def api_admin_settings():
             'email_notifications': True,
             'sms_notifications': False,
             'slack_notifications': False,
+            # Notification provider defaults
+            'sms_provider': os.getenv('SMS_PROVIDER', 'mojawave'),
+            'mojawave_api_key': os.getenv('MOJAWAVE_API_KEY', ''),
+            'sendly_api_key': os.getenv('SENDLY_API_KEY', ''),
+            'azure_communication_connection_string': os.getenv('AZURE_COMMUNICATION_CONNECTION_STRING', ''),
+            'sms_sender_id': os.getenv('SMS_SENDER_ID', 'SmartFly Airlines'),
+            'email_provider': os.getenv('EMAIL_PROVIDER', 'resend'),
+            'resend_api_key': os.getenv('RESEND_API_KEY', ''),
+            'sendgrid_api_key': os.getenv('SENDGRID_API_KEY', ''),
+            'email_from': os.getenv('EMAIL_FROM', 'SmartFly <smartfly01@gmail.com>'),
+            'email_from_name': os.getenv('EMAIL_FROM_NAME', 'SmartFly Airways'),
+            'smtp_host': os.getenv('SMTP_HOST', ''),
+            'smtp_port': int(os.getenv('SMTP_PORT') or 0),
+            'smtp_user': os.getenv('SMTP_USER', ''),
+            'smtp_pass': os.getenv('SMTP_PASS', ''),
+            'smtp_starttls': os.getenv('SMTP_STARTTLS', 'false').lower() in ('1','true','yes'),
             'notify_email': '',
             'maintenance_mode': False,
             'maintenance_message': '',
@@ -417,7 +496,11 @@ def api_admin_settings():
                 'enable_mfa', 'enable_audit_log',
                 'email_notifications', 'sms_notifications', 'slack_notifications',
                 'notify_email', 'maintenance_mode', 'maintenance_message',
-                'backup_frequency'
+                'backup_frequency',
+                # Notification provider keys
+                'sms_provider', 'mojawave_api_key', 'sendly_api_key', 'azure_communication_connection_string', 'sms_sender_id',
+                'email_provider', 'resend_api_key', 'sendgrid_api_key', 'email_from', 'email_from_name',
+                'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_starttls'
             }
             clean = {k: payload.get(k) for k in allowed_keys if k in payload}
             existing = _load_json_file(SETTINGS_FILE, {})
@@ -425,6 +508,36 @@ def api_admin_settings():
                 existing = {}
             to_save = {**existing, **clean}
             _save_json_file(SETTINGS_FILE, to_save)
+            # Also apply provider values to runtime environment and notification service
+            try:
+                # Update environment variables for persistence in current process
+                env_map = {
+                    'SMS_PROVIDER': to_save.get('sms_provider'),
+                    'MOJAWAVE_API_KEY': to_save.get('mojawave_api_key'),
+                    'SENDLY_API_KEY': to_save.get('sendly_api_key'),
+                    'AZURE_COMMUNICATION_CONNECTION_STRING': to_save.get('azure_communication_connection_string'),
+                    'SMS_SENDER_ID': to_save.get('sms_sender_id'),
+                    'EMAIL_PROVIDER': to_save.get('email_provider'),
+                    'RESEND_API_KEY': to_save.get('resend_api_key'),
+                    'SENDGRID_API_KEY': to_save.get('sendgrid_api_key'),
+                    'EMAIL_FROM': to_save.get('email_from'),
+                    'EMAIL_FROM_NAME': to_save.get('email_from_name'),
+                    'SMTP_HOST': to_save.get('smtp_host'),
+                    'SMTP_PORT': str(to_save.get('smtp_port') or ''),
+                    'SMTP_USER': to_save.get('smtp_user'),
+                    'SMTP_PASS': to_save.get('smtp_pass'),
+                    'SMTP_STARTTLS': 'true' if to_save.get('smtp_starttls') else 'false'
+                }
+                for k, v in env_map.items():
+                    if v is None:
+                        continue
+                    if v == '':
+                        # do not override real env if empty
+                        continue
+                    os.environ[k] = str(v)
+
+            except Exception:
+                pass
             return jsonify({'ok': True}), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 500
@@ -645,13 +758,6 @@ def api_staff_profile():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-
-# Basic page routes for static frontend
-@app.route('/')
-def serve_root():
-    return send_from_directory(FRONTEND_DIR, 'index.html')
-
 # ---- Activities API (admin dashboard support) ---------------------------------------
 @app.route('/api/activities', methods=['GET'])
 def api_get_activities():
@@ -686,6 +792,7 @@ def api_get_activities_checkins():
 @app.route('/api/activities/payments', methods=['GET'])
 def api_get_activities_payments():
     try:
+        # This is the more robust version of the function.
         # Get payment activities only. Booking activities already log payment metadata separately.
         payment_items = get_payments_log() or []
 
@@ -786,22 +893,6 @@ def api_delete_payment(payment_id):
         print(f"Error deleting payment: {e}")
         return jsonify({'error': str(e)}), 500
 
-
-    """Allow logging a new activity from the frontend (optional)."""
-    try:
-        payload = request.get_json(silent=True) or {}
-        activity_type = payload.get('type')
-        data = payload.get('data') or {}
-        if not activity_type:
-            return jsonify({'error': 'missing_type'}), 400
-        item = log_activity(activity_type, data)
-        if not item:
-            return jsonify({'error': 'log_failed'}), 500
-        return jsonify({'ok': True, 'activity': item}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
 # ---- Core Data Endpoints (flights, passengers, bookings) ---------------------------
 def _load_flights():
     """Load flights from flights.json file"""
@@ -813,129 +904,21 @@ def _load_flights():
         print(f'Error loading flights: {e}')
     return []
 
-def _load_bookings():
-    """Load bookings from bookings.json file"""
-    try:
-        if os.path.exists(BOOKINGS_FILE):
-            with open(BOOKINGS_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f)
-    except Exception as e:
-        print(f'Error loading bookings: {e}')
-    return []
-
-@app.route('/api/flights', methods=['GET'])
-def api_get_flights():
-    """Return all flights from flights.json, with optional filtering by origin, destination, and date"""
-    try:
-        flights = _load_flights()
-        
-        # Get query parameters for filtering
-        origin_filter = request.args.get('origin', '').strip().upper()
-        destination_filter = request.args.get('destination', '').strip().upper()
-        date_filter = request.args.get('date', '').strip()
-        
-        # Enrich with booking counts
-        booking_counts = {}
-        for p in passengers:
-            f = p.get('flight')
-            if f:
-                booking_counts[f] = booking_counts.get(f, 0) + 1
-        
-        filtered_flights = []
-        for flight in flights:
-            # Normalize flight_number vs flight field (support both)
-            flight_id = flight.get('flight_number') or flight.get('flight')
-            if flight_id and 'flight' not in flight:
-                flight['flight'] = flight_id
-            if flight_id and 'flight_number' not in flight:
-                flight['flight_number'] = flight_id
-            
-            flight['bookings'] = booking_counts.get(flight_id, 0)
-            flight['booked_seats'] = booking_counts.get(flight_id, 0)
-            
-            # Normalize time fields for frontend compatibility
-            if 'time' in flight and 'departure_time' not in flight:
-                flight['departure_time'] = flight['time']
-            if 'departureTime' not in flight and 'departure_time' in flight:
-                flight['departureTime'] = flight['departure_time']
-            if 'arrival' in flight and 'arrival_time' not in flight:
-                flight['arrival_time'] = flight['arrival']
-            if 'arrivalTime' not in flight and 'arrival_time' in flight:
-                flight['arrivalTime'] = flight['arrival_time']
-            
-            # Apply filters if provided
-            if origin_filter or destination_filter or date_filter:
-                matches = True
-                
-                # Filter by origin
-                if origin_filter:
-                    flight_origin = (flight.get('origin') or '').strip().upper()
-                    if flight_origin != origin_filter:
-                        matches = False
-                
-                # Filter by destination
-                if destination_filter:
-                    flight_dest = (flight.get('destination') or '').strip().upper()
-                    if flight_dest != destination_filter:
-                        matches = False
-                
-                # Filter by date (check if departure date matches)
-                if date_filter:
-                    dep_time = flight.get('departure_time') or flight.get('time') or flight.get('departureTime')
-                    if dep_time:
-                        try:
-                            # Extract date from datetime string
-                            dep_date = dep_time.split('T')[0] if 'T' in dep_time else dep_time[:10]
-                            if dep_date != date_filter:
-                                matches = False
-                        except:
-                            matches = False
-                    else:
-                        matches = False
-                
-                if matches:
-                    filtered_flights.append(flight)
-            else:
-                # No filters, include all flights
-                filtered_flights.append(flight)
-        
-        return jsonify({'flights': filtered_flights}), 200
-    except Exception as e:
-        print(f'Error in api_get_flights: {e}')
-        return jsonify({'error': str(e)}), 500
-
-
 @app.route('/api/passengers', methods=['GET'])
 def api_get_passengers():
-    """Return all passengers"""
+    """Return all passengers (admin/staff only)"""
+    session = _require_session(request)
+    if not session or session.get('role') not in ['admin', 'staff']:
+        return jsonify({'error': 'unauthorized'}), 401
     try:
+        # Return all passengers for authorized staff/admin
         return jsonify({'passengers': passengers}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
-@app.route('/api/bookings', methods=['GET'])
-def api_get_bookings():
-    """Return all bookings"""
-    try:
-        bookings = _load_bookings()
-        return jsonify({'bookings': bookings}), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/admin/dashboard.html')
-def serve_admin_dashboard():
-    # Serve the modern admin dashboard from the admin subfolder
-    return send_from_directory(ADMIN_DIR, 'dashboard.html')
-
-
 # ----------------------
 # Session & Access Code helpers (file-backed)
 # ----------------------
-
-# Session helpers are defined above and used across API routes.
-
 
 def _load_codes():
     return _load_json_file(ACCESS_CODES_FILE, [])
@@ -974,12 +957,12 @@ def _validate_and_consume_code(passport, code):
     return ok, reason
 
 
-def _load_admin_users():
-    try:
-        with open(ADMIN_USERS_FILE, 'r') as f:
-            return json.load(f)
-    except Exception:
-        return {}
+def _load_member_users():
+    return _load_json_file(MEMBER_USERS_FILE, {})
+
+
+def _save_member_users(users):
+    _save_json_file(MEMBER_USERS_FILE, users)
 
 
 def _load_staff():
@@ -989,13 +972,8 @@ def _load_staff():
     except Exception:
         return []
 
-
 def _save_staff(items):
-    try:
-        _save_json_file(STAFF_FILE, items or [])
-    except Exception:
-        pass
-
+    _save_json_file(STAFF_FILE, items or [])
 
 def _find_staff(identifier):
     """Find staff by username or system_id (case-sensitive)."""
@@ -1005,7 +983,6 @@ def _find_staff(identifier):
             return s
     return None
 
-
 def _normalize_permissions(perms):
     if not isinstance(perms, list):
         return []
@@ -1014,7 +991,6 @@ def _normalize_permissions(perms):
         if p in STAFF_ALLOWED_PERMISSIONS and p not in clean:
             clean.append(p)
     return clean
-
 
 def _load_airports_list():
     """Return a list of airport dicts normalized from the frontend assets JSON.
@@ -1070,7 +1046,7 @@ def _load_airports_list():
                 continue
     return out
 
-
+@app.route('/api/airports', methods=['GET'])
 def api_airports():
     """Search airports server-side.
        Query params:
@@ -1137,16 +1113,6 @@ def api_airports():
 
     return jsonify({'total': total, 'page': page, 'limit': limit, 'airports': page_items}), 200
 
-def _compute_baggage_fee(baggage_count: int):
-    """Simple baggage fee rule: first bag free, each extra bag $50."""
-    try:
-        n = int(baggage_count or 0)
-    except Exception:
-        n = 0
-    if n <= 1:
-        return 0
-    return 50 * (n - 1)
-
 
 def autoassign_seat_from_capacity(capacity, existing_seats=None, blocked_seats=None, preference='any', cols=None):
     """Deterministic seat auto-assignment helper.
@@ -1199,100 +1165,8 @@ def autoassign_seat_from_capacity(capacity, existing_seats=None, blocked_seats=N
         return None
     return candidates[0]
 
-def _load_access_codes():
-    try:
-        with open(ACCESS_CODES_FILE, 'r') as f:
-            return json.load(f) or {}
-    except Exception:
-        return {}
-
-def _load_admin_users():
-    try:
-        if os.path.exists(ADMIN_USERS_FILE):
-            with open(ADMIN_USERS_FILE, 'r') as f:
-                return json.load(f) or {}
-    except Exception:
-        pass
-    return {}
-
-
-def _save_admin_users(users: dict):
-    try:
-        with open(ADMIN_USERS_FILE, 'w') as f:
-            json.dump(users, f, indent=2)
-    except Exception:
-        pass
-
-
-def _init_admin_users_from_env():
-    # If no admin user file exists, but env vars present, create hashed entry
-    users = _load_admin_users()
-    if users:
-        return users
-    admin_user = os.getenv('ADMIN_USER')
-    admin_pass = os.getenv('ADMIN_PASS')
-    if admin_user and admin_pass:
-        try:
-            # bcrypt may not be available - fall back to plain storage if missing
-            try:
-                ph = bcrypt.hashpw(admin_pass.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            except Exception:
-                ph = admin_pass
-            users = {admin_user: {'password_hash': ph}}
-            _save_admin_users(users)
-            return users
-        except Exception:
-            return {}
-    return {}
-
-
 # initialize admin users at startup
 ADMIN_USERS = _init_admin_users_from_env()
-
-def _save_access_codes(codes: dict):
-    try:
-        with open(ACCESS_CODES_FILE, 'w') as f:
-            json.dump(codes, f, indent=2)
-    except Exception:
-        pass
-
-def _generate_code():
-    return f"{random.randint(0, 999999):06d}"
-
-def _set_code_for_passport(passport: str, ttl_minutes: int = 10):
-    codes = _load_access_codes()
-    code = _generate_code()
-    expires = (datetime.utcnow() + timedelta(minutes=ttl_minutes)).isoformat() + 'Z'
-    codes[passport] = {'code': code, 'expires': expires}
-    _save_access_codes(codes)
-    return code, expires
-
-def _validate_and_consume_code(passport: str, code: str):
-    codes = _load_access_codes()
-    entry = codes.get(passport)
-    if not entry:
-        return False, 'no_code'
-    if entry.get('code') != code:
-        return False, 'invalid_code'
-    try:
-        expires = datetime.fromisoformat(entry.get('expires').replace('Z',''))
-    except Exception:
-        return False, 'invalid_expires'
-    if datetime.utcnow() > expires:
-        # expired
-        try:
-            del codes[passport]
-            _save_access_codes(codes)
-        except Exception:
-            pass
-        return False, 'expired'
-    # consume
-    try:
-        del codes[passport]
-        _save_access_codes(codes)
-    except Exception:
-        pass
-    return True, 'ok'
 
 # Bookings management functions
 def _load_bookings():
@@ -1304,14 +1178,6 @@ def _load_bookings():
     except Exception:
         pass
     return []
-
-def _save_bookings(bookings_list):
-    """Save bookings list to bookings.json file."""
-    try:
-        with open(BOOKINGS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(bookings_list, f, indent=2)
-    except Exception:
-        pass
 
 def _add_booking(booking_data):
     """Add a new booking to the bookings list and save to file."""
@@ -1345,25 +1211,6 @@ def _add_booking(booking_data):
         })
         return None
 
-# Flights management functions
-def _load_flights():
-    """Load all flights from flights.json file."""
-    try:
-        if os.path.exists(FLIGHTS_FILE):
-            with open(FLIGHTS_FILE, 'r', encoding='utf-8') as f:
-                return json.load(f) or []
-    except Exception:
-        pass
-    return []
-
-def _save_flights(flights_list):
-    """Save flights list to flights.json file."""
-    try:
-        with open(FLIGHTS_FILE, 'w', encoding='utf-8') as f:
-            json.dump(flights_list, f, indent=2)
-    except Exception:
-        pass
-
 
 def log_event(event: dict):
     """Append an event dict to events.json (simple audit log)."""
@@ -1382,50 +1229,9 @@ def log_event(event: dict):
         # Logging must not break main flows
         pass
 
-
-def _load_bookings():
-    """Load all bookings from bookings.json"""
-    try:
-        if os.path.exists(BOOKINGS_FILE):
-            with open(BOOKINGS_FILE, 'r') as f:
-                return json.load(f) or []
-    except Exception:
-        pass
-    return []
-
-
-def _save_bookings(bookings: list):
-    """Save bookings to bookings.json"""
-    try:
-        with open(BOOKINGS_FILE, 'w') as f:
-            json.dump(bookings, f, indent=2)
-    except Exception:
-        pass
-
-
-def _add_booking(booking: dict):
-    """Add a new booking to the bookings file"""
-    bookings = _load_bookings()
-    booking['id'] = booking.get('id') or f"BK{len(bookings) + 1}"
-    booking['created_at'] = booking.get('created_at') or datetime.utcnow().isoformat() + 'Z'
-    booking['status'] = booking.get('status') or 'completed'
-    bookings.append(booking)
-    _save_bookings(bookings)
-    log_event({
-        'type': 'booking_created',
-        'booking_id': booking.get('id'),
-        'passenger_name': booking.get('name'),
-        'payment_method': booking.get('payment_method'),
-        'amount': booking.get('amount'),
-        'timestamp': datetime.utcnow().isoformat() + 'Z'
-    })
-    return booking
-
-
 def save_passengers():
     with open(PASSENGER_FILE, "w") as file:
         json.dump(passengers, file, indent=4)
-
 
 def register_passenger():
     """Interactive helper used by tests: reads name, passport, flight from input(),
@@ -1455,7 +1261,6 @@ def register_passenger():
         pass
     print(f"\nPassenger {name} registered successfully!\nFlight: {flight} | Seat: {seat}\n")
 
-
 def view_passengers():
     """Prints registered passengers (used by tests)."""
     if not passengers:
@@ -1468,92 +1273,6 @@ def view_passengers():
 
 def find_duplicate(passport, flight):
     return any(p.get("passport") == passport and p.get("flight") == flight for p in passengers)
-
-# NOTE: The Flask app instance is created earlier in the file (line 64), don't recreate it here!
-# Recreating the app destroys all previously registered routes
-# The /api/passengers route is already defined at line 499
-
-@app.route('/api/admin/passengers', methods=['POST','PUT','DELETE'])
-def api_admin_passengers():
-    """Admin-only passenger CRUD. Uses JSON body for inputs.
-       POST: create passenger { name, passport, flight, seat?, email? }
-       PUT: update passenger identified by passport and flight: { passport, flight, fields... }
-       DELETE: delete passenger(s) by passport and optional flight: { passport, flight? }
-    """
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'unauthorized'}), 401
-    data = request.get_json() or {}
-    if request.method == 'POST':
-        name = sanitize_input(data.get('name') or '')
-        passport = sanitize_input(data.get('passport') or '')
-        flight = sanitize_input(data.get('flight') or '')
-        email = sanitize_input(data.get('email') or '')
-        seat = data.get('seat')
-        if not (name and passport and flight):
-            return jsonify({'error': 'name, passport and flight are required'}), 400
-        ok, reason = validate_passport(passport)
-        if not ok:
-            return jsonify({'error': 'invalid_passport', 'detail': reason}), 400
-        if find_duplicate(passport, flight):
-            return jsonify({'error': 'duplicate_passenger'}), 400
-        # determine seat if not provided
-        if seat is None:
-            seat = sum(1 for p in passengers if p.get('flight') == flight) + 1
-        p = {'name': name, 'passport': passport, 'flight': flight, 'seat': seat}
-        if email:
-            p['email'] = email
-        passengers.append(p)
-        try:
-            save_passengers()
-        except Exception:
-            pass
-        log_event({'type': 'admin_create_passenger', 'passport': passport, 'flight': flight, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-        return jsonify(p), 201
-
-    if request.method == 'PUT':
-        passport = sanitize_input(data.get('passport') or '')
-        flight = sanitize_input(data.get('flight') or '')
-        if not passport or not flight:
-            return jsonify({'error': 'passport and flight required to identify record'}), 400
-        # find passenger index
-        idx = next((i for i,p in enumerate(passengers) if str(p.get('passport')) == str(passport) and str(p.get('flight')) == str(flight)), None)
-        if idx is None:
-            return jsonify({'error': 'passenger_not_found'}), 404
-        # allowed update fields
-        allowed = {'name','email','phone','seat','checked_in','baggage_count','baggage_paid','baggage_details'}
-        changed = {}
-        for k,v in data.items():
-            if k in allowed:
-                passengers[idx][k] = v
-                changed[k] = v
-        try:
-            save_passengers()
-        except Exception:
-            pass
-        log_event({'type': 'admin_update_passenger', 'passport': passport, 'flight': flight, 'changed': changed, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-        return jsonify({'status': 'updated', 'passenger': passengers[idx]}), 200
-
-    if request.method == 'DELETE':
-        passport = sanitize_input(data.get('passport') or '')
-        flight = sanitize_input(data.get('flight') or '')
-        if not passport:
-            return jsonify({'error': 'passport required to delete passenger(s)'}), 400
-        before = len(passengers)
-        if flight:
-            # remove matching passport+flight
-            passengers[:] = [p for p in passengers if not (str(p.get('passport')) == str(passport) and str(p.get('flight')) == str(flight))]
-        else:
-            # remove all records with this passport
-            passengers[:] = [p for p in passengers if not (str(p.get('passport')) == str(passport))]
-        removed = before - len(passengers)
-        try:
-            save_passengers()
-        except Exception:
-            pass
-        log_event({'type': 'admin_delete_passenger', 'passport': passport, 'flight': flight or 'ALL', 'removed': removed, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-        return jsonify({'status': 'deleted', 'removed': removed}), 200
-
 
 @app.route('/api/admin/events', methods=['GET'])
 def api_admin_events():
@@ -1590,10 +1309,11 @@ def api_register():
     validator = ValidationUtils()
     
     try:
-        # Validate all required fields using comprehensive validation
+        # Validate required fields for check-in/simple registration
         name = validator.validate_name(data.get("name") or '', field_name="name")
         passport = validator.validate_passport(data.get("passport") or '', field_name="passport")
-        flight = validator.validate_flight_number(data.get("flight") or '', field_name="flight")
+        flight_input = (data.get("flight") or '').replace('-', '')
+        flight = validator.validate_flight_number(flight_input, field_name="flight")
         
         # Validate optional fields if provided
         email = None
@@ -1603,35 +1323,9 @@ def api_register():
         phone = None
         if data.get("phone"):
             phone = validator.validate_phone(data.get("phone"), is_kenyan=True, field_name="phone")
-        
-        # Validate date of birth if provided
-        date_of_birth = None
-        if data.get("date_of_birth"):
-            date_of_birth = validator.validate_date_of_birth(data.get("date_of_birth"), field_name="date_of_birth", min_age=18)
-        
-        # Validate gender if provided
-        gender = None
-        if data.get("gender"):
-            gender = validator.validate_gender(data.get("gender"), field_name="gender")
-        
-        # Validate nationality if provided
-        nationality = None
-        if data.get("nationality"):
-            nationality = validator.validate_country_code(data.get("nationality"), field_name="nationality")
-        
-        # Validate passport expiry date if provided
-        passport_expiry = None
-        if data.get("passport_expiry"):
-            departure_date = data.get("departure_date")  # Get departure date if available
-            passport_expiry = validator.validate_passport_expiry(data.get("passport_expiry"), departure_date=departure_date, field_name="passport_expiry")
-        
-        # Validate passport issue date if provided
-        passport_issue_date = None
-        if data.get("passport_issue_date"):
-            passport_issue_date = validator.validate_passport_issue_date(data.get("passport_issue_date"), expiry_date=passport_expiry, field_name="passport_issue_date")
-        
+
     except ValidationError as e:
-        return jsonify({"error": "validation_error", "field": e.field, "detail": e.message}), 400
+        return jsonify({"success": False, "errors": {e.field: e.message}}), 400
 
     if find_duplicate(passport, flight):
         # For demo purposes, allow re-booking the same flight (maybe updating details)
@@ -1653,38 +1347,15 @@ def api_register():
 
     seat = sum(1 for p in passengers if p.get("flight") == flight) + 1
     
-    try:
-        # Validate payment method
-        payment_method = validator.validate_payment_method(data.get("payment_method") or "card", field_name="payment_method")
-        payment_method_display = payment_method.title()
-        
-        # Validate amount
-        amount = validator.validate_amount(float(data.get("amount") or 0), field_name="amount")
-        
-        # Validate currency if provided
-        currency = sanitize_input(data.get("currency") or "USD")
-        
-        # Handle M-Pesa specific validation
-        mpesa_phone = None
-        if payment_method == 'mpesa':
-            mpesa_phone_input = data.get("mpesa_phone") or ''
-            if mpesa_phone_input:
-                mpesa_phone = validator.validate_phone(mpesa_phone_input, is_kenyan=True, field_name="mpesa_phone")
-            else:
-                return jsonify({"error": "validation_error", "field": "mpesa_phone", "detail": "M-Pesa phone number is required for M-Pesa payments"}), 400
-            payment_method_display = 'M-Pesa'
-            
-    except ValidationError as e:
-        return jsonify({"error": "validation_error", "field": e.field, "detail": e.message}), 400
-
     passenger = {
         "name": name,
         "passport": passport,
         "flight": flight,
         "seat": seat,
-        "payment_method": payment_method_display,
-        "currency": currency,
-        "amount": amount
+        # Fields below are optional for simple registration
+        "payment_method": data.get("payment_method", "N/A"),
+        "currency": data.get("currency", "N/A"),
+        "amount": data.get("amount", 0)
     }
     
     # Add optional fields if provided
@@ -1692,18 +1363,6 @@ def api_register():
         passenger['email'] = email
     if phone:
         passenger['phone'] = phone
-    if date_of_birth:
-        passenger['date_of_birth'] = date_of_birth
-    if gender:
-        passenger['gender'] = gender
-    if nationality:
-        passenger['nationality'] = nationality
-    if passport_expiry:
-        passenger['passport_expiry'] = passport_expiry
-    if passport_issue_date:
-        passenger['passport_issue_date'] = passport_issue_date
-    if mpesa_phone:
-        passenger['mpesa_phone'] = mpesa_phone
     
     passengers.append(passenger)
     save_passengers()
@@ -1714,74 +1373,16 @@ def api_register():
     out['email_sent'] = False
     out['sms_sent'] = False
 
-    if payment_method_display == 'M-Pesa':
-        paybill = os.getenv('MPESA_PAYBILL', '123456')
-        account_ref = os.getenv('MPESA_ACCOUNT_PREFIX', 'SF') + passport[-4:]
-        out['mpesa_phone'] = mpesa_phone
-        out['payment_instructions'] = (
-            f"Pay {out['amount']} {out['currency']} via M-Pesa to Paybill {paybill}, "
-            f"Account {account_ref}. Use phone {mpesa_phone} to complete the payment."
-        )
-
-    # Log booking and payment activities
+    # Log check-in activity
     try:
-        log_activity('booking', {
+        log_activity('checkin', {
             'passenger_name': name,
             'flight_number': flight,
-            'from': data.get('from'),
-            'to': data.get('to'),
-            'amount': data.get('amount', 0),
-            'payment_method': payment_method_display,
-            'mpesa_phone': mpesa_phone if payment_method_display == 'M-Pesa' else None,
-            'timestamp': datetime.utcnow().isoformat() + 'Z'
-        })
-
-        log_activity('payment', {
-            'passenger_name': name,
-            'flight': flight,
-            'amount': data.get('amount', 0),
-            'payment_method': payment_method_display,
-            'status': 'completed',
-            'booking_ref': booking_ref,
-            'mpesa_phone': mpesa_phone if payment_method_display == 'M-Pesa' else None,
+            'seat': seat,
             'timestamp': datetime.utcnow().isoformat() + 'Z'
         })
     except Exception as e:
         print(f"Warning: Failed to log activities: {e}")
-
-    # Send booking confirmation email
-    try:
-        if passenger.get('email'):
-            enqueue_booking_confirmation_email(passenger, booking_ref, {
-                'flight': flight,
-                'from': data.get('from'),
-                'to': data.get('to'),
-                'date': data.get('date'),
-                'departure': data.get('departure')
-            })
-            out['email_sent'] = True
-    except Exception as e:
-        print(f"Booking email enqueue failed: {e}")
-        out['email_sent'] = False
-
-    # Send SMS notification for M-Pesa if configured
-    if payment_method_display == 'M-Pesa' and mpesa_phone:
-        try:
-            passenger['mpesa_phone'] = mpesa_phone
-            passenger['payment_method'] = payment_method_display
-            passenger['amount'] = out['amount']
-            passenger['currency'] = out['currency']
-            send_booking_confirmation_sms(passenger, booking_ref, {
-                'flight': flight,
-                'from': data.get('from'),
-                'to': data.get('to'),
-                'date': data.get('date'),
-                'departure': data.get('departure')
-            })
-            out['sms_sent'] = True
-        except Exception as e:
-            print(f"Booking SMS send failed: {e}")
-            out['sms_sent'] = False
 
     return jsonify(out), 201
 
@@ -1926,16 +1527,12 @@ def api_boardingpass():
     if not p:
         return jsonify({"error": "passenger not found"}), 404
 
-# Authorization: Prefer session-based passenger access (no one-time code required anymore).
-# 1) If request carries a valid passenger session that matches the requested passport -> allow
-# 2) Else if a code is provided, validate (backwards compatibility)
-# 3) Else allow master password via X-ACCESS-PASSWORD
+    # Authorization logic
     allowed = False
-    # check session token
-    token = request.headers.get('X-SESSION') or request.cookies.get('session')
-    sess = None
-    if token:
-        sess = _get_session(token)
+    sess = _require_session(request)
+
+    # This logic was simplified. The original had multiple conditions.
+    # The primary check should be for a valid session.
     if sess and sess.get('role') == 'passenger' and sess.get('passport') == passport:
         allowed = True
     elif code:
@@ -1946,33 +1543,40 @@ def api_boardingpass():
             return jsonify({'error': 'invalid_or_expired_code', 'detail': reason}), 403
     elif master_pw and header_pw and header_pw == master_pw:
         allowed = True
-    # Optional public access gate for demos only (off by default)
     elif (os.getenv('ALLOW_PUBLIC_BOARDINGPASS','false').lower() in ('1','true','yes')):
         allowed = True
-    elif not code and not token:  # Allow demo access without authentication
+    elif not code and not sess:
         allowed = True
     else:
         return jsonify({'error': 'access_denied', 'detail': 'provide a valid session, code, or master password'}), 403
 
+    if not allowed:
+        return jsonify({'error': 'access_denied'}), 403
+
     # Create a simple boarding pass image or PDF
     try:
-        def create_boarding_pass_image(passenger):
+        # This function was defined multiple times. Using one canonical version.
+        def _create_boarding_pass_image(passenger):
             # Generates a simple boarding pass image using PIL
-            from PIL import Image, ImageDraw, ImageFont
             img = Image.new('RGB', (600, 300), color=(255, 255, 255))
             draw = ImageDraw.Draw(img)
             try:
+                # Use a font that is likely to be available or ship one with the app
                 font = ImageFont.truetype("arial.ttf", 24)
-            except Exception:
+            except IOError:
                 font = ImageFont.load_default()
             draw.text((30, 30), f"Boarding Pass", font=font, fill=(0, 0, 0))
             draw.text((30, 80), f"Name: {passenger.get('name', '')}", font=font, fill=(0, 0, 0))
             draw.text((30, 120), f"Passport: {passenger.get('passport', '')}", font=font, fill=(0, 0, 0))
             draw.text((30, 160), f"Flight: {passenger.get('flight', '')}", font=font, fill=(0, 0, 0))
             draw.text((30, 200), f"Seat: {passenger.get('seat', '')}", font=font, fill=(0, 0, 0))
+            # Add QR code
+            qr_payload = f"pass:{passenger.get('passport')}|flight:{passenger.get('flight')}|seat:{passenger.get('seat')}"
+            qr_img = qrcode.make(qr_payload).resize((100, 100))
+            img.paste(qr_img, (450, 150))
             return img
 
-        img = create_boarding_pass_image(p)
+        img = _create_boarding_pass_image(p)
         fmt = (request.args.get('format') or '').lower()
         if fmt == 'pdf':
             buf = io.BytesIO()
@@ -1988,7 +1592,6 @@ def api_boardingpass():
             return send_file(buf, mimetype='image/png', as_attachment=False, download_name=f"boardingpass_{passport}.png")
     except Exception as e:
         return jsonify({"error": "failed to generate boarding pass", "detail": str(e)}), 500
-
 
 @app.route('/api/lookup', methods=['POST'])
 def api_lookup():
@@ -2035,7 +1638,6 @@ def api_lookup():
 
     return jsonify({'results': results}), 200
 
-
 @app.route('/api/openapi.json')
 def api_openapi():
     try:
@@ -2047,7 +1649,6 @@ def api_openapi():
         except Exception:
             return jsonify({'error': 'openapi not available'}), 404
 
-
 @app.route('/api/docs')
 def api_docs():
     # Serve a simple Redoc page pointing at /api/openapi.json
@@ -2056,166 +1657,36 @@ def api_docs():
     except Exception:
         return "API docs not available", 404
 
-
 @app.route('/api/bookings', methods=['GET', 'POST'])
 def api_bookings():
-    """GET: Return bookings: admin sees all, passenger sees only their own.
-       POST: Create a new booking from payment confirmation (no session required for public bookings).
-    """
-    if request.method == 'POST':
-        # Handle new booking from payment page (no session required - public endpoint)
-        data = request.get_json() or {}
-        validator = ValidationUtils()
-        
-        try:
-            # Validate all required fields using comprehensive validation
-            booking_id = validator.validate_required_field(data.get('id'), field_name="booking_id")
-            name = validator.validate_name(data.get('name'), field_name="name")
-            email = validator.validate_email(data.get('email'), field_name="email")
-            passport = validator.validate_passport(data.get('passport'), field_name="passport")
-            phone = validator.validate_phone(data.get('phone'), is_kenyan=True, field_name="phone")
-            origin = validator.validate_airport_code(data.get('from'), field_name="origin")
-            destination = validator.validate_airport_code(data.get('to'), field_name="destination")
-            depart_date = validator.validate_date(data.get('depart'), field_name="depart_date", allow_past=False)
-            payment_method = validator.validate_payment_method(data.get('payment_method'), field_name="payment_method")
-            
-            # Validate flight route (origin != destination)
-            origin, destination = validator.validate_flight_route(origin, destination, field_name="route")
-            
-            # Optional fields with validation if provided
-            country = None
-            if data.get('country'):
-                country = validator.validate_country_code(data.get('country'), field_name="country")
-            
-            flight_number = None
-            if data.get('flight_number') or data.get('flight'):
-                flight_input = data.get('flight_number') or data.get('flight')
-                flight_number = validator.validate_flight_number(flight_input, field_name="flight_number")
-            
-            return_date = None
-            if data.get('return'):
-                return_date = validator.validate_return_date(depart_date, data.get('return'), field_name="return_date")
-            
-            # Validate amount
-            amount = validator.validate_amount(float(data.get('amount') or 0), field_name="amount")
-            
-            # Validate class of service
-            service_class = validator.validate_class_of_service(data.get('class') or 'economy', field_name="class")
-            
-            # Validate card details if payment method is card
-            if payment_method == 'card':
-                card_number = None
-                card_holder = None
-                cvv = None
-                card_expiry = None
-                
-                if data.get('card_number'):
-                    card_number = validator.validate_card_number(data.get('card_number'), field_name="card_number")
-                if data.get('card_holder'):
-                    card_holder = validator.validate_card_holder(data.get('card_holder'), field_name="card_holder")
-                if data.get('cvv'):
-                    cvv = validator.validate_cvv(data.get('cvv'), field_name="cvv")
-                if data.get('card_expiry'):
-                    card_expiry = validator.validate_card_expiry(data.get('card_expiry'), field_name="card_expiry")
-                
-                # Ensure all card details are provided for card payments
-                if not (card_number and card_holder and cvv and card_expiry):
-                    raise ValidationError('card_details', 'All card details (number, holder, CVV, expiry) are required for card payments')
-            
-            # Validate M-Pesa phone if payment method is mpesa
-            if payment_method == 'mpesa':
-                mpesa_phone = None
-                if data.get('mpesa_phone'):
-                    mpesa_phone = validator.validate_phone(data.get('mpesa_phone'), is_kenyan=True, field_name="mpesa_phone")
-                else:
-                    raise ValidationError('mpesa_phone', 'M-Pesa phone number is required for M-Pesa payments')
-            
-        except ValidationError as e:
-            return jsonify({'error': 'validation_error', 'field': e.field, 'detail': e.message}), 400
-        
-        # Create booking record in bookings.json
-        booking = {
-            'id': booking_id,
-            'passenger_name': name,
-            'name': name,
-            'email': email,
-            'passport': passport,
-            'phone': phone,
-            'country': country or '',
-            'from': origin,
-            'to': destination,
-            'depart': depart_date,
-            'flight_number': flight_number or 'N/A',
-            'return': return_date or '',
-            'class': service_class,
-            'fare': sanitize_input(data.get('fare') or '0'),
-            'total_amount': amount,
-            'amount': amount,
-            'currency': sanitize_input(data.get('currency') or 'USD'),
-            'payment_method': payment_method,
-            'payment_status': 'completed',
-            'status': 'completed',
-            'booking_date': datetime.utcnow().isoformat() + 'Z',
-            'created_at': datetime.utcnow().isoformat() + 'Z',
-        }
-        
-        # Add payment details to booking if card payment
-        if payment_method == 'card':
-            booking['card_number'] = card_number if card_number else ''
-            booking['card_holder'] = card_holder if card_holder else ''
-            booking['card_expiry'] = card_expiry if card_expiry else ''
-        
-        # Add M-Pesa phone if applicable
-        if payment_method == 'mpesa' and mpesa_phone:
-            booking['mpesa_phone'] = mpesa_phone
-        
-        # Save booking
-        saved_booking = _add_booking(booking)
-        
-        # Log the booking activity
-        log_activity('booking', {
-            'passenger_name': booking.get('passenger_name'),
-            'flight_number': booking.get('flight_number'),
-            'from': booking.get('from'),
-            'to': booking.get('to'),
-            'amount': booking.get('amount'),
-            'payment_method': booking.get('payment_method'),
-            'timestamp': booking.get('created_at')
-        })
-
-        # Also log as payment activity for payments dashboard
-        log_activity('payment', {
-            'passenger_name': booking.get('passenger_name'),
-            'flight': booking.get('flight_number'),
-            'amount': booking.get('amount'),
-            'payment_method': booking.get('payment_method'),
-            'status': 'completed',
-            'booking_ref': f"BK-{saved_booking.get('id', 0):04d}",
-            'timestamp': booking.get('created_at')
-        })
-        
-        return jsonify({'status': 'ok', 'booking': saved_booking}), 201
-    
+    """GET: Return bookings. POST: Create a new booking."""
     # GET endpoint
     session = _require_session(request)
+    # Public access is not secure. All GET requests should be authenticated.
     if not session:
-        # No session - return all bookings (for admin dashboard without auth)
+        return jsonify({'error': 'unauthorized'}), 401
+
+    role = session.get('role')
+    
+    if role == 'admin' or role == 'staff':
+        # Admin and Staff get all bookings from the central bookings.json file
         bookings = _load_bookings()
         return jsonify({'bookings': bookings}), 200
-    if session.get('role') == 'admin':
-        # Admin gets bookings from bookings.json (payment records)
-        bookings = _load_bookings()
-        return jsonify(bookings), 200
-    # passenger - gets their own bookings from passengers list
-    passport = session.get('passport')
-    matches = [p.copy() for p in passengers if p.get('passport') == passport]
-    flights = {f.get('flight'): f for f in _load_flights()}
-    for p in matches:
-        f = flights.get(p.get('flight'))
-        if f:
-            p['_flight_time'] = f.get('time')
-    return jsonify({'bookings': matches}), 200
 
+    if role == 'passenger' or role == 'member':
+        # Passengers and Members get their own bookings from the passengers list
+        passport = session.get('passport') or session.get('user_id')
+        if not passport:
+            return jsonify({'error': 'session_missing_passport'}), 400
+        matches = [p.copy() for p in passengers if p.get('passport') == passport]
+        flights = {f.get('flight'): f for f in _load_flights()}
+        for p in matches:
+            f = flights.get(p.get('flight'))
+            if f:
+                p['_flight_time'] = f.get('time')
+        return jsonify({'bookings': matches}), 200
+
+    return jsonify({'error': 'unauthorized_role'}), 403
 
 @app.route('/api/flights', methods=['GET','POST'])
 def api_flights():
@@ -2228,6 +1699,10 @@ def api_flights():
         origin_q = (request.args.get('origin') or '').strip().upper()
         dest_q = (request.args.get('destination') or '').strip().upper()
         avail_only = (request.args.get('availableOnly') or '').lower() == 'true'
+
+        # Add backend validation for flight search
+        if origin_q and dest_q and origin_q == dest_q:
+            return jsonify({'error': 'validation_error', 'field': 'destination', 'detail': 'Origin and destination cannot be the same.'}), 400
 
         flights = _load_flights()
 
@@ -2369,7 +1844,6 @@ def api_flights():
     log_event({'type': 'flight_created', 'flight': flight, 'time': time_iso, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'created', 'flight': entry}), 201
 
-
 # Pricing API: compute distance-based fares using airport lat/lon
 def _load_airports_map():
     """Load a simple mapping of IATA -> { lat, lon, name, city } from the frontend assets folder.
@@ -2493,31 +1967,6 @@ def _haversine_km(lat1, lon1, lat2, lon2):
         return r * c
     except Exception:
         return None
-
-
-def _load_flights():
-    """Load flights from `flights.json` in the backend directory.
-       Returns a list of flight dicts (or empty list if file missing/invalid).
-    """
-    try:
-        path = os.path.join(BASE_DIR, 'flights.json')
-        if not os.path.exists(path):
-            return []
-        with open(path, 'r', encoding='utf-8') as f:
-            data = json.load(f) or []
-            return data if isinstance(data, list) else []
-    except Exception:
-        return []
-
-
-def _save_flights(flights: list):
-    """Save flights list to `flights.json` (best-effort, swallows errors)."""
-    try:
-        path = os.path.join(BASE_DIR, 'flights.json')
-        with open(path, 'w', encoding='utf-8') as f:
-            json.dump(flights or [], f, indent=2)
-    except Exception:
-        pass
 
 
 @app.route('/api/prices', methods=['GET','POST'])
@@ -2674,7 +2123,6 @@ def api_prices_v2():
     }
     return jsonify(resp), 200
 
-
 @app.route('/api/prices/dates', methods=['GET'])
 def api_prices_dates_v2():
     """Return availability and per-day price estimates for a route over a date range.
@@ -2767,7 +2215,6 @@ def api_prices_dates_v2():
 
     resp = {'from': from_code, 'to': to_code, 'currency': 'USD', 'base': base, 'days': out_days}
     return jsonify(resp), 200
-
 
 @app.route('/api/prices/offers', methods=['GET'])
 def api_prices_offers():
@@ -2919,7 +2366,6 @@ def api_prices_offers():
 
     return jsonify({'from': from_code, 'to': to_code, 'currency': 'USD', 'base': base, 'days': out_days, 'airlines': airlines_list, 'alternatives': []}), 200
 
-
 @app.route('/api/request_code', methods=['POST'])
 def api_request_code():
     """Request a one-time access code to be sent to the passenger's email on file.
@@ -2996,7 +2442,6 @@ def api_request_code():
         log_event({'type': 'access_code_error', 'passport': passport, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
         return jsonify({'error': 'failed_to_send', 'detail': str(e)}), 500
 
-
 @app.route('/api/passenger/login', methods=['POST'])
 def api_passenger_login():
     """Create a passenger session after basic identity: last name + (passport or booking ref).
@@ -3028,14 +2473,13 @@ def api_passenger_login():
     if not cand:
         return jsonify({'error': 'not_found'}), 404
 
-    token, exp = _create_session('passenger', cand.get('passport'), ttl_seconds=ttl)
-    resp = jsonify({'token': token, 'expires': exp, 'passport': cand.get('passport')})
+    token, exp = _create_session(cand.get('passport'), role='passenger', extra_data={'passport': cand.get('passport')}, ttl_seconds=ttl)
+    resp = jsonify({'token': token, 'expires': exp.get('expires'), 'passport': cand.get('passport')})
     try:
         resp.set_cookie('session', token, max_age=int(ttl), httponly=True, samesite='Lax')
     except Exception:
         pass
     return resp, 200
-
 
 @app.route('/api/checkin', methods=['POST'])
 def api_checkin():
@@ -3201,7 +2645,6 @@ def api_checkin():
 
     return jsonify({'results': results}), 200
 
-
 @app.route('/api/baggage/pay', methods=['POST'])
 def api_baggage_pay():
     """Simulate baggage fee payment. Body: { passport, amount }
@@ -3225,7 +2668,6 @@ def api_baggage_pay():
         pass
     log_event({'type': 'baggage_payment', 'passport': passport, 'amount': amount, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'paid', 'amount': amount}), 200
-
 
 @app.route('/api/flights/<flight_id>', methods=['PUT','DELETE'])
 def api_flight_modify(flight_id):
@@ -3301,7 +2743,6 @@ def api_flight_modify(flight_id):
     log_event({'type': 'flight_updated', 'flight': new_flight, 'time': time_iso, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'updated', 'flight': flights[idx]}), 200
 
-
 @app.route('/api/flights/<flight_id>/passengers', methods=['GET'])
 def api_flight_passengers(flight_id):
     session = _require_session(request, require_role='admin')
@@ -3309,7 +2750,6 @@ def api_flight_passengers(flight_id):
         return jsonify({'error': 'unauthorized'}), 401
     matches = [p for p in passengers if p.get('flight') == flight_id]
     return jsonify({'passengers': matches}), 200
-
 
 @app.route('/api/flights/<flight_id>/seats', methods=['GET'])
 def api_flight_seats(flight_id):
@@ -3404,7 +2844,6 @@ def api_flight_seats(flight_id):
 
     return jsonify({'flight': flight, 'seats': seats}), 200
 
-
 @app.route('/api/flights/<flight_id>/seats/select', methods=['POST'])
 def api_flight_seat_select(flight_id):
     """Passenger-facing seat selection. Requires a passenger session and assigns a seat if available.
@@ -3450,7 +2889,6 @@ def api_flight_seat_select(flight_id):
 
     log_event({'type': 'seat_selected', 'flight': flight_id, 'passport': passport, 'seat': seat, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'ok', 'seat': seat, 'passenger': p}), 200
-
 
 @app.route('/api/flights/<flight_id>/seats/autoassign', methods=['POST'])
 def api_flight_seat_autoassign(flight_id):
@@ -3509,7 +2947,6 @@ def api_flight_seat_autoassign(flight_id):
 
     log_event({'type': 'seat_autoassign', 'flight': flight_id, 'passport': passport, 'seat': assigned, 'preference': pref, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'ok', 'seat': assigned}), 200
-
 
 @app.route('/api/flights/<flight_id>/seats/hold', methods=['POST'])
 def api_flight_seat_hold(flight_id):
@@ -3579,7 +3016,6 @@ def api_flight_seat_hold(flight_id):
     log_event({'type': 'seat_hold', 'flight': flight_id, 'passport': passport, 'seat': seat, 'expires': expires, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'held', 'seat': seat, 'expires': expires}), 200
 
-
 @app.route('/api/flights/<flight_id>/seats/release', methods=['POST'])
 def api_flight_seat_release(flight_id):
     data = request.get_json() or {}
@@ -3604,7 +3040,6 @@ def api_flight_seat_release(flight_id):
         pass
     log_event({'type': 'seat_release', 'flight': flight_id, 'passport': passport, 'seat': seat, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'released'}), 200
-
 
 @app.route('/api/passengers/<passport>/override', methods=['POST'])
 def api_passenger_override(passport):
@@ -3635,7 +3070,6 @@ def api_passenger_override(passport):
     log_event({'type': 'admin_override', 'passport': passport, 'action': action, 'note': note, 'admin': session.get('passport'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'ok', 'passenger': p}), 200
 
-
 @app.route('/api/passengers/<passport>/seat', methods=['POST'])
 def api_passenger_seat(passport):
     session = _require_session(request, require_role='admin')
@@ -3660,7 +3094,6 @@ def api_passenger_seat(passport):
         pass
     log_event({'type': 'seat_assigned', 'passport': passport, 'seat': seat, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'ok', 'passenger': p}), 200
-
 
 @app.route('/api/flights/<flight_id>/seat_block', methods=['POST'])
 def api_flight_seat_block(flight_id):
@@ -3687,7 +3120,6 @@ def api_flight_seat_block(flight_id):
     _save_flights(flights)
     log_event({'type': 'seat_block', 'flight': flight_id, 'seat': seat, 'action': action, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'ok', 'blocked_seats': blocked}), 200
-
 
 @app.route('/api/flights/<flight_id>/boarding', methods=['GET','POST'])
 def api_flight_boarding(flight_id):
@@ -3741,45 +3173,12 @@ def api_flight_boarding(flight_id):
     _save_boarding_state(state)
     log_event({'type': 'boarding_action', 'flight': flight_id, 'action': action, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'ok', 'state': state.get(flight_id)}), 200
+
 @app.route('/api/admin/dashboard/stats', methods=['GET'])
 def api_admin_dashboard_stats():
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'unauthorized'}), 401
-    
-    # Calculate statistics
-    total_passengers = len(passengers)
-    total_flights = len(_load_flights())
-    
-    # Check-in statistics
-    checked_in_count = sum(1 for p in passengers if p.get('checked_in', False))
-    check_in_rate = (checked_in_count / total_passengers * 100) if total_passengers > 0 else 0
-    
-    # Flight statistics
-    flights = _load_flights()
-    active_flights = sum(1 for f in flights if f.get('status') == 'active')
-    cancelled_flights = sum(1 for f in flights if f.get('status') == 'cancelled')
-    
-    # Baggage statistics
-    total_baggage = sum(int(p.get('baggage_count', 0)) for p in passengers)
-    baggage_fees = sum(float(p.get('baggage_fee', 0)) for p in passengers)
-    
-    return jsonify({
-        'passengers': {
-            'total': total_passengers,
-            'checked_in': checked_in_count,
-            'check_in_rate': round(check_in_rate, 2)
-        },
-        'flights': {
-            'total': total_flights,
-            'active': active_flights,
-            'cancelled': cancelled_flights
-        },
-        'baggage': {
-            'total_count': total_baggage,
-            'total_fees': round(baggage_fees, 2)
-        }
-    }), 200
+    # This endpoint seems to be a duplicate or older version.
+    # A more complete version is at /api/analytics.
+    return api_analytics()
 
 @app.route('/api/admin/flights/bulk', methods=['POST'])
 def api_admin_flights_bulk():
@@ -3815,124 +3214,6 @@ def api_admin_flights_bulk():
     _save_flights(flights)
     return jsonify({'status': 'success', 'results': results}), 200
 
-@app.route('/api/admin/flights', methods=['GET', 'POST', 'PUT', 'DELETE'])
-def api_admin_flights():
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'unauthorized'}), 401
-
-    if request.method == 'GET':
-        flights = _load_flights()
-        return jsonify({'flights': flights}), 200
-    
-    if request.method == 'POST':
-        data = request.get_json()
-        if not data or 'flight' not in data:
-            return jsonify({'error': 'Missing flight information'}), 400
-        
-        flights = _load_flights()
-        if any(f['flight'] == data['flight'] for f in flights):
-            return jsonify({'error': 'Flight already exists'}), 400
-        
-        new_flight = {
-            'flight': data['flight'],
-            'origin': data.get('origin'),
-            'destination': data.get('destination'),
-            'date': data.get('date'),
-            'time': data.get('time'),
-            'capacity': data.get('capacity'),
-            'status': data.get('status', 'scheduled')
-        }
-        
-        flights.append(new_flight)
-        _save_flights(flights)
-        return jsonify({'status': 'success', 'flight': new_flight}), 201
-
-@app.route('/api/admin/flights/<flight_id>', methods=['GET', 'PUT', 'DELETE'])
-def api_admin_flight(flight_id):
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'unauthorized'}), 401
-
-    flights = _load_flights()
-    flight_index = next((i for i, f in enumerate(flights) if f['flight'] == flight_id), None)
-    
-    if flight_index is None:
-        return jsonify({'error': 'Flight not found'}), 404
-
-    if request.method == 'GET':
-        return jsonify({'flight': flights[flight_index]}), 200
-    
-    if request.method == 'PUT':
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No update data provided'}), 400
-        
-        flights[flight_index].update({
-            'origin': data.get('origin', flights[flight_index]['origin']),
-            'destination': data.get('destination', flights[flight_index]['destination']),
-            'date': data.get('date', flights[flight_index]['date']),
-            'time': data.get('time', flights[flight_index]['time']),
-            'capacity': data.get('capacity', flights[flight_index]['capacity']),
-            'status': data.get('status', flights[flight_index]['status'])
-        })
-        
-        _save_flights(flights)
-        return jsonify({'status': 'success', 'flight': flights[flight_index]}), 200
-    
-    if request.method == 'DELETE':
-        deleted_flight = flights.pop(flight_index)
-        _save_flights(flights)
-        return jsonify({'status': 'success', 'deleted': deleted_flight}), 200
-
-
-
-@app.route('/api/admin/system/config', methods=['GET', 'PUT'])
-def api_admin_system_config():
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'unauthorized'}), 401
-    
-    config_file = os.path.join(os.path.dirname(__file__), "system_config.json")
-    
-    if request.method == 'GET':
-        try:
-            if os.path.exists(config_file):
-                with open(config_file, 'r') as f:
-                    config = json.load(f)
-            else:
-                config = {
-                    'check_in': {
-                        'enabled': True,
-                        'start_hours_before': 24,
-                        'end_hours_before': 1
-                    },
-                    'baggage': {
-                        'max_items': 3,
-                        'free_items': 1,
-                        'fee_per_extra_item': 50
-                    },
-                    'notifications': {
-                        'email_enabled': True,
-                        'sms_enabled': False
-                    }
-                }
-                with open(config_file, 'w') as f:
-                    json.dump(config, f, indent=2)
-            return jsonify(config), 200
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    
-    elif request.method == 'PUT':
-        data = request.get_json()
-        if not data:
-            return jsonify({'error': 'No configuration data provided'}), 400
-        try:
-            with open(config_file, 'w') as f:
-                json.dump(data, f, indent=2)
-            return jsonify({'status': 'success', 'config': data}), 200
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
 
 @app.route('/api/admin/reports/generate', methods=['POST'])
 def api_admin_generate_report():
@@ -4066,79 +3347,6 @@ def api_admin_send_notification():
         'results': results
     }), 200
 
-@app.route('/api/admin/passengers/<passport>', methods=['GET', 'PUT', 'DELETE'])
-def api_admin_passenger(passport):
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'unauthorized'}), 401
-    # Support identifying a specific booking by optional 'flight' parameter (query or JSON body)
-    flight = (request.args.get('flight') or (request.get_json(silent=True) or {}).get('flight') or '').strip()
-
-    # find all indices for this passport
-    indices = [i for i, p in enumerate(passengers) if str(p.get('passport')) == str(passport)]
-    if not indices:
-        return jsonify({'error': 'Passenger not found'}), 404
-
-    # helper to select index based on flight if provided
-    def _select_index():
-        if flight:
-            idx = next((i for i, p in enumerate(passengers) if str(p.get('passport')) == str(passport) and str(p.get('flight') or '') == str(flight)), None)
-            return idx
-        # if only one record exists for this passport, return it
-        if len(indices) == 1:
-            return indices[0]
-        # ambiguous: multiple bookings for same passport, caller should specify flight
-        return None
-
-    if request.method == 'GET':
-        # If flight specified, return that record; otherwise return all records for this passport
-        if flight:
-            idx = _select_index()
-            if idx is None:
-                return jsonify({'error': 'Passenger for specified flight not found'}), 404
-            return jsonify({'passenger': passengers[idx]}), 200
-        matched = [p for i, p in enumerate(passengers) if i in indices]
-        return jsonify({'passengers': matched}), 200
-
-    if request.method == 'PUT':
-        data = request.get_json() or {}
-        if not data:
-            return jsonify({'error': 'No update data provided'}), 400
-        idx = _select_index()
-        if idx is None:
-            return jsonify({'error': 'multiple_records_found', 'detail': 'Specify flight to identify which booking to update'}), 400
-
-        # allowed updates
-        allowed = {'name', 'email', 'flight', 'seat', 'checked_in', 'phone', 'baggage_count', 'baggage_paid', 'baggage_details'}
-        changed = {}
-        for k, v in data.items():
-            if k in allowed:
-                passengers[idx][k] = v
-                changed[k] = v
-        try:
-            save_passengers()
-        except Exception:
-            pass
-        log_event({'type': 'admin_update_passenger', 'passport': passport, 'flight': passengers[idx].get('flight'), 'changed': changed, 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-        return jsonify({'status': 'success', 'passenger': passengers[idx]}), 200
-
-    if request.method == 'DELETE':
-        # If flight specified, delete that booking; otherwise delete all bookings for passport
-        removed = []
-        if flight:
-            new_list = [p for p in passengers if not (str(p.get('passport')) == str(passport) and str(p.get('flight') or '') == str(flight))]
-            removed = [p for p in passengers if (str(p.get('passport')) == str(passport) and str(p.get('flight') or '') == str(flight))]
-            passengers[:] = new_list
-        else:
-            removed = [p for p in passengers if str(p.get('passport')) == str(passport)]
-            passengers[:] = [p for p in passengers if not (str(p.get('passport')) == str(passport))]
-        try:
-            save_passengers()
-        except Exception:
-            pass
-        log_event({'type': 'admin_delete_passenger', 'passport': passport, 'flight': flight or 'ALL', 'removed': len(removed), 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-        return jsonify({'status': 'success', 'removed': len(removed), 'deleted': removed}), 200
-
 @app.route('/api/flights/<flight_id>/boarding/stream')
 def api_boarding_stream(flight_id):
     # SSE stream of boarding state updates for a flight (admin only)
@@ -4213,48 +3421,6 @@ def api_flight_checkin_toggle(flight_id):
     log_event({'type': 'checkin_toggled', 'flight': flight_id, 'enabled': bool(enabled), 'by': session.get('role'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     return jsonify({'status': 'ok', 'flight': flights[idx]}), 200
 
-
-@app.route('/api/admin/login', methods=['POST'])
-def api_admin_login():
-    data = request.get_json()
-    if not data or 'username' not in data or 'password' not in data:
-        return jsonify({'error': 'Missing username or password'}), 400
-    
-    users = _load_admin_users()
-    username = data['username']
-    password = data['password']
-    
-    if username in users:
-        stored_hash = users[username]['password_hash']
-        if password == stored_hash:
-            # admin sessions have a short TTL for the admin portal (seconds), configurable via ADMIN_SESSION_TTL_SECONDS
-            try:
-                # Default admin session TTL to 1 hour unless overridden
-                admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '10800  '))
-            except Exception:
-                admin_ttl = 3600.0
-
-            token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
-            log_event({
-                'type': 'admin_login',
-                'username': username,
-                'timestamp': datetime.utcnow().isoformat() + 'Z'
-            })
-            resp = jsonify({
-                'token': token,
-                'role': 'admin',
-                'expires': expires,
-                'username': username
-            })
-            try:
-                # set a cookie so browser navigation to admin pages includes session
-                resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax')
-            except Exception:
-                pass
-            return resp, 200
-    
-    return jsonify({'error': 'Invalid credentials'}), 401
-
 @app.route('/api/admin/users', methods=['GET','POST','DELETE'])
 def api_admin_users():
     session = _require_session(request)
@@ -4275,7 +3441,8 @@ def api_admin_users():
         
         users = _load_admin_users()
         try:
-            ph = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+            # Use a higher cost factor for admin passwords
+            ph = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt(14)).decode('utf-8')
         except Exception:
             ph = password
         users[username] = {'password_hash': ph}
@@ -4294,7 +3461,6 @@ def api_admin_users():
             return jsonify({'status': 'deleted', 'username': username}), 200
         return jsonify({'error': 'not_found'}), 404
 
-
 @app.route('/api/login', methods=['POST'])
 def api_login():
     """Login as admin or passenger.
@@ -4302,6 +3468,7 @@ def api_login():
     For admin: { role: 'admin', username: <str>, password: <str> }
     Returns { token, role, expires }
     """
+    # This is the main, consolidated login endpoint.
     data = request.get_json() or {}
     role = (data.get('role') or '').lower()
 
@@ -4380,9 +3547,9 @@ def api_login():
                     pass
 
         # create session
-        token, expires = _create_session('passenger', p.get('passport'))
+        token, expires_data = _create_session(p.get('passport'), role='passenger', extra_data={'passport': p.get('passport')})
         log_event({'type': 'login', 'role': 'passenger', 'passport': p.get('passport'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-        return jsonify({'token': token, 'role': 'passenger', 'expires': expires}), 200
+        return jsonify({'token': token, 'role': 'passenger', 'expires': expires_data.get('expires')}), 200
 
     if role == 'admin':
         username = data.get('username')
@@ -4395,9 +3562,9 @@ def api_login():
                 admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '3600'))
             except Exception:
                 admin_ttl = 3600.0
-            token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
+            token, expires_data = _create_session(username or 'master', role='admin', ttl_seconds=admin_ttl)
             log_event({'type': 'login', 'role': 'admin', 'username': username or 'master', 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-            resp = jsonify({'token': token, 'role': 'admin', 'expires': expires, 'username': username or 'master'})
+            resp = jsonify({'token': token, 'role': 'admin', 'expires': expires_data.get('expires'), 'username': username or 'master'})
             try:
                 resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax', path='/')
             except Exception:
@@ -4429,7 +3596,7 @@ def api_login():
                     admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '86400'))  # Default 24 hours
                 except Exception:
                     admin_ttl = 86400.0
-                token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
+                token, expires_data = _create_session(username, role='admin', ttl_seconds=admin_ttl)
                 log_event({'type': 'login', 'role': 'admin', 'username': username, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
                 
                 # Create response with session cookie
@@ -4437,7 +3604,7 @@ def api_login():
                     'token': token,
                     'role': 'admin',
                     'username': username,
-                    'expires': expires,
+                    'expires': expires_data.get('expires'),
                     'status': 'ok'
                 })
                 
@@ -4494,7 +3661,7 @@ def api_login():
             except Exception:
                 staff_ttl = 28800.0
             
-            token, expires = _create_session('staff', staff_member.get('username'), ttl_seconds=staff_ttl)
+            token, expires_data = _create_session(staff_member.get('username'), role='staff', extra_data={'staff_id': staff_member.get('system_id')}, ttl_seconds=staff_ttl)
             log_event({
                 'type': 'login',
                 'role': 'staff',
@@ -4510,7 +3677,7 @@ def api_login():
                 'username': staff_member.get('username'),
                 'staff_id': staff_member.get('system_id'),
                 'name': staff_member.get('name'),
-                'expires': expires,
+                'expires': expires_data.get('expires'),
                 'status': 'ok'
             })
             
@@ -4524,221 +3691,54 @@ def api_login():
         except Exception as e:
             return jsonify({'error': str(e)}), 500
 
-    return jsonify({'error': 'unknown_role'}), 400
-
-
-@app.route('/api/logout', methods=['POST'])
-def api_logout():
-    token = request.headers.get('X-SESSION') or request.cookies.get('session')
-    if token:
-        _delete_session(token)
-    return jsonify({'status': 'ok'})
-
-
-# (The staff profile endpoint is defined once lower in the file to avoid duplicate registrations)
-
-# Serve admin static files only to authenticated admin sessions.
-@app.route('/admin')
-@app.route('/admin/')
-def admin_root():
-    # Redirect to the dashboard entrypoint
-    return redirect('/admin/dashboard.html')
-
-
-@app.route('/admin/<path:filename>')
-def admin_files(filename):
-    # Serve admin assets and pages directly from the admin directory
-    admin_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend', 'admin'))
-    return send_from_directory(admin_dir, filename)
-
-
-@app.route('/admin-login.html', methods=['GET'])
-def admin_login_page():
-    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
-    return send_from_directory(frontend_dir, 'admin-login.html')
-
-
-@app.route('/admin/login', methods=['POST'])
-def admin_login_server():
-    # Server-side login handler for admin login form
-    username = (request.form.get('username') or '').strip()
-    password = request.form.get('password') or ''
-    if not username or not password:
-        return redirect('/admin-login.html?error=1')
-    users = _load_admin_users()
-    if username in users:
-        stored_hash = users[username].get('password_hash')
+    if role == 'member':
+        """Member login: { role: 'member', username: <str>, password: <str> }"""
+        username = (data.get('username') or '').strip()
+        password = data.get('password', '').strip()
+        
+        if not username or not password:
+            return jsonify({'error': 'missing_credentials'}), 400
+        
+        members = _load_member_users()
+        member_data = members.get(username)
+        
+        if not member_data:
+            return jsonify({'error': 'invalid_credentials'}), 403
+        
+        stored_hash = member_data.get('password_hash')
         try:
-            if bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8')):
-                try:
-                    admin_ttl = float(os.getenv('ADMIN_SESSION_TTL_SECONDS', '3600'))
-                except Exception:
-                    admin_ttl = 3600.0
-                token, expires = _create_session('admin', None, ttl_seconds=admin_ttl)
-                log_event({'type': 'admin_login', 'username': username, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-                resp = redirect('/admin/dashboard.html')
-                try:
-                    resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax')
-                except Exception:
-                    pass
-                return resp
+            if stored_hash and stored_hash.startswith('$2'):
+                ok = bcrypt.checkpw(password.encode('utf-8'), stored_hash.encode('utf-8'))
+            else:
+                ok = (password == stored_hash)
+        except Exception:
+            ok = False
+        
+        if not ok:
+            return jsonify({'error': 'invalid_credentials'}), 403
+        
+        # Create member session. Members are also passengers, so we store their passport number.
+        passport = member_data.get('passport')
+        if not passport:
+            return jsonify({'error': 'member_record_missing_passport'}), 500
+            
+        token, expires = _create_session(username, role='member', extra_data={'passport': passport}, ttl_seconds=86400) # 24h session
+        
+        log_event({'type': 'login', 'role': 'member', 'username': username, 'passport': passport, 'timestamp': datetime.now(timezone.utc).isoformat() + 'Z'})
+        
+        resp = jsonify({
+            'token': token, 'role': 'member', 'username': username,
+            'passport': passport, 'expires': expires, 'status': 'ok'
+        })
+        
+        try:
+            resp.set_cookie('session', token, max_age=86400, httponly=True, samesite='Lax', path='/')
         except Exception:
             pass
-    return redirect('/admin-login.html?error=1')
+        
+        return resp, 200
 
-
-@app.route('/admin.html')
-def serve_root_admin_html():
-    # Protect the legacy /admin.html page as well
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return redirect('/admin-login.html')
-    frontend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'frontend'))
-    return send_from_directory(frontend_dir, 'admin.html')
-
-
-def create_boarding_pass_image(p):
-    """Create a professional, stylish boarding pass with SmartFly branding and modern design."""
-    from PIL import ImageDraw, ImageFont
-    
-    # Dimensions: 1200x600 for high quality, 16:10 aspect (typical boarding pass)
-    width, height = 1200, 600
-    
-    # Create base image with WHITE background (clean, professional)
-    bg = Image.new('RGB', (width, height), color=(255, 255, 255))
-    draw = ImageDraw.Draw(bg)
-    
-    # SmartFly colors
-    smartfly_blue_dark = (11, 116, 222)  # #0B74DE
-    smartfly_blue_light = (230, 240, 250)  # Very light blue for subtle backgrounds
-    smartfly_accent = (255, 102, 0)  # #FF6600 (orange accent)
-    text_dark = (33, 33, 33)  # Dark gray instead of pure black
-    text_light = (100, 100, 100)  # Light gray for labels
-    
-    # Draw subtle light blue background on right side only (decorative, not obscuring)
-    draw.rectangle([(600, 0), (width, height)], fill=smartfly_blue_light)
-    
-    # Draw header bar at top (darker blue)
-    draw.rectangle([(0, 0), (width, 85)], fill=smartfly_blue_dark)
-    
-    # Draw accent stripe below header
-    draw.rectangle([(0, 85), (width, 92)], fill=smartfly_accent)
-    
-    # Load fonts (with fallback)
-    try:
-        font_title = ImageFont.truetype('arial.ttf', 52)
-        font_large = ImageFont.truetype('arial.ttf', 32)
-        font_medium = ImageFont.truetype('arial.ttf', 22)
-        font_small = ImageFont.truetype('arial.ttf', 16)
-        font_label = ImageFont.truetype('arial.ttf', 12)
-        font_tiny = ImageFont.truetype('arial.ttf', 11)
-    except Exception:
-        font_title = ImageFont.load_default()
-        font_large = ImageFont.load_default()
-        font_medium = ImageFont.load_default()
-        font_small = ImageFont.load_default()
-        font_label = ImageFont.load_default()
-        font_tiny = ImageFont.load_default()
-    
-    # Draw SmartFly logo/text at top left (WHITE text on dark blue)
-    draw.text((25, 20), "SmartFly", fill=(255, 255, 255), font=font_title)
-    
-    # Draw "BOARDING PASS" below header
-    draw.text((25, 110), "BOARDING PASS", fill=smartfly_blue_dark, font=font_large)
-    
-    # Draw checked-in status badge in top right
-    draw.rectangle([(width - 200, 20), (width - 25, 70)], fill=smartfly_accent)
-    draw.text((width - 190, 30), "✓ CHECKED IN", fill=(255, 255, 255), font=font_small)
-    
-    # Main content area starts here
-    content_y = 150
-    
-    # LEFT SECTION: Passenger and Document Info
-    left_x = 25
-    
-    # Passenger Name
-    draw.text((left_x, content_y), "PASSENGER", fill=text_light, font=font_label)
-    draw.text((left_x, content_y + 18), p.get('name', 'N/A').upper(), fill=text_dark, font=font_large)
-    
-    # Document Number
-    draw.text((left_x, content_y + 70), "DOCUMENT NO.", fill=text_light, font=font_label)
-    draw.text((left_x, content_y + 88), p.get('passport', 'N/A'), fill=text_dark, font=font_medium)
-    
-    # MIDDLE SECTION: Flight Info (prominent)
-    middle_x = 380
-    
-    # Flight Number (VERY LARGE AND PROMINENT)
-    draw.text((middle_x, content_y - 15), "FLIGHT", fill=text_light, font=font_label)
-    draw.text((middle_x, content_y + 15), p.get('flight', 'N/A').upper(), fill=smartfly_blue_dark, font=font_title)
-    
-    # RIGHT SECTION: Seat Number
-    right_x = width - 250
-    
-    # Seat (large, in accent color)
-    draw.text((right_x, content_y), "SEAT", fill=text_light, font=font_label)
-    draw.text((right_x, content_y + 18), str(p.get('seat', 'N/A')), fill=smartfly_accent, font=font_title)
-    
-    # Separator line (subtle)
-    draw.line([(25, 310), (width - 25, 310)], fill=(220, 220, 220), width=2)
-    
-    # BOTTOM SECTION: Flight Details (4 columns)
-    bottom_y = 340
-    
-    # Column 1: From
-    col1_x = 25
-    draw.text((col1_x, bottom_y), "FROM", fill=text_light, font=font_label)
-    draw.text((col1_x, bottom_y + 20), "JFK", fill=text_dark, font=font_large)
-    
-    # Column 2: To
-    col2_x = 300
-    draw.text((col2_x, bottom_y), "TO", fill=text_light, font=font_label)
-    draw.text((col2_x, bottom_y + 20), "LHR", fill=text_dark, font=font_large)
-    
-    # Column 3: Gate
-    col3_x = 550
-    draw.text((col3_x, bottom_y), "GATE", fill=text_light, font=font_label)
-    draw.text((col3_x, bottom_y + 20), "B22", fill=text_dark, font=font_large)
-    
-    # Column 4: Class
-    col4_x = 750
-    draw.text((col4_x, bottom_y), "CLASS", fill=text_light, font=font_label)
-    draw.text((col4_x, bottom_y + 20), "ECONOMY", fill=text_dark, font=font_medium)
-    
-    # Second row: Boarding and Departure times
-    second_row_y = 440
-    
-    draw.text((col1_x, second_row_y), "BOARDING", fill=text_light, font=font_label)
-    draw.text((col1_x, second_row_y + 20), "15:00", fill=text_dark, font=font_medium)
-    
-    draw.text((col2_x, second_row_y), "DEPARTURE", fill=text_light, font=font_label)
-    draw.text((col2_x, second_row_y + 20), "15:30", fill=text_dark, font=font_medium)
-    
-    draw.text((col3_x, second_row_y), "ARRIVAL", fill=text_light, font=font_label)
-    draw.text((col3_x, second_row_y + 20), "19:45", fill=text_dark, font=font_medium)
-    
-    draw.text((col4_x, second_row_y), "BAGGAGE", fill=text_light, font=font_label)
-    draw.text((col4_x, second_row_y + 20), "1 BAG", fill=text_dark, font=font_medium)
-    
-    # QR CODE (bottom right, with white background box)
-    qr_payload = f"pass:{p.get('passport')}|flight:{p.get('flight')}|seat:{p.get('seat')}"
-    qr = qrcode.make(qr_payload).resize((160, 160))
-    
-    # Draw white box with border for QR code
-    qr_x = width - 210
-    qr_y = 360
-    draw.rectangle([(qr_x - 12, qr_y - 12), (qr_x + 172, qr_y + 172)], 
-                   fill=(255, 255, 255), outline=smartfly_blue_dark, width=3)
-    bg.paste(qr, (qr_x, qr_y))
-    
-    # Footer
-    footer_y = height - 35
-    draw.text((col1_x, footer_y), "Present this pass at the gate • Keep throughout journey", 
-              fill=text_light, font=font_tiny)
-    draw.text((col1_x, footer_y + 16), f"Boarding Pass #{p.get('passport', '000000')[-6:]} • Valid only with proper identification", 
-              fill=text_light, font=font_tiny)
-    
-    return bg
-
+    return jsonify({'error': 'unknown_role'}), 400
 
 def send_booking_confirmation_email(passenger, booking_ref, flight_details):
     """Send booking confirmation email to passenger."""
@@ -4816,7 +3816,6 @@ def send_booking_confirmation_email(passenger, booking_ref, flight_details):
         'timestamp': datetime.utcnow().isoformat() + 'Z'
     })
     return True
-
 
 def send_boarding_pass_email(passenger):
     """Send boarding pass email with attached image to passenger"""
@@ -4912,32 +3911,12 @@ SmartFly Airlines Team
         })
         raise
 
-def enqueue_booking_confirmation_email(passenger, booking_ref, flight_details):
-    """Enqueue sending booking confirmation email."""
-    try:
-        if RQ_QUEUE is not None:
-            try:
-                RQ_QUEUE.enqueue(send_booking_confirmation_email, passenger, booking_ref, flight_details)
-            except Exception:
-                RQ_QUEUE.enqueue('app.send_booking_confirmation_email', args=(passenger, booking_ref, flight_details))
-            log_event({'type': 'booking_email_rq_enqueued', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-            return
-    except Exception as e:
-        log_event({'type': 'booking_email_rq_enqueue_failed', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-
-    try:
-        send_booking_confirmation_email(passenger, booking_ref, flight_details)
-    except Exception as e:
-        log_event({'type': 'booking_email_send_failed', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-
-
 def _email_worker(passenger):
     try:
         send_boarding_pass_email(passenger)
         log_event({'type': 'email_sent_background', 'passport': passenger.get('passport'), 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
     except Exception as e:
         log_event({'type': 'email_send_failed_background', 'passport': passenger.get('passport'), 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-
 
 def enqueue_boarding_email(passenger):
     """Enqueue sending boarding pass email.
@@ -4964,101 +3943,32 @@ def enqueue_boarding_email(passenger):
     except Exception as e:
         log_event({'type': 'email_queue_failed', 'passport': passenger.get('passport'), 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
 
-# Serve frontend files (single, canonical handlers)
-@app.route("/", defaults={'path': 'index.html'})
-@app.route("/<path:path>")
-def index(path):
+def enqueue_booking_confirmation_email(passenger, booking_ref, flight_details):
+    """Enqueue sending booking confirmation email."""
     try:
-        # If the requested path doesn't exist or is a directory, fall back to the
-        # canonical `index.html` and ensure we send it with an HTML mimetype so
-        # browsers correctly render the page (some clients may otherwise treat
-        # unknown responses as plain text).
-        full_path = os.path.join(FRONTEND_DIR, path)
-        if not os.path.exists(full_path) or os.path.isdir(full_path):
-            return send_from_directory(FRONTEND_DIR, "index.html", mimetype='text/html')
+        if RQ_QUEUE is not None:
+            try:
+                RQ_QUEUE.enqueue(send_booking_confirmation_email, passenger, booking_ref, flight_details)
+            except Exception:
+                RQ_QUEUE.enqueue('app.send_booking_confirmation_email', args=(passenger, booking_ref, flight_details))
+            log_event({'type': 'booking_email_rq_enqueued', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'to': passenger.get('email'), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+            return
+    except Exception as e:
+        log_event({'type': 'booking_email_rq_enqueue_failed', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
 
-        # If an explicit HTML file was requested, ensure the response is
-        # delivered as text/html.
-        if path.lower().endswith('.html') or path.lower().endswith('.htm'):
-            return send_from_directory(FRONTEND_DIR, path, mimetype='text/html')
-
-        # Otherwise allow Flask to guess the mimetype for static assets.
-        return send_from_directory(FRONTEND_DIR, path)
-    except Exception:
-        return send_from_directory(FRONTEND_DIR, "index.html", mimetype='text/html')
-
-
-@app.route("/style.css")
-def style():
-    return send_from_directory(FRONTEND_DIR, "style.css")
-
-
-@app.route("/checkin")
-def checkin():
-    return send_from_directory(FRONTEND_DIR, "checkin.html", mimetype="text/html")
-
-
-@app.route("/lookup")
-def lookup():
-    return send_from_directory(FRONTEND_DIR, "lookup.html", mimetype="text/html")
-
-
-@app.route("/login")
-def login():
-    return send_from_directory(FRONTEND_DIR, "login.html", mimetype="text/html")
-
-
-@app.route("/passenger")
-def passenger():
-    return send_from_directory(FRONTEND_DIR, "passenger.html", mimetype="text/html")
-
-
-@app.route('/admin/checkins.html')
-def admin_checkins_page():
-    if not _has_admin_session():
-        return redirect('/admin-login.html')
-    return send_from_directory(ADMIN_DIR, 'checkins.html', mimetype='text/html')
-
-
-@app.route('/admin/payments.html')
-def admin_payments_page():
-    if not _has_admin_session():
-        return redirect('/admin-login.html')
-    return send_from_directory(ADMIN_DIR, 'payments.html', mimetype='text/html')
-
-
-@app.route('/admin/active-flights.html')
-def admin_active_flights_page():
-    if not _has_admin_session():
-        return redirect('/admin-login.html')
-    return send_from_directory(ADMIN_DIR, 'active-flights.html', mimetype='text/html')
-
-
-@app.route('/admin/members.html')
-def admin_members_page():
-    if not _has_admin_session():
-        return redirect('/admin-login.html')
-    return send_from_directory(ADMIN_DIR, 'members.html', mimetype='text/html')
-
-
-@app.route('/admin/load-members.html')
-def admin_load_members_page():
-    if not _has_admin_session():
-        return redirect('/admin-login.html')
-    return send_from_directory(ADMIN_DIR, 'load-members.html', mimetype='text/html')
-
-
-@app.route('/assets/<path:path>')
-def serve_assets(path):
-    return send_from_directory(os.path.join(FRONTEND_DIR, 'assets'), path)
-
+    try:
+        send_booking_confirmation_email(passenger, booking_ref, flight_details)
+    except Exception as e:
+        log_event({'type': 'booking_email_send_failed', 'passport': passenger.get('passport'), 'booking_ref': booking_ref, 'error': str(e), 'timestamp': datetime.utcnow().isoformat() + 'Z'})
 
 # --- Admin Enhancement API Endpoints -------------------------------------------------
 
 @app.route('/api/bookings/<booking_id>/refund', methods=['POST'])
-@require_admin
 def refund_booking(booking_id):
     """Process refund for a booking."""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         bookings = _load_bookings()
         booking = next((b for b in bookings if b.get('id') == booking_id), None)
@@ -5088,11 +3998,12 @@ def refund_booking(booking_id):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/flights/<flight_number>/seats', methods=['PATCH'])
-@require_admin
 def update_seat_blocking(flight_number):
     """Update blocked seats for a flight."""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         data = request.get_json()
         blocked_seats = data.get('blocked_seats', [])
@@ -5203,7 +4114,6 @@ def api_flight_class_availability(flight_id):
         'class_availability': class_availability
     }), 200
 
-
 @app.route('/api/export/passengers', methods=['GET'])
 def api_export_passengers():
     """Export all passengers as CSV."""
@@ -5247,7 +4157,6 @@ def api_export_passengers():
         'Content-Disposition': 'attachment; filename="passengers.csv"',
         'Content-Type': 'text/csv'
     }
-
 
 @app.route('/api/export/flights', methods=['GET'])
 def api_export_flights():
@@ -5302,7 +4211,6 @@ def api_export_flights():
         'Content-Type': 'text/csv'
     }
 
-
 @app.route('/api/export/bookings', methods=['GET'])
 def api_export_bookings():
     """Export all bookings as CSV."""
@@ -5345,11 +4253,12 @@ def api_export_bookings():
         'Content-Type': 'text/csv'
     }
 
-
 @app.route('/api/passengers/<passport>/notes', methods=['PATCH'])
-@require_admin
 def update_passenger_notes(passport):
     """Update admin notes for a passenger."""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         data = request.get_json()
         admin_notes = data.get('admin_notes', '')
@@ -5377,15 +4286,16 @@ def update_passenger_notes(passport):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/api/export/<export_type>', methods=['GET'])
-@require_admin
 def export_data(export_type):
     """
     Export comprehensive data as CSV with all relevant details.
     Supports: passengers, flights, bookings
     Data reflects real-time state when exported.
     """
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         import csv
         from io import StringIO
@@ -5559,10 +4469,21 @@ def export_data(export_type):
 
     except Exception as e:
         return jsonify({'error': f'Export failed: {str(e)}'}), 500
-app.route('/api/sessions', methods=['GET'])
+
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    token = _get_session_from_request(request)
+    if token:
+        _delete_session(token)
+    return jsonify({'status': 'ok'})
+
+@app.route('/api/sessions', methods=['GET'])
 def api_get_sessions():
     """Get active user sessions for admin dashboard"""
     try:
+        session = _require_session(request, require_role='admin')
+        if not session:
+            return jsonify({'error': 'unauthorized'}), 401
         # Load sessions from file
         sessions = _load_json_file(SESSIONS_FILE, {})
         
@@ -5601,10 +4522,12 @@ def api_get_sessions():
         # Return empty sessions if file doesn't exist or error occurs
         return jsonify({'sessions': [], 'count': 0}), 200
 
-
 @app.route('/api/users', methods=['GET'])
 def api_get_users():
     """Get registered users for admin dashboard"""
+    session = _require_session(request, require_role='admin')
+    if not session:
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         # Load users from file (users.json generated by data generator)
         users_file = os.path.join(BASE_DIR, 'users.json')
@@ -5628,6 +4551,40 @@ def api_get_users():
     except Exception as e:
         return jsonify({'users': [], 'count': 0}), 200
 
+# ---- Member Portal API Endpoints ---------------------------------------------
+
+@app.route('/api/member/profile', methods=['GET'])
+def api_member_profile():
+    """Get the current member's profile."""
+    session = _require_session(request, require_role='member')
+    if not session:
+        return jsonify({'error': 'member_auth_required'}), 401
+    
+    username = session.get('username')
+    members = _load_member_users()
+    member_data = members.get(username)
+
+    if not member_data:
+        return jsonify({'error': 'member_not_found'}), 404
+
+    # Don't return password hash
+    profile = {k: v for k, v in member_data.items() if k != 'password_hash'}
+    return jsonify({'profile': profile}), 200
+
+@app.route('/api/member/booking-history', methods=['GET'])
+def api_member_booking_history():
+    """Get the booking history for the current member."""
+    session = _require_session(request, require_role='member')
+    if not session:
+        return jsonify({'error': 'member_auth_required'}), 401
+    
+    passport = session.get('passport')
+    if not passport:
+        return jsonify({'error': 'session_missing_passport'}), 400
+
+    # Reuse existing logic from api_bookings by finding all passenger records
+    member_bookings = [p.copy() for p in passengers if p.get('passport') == passport]
+    return jsonify({'bookings': member_bookings}), 200
 
 # ============================================
 # M-PESA INTEGRATION ENDPOINTS
@@ -5685,7 +4642,6 @@ def mpesa_stk_push():
     except Exception as e:
         logger.error(f"Error in STK Push: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
-
 
 @app.route('/api/mpesa/callback', methods=['POST'])
 def mpesa_callback():
@@ -5766,7 +4722,6 @@ def mpesa_callback():
         logger.error(f"Error processing M-Pesa callback: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
-
 @app.route('/api/mpesa/c2b/register', methods=['POST'])
 def mpesa_c2b_register():
     """
@@ -5810,7 +4765,6 @@ def mpesa_c2b_register():
     except Exception as e:
         logger.error(f"Error registering C2B URLs: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
-
 
 @app.route('/api/mpesa/b2c/payment', methods=['POST'])
 def mpesa_b2c_payment():
@@ -5862,7 +4816,6 @@ def mpesa_b2c_payment():
     except Exception as e:
         logger.error(f"Error in B2C payment: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
-
 
 # ============================================
 # SMS INTEGRATION ENDPOINTS
@@ -5922,7 +4875,6 @@ def send_payment_confirmation_sms():
         logger.error(f"Error sending SMS: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
-
 # ============================================
 # EMAIL INTEGRATION ENDPOINTS
 # ============================================
@@ -5980,7 +4932,6 @@ def send_checkin_reminder_email():
         logger.error(f"Error sending email: {str(e)}")
         return jsonify({'success': False, 'message': str(e)}), 500
 
-
 # Simple CORS for local development
 @app.after_request
 def add_cors(resp):
@@ -5999,34 +4950,104 @@ def add_cors(resp):
         pass
     return resp
 
-# Serve the SPA index at '/'
-@app.route('/')
-def _serve_index():
-    return send_from_directory(FRONTEND_DIR, 'index.html')
+# ---- Portal Serving Logic ----------------------------------------------------
 
-# Serve admin CSS and JS files
-@app.route('/admin-dashboard.css')
-def serve_admin_css():
-    """Serve admin dashboard CSS"""
-    return send_from_directory(FRONTEND_DIR, 'admin-dashboard.css')
+# Admin Portal (Protected)
+@app.route('/admin')
+@app.route('/admin/')
+def serve_admin_portal_root():
+    if not _has_admin_session():
+        return redirect('/admin/login.html')
+    return redirect('/admin/dashboard.html')
 
-@app.route('/admin-dashboard.js')
-def serve_admin_js():
-    """Serve admin dashboard JS"""
-    return send_from_directory(FRONTEND_DIR, 'admin-dashboard.js')
+@app.route('/admin/<path:filename>')
+def serve_admin_portal_files(filename):
+    # Publicly serve login page
+    if 'login' in filename:
+        return send_from_directory(ADMIN_DIR, filename)
+    
+    if not _has_admin_session():
+        return redirect('/admin/login.html')
 
-# (Removed duplicate admin routes to avoid collisions)
+    admin_file = os.path.join(ADMIN_DIR, filename)
+    if os.path.exists(admin_file) and not os.path.isdir(admin_file):
+        return send_from_directory(ADMIN_DIR, filename)
+    
+    return send_from_directory(ADMIN_DIR, 'dashboard.html')
 
-if __name__ == "__main__":
-    # Load persisted passengers into memory when starting the server
-    try:
-        if os.path.exists(PASSENGER_FILE):
-            with open(PASSENGER_FILE, 'r', encoding='utf-8') as f:
-                data = json.load(f) or []
-                if isinstance(data, list):
-                    passengers.clear()
-                    passengers.extend(data)
-    except Exception:
-        pass
+# Staff Portal (Protected)
+@app.route('/staff')
+@app.route('/staff/')
+def serve_staff_portal_root():
+    if not _has_staff_session():
+        return redirect('/staff/login.html')
+    return redirect('/staff/dashboard.html')
 
-    app.run(debug=True, host="127.0.0.1", port=5000)
+@app.route('/staff/<path:filename>')
+def serve_staff_portal_files(filename):
+    if 'login' in filename:
+        return send_from_directory(STAFF_DIR, filename)
+    
+    if not _has_staff_session():
+        return redirect('/staff/login.html')
+
+    return send_from_directory(STAFF_DIR, filename)
+
+
+# Member Portal (Protected)
+@app.route('/member')
+@app.route('/member/')
+def serve_member_portal_root():
+    if not _has_member_session():
+        return redirect('/member/login.html')
+    return redirect('/member/dashboard.html') # Assuming a member dashboard
+
+@app.route('/member/<path:filename>')
+def serve_member_portal_files(filename):
+    # Publicly serve login page
+    if 'login' in filename:
+        return send_from_directory(MEMBER_DIR, filename)
+    
+    if not _has_member_session():
+        return redirect('/member/login.html')
+
+    member_file = os.path.join(MEMBER_DIR, filename)
+    if os.path.exists(member_file) and not os.path.isdir(member_file):
+        return send_from_directory(MEMBER_DIR, filename)
+    
+    return send_from_directory(MEMBER_DIR, 'dashboard.html') # Default member page
+
+# Shared assets can be served from a common directory
+@app.route('/assets/<path:path>')
+def serve_shared_assets(path):
+    assets_dir = os.path.join(FRONTEND_DIR, 'assets')
+    return send_from_directory(assets_dir, path)
+
+# Passenger Portal (Public) - This is the catch-all for the main frontend.
+# It must be defined last to ensure specific portal routes (admin, staff, member) take precedence.
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_passenger_portal(path):
+    # List of directories that are considered separate portals and should not be served via the root path
+    PORTAL_DIRS = ['admin', 'staff', 'member']
+    
+    # Prevent serving files from other portal directories via the root path.
+    # If a request comes for e.g. /admin/dashboard.html through this catch-all,
+    # it should redirect to the specific portal's login page.
+    # This adds robustness to portal separation.
+    path_parts = path.split('/')
+    if path_parts[0] in PORTAL_DIRS:
+        # If the request is for a file within a protected portal directory,
+        # redirect to that portal's login page.
+        # This prevents accidental exposure or incorrect routing.
+        return redirect(f'/{path_parts[0]}/login.html')
+
+    # This part handles serving static files directly from the FRONTEND_DIR
+    # or falling back to index.html for client-side routing (SPA behavior).
+    # If a requested path corresponds to an existing file (like 'script.js' or 'style.css'), it's served.
+    # Otherwise, it's assumed to be a client-side route (like '/availability'), so index.html is served,
+    # allowing the SPA's router to handle the request.
+    if path != "" and os.path.exists(os.path.join(FRONTEND_DIR, path)) and os.path.isfile(os.path.join(FRONTEND_DIR, path)):
+        return send_from_directory(FRONTEND_DIR, path)
+    else:
+        return send_from_directory(FRONTEND_DIR, 'index.html')

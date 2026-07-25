@@ -12,7 +12,6 @@ from integration_module import (
     get_revenue_summary
 )
 from activity_tracker import log_activity, get_payments_log
-from activity_tracker import log_activity, get_payments_log
 
 
 def register_booking_endpoints(app, _require_session):

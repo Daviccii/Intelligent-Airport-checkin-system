@@ -44,7 +44,7 @@ class FlightManager:
         except FileNotFoundError:
             self.aircraft_configs = {}
 
-    def get_seat_map(self, flight_id: str) -> Dict:
+    def get_seat_map(self, flight_id: str, passengers: List[Dict]) -> Optional[Dict]:
         """Get detailed seat map with availability."""
         flights = self._load_flights()
         flight = next((f for f in flights if f['flight'] == flight_id), None)
@@ -56,7 +56,6 @@ class FlightManager:
             return None
 
         # Get all occupied seats for this flight
-        from app import passengers
         occupied_seats = [
             p.get('seat') for p in passengers 
             if p.get('flight') == flight_id and p.get('seat')
@@ -88,9 +87,9 @@ class FlightManager:
 
         return seat_map
 
-    def assign_optimal_seat(self, flight_id: str, passenger_type: str = 'regular') -> Optional[str]:
+    def assign_optimal_seat(self, flight_id: str, passengers: List[Dict], passenger_type: str = 'regular') -> Optional[str]:
         """Assign best available seat based on passenger type."""
-        seat_map = self.get_seat_map(flight_id)
+        seat_map = self.get_seat_map(flight_id, passengers)
         if not seat_map:
             return None
 
@@ -137,7 +136,7 @@ class FlightManager:
         qr_img.save(img_byte_array, format='PNG')
         return img_byte_array.getvalue()
 
-    def check_flight_status(self, flight_id: str) -> Dict:
+    def check_flight_status(self, flight_id: str, passengers: List[Dict]) -> Optional[Dict]:
         """Get detailed flight status including weather and delays."""
         flights = self._load_flights()
         flight = next((f for f in flights if f['flight'] == flight_id), None)
@@ -145,7 +144,6 @@ class FlightManager:
             return None
 
         # Calculate load factor
-        from app import passengers
         booked_passengers = len([
             p for p in passengers if p.get('flight') == flight_id
         ])

@@ -1,15 +1,19 @@
 // Parse URL parameters
 function getSearchParams() {
     const params = new URLSearchParams(window.location.search);
+    // Security Check: Ensure essential parameters exist
+    if (!params.has('origin') || !params.has('destination') || !params.has('departure')) {
+        alert('Invalid search criteria. Redirecting to homepage.');
+        window.location.href = 'index.html';
+        return null; // Stop execution
+    }
     return {
-        from: params.get('from'),
-        fromCity: params.get('fromCity'),
-        to: params.get('to'),
-        toCity: params.get('toCity'),
-        departDate: params.get('departDate'),
+        origin: params.get('origin'),
+        destination: params.get('destination'),
+        departure: params.get('departure'),
         returnDate: params.get('returnDate'),
-        tripType: params.get('tripType'),
-        passengers: parseInt(params.get('passengers') || '1')
+        passengers: params.get('passengers') || '1-0-0',
+        cabin: params.get('cabin') || 'economy'
     };
 }
 
@@ -79,58 +83,6 @@ function getCalendarPriceForDate(date, from, to) {
     return Math.round(finalPrice);
 }
 
-// Route pricing aligned with homepage calendar (KES)
-const ROUTE_PRICING = {
-    // Domestic routes (Kenya)
-    'NBO-MBA': { distance: 500, basePrice: 250 },
-    'MBA-NBO': { distance: 500, basePrice: 250 },
-    'NBO-KIS': { distance: 350, basePrice: 200 },
-    'KIS-NBO': { distance: 350, basePrice: 200 },
-    'NBO-ELD': { distance: 300, basePrice: 180 },
-    'ELD-NBO': { distance: 300, basePrice: 180 },
-    'MBA-KIS': { distance: 700, basePrice: 300 },
-    'KIS-MBA': { distance: 700, basePrice: 300 },
-
-    // Regional routes (East Africa)
-    'NBO-EBB': { distance: 700, basePrice: 350 },
-    'EBB-NBO': { distance: 700, basePrice: 350 },
-    'NBO-DAR': { distance: 400, basePrice: 250 },
-    'DAR-NBO': { distance: 400, basePrice: 250 },
-
-    // Long-haul international routes
-    'NBO-LHR': { distance: 7200, basePrice: 650 },
-    'LHR-NBO': { distance: 7200, basePrice: 650 },
-    'NBO-CDG': { distance: 7500, basePrice: 680 },
-    'CDG-NBO': { distance: 7500, basePrice: 680 },
-    'NBO-DXB': { distance: 4200, basePrice: 450 },
-    'DXB-NBO': { distance: 4200, basePrice: 450 },
-    'NBO-JFK': { distance: 8900, basePrice: 750 },
-    'JFK-NBO': { distance: 8900, basePrice: 750 },
-    'NBO-SIN': { distance: 9000, basePrice: 800 },
-    'SIN-NBO': { distance: 9000, basePrice: 800 }
-};
-
-function getRoutePricing(from, to) {
-    const routeKey = `${from}-${to}`;
-    return ROUTE_PRICING[routeKey] || { distance: 5000, basePrice: 500 };
-}
-
-function getDeterministicVariation(date, basePrice) {
-    const seed = (date.getFullYear() * 10000) + ((date.getMonth() + 1) * 100) + date.getDate();
-    const normalized = Math.abs(Math.sin(seed) * 10000) % 1;
-    return (normalized * 0.1 - 0.05) * basePrice; // +/-5%
-}
-
-function getCalendarPriceForDate(date, from, to) {
-    const routeInfo = getRoutePricing(from, to);
-    const basePrice = routeInfo.basePrice;
-    const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-    const weekendSurge = isWeekend ? (basePrice * 0.15) : 0;
-    const dayVariation = getDeterministicVariation(date, basePrice);
-    const finalPrice = Math.max(basePrice * 0.9, basePrice + weekendSurge + dayVariation);
-    return Math.round(finalPrice);
-}
-
 // Generate mock flight data
 function generateFlights(from, to, date) {
     const airlines = [
@@ -160,12 +112,15 @@ function generateFlights(from, to, date) {
         const stopText = stops === 0 ? 'Nonstop' : `${stops} stop${stops > 1 ? 's' : ''}`;
         
         const basePrice = getCalendarPriceForDate(new Date(date), from, to);
+        const seatsLeft = Math.floor(Math.random() * 25) + 3; // 3-27 seats left
+        const isSoldOut = Math.random() < 0.05; // 5% chance of being sold out
+
         const stopSurcharge = 3500;
         const economyPrice = basePrice + (stops * stopSurcharge);
         const businessPrice = Math.floor(economyPrice * (2.5 + Math.random() * 0.5));
 
         flights.push({
-            airline: airline.name,
+            airlineName: airline.name,
             airlineCode: airline.code,
             airlineLogo: airline.logo,
             departTime,
@@ -177,7 +132,8 @@ function generateFlights(from, to, date) {
             terminal: `Terminal ${Math.floor(Math.random() * 3) + 1}`,
             economyPrice,
             businessPrice,
-            seatsLeft: Math.floor(Math.random() * 5) + 3
+            seatsLeft: isSoldOut ? 0 : seatsLeft,
+            flightNumber: `${airline.code}${Math.floor(100 + Math.random() * 900)}`
         });
     }
 
@@ -211,18 +167,18 @@ function generateDateSlider(departDate, tripType, from, to) {
 
 // Render summary bar
 function renderSummary(params) {
-    const { from, fromCity, to, toCity, departDate, returnDate, tripType, passengers } = params;
+    if (!params) return;
+    const { origin, destination, departure, returnDate, passengers } = params;
     
-    document.getElementById('fromCode').textContent = from;
-    document.getElementById('fromCity').textContent = fromCity;
-    document.getElementById('toCode').textContent = to;
-    document.getElementById('toCity').textContent = toCity;
+    document.getElementById('fromCode').textContent = origin;
+    // You might want to add a lookup for city names based on code
+    document.getElementById('toCode').textContent = destination;
     
-    const dateText = returnDate && tripType === 'return' 
-        ? `${formatDate(departDate)} - ${formatDate(returnDate)}`
-        : formatDate(departDate);
+    const dateText = returnDate
+        ? `${formatDate(departure)} - ${formatDate(returnDate)}`
+        : formatDate(departure);
     document.getElementById('travelDates').textContent = dateText;
-    
+
     const passengerText = passengers === 1 ? '1 Adult' : `${passengers} Adults`;
     document.getElementById('passengerCount').textContent = passengerText;
 }
@@ -246,10 +202,11 @@ function renderDateSlider(dates, onDateSelect) {
 }
 
 // Render flight cards
-function renderFlights(flights) {
+function renderFlights(flights, cabinClass) {
     const container = document.getElementById('flightResults');
     container.innerHTML = '';
     
+    const isBusiness = cabinClass.toLowerCase().includes('business');
     if (flights.length === 0) {
         container.innerHTML = '<p style="text-align: center; padding: 48px; color: #757575;">No flights found for this route.</p>';
         return;
@@ -257,6 +214,10 @@ function renderFlights(flights) {
     
     flights.forEach(flight => {
         const card = document.createElement('div');
+        const farePrice = isBusiness ? flight.businessPrice : flight.economyPrice;
+        const fareClassDisplay = isBusiness ? 'Business' : 'Economy';
+        const isSoldOut = flight.seatsLeft === 0;
+
         card.className = 'flight-card';
         card.innerHTML = `
             <div class="flight-times">
@@ -276,7 +237,7 @@ function renderFlights(flights) {
                 <div class="duration">${flight.duration}</div>
                 <div class="airline-info">
                     <div class="airline-logo">${flight.airlineLogo}</div>
-                    <div class="airline-name">${flight.airline}</div>
+                    <div class="airline-name">${flight.airlineName}</div>
                 </div>
                 <button class="view-details-btn">View Details</button>
             </div>
@@ -290,20 +251,16 @@ function renderFlights(flights) {
                 </div>
             </div>
             
-            <div class="flight-fares" style="grid-column: 1 / -1;">
-                <div class="fare-card" onclick="selectFlight('economy', ${flight.economyPrice})">
-                    <div class="fare-class">Economy</div>
-                    <div class="fare-price">Ksh ${flight.economyPrice}</div>
-                    <div class="fare-currency">KES</div>
-                </div>
-                <div class="fare-card business" onclick="selectFlight('business', ${flight.businessPrice})">
-                    ${flight.seatsLeft <= 5 ? `<span class="seats-left-badge">${flight.seatsLeft} seats left</span>` : ''}
-                    <div class="fare-class">Business</div>
-                    <div class="fare-price">Ksh ${flight.businessPrice}</div>
-                    <div class="fare-currency">KES</div>
-                </div>
-            </div>
-        `;
+            <div class="flight-fares" style="grid-column: 1 / -1;">` +
+                (isSoldOut ?
+                    `<div class="fare-card sold-out"><div class="fare-class">Sold Out</div></div>` :
+                    `<div class="fare-card ${isBusiness ? 'business' : ''}" onclick='selectFlight(${JSON.stringify(flight)}, "${fareClassDisplay}", ${farePrice})'>
+                        ${flight.seatsLeft <= 10 ? `<span class="seats-left-badge">${flight.seatsLeft} seats left</span>` : ''}
+                        <div class="fare-class">${fareClassDisplay}</div>
+                        <div class="fare-price">Ksh ${farePrice.toLocaleString()}</div>
+                        <div class="fare-currency">KES</div>
+                    </div>`) +
+            `</div>`;
         container.appendChild(card);
     });
     
@@ -342,28 +299,28 @@ function sortFlights(flights, sortBy) {
 }
 
 // Handle flight selection
-window.selectFlight = function(fareClass, price) {
+window.selectFlight = function(flight, fareClass, price) {
     const params = getSearchParams();
     
-    // Store selected flight data in sessionStorage
-    const selectedFlight = {
-        from: params.from,
-        fromCity: params.fromCity,
-        to: params.to,
-        toCity: params.toCity,
-        departDate: params.departDate,
-        returnDate: params.returnDate,
-        tripType: params.tripType,
-        fareClass: fareClass,
-        price: price,
-        passengers: params.passengers
+    // Create the booking session object
+    const bookingSession = {
+        searchParams: params,
+        selectedFlight: {
+            ...flight, // The full flight object
+            fareClass: fareClass,
+            price: price
+        },
+        passengers: [],
+        selectedSeats: [],
+        payment: { status: 'pending' },
+        booking: { status: 'pending' }
     };
     
-    console.log('🎫 Flight selected:', selectedFlight);
-    sessionStorage.setItem('selectedFlight', JSON.stringify(selectedFlight));
+    console.log('🎫 Flight selected, creating booking session:', bookingSession);
+    sessionStorage.setItem('smartflyBookingSession', JSON.stringify(bookingSession));
     
     // Redirect to passenger details page
-    window.location.href = `/passenger-details.html?from=${params.from}&to=${params.to}&date=${params.departDate}&fare=${fareClass}&price=${price}`;
+    window.location.href = 'passenger-details.html';
 };
 
 // Initialize page
@@ -373,13 +330,14 @@ let selectedDate = '';
 
 document.addEventListener('DOMContentLoaded', () => {
     const params = getSearchParams();
+    if (!params) return; // Stop if security check failed
     
     // Render summary
     renderSummary(params);
     
     // Generate and render date slider
-    selectedDate = params.departDate;
-    currentDateData = generateDateSlider(params.departDate, params.tripType, params.from, params.to);
+    selectedDate = params.departure;
+    currentDateData = generateDateSlider(params.departure, params.tripType, params.origin, params.destination);
     renderDateSlider(currentDateData, (date) => {
         selectedDate = date;
         // Update date cards
@@ -389,23 +347,23 @@ document.addEventListener('DOMContentLoaded', () => {
             currentDateData.forEach(d => d.selected = d.date === date);
             renderDateSlider(currentDateData, arguments.callee);
             // Regenerate flights for new date
-            currentFlights = generateFlights(params.from, params.to, date);
+            currentFlights = generateFlights(params.origin, params.destination, date);
             const sortBy = document.getElementById('sortSelect').value;
-            renderFlights(sortFlights(currentFlights, sortBy));
+            renderFlights(sortFlights(currentFlights, sortBy), params.cabin);
         });
         // Regenerate flights for new date
-        currentFlights = generateFlights(params.from, params.to, date);
+        currentFlights = generateFlights(params.origin, params.destination, date);
         const sortBy = document.getElementById('sortSelect').value;
-        renderFlights(sortFlights(currentFlights, sortBy));
+        renderFlights(sortFlights(currentFlights, sortBy), params.cabin);
     });
     
     // Generate initial flights
-    currentFlights = generateFlights(params.from, params.to, params.departDate);
-    renderFlights(sortFlights(currentFlights, 'recommended'));
+    currentFlights = generateFlights(params.origin, params.destination, params.departure);
+    renderFlights(sortFlights(currentFlights, 'recommended'), params.cabin);
     
     // Sort dropdown handler
     document.getElementById('sortSelect').addEventListener('change', (e) => {
-        renderFlights(sortFlights(currentFlights, e.target.value));
+        renderFlights(sortFlights(currentFlights, e.target.value), params.cabin);
     });
     
     // Date navigation buttons

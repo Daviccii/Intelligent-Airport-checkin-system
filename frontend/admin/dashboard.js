@@ -1,48 +1,15 @@
 (function() {
   // Utility functions
   const fmtNumber = (value) => value.toLocaleString('en-US');
-  const fmtCurrency = (value) => `$${(value / 1000).toFixed(1)}K`;
-
-  // Mock data source
-  const state = {
-    summary: {
-      flights: { total: 342, delta: 18 },
-      passengers: { total: 52840, delta: 1240 },
-      revenue: { total: 8740000, deltaPct: 24 },
-      checkins: { total: 156, live: true },
-    },
-    activities: [
-      { type: 'Check-in', passenger: 'Amina Otieno', flight: 'KQ500', time: '1m ago', status: 'Success' },
-      { type: 'Booking', passenger: 'James Karanja', flight: 'KQ502', time: '3m ago', status: 'Success' },
-      { type: 'Payment', passenger: 'Emma Njoroge', flight: 'KQ504', time: '8m ago', status: 'Success' },
-      { type: 'Check-in', passenger: 'David Singh', flight: 'KQ500', time: '12m ago', status: 'Pending' },
-      { type: 'Booking', passenger: 'Lisa Mwangi', flight: 'KQ502', time: '18m ago', status: 'Success' },
-      { type: 'Cancellation', passenger: 'Michael Njenga', flight: 'KQ504', time: '24m ago', status: 'Canceled' },
-      { type: 'Check-in', passenger: 'Nina Patel', flight: 'KQ502', time: '31m ago', status: 'Pending' },
-      { type: 'Booking', passenger: 'Carlos Wanjiru', flight: 'KQ500', time: '38m ago', status: 'Success' },
-    ],
-    charts: {
-      bookings: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        data: [280, 320, 295, 410, 450, 480, 520, 510, 485, 520, 580, 610],
-      },
-      passengers: {
-        labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
-        data: [8200, 9100, 8950, 10200, 11500, 12840],
-      },
-      flights: {
-        labels: ['Boeing 737', 'Embraer E190', 'Boeing 787', 'Airbus A330', 'Dash 8'],
-        data: [52, 43, 32, 21, 18],
-      },
-      loadFactor: {
-        labels: ['NBO-JNB', 'NBO-ADD', 'NBO-KGL', 'NBO-CPT', 'NBO-LOS', 'NBO-MBA', 'NBO-EBB', 'NBO-DAR'],
-        data: [93, 90, 88, 84, 82, 91, 89, 86],
-      }
-    }
-  };
+  const fmtCurrency = (value) => `$${(value / 1000).toFixed(1)}K`; // Example formatting
 
   // Hydrate summary cards
-  function hydrateSummary() {
+  function hydrateSummary(summary) {
+    if (!summary) {
+      console.warn('hydrateSummary called with no data.');
+      return;
+    }
+
     document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-GB', {
       weekday: 'long',
       day: 'numeric',
@@ -50,28 +17,33 @@
       year: 'numeric'
     });
 
-    document.getElementById('statFlights').textContent = fmtNumber(state.summary.flights.total);
-    document.getElementById('statFlightsDelta').textContent = `+${state.summary.flights.delta} today`;
+    document.getElementById('statFlights').textContent = fmtNumber(summary.flights.total);
+    document.getElementById('statFlightsDelta').textContent = `+${summary.flights.delta} today`;
 
-    document.getElementById('statPassengers').textContent = fmtNumber(state.summary.passengers.total);
-    document.getElementById('statPassengersDelta').textContent = `+${fmtNumber(state.summary.passengers.delta)} today`;
+    document.getElementById('statPassengers').textContent = fmtNumber(summary.passengers.total);
+    document.getElementById('statPassengersDelta').textContent = `+${fmtNumber(summary.passengers.delta)} today`;
 
-    document.getElementById('statRevenue').textContent = fmtCurrency(state.summary.revenue.total);
-    document.getElementById('statRevenueDelta').textContent = `+${state.summary.revenue.deltaPct}% vs last week`;
+    document.getElementById('statRevenue').textContent = fmtCurrency(summary.revenue.total);
+    document.getElementById('statRevenueDelta').textContent = `+${summary.revenue.deltaPct}% vs last week`;
 
-    document.getElementById('statCheckins').textContent = state.summary.checkins.total;
-    document.getElementById('statCheckinsDelta').textContent = state.summary.checkins.live ? 'Live' : 'Offline';
+    document.getElementById('statCheckins').textContent = summary.checkins.total;
+    document.getElementById('statCheckinsDelta').textContent = summary.checkins.live ? 'Live' : 'Offline';
 
     // Update timestamp
     document.getElementById('updateTime').textContent = 'just now';
   }
 
   // Render activities table
-  function renderActivities() {
+  function renderActivities(activities) {
+    if (!activities) {
+      console.warn('renderActivities called with no data.');
+      return;
+    }
+
     const tbody = document.querySelector('#activitiesTable tbody');
     tbody.innerHTML = '';
 
-    state.activities.forEach((item) => {
+    activities.forEach((item) => {
       const tr = document.createElement('tr');
       const iconMap = {
         'Booking': 'fa-ticket',
@@ -104,16 +76,37 @@
   // Chart.js instances
   let charts = {};
 
+  // Function to update charts with new data
+  function updateCharts(chartData) {
+    if (!chartData || !Object.keys(charts).length) return;
+
+    charts.bookings.data.labels = chartData.bookings.labels;
+    charts.bookings.data.datasets[0].data = chartData.bookings.data;
+    charts.bookings.update();
+
+    charts.passengers.data.labels = chartData.passengers.labels;
+    charts.passengers.data.datasets[0].data = chartData.passengers.data;
+    charts.passengers.update();
+
+    charts.flights.data.labels = chartData.flights.labels;
+    charts.flights.data.datasets[0].data = chartData.flights.data;
+    charts.flights.update();
+
+    charts.loadFactor.data.labels = chartData.loadFactor.labels;
+    charts.loadFactor.data.datasets[0].data = chartData.loadFactor.data;
+    charts.loadFactor.update();
+  }
+
   // Build charts
-  function buildCharts() {
+  function buildCharts(initialData = {}) {
     // Bookings bar chart
     charts.bookings = new Chart(document.getElementById('chartBookings'), {
       type: 'bar',
       data: {
-        labels: state.charts.bookings.labels,
+        labels: initialData.bookings?.labels || [],
         datasets: [{
           label: 'Monthly Bookings',
-          data: state.charts.bookings.data,
+          data: initialData.bookings?.data || [],
           backgroundColor: 'rgba(0, 102, 204, 0.8)',
           borderColor: 'rgba(0, 102, 204, 1)',
           borderWidth: 0,
@@ -145,10 +138,10 @@
     charts.passengers = new Chart(document.getElementById('chartPassengers'), {
       type: 'line',
       data: {
-        labels: state.charts.passengers.labels,
+        labels: initialData.passengers?.labels || [],
         datasets: [{
           label: 'Passengers',
-          data: state.charts.passengers.data,
+          data: initialData.passengers?.data || [],
           borderColor: 'rgba(5, 150, 105, 0.9)',
           backgroundColor: 'rgba(5, 150, 105, 0.1)',
           tension: 0.4,
@@ -184,10 +177,10 @@
     charts.flights = new Chart(document.getElementById('chartFlights'), {
       type: 'doughnut',
       data: {
-        labels: state.charts.flights.labels,
+        labels: initialData.flights?.labels || [],
         datasets: [{
           label: 'Fleet Mix',
-          data: state.charts.flights.data,
+          data: initialData.flights?.data || [],
           backgroundColor: [
             '#0066cc',
             '#059669',
@@ -221,10 +214,10 @@
     charts.loadFactor = new Chart(document.getElementById('chartLoadFactor'), {
       type: 'bar',
       data: {
-        labels: state.charts.loadFactor.labels,
+        labels: initialData.loadFactor?.labels || [],
         datasets: [{
           label: 'Load Factor %',
-          data: state.charts.loadFactor.data,
+          data: initialData.loadFactor?.data || [],
           backgroundColor: 'rgba(139, 92, 246, 0.8)',
           borderColor: 'rgba(139, 92, 246, 1)',
           borderWidth: 0,
@@ -256,14 +249,38 @@
 
   // Initialize on DOM ready
   document.addEventListener('DOMContentLoaded', () => {
-    hydrateSummary();
-    renderActivities();
-    buildCharts();
-  });
+    // Build charts with empty data initially
+    buildCharts(); 
 
-  // Optional: Re-render data every 10 seconds
-  setInterval(() => {
-    hydrateSummary();
-    renderActivities();
-  }, 10000);
+    // --- WebSocket Implementation ---
+    // Note: Ensure the Socket.IO client library is included in dashboard.html
+    // e.g., <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    
+    const socket = io();
+    const connectionStatusEl = document.getElementById('connectionStatus');
+
+    socket.on('connect', () => {
+      console.log('✅ WebSocket connected. Requesting initial data...');
+      if (connectionStatusEl) {
+        connectionStatusEl.textContent = 'Live';
+        connectionStatusEl.className = 'status-dot live';
+      }
+      socket.emit('request_initial_data');
+    });
+
+    socket.on('dashboard_update', (data) => {
+      console.log('📊 Received dashboard update via WebSocket:', data);
+      if (data.summary) hydrateSummary(data.summary);
+      if (data.activities) renderActivities(data.activities);
+      if (data.charts) updateCharts(data.charts);
+    });
+
+    socket.on('disconnect', () => {
+      console.warn('❌ WebSocket disconnected.');
+      if (connectionStatusEl) {
+        connectionStatusEl.textContent = 'Offline';
+        connectionStatusEl.className = 'status-dot offline';
+      }
+    });
+  });
 })();

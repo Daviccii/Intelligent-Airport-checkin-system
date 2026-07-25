@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartFly - Internal Portal Login</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background: #ffffff;
+            padding: 2.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        .login-card h2 {
+            margin-top: 0;
+            color: #1a202c;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #4a5568;
+            font-weight: 600;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #003366; /* Matching KQ corporate theme */
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-submit:hover {
+            background-color: #002244;
+        }
+        .error-msg {
+            color: #e53e3e;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+            display: none;
+            text-align: center;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #718096;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <h2>Internal Portal Login</h2>
+    <form id="portalLoginForm">
+        <div class="form-group">
+            <label for="role">Select Portal Role</label>
+            <select id="role" name="role" required>
+                <option value="" disabled selected>-- Select Role --</option>
+                <option value="admin">Administrator</option>
+                <option value="staff">Staff Member</option>
+                <option value="member">Club / Tier Member</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="username">Username or Email</label>
+            <input type="text" id="username" name="username" placeholder="Enter username" required>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" placeholder="Enter password" required>
+        </div>
+
+        <button type="submit" class="btn-submit">Login</button>
+        <div id="errorMsg" class="error-msg"></div>
+    </form>
+
+    <a href="index.html" class="back-link">&larr; Back to Public Passenger Site</a>
+</div>
+
+<script>
+document.getElementById('portalLoginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const role = document.getElementById('role').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+
+    try {
+        const response = await fetch('/api/portal/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ role, username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            // Redirect based on server response destination
+            window.location.href = data.redirect_url;
+        } else {
+            errorMsg.textContent = data.error || 'Login failed. Please check credentials.';
+            errorMsg.style.display = 'block';
+        }
+    } catch (err) {
+        errorMsg.textContent = 'Server connection error. Try again.';
+        errorMsg.style.display = 'block';
+    }
+});
+</script>
+
+</body>
+</html>

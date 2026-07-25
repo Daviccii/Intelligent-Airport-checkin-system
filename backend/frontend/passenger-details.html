@@ -318,21 +318,9 @@
     </div>
 
     <script>
-        // Parse URL parameters
-        function getUrlParams() {
-            const params = new URLSearchParams(window.location.search);
-            return {
-                from: params.get('from'),
-                to: params.get('to'),
-                date: params.get('date'),
-                fare: params.get('fare'),
-                price: params.get('price')
-            };
-        }
-
         // Get selected flight from sessionStorage
-        function getSelectedFlight() {
-            const stored = sessionStorage.getItem('selectedFlight');
+        function getBookingSession() {
+            const stored = sessionStorage.getItem('smartflyBookingSession');
             return stored ? JSON.parse(stored) : null;
         }
 
@@ -345,25 +333,26 @@
 
         // Initialize page
         function initializePage() {
-            const params = getUrlParams();
-            const flight = getSelectedFlight();
+            const bookingSession = getBookingSession();
 
-            if (!params.from || !params.to || !params.price) {
+            // Security Check: If no session or flight details, redirect.
+            if (!bookingSession || !bookingSession.selectedFlight) {
                 document.getElementById('passengerForm').style.display = 'none';
-                document.getElementById('flightSummary').innerHTML = '<p style="color: #c8102e; padding: 24px;">Flight details not found. <a href="/availability.html">Go back to search</a></p>';
+                document.getElementById('flightSummary').innerHTML = '<p style="color: #c8102e; padding: 24px;">Booking session expired. <a href="index.html">Please start a new search.</a></p>';
                 return;
             }
 
             // Update summary
-            document.getElementById('summaryRoute').textContent = `${params.from} → ${params.to}`;
-            document.getElementById('summaryDate').textContent = formatDate(params.date);
-            document.getElementById('summaryClass').textContent = params.fare.charAt(0).toUpperCase() + params.fare.slice(1);
-            const numericPrice = parseFloat(params.price);
+            const flight = bookingSession.selectedFlight;
+            document.getElementById('summaryRoute').textContent = `${bookingSession.searchParams.origin} → ${bookingSession.searchParams.destination}`;
+            document.getElementById('summaryDate').textContent = formatDate(flight.departTime); // Assuming departTime is on the flight object
+            document.getElementById('summaryClass').textContent = flight.fareClass.charAt(0).toUpperCase() + flight.fareClass.slice(1);
+            const numericPrice = parseFloat(flight.price);
             document.getElementById('summaryPrice').textContent = isNaN(numericPrice)
                 ? 'Ksh 0'
                 : `Ksh ${numericPrice.toLocaleString()}`;
 
-            console.log('🎫 Passenger Details Loaded:', params);
+            console.log('🎫 Passenger Details Page Loaded with session:', bookingSession);
         }
 
         // Submit passenger details
@@ -400,18 +389,20 @@
                 passportExpiry
             };
 
-            console.log('👤 Passenger Details Submitted:', passengerDetails);
-            sessionStorage.setItem('passengerDetails', JSON.stringify(passengerDetails));
+            const bookingSession = getBookingSession();
+            // For now, we only support one passenger. This can be expanded later.
+            bookingSession.passengers = [passengerDetails];
+
+            console.log('👤 Passenger Details Submitted, updating booking session:', bookingSession);
+            sessionStorage.setItem('smartflyBookingSession', JSON.stringify(bookingSession));
 
             // Show loading state
             document.getElementById('passengerForm').style.display = 'none';
             document.getElementById('loadingMessage').style.display = 'block';
 
-            // Simulate processing and redirect with all required parameters
+            // Simulate processing and redirect to seat selection
             setTimeout(() => {
-                const params = getUrlParams();
-                const fullName = `${firstName} ${lastName}`;
-                window.location.href = `/payment.html?from=${params.from}&to=${params.to}&price=${params.price}&fare=${params.fare}&name=${encodeURIComponent(fullName)}&email=${encodeURIComponent(email)}&passport=${encodeURIComponent(passportNumber)}&phone=${encodeURIComponent(phone)}`;
+                window.location.href = 'seat-selection.html';
             }, 1500);
         }
 

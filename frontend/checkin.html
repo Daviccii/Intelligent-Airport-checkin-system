@@ -1,772 +1,234 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Check-in — Intelligent Airport</title>
-  <link rel="stylesheet" href="/style.css">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Online Check-in — SmartFly</title>
+    <link rel="stylesheet" href="/style.css" />
+    <style>
+      @font-face{font-family:Inter;src:local('Segoe UI');}
+      .input-error { border: 2px solid #EF4444 !important; background-color: #FEF2F2 !important; } .field-error { color: #EF4444; font-size: 0.75rem; margin-top: 2px; display: block; }
+      /* Copied Header Styles from index.html for consistency */
+      .main-header { position: sticky; top: 0; width: 100%; background: #fff; box-shadow: 0 2px 12px rgba(0,0,0,0.08); z-index: 1000; }
+      .top-bar { background: #f8f9fa; padding: 8px 0; border-bottom: 1px solid #e6e9ef; font-size: 13px; color: #6b7280; }
+      .top-bar .container { display: flex; justify-content: space-between; align-items: center; }
+      .top-right span, .top-right a { margin-left: 16px; }
+      .top-right a { color: #6b7280; text-decoration: none; font-weight: 500; }
+      .top-right a:hover { color: var(--primary-color); }
+      .nav-wrapper { display: flex; align-items: center; justify-content: space-between; height: 70px; padding: 0 24px; max-width: 1200px; margin: 0 auto; }
+      .logo { display: flex; align-items: center; gap: 8px; text-decoration: none; color: #1a2b3c; }
+      .logo-mark { height: 32px; }
+      .logo span { font-weight: 700; font-size: 20px; }
+      .nav-menu { display: flex; gap: 16px; }
+      .nav-item { position: relative; }
+      .nav-item > a { padding: 10px 16px; font-weight: 500; color: #334155; text-decoration: none; border-radius: 8px; transition: all 0.2s ease; }
+      .nav-item > a:hover { background: #f1f5f9; color: var(--primary-color); }
+      .mega-menu { display: none; position: absolute; top: 100%; left: 0; background: #fff; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; z-index: 1001; margin-top: 10px; min-width: 200px; }
+      .nav-item:hover .mega-menu { display: block; }
+      .mega-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+      .mega-menu h4 { font-size: 14px; color: var(--primary-color); margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+      .mega-menu a { display: block; padding: 6px 0; color: #334155; text-decoration: none; font-size: 14px; }
+      .mega-menu a:hover { color: var(--accent); }
+      .cta-btn a { background: var(--gradient-primary); color: #fff; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease; }
+      .cta-btn a:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(10, 36, 99, 0.3); }
+      .mobile-menu-button { display: none; background: none; border: none; font-size: 24px; cursor: pointer; }
+      @media (max-width: 1024px) {
+        .nav-menu { display: none; position: absolute; top: 70px; left: 0; right: 0; background: #fff; flex-direction: column; padding: 16px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        .nav-menu.show { display: flex; }
+        .mobile-menu-button { display: block; }
+        .nav-item:hover .mega-menu { display: none; } /* Disable hover on mobile */
+        .nav-item > a { width: 100%; }
+        .mega-menu { position: static; box-shadow: none; padding: 10px 16px; background: #f8f9fa; margin-top: 8px; }
+        .mega-container { grid-template-columns: 1fr; }
+      }
+    </style>
 </head>
 <body>
-  <div class="container" style="padding-top:40px;max-width:960px;">
-    <h1 style="margin-bottom:4px;">Check-in</h1>
-    <p style="color:#4b5563;margin:0 0 16px;">Fast lane for passengers: confirm identity, fetch booking, and jump to boarding pass.</p>
-    <div id="selectedFlightBanner" style="margin-top:8px;padding:10px;border-radius:10px;background:#f0f5ff;display:none;border:1px solid #dbeafe;"></div>
-
-    <!-- Express Check-in card -->
-    <div class="panel" style="border-radius:14px;border:1px solid #e6e9ef;box-shadow:0 10px 30px rgba(0,0,0,0.05);">
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
-          <label style="flex:1 1 220px;min-width:200px;">
-            <small style="display:block;color:#111827;font-weight:600;margin-bottom:6px;">Last name</small>
-            <input id="qcLast" placeholder="e.g. Doe" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;" />
-          </label>
-          <label style="flex:1 1 220px;min-width:200px;">
-            <small style="display:block;color:#111827;font-weight:600;margin-bottom:6px;">Passport / Booking ref</small>
-            <input id="qcPassport" placeholder="e.g. GA54321 or BK123456" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;" />
-          </label>
-          <button id="quickCheckinBtn" class="btn primary" style="flex:0 0 160px;height:46px;align-self:flex-end;border-radius:10px;font-weight:700;">Find my booking</button>
+    <header class="main-header">
+        <!-- TOP BAR -->
+        <div class="top-bar">
+            <div class="container">
+                <div class="top-left">
+                    <span>EN | KE</span>
+                    <span>Help</span>
+                </div>
+                <div class="top-right">
+                    <span>+254 700 000 000</span>
+                    <a href="/members-login.html">Member</a>
+                    <a href="/staff-login.html">Staff</a>
+                    <a href="/admin-login.html">Admin</a>
+                </div>
+            </div>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:10px;color:#6b7280;font-size:13px;">
-          <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;"></span> Match by last name + passport/reference.</div>
-          <div style="display:flex;gap:6px;align-items:center;"><span style="width:8px;height:8px;border-radius:50%;background:#6366f1;display:inline-block;"></span> Opens boarding pass immediately when a single match is found.</div>
+
+        <!-- MAIN NAV -->
+        <div class="nav-wrapper">
+            <a href="/" class="logo">
+                <img class="logo-mark" src="/assets/images/logos/smartfly-mark.png" alt="SmartFly">
+                <span>SmartFly</span>
+            </a>
+
+            <button class="mobile-menu-button">☰</button>
+
+            <nav class="nav-menu">
+                <div class="nav-item">
+                    <a href="/explore.html">Explore</a>
+                    <div class="mega-menu">
+                        <div class="mega-container">
+                            <div>
+                                <h4>Our Destinations</h4>
+                                <a href="/destinations.html">View All</a>
+                            </div>
+                            <div>
+                                <h4>Discover Nairobi</h4>
+                                <a href="/availability.html">View More</a>
+                            </div>
+                            <div>
+                                <h4>Popular Destinations</h4>
+                                <a href="/destinations.html">View More</a>
+                            </div>
+                            <div>
+                                <h4>Long-Haul Destinations</h4>
+                                <a href="/destinations.html">View More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="nav-item">
+                    <a href="/plan.html">Plan</a>
+                    <div class="mega-menu">
+                        <div class="mega-container">
+                            <div>
+                                <h4>Travel Information</h4>
+                                <a href="/policy.html">Travel Requirements</a>
+                                <a href="/baggage.html">Baggage Information</a>
+                            </div>
+                            <div>
+                                <h4>Travel Services</h4>
+                                <a href="/group-booking.html">Group Booking</a>
+                                <a href="/corporate-travel.html">Corporate Travel</a>
+                            </div>
+                            <div>
+                                <h4>Special Care</h4>
+                                <a href="/special-care.html">View More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="/book-manage.html">Book &amp; Manage</a>
+                    <div class="mega-menu">
+                        <div class="mega-container">
+                            <div>
+                                <h4>Book Flight</h4>
+                                <a href="/booking.html">Booking Online</a>
+                                <a href="/payment.html">Payment Methods</a>
+                            </div>
+                            <div>
+                                <h4>Manage Booking</h4>
+                                <a href="/change-booking.html">Change Booking</a>
+                            </div>
+                            <div>
+                                <h4>Check In</h4>
+                                <a href="/checkin.html">Online Check-in</a>
+                                <a href="/flight-status.html">Flight Status</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="nav-item">
+                    <a href="/experience.html">Experience</a>
+                </div>
+                <div class="nav-item">
+                    <a href="/loyalty.html">Loyalty</a>
+                </div>
+            </nav>
+
+            <div class="cta-btn">
+                <a href="/#booking-section" class="book-now-btn">Book Now</a>
+            </div>
         </div>
-        <div id="quickCheckinResult" style="margin-top:6px;"></div>
-        <!-- Baggage and Payment Section -->
-        <div id="baggagePaymentSection" style="display:none;margin-top:18px;padding:18px 12px 10px 12px;border-radius:12px;background:#f8fafc;border:1.5px solid #e0e7ef;">
-          <div style="font-weight:600;font-size:16px;margin-bottom:8px;">Baggage Details & Payment</div>
-          <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;">
-            <label>Baggage Count:
-              <input id="baggageCount" type="number" min="0" max="10" value="0" style="width:60px;margin-left:8px;padding:6px 8px;border-radius:7px;border:1.5px solid #cbd5e1;" />
-            </label>
-            <label>Baggage Details:
-              <input id="baggageDetails" type="text" placeholder="e.g. 1 large, 1 small" style="width:180px;margin-left:8px;padding:6px 8px;border-radius:7px;border:1.5px solid #cbd5e1;" />
-            </label>
-            <button id="calcBaggageFeeBtn" class="btn secondary" type="button">Calculate Fee</button>
-          </div>
-          <div id="baggageFeeMsg" style="margin-top:10px;font-size:15px;color:#374151;"></div>
-          <div id="baggagePaySection" style="margin-top:10px;display:none;">
-            <button id="payBaggageBtn" class="btn primary" type="button">Pay Baggage Fee</button>
-            <span id="baggagePaidMsg" style="margin-left:12px;font-weight:600;color:#16a34a;"></span>
-          </div>
+    </header>
+
+    <main class="container">
+        <div class="section-head" style="margin-top: 40px;">
+            <h3>Online Check-in</h3>
+            <p class="muted">Find your booking to begin the check-in process.</p>
         </div>
-      </div>
-    </div>
+        <!-- Search Form -->
+        <section class="panel">
+            <h2>Find Your Booking</h2>
+            <form id="searchBookingForm" class="form" novalidate>
+                <div class="row">
+                    <label for="pnr">Booking Reference (PNR)</label>
+                    <input id="pnr" name="pnr" placeholder="e.g., BK-20260724-..." required />
+                    <span id="err-pnr" class="field-error"></span>
+                </div>
+                <div class="row">
+                    <label for="lastName">Last Name</label>
+                    <input id="lastName" name="lastName" placeholder="Passenger's last name" required />
+                    <span id="err-lastName" class="field-error"></span>
+                </div>
+                <div class="actions">
+                    <button type="submit" class="btn primary">Find Booking</button>
+                </div>
+            </form>
+            <div id="message" class="message" aria-live="polite"></div>
+        </section>
 
-    <!-- One-time code (OTP) panel -->
-    <div class="panel" style="margin-top:16px;">
-      <h3 style="margin-top:0;">Email a one-time code (OTP)</h3>
-      <p style="color:#4b5563;margin:4px 0 10px;">We’ll email a 6‑digit code to the email on file for your booking. Use the same Passport / Booking ref you entered above. Optionally confirm your email.</p>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
-        <label style="flex:1 1 260px;min-width:240px;">
-          <small style="display:block;color:#111827;font-weight:600;margin-bottom:6px;">Email (optional, must match on file)</small>
-          <input id="otpEmail" placeholder="name@example.com" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;" />
-        </label>
-        <button id="sendCodeBtn" class="btn" style="flex:0 0 180px;height:46px;align-self:flex-end;border-radius:10px;font-weight:700;">Email me a code</button>
-      </div>
-      <div id="otpStatus" style="margin-top:10px;color:#1f2937;font-size:14px;"></div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:12px;align-items:flex-end;">
-        <label style="flex:0 0 180px;">
-          <small style="display:block;color:#111827;font-weight:600;margin-bottom:6px;">Enter code</small>
-          <input id="otpCode" inputmode="numeric" pattern="[0-9]*" placeholder="6-digit code" style="width:100%;padding:12px;border-radius:10px;border:1px solid #e6e9ef;font-size:14px;letter-spacing:2px;" />
-        </label>
-        <button id="openWithCodeBtn" class="btn primary" style="flex:0 0 220px;height:46px;align-self:flex-end;border-radius:10px;font-weight:700;">Open boarding pass with code</button>
-      </div>
-    </div>
+        <!-- Booking Details - Initially Hidden -->
+        <section id="bookingDetailsSection" class="panel" style="display: none;">
+            <h2>Booking & Flight Details</h2>
+            <div id="bookingInfo" class="details-grid">
+                <!-- Populated by JS after successful search -->
+            </div>
+        </section>
 
-    <!-- Fallback search -->
-    <div class="panel" style="margin-top:16px;">
-      <label for="q">Search by passport or name</label>
-      <input id="q" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #e6e9ef;" />
-      <div id="results" style="margin-top:12px"></div>
-    </div>
+        <!-- Passenger List - Initially Hidden -->
+        <section id="passengerPanel" class="panel" style="display: none;">
+            <div class="list-header">
+                <h2>Passengers on this Booking</h2>
+                <div class="controls">
+                    <p id="checkinInstruction">Select passengers to check-in.</p>
+                </div>
+            </div>
+            <div id="passengerList" class="table-wrapper">
+                <!-- populated by JS -->
+            </div>
+            <div class="actions" style="margin-top: 20px;">
+                <button id="checkinBtn" class="btn primary" disabled>Check-in Selected Passengers</button>
+            </div>
+        </section>
+    </main>
 
-    <div class="panel">
-      <h3>Facial enroll / verify (mock)</h3>
-      <p>Enroll a passport image then verify by uploading a live image (mock similarity).</p>
-        <!-- Consent modal trigger: ensures user gives consent before biometric capture -->
-        <div id="consentBanner" style="margin-top:8px;">
-          <button id="openConsent" class="btn">Biometric enrollment requires consent — Click to review</button>
-        </div>
-      <label for="enroll_passport">Passport to enroll</label>
-      <input id="enroll_passport" placeholder="e.g. X1234567" />
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <input id="enroll_image" type="file" accept="image/*" />
-        <button id="enrollFromCam" class="btn">Capture & Enroll (camera)</button>
-        <button id="enrollBtn" class="btn">Upload Enroll</button>
-      </div>
+    <footer class="footer">
+        <div class="container">Run backend: python backend/app.py — UI connects to /api</div>
+    </footer>
 
-      <hr />
+    <script src="/checkin.js"></script>
+    <script>
+        // Copied Header JS from index.html for consistency
+        document.addEventListener('DOMContentLoaded', () => {
+            const mobileBtn = document.querySelector('.mobile-menu-button');
+            const navMenu = document.querySelector('.nav-menu');
 
-      <label for="verify_passport">Passport to verify</label>
-      <input id="verify_passport" placeholder="e.g. X1234567" />
-      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-        <input id="verify_image" type="file" accept="image/*" />
-        <button id="verifyFromCam" class="btn primary">Capture & Verify (camera)</button>
-        <button id="verifyBtn" class="btn primary">Upload Verify</button>
-      </div>
-      <div id="faceResult" style="margin-top:10px"></div>
-    </div>
-
-    <div class="panel" id="cameraPanel" style="display:none">
-      <h3>Camera</h3>
-      <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
-        <video id="camPreview" autoplay playsinline style="width:320px;height:240px;background:#000;border-radius:8px"></video>
-        <div>
-          <canvas id="camCanvas" width="320" height="240" style="display:none"></canvas>
-          <div style="margin-top:8px;display:flex;gap:8px">
-            <button id="startCam" class="btn">Start Camera</button>
-            <button id="stopCam" class="btn">Stop Camera</button>
-            <button id="captureBtn" class="btn primary">Capture</button>
-          </div>
-          <div id="camStatus" style="margin-top:8px;color:#6b7280"></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Consent Modal -->
-  <div id="consentModal" class="consent-modal" aria-hidden="true" inert>
-    <div class="consent-modal__backdrop"></div>
-    <div class="consent-modal__box" role="dialog" aria-modal="true" aria-labelledby="consentTitle">
-      <h2 id="consentTitle">Biometric Data Consent</h2>
-      <p>By enrolling your biometric data (face image) you consent to it being used for identity verification for check-in and boarding pass issuance. Data will be stored securely and retained only for the duration necessary for flight processing (configurable). You can withdraw consent at any time.</p>
-      <p><strong>Key points:</strong></p>
-      <ul>
-        <li>Purpose: identity verification for check-in.</li>
-        <li>Retention: temporary; deleted on request.</li>
-        <li>Storage: encrypted at rest in production (demo stores locally).</li>
-      </ul>
-      <label style="display:block;margin-top:8px"><input type="checkbox" id="consentCheckbox" /> I have read and agree to the biometric data usage above.</label>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-        <button id="consentCancel" class="btn">Cancel</button>
-        <button id="consentAccept" class="btn primary" disabled>Accept and Continue</button>
-      </div>
-    </div>
-  </div>
-<script>
-// Prefill selected flight from query param or sessionStorage and show basic flight details
-function getQueryParam(name){
-  const params = new URLSearchParams(window.location.search);
-  return params.get(name);
-}
-
-async function showSelectedFlight(){
-  const qFlight = getQueryParam('flight');
-  const stored = sessionStorage.getItem('selectedFlight');
-  const flightCode = qFlight || stored;
-  const banner = document.getElementById('selectedFlightBanner');
-  if(!flightCode){ try{ banner.hidden = true; banner.setAttribute('aria-hidden','true'); }catch(e){} return; }
-  // keep the selection in sessionStorage for later steps
-  try{ sessionStorage.setItem('selectedFlight', flightCode); }catch(e){}
-  // attempt to fetch flight details from the API
-  try{
-    const res = await fetch('/api/flights');
-    const data = await res.json();
-    const flights = data.flights || [];
-    const f = flights.find(x => String(x.flight) === String(flightCode));
-    if(f){
-      const time = f.time ? new Date(f.time).toLocaleString() : '';
-      banner.innerHTML = `<strong>Selected:</strong> ${f.airline || ''} — ${f.flight} &nbsp; <small>${f.gate?('Gate '+f.gate):''} ${time?('- '+time):''}</small>`;
-    } else {
-      banner.innerHTML = `<strong>Selected Flight:</strong> ${flightCode}`;
-    }
-    try{ banner.hidden = false; banner.setAttribute('aria-hidden','false'); }catch(e){}
-    // focus the quick search field so user can continue
-    const q = document.getElementById('q'); if(q) q.focus();
-    }catch(err){
-    banner.innerHTML = `<strong>Selected Flight:</strong> ${flightCode}`;
-    try{ banner.hidden = false; banner.setAttribute('aria-hidden','false'); }catch(e){}
-  }
-}
-
-// Run on load
-document.addEventListener('DOMContentLoaded', ()=>{ 
-  showSelectedFlight();
-  prefillFromDashboard();
-});
-
-// Prefill check-in form from dashboard booking info
-function prefillFromDashboard() {
-  const checkinBooking = sessionStorage.getItem('checkinBooking');
-  if (checkinBooking) {
-    try {
-      const booking = JSON.parse(checkinBooking);
-      
-      // Prefill the quick check-in form
-      const lastName = booking.passengerName.split(' ').pop(); // Get last name
-      document.getElementById('qcLast').value = lastName;
-      document.getElementById('qcPassport').value = booking.bookingRef || booking.passport;
-      
-      // Show a message that we're prefilled from booking
-      const banner = document.getElementById('selectedFlightBanner');
-      if (banner) {
-        banner.innerHTML = `<strong>Ready to check-in:</strong> ${booking.flight} ${booking.from} → ${booking.to} on ${booking.date}`;
-        banner.hidden = false;
-        banner.setAttribute('aria-hidden', 'false');
-      }
-      
-      // Auto-focus the check-in button
-      setTimeout(() => {
-        document.getElementById('quickCheckinBtn').focus();
-      }, 500);
-      
-    } catch (e) {
-      console.error('Error prefilling check-in form:', e);
-    }
-  }
-}
-
-// Parse booking params (from flight-results) and prefill booking/check-in context
-function parseBookingParams(){
-  try{
-    const params = new URLSearchParams(window.location.search);
-    const from = params.get('from') || params.get('origin');
-    const to = params.get('to') || params.get('destination');
-    const depart = params.get('depart') || params.get('departure');
-    const ret = params.get('return');
-    const cls = params.get('class') || params.get('fareClass');
-    const fare = params.get('fare') || params.get('fareStandard');
-
-    // store in session for other pages/components
-    if(from) try{ sessionStorage.setItem('booking_from', from); }catch(e){}
-    if(to) try{ sessionStorage.setItem('booking_to', to); }catch(e){}
-    if(depart) try{ sessionStorage.setItem('booking_depart', depart); }catch(e){}
-    if(ret) try{ sessionStorage.setItem('booking_return', ret); }catch(e){}
-    if(cls) try{ sessionStorage.setItem('booking_class', cls); }catch(e){}
-    if(fare) try{ sessionStorage.setItem('booking_fare', fare); }catch(e){}
-
-    // show a simple booking summary in the selectedFlightBanner if any booking info present
-    const banner = document.getElementById('selectedFlightBanner');
-    const pieces = [];
-    if(from) pieces.push(`<strong>From:</strong> ${from}`);
-    if(to) pieces.push(`<strong>To:</strong> ${to}`);
-    if(depart) pieces.push(`<strong>Depart:</strong> ${new Date(depart).toLocaleDateString()}`);
-    if(ret) pieces.push(`<strong>Return:</strong> ${new Date(ret).toLocaleDateString()}`);
-    if(cls) pieces.push(`<strong>Class:</strong> ${cls}`);
-    if(fare) pieces.push(`<strong>Fare:</strong> ${fare}`);
-
-    if(pieces.length){
-      // If a flight selection banner already visible, append booking info; otherwise show it
-      if(banner && !banner.hidden){
-        banner.innerHTML = banner.innerHTML + '<div style="margin-top:8px">' + pieces.join(' • ') + '</div>';
-      } else if (banner) {
-        banner.innerHTML = pieces.join(' • ');
-        try{ banner.hidden = false; banner.setAttribute('aria-hidden','false'); }catch(e){}
-      }
-    }
-  }catch(e){ console.debug('[checkin] parseBookingParams failed', e); }
-}
-
-// run parseBookingParams after initial selected flight processing
-document.addEventListener('DOMContentLoaded', ()=>{ parseBookingParams(); });
-
-// Express check-in: match last name + passport/ref, auto-open boarding pass when unique
-function renderQuickCheckinResult(html, tone){
-  const el = document.getElementById('quickCheckinResult');
-  if(!el) return;
-  const colors = { success:'#065f46', info:'#1f2937', error:'#991b1b' };
-  const bg = { success:'#ecfdf3', info:'#f3f4f6', error:'#fef2f2' };
-  const c = tone && colors[tone] ? colors[tone] : colors.info;
-  const b = tone && bg[tone] ? bg[tone] : bg.info;
-  el.innerHTML = `<div style="padding:10px 12px;border-radius:10px;background:${b};color:${c};border:1px solid rgba(0,0,0,0.05);">${html}</div>`;
-}
-
-async function runQuickCheckin(){
-  const last = (document.getElementById('qcLast')?.value || '').trim().toLowerCase();
-  const ref = (document.getElementById('qcPassport')?.value || '').trim().toLowerCase();
-  if(!last){ renderQuickCheckinResult('Enter your last name to search.', 'error'); return; }
-  try{
-    const res = await fetch('/api/passengers');
-    const list = await res.json();
-    const passengers = Array.isArray(list) ? list : (list.passengers || []);
-    const matches = passengers.filter(p=>{
-      const nameOk = (p.name||'').toLowerCase().includes(last);
-      const refOk = !ref || (p.passport||'').toLowerCase().includes(ref) || (p.bookingRef||'').toLowerCase().includes(ref) || (p.booking_ref||'').toLowerCase().includes(ref);
-      return nameOk && refOk;
-    });
-    if(!matches.length){ renderQuickCheckinResult('No matching passenger. Check spelling or try the search below.', 'error'); return; }
-    if(matches.length === 1 && matches[0].passport){
-      const p = matches[0];
-      // Auto-fill OTP email if passenger has one
-      if(p.email){ try{ document.getElementById('otpEmail').value = p.email; }catch(e){} }
-      // Show baggage/payment section for this passenger
-      showBaggagePayment(p);
-      
-      // Wait for baggage/payment before check-in
-      // (Check-in and redirect will be handled after payment)
-      // --- Baggage and Payment Logic ---
-      function showBaggagePayment(passenger) {
-        const section = document.getElementById('baggagePaymentSection');
-        if (!section) return;
-        section.style.display = '';
-        const baggageCount = document.getElementById('baggageCount');
-        const baggageDetails = document.getElementById('baggageDetails');
-        const calcBtn = document.getElementById('calcBaggageFeeBtn');
-        const feeMsg = document.getElementById('baggageFeeMsg');
-        const paySection = document.getElementById('baggagePaySection');
-        const payBtn = document.getElementById('payBaggageBtn');
-        const paidMsg = document.getElementById('baggagePaidMsg');
-        let baggageFee = 0;
-        let paid = false;
-
-        function updateFeeMsg(msg, color) {
-          feeMsg.textContent = msg;
-          if (color) feeMsg.style.color = color; else feeMsg.style.color = '#374151';
-        }
-
-        calcBtn.onclick = async function() {
-          const count = parseInt(baggageCount.value, 10) || 0;
-          // Simulate fee calculation (or fetch from backend if needed)
-          try {
-            // Call check-in API with baggage info to get fee
-            const res = await fetch('/api/checkin', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                passengers: [{
-                  name: passenger.name,
-                  passport: passenger.passport,
-                  flight: passenger.flight,
-                  baggage_count: count,
-                  baggage_details: baggageDetails.value
-                }],
-                flight: passenger.flight
-              })
-            });
-            const data = await res.json();
-            if (data && data.results && data.results[0]) {
-              baggageFee = data.results[0].baggage_fee || 0;
-              paid = data.results[0].baggage_paid || false;
-              updateFeeMsg('Baggage fee: $' + baggageFee, '#374151');
-              paySection.style.display = baggageFee > 0 && !paid ? '' : 'none';
-              paidMsg.textContent = paid ? 'Paid' : '';
-            } else {
-              updateFeeMsg('Could not calculate baggage fee.', '#e74c3c');
-              paySection.style.display = 'none';
+            if (mobileBtn && navMenu) {
+                mobileBtn.addEventListener('click', () => {
+                    navMenu.classList.toggle('show');
+                    if (navMenu.classList.contains('show')) {
+                        mobileBtn.innerHTML = '✕';
+                    } else {
+                        mobileBtn.innerHTML = '☰';
+                    }
+                });
             }
-          } catch (e) {
-            updateFeeMsg('Error calculating baggage fee.', '#e74c3c');
-            paySection.style.display = 'none';
-          }
-        };
 
-        payBtn.onclick = async function() {
-          if (!baggageFee || paid) return;
-          try {
-            const res = await fetch('/api/baggage/pay', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                passport: passenger.passport,
-                amount: baggageFee
-              })
+            // Close mobile menu when a link is clicked
+            navMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => navMenu.classList.remove('show'));
             });
-            const data = await res.json();
-            if (res.ok && data.status === 'paid') {
-              paid = true;
-              paidMsg.textContent = 'Paid';
-              updateFeeMsg('Baggage fee paid. Proceeding to check-in...', '#16a34a');
-              // Now check-in and redirect to boarding pass
-              setTimeout(async () => {
-                await doFinalCheckin(passenger, baggageCount.value, baggageDetails.value);
-              }, 1000);
-            } else {
-              updateFeeMsg('Payment failed.', '#e74c3c');
-            }
-          } catch (e) {
-            updateFeeMsg('Payment error.', '#e74c3c');
-          }
-        };
-      }
-
-      async function doFinalCheckin(passenger, baggageCount, baggageDetails) {
-        try {
-          const res = await fetch('/api/checkin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              passengers: [{
-                name: passenger.name,
-                passport: passenger.passport,
-                flight: passenger.flight,
-                baggage_count: baggageCount,
-                baggage_details: baggageDetails
-              }],
-              flight: passenger.flight
-            })
-          });
-          const data = await res.json();
-          if (res.ok && data.results && data.results[0] && data.results[0].status === 'ok') {
-            renderQuickCheckinResult(`Checked in! Seat: <strong>${data.results[0].seat||'—'}</strong>. Opening boarding pass...`, 'success');
-            setTimeout(()=>{ window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(passenger.passport); }, 1200);
-          } else {
-            renderQuickCheckinResult('Check-in failed. Please try again.', 'error');
-          }
-        } catch (e) {
-          renderQuickCheckinResult('Check-in error. Please try again.', 'error');
-        }
-      }
-      return;
-    }
-    const cards = matches.slice(0,5).map(p=>{
-      return `<div style="padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div>
-          <div style="font-weight:700;color:#111827;">${p.name||'Unknown'}</div>
-          <div style="color:#4b5563;font-size:13px;">Passport: ${p.passport||'—'} • Flight: ${p.flight||'—'}${p.seat?(' • Seat '+p.seat):''}</div>
-        </div>
-        ${p.passport ? `<button class="btn primary" data-passport="${p.passport}" data-flight="${p.flight||''}" data-email="${p.email||''}">Check In & Open Boarding Pass</button>` : ''}
-      </div>`;
-    }).join('');
-    renderQuickCheckinResult(`<div>Found ${matches.length} matches. Pick one to continue:</div>${cards}`,'info');
-    // wire buttons
-    const el = document.getElementById('quickCheckinResult');
-    el.querySelectorAll('button[data-passport]').forEach(btn=>{
-      btn.addEventListener('click', async ()=>{
-        const pp = btn.dataset.passport;
-        const fl = btn.dataset.flight;
-        const em = btn.dataset.email;
-        if(!pp) return;
-        
-        // Call backend check-in API
-        if (fl) {
-          try {
-            btn.textContent = 'Checking in...';
-            btn.disabled = true;
-            const checkinRes = await fetch('/api/checkin', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ passport: pp, flight: fl })
-            });
-            const checkinData = await checkinRes.json();
-            if (checkinRes.ok && checkinData.ok) {
-              console.log('Check-in successful:', checkinData);
-            }
-          } catch (checkinErr) {
-            console.error('Check-in API error:', checkinErr);
-          }
-        }
-        
-        // Prefill OTP email for this passenger
-        if(em){ try{ document.getElementById('otpEmail').value = em; }catch(e){} }
-        try{ sessionStorage.setItem('checkin_intent','1'); }catch(e){}
-        window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(pp);
-      });
-    });
-  }catch(err){
-    console.error(err);
-    renderQuickCheckinResult('Search failed. Please try again.', 'error');
-  }
-}
-
-document.addEventListener('DOMContentLoaded', ()=>{
-  const btn = document.getElementById('quickCheckinBtn');
-  if(btn) btn.addEventListener('click', async ()=>{
-    // Try to establish passenger session before redirecting
-    try{
-      const last = (document.getElementById('qcLast')?.value || '').trim();
-      const refOrPass = (document.getElementById('qcPassport')?.value || '').trim();
-      let body = { last };
-      if (/^BK/i.test(refOrPass)) body.ref = refOrPass; else body.passport = refOrPass;
-      const res = await fetch('/api/passenger/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      // Ignore errors here; quick flow below still tries redirect
-      await res.json().catch(()=>({}));
-    }catch(e){}
-    runQuickCheckin();
-  });
-  ['qcLast','qcPassport'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el){ el.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); runQuickCheckin(); } }); }
-  });
-});
-
-// OTP email + code handlers
-document.addEventListener('DOMContentLoaded', ()=>{
-  const sendBtn = document.getElementById('sendCodeBtn');
-  const codeBtn = document.getElementById('openWithCodeBtn');
-  const statusEl = document.getElementById('otpStatus');
-  const emailEl = document.getElementById('otpEmail');
-  const codeEl = document.getElementById('otpCode');
-  const passEl = document.getElementById('qcPassport');
-
-  function showOtpStatus(html, tone){
-    const colors = { success:'#065f46', info:'#1f2937', error:'#991b1b' };
-    const bg = { success:'#ecfdf3', info:'#f3f4f6', error:'#fef2f2' };
-    const c = colors[tone||'info'] || colors.info;
-    const b = bg[tone||'info'] || bg.info;
-    statusEl.innerHTML = `<div style="padding:10px 12px;border-radius:10px;background:${b};color:${c};border:1px solid rgba(0,0,0,0.05);">${html}</div>`;
-  }
-
-  if (sendBtn) sendBtn.addEventListener('click', async ()=>{
-    const passport = (passEl?.value || '').trim();
-    const email = (emailEl?.value || '').trim();
-    if(!passport){ showOtpStatus('Enter your Passport / Booking ref above first.', 'error'); return; }
-    try{
-      const body = email ? { passport, email } : { passport };
-      const res = await fetch('/api/request_code', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-      const out = await res.json().catch(()=>({}));
-      if(res.ok){
-        if(out.status === 'sent') showOtpStatus('Code sent. Check your inbox (and spam).', 'success');
-        else showOtpStatus('Code generated. Email not configured on server.', 'info');
-      } else {
-        const msg = out.error || 'Request failed';
-        showOtpStatus('Unable to send code: ' + msg, 'error');
-      }
-    }catch(e){ showOtpStatus('Network error. Please try again.', 'error'); }
-  });
-
-  if (codeBtn) codeBtn.addEventListener('click', ()=>{
-    const passport = (passEl?.value || '').trim();
-    const code = (codeEl?.value || '').trim();
-    if(!passport || !code){ showOtpStatus('Enter your passport and the 6-digit code.', 'error'); return; }
-    window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(passport) + '&code=' + encodeURIComponent(code);
-  });
-});
-
-async function search(q){
-  try{
-    const res = await fetch('/api/passengers');
-    const list = await res.json();
-    const out = list.filter(p => (p.passport||'').toLowerCase().includes(q) || (p.name||'').toLowerCase().includes(q));
-    const el = document.getElementById('results');
-    if(!out.length) return el.innerHTML = '<div class="empty">No matching passenger</div>';
-    el.innerHTML = out.map(p=>`<div style="padding:8px;border-bottom:1px solid #eee">${p.name} — ${p.passport} — ${p.flight} — seat ${p.seat}</div>`).join('');
-  }catch(e){ console.error(e); }
-}
-let t;
-document.getElementById('q').addEventListener('input', e=>{
-  const v = e.target.value.trim().toLowerCase();
-  clearTimeout(t); t = setTimeout(()=>search(v),200);
-});
-
-function readFileAsFormData(input){
-  const fd = new FormData();
-  return new Promise((resolve, reject)=>{
-    const file = input.files && input.files[0];
-    if(!file) return resolve(null);
-    resolve({file});
-  });
-}
-
-document.getElementById('enrollBtn').addEventListener('click', async ()=>{
-  const passport = document.getElementById('enroll_passport').value.trim();
-  const fileInput = document.getElementById('enroll_image');
-  if(!passport || !fileInput.files.length){ alert('passport and image required'); return; }
-  const fd = new FormData(); fd.append('passport', passport); fd.append('image', fileInput.files[0]);
-  const res = await fetch('/api/face/enroll', {method:'POST', body: fd});
-  const body = await res.json();
-  if(res.ok) alert('Enrolled: ' + passport); else alert('Enroll failed: ' + (body.error||JSON.stringify(body)));
-});
-
-document.getElementById('verifyBtn').addEventListener('click', async ()=>{
-  const passport = document.getElementById('verify_passport').value.trim();
-  const fileInput = document.getElementById('verify_image');
-  const out = document.getElementById('faceResult'); out.innerHTML='';
-  if(!passport || !fileInput.files.length){ out.textContent='passport and image required'; return; }
-  const fd = new FormData(); fd.append('passport', passport); fd.append('image', fileInput.files[0]);
-  const res = await fetch('/api/face/verify', {method:'POST', body: fd});
-  const body = await res.json();
-    if(res.ok){
-    out.innerHTML = `<div>Match: ${body.match} — score: ${body.score}</div>`;
-    if(body.match){
-      // Navigate directly to the boarding pass page
-      window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(passport);
-    }
-  } else {
-    out.textContent = body.error || 'verify failed';
-  }
-});
-
-// Camera support
-let stream = null;
-  const camPanel = document.getElementById('cameraPanel');
-const camPreview = document.getElementById('camPreview');
-const camCanvas = document.getElementById('camCanvas');
-const camStatus = document.getElementById('camStatus');
-
-async function startCamera(){
-  if(stream) return;
-  try{
-    stream = await navigator.mediaDevices.getUserMedia({video:{width:640,height:480}, audio:false});
-    camPreview.srcObject = stream;
-    try{ camPanel.hidden = false; camPanel.setAttribute('aria-hidden','false'); }catch(e){}
-    camStatus.textContent = 'Camera started';
-  }catch(err){
-    camStatus.textContent = 'Camera error: ' + (err.message||err);
-  }
-}
-
-function stopCamera(){
-  if(!stream) return;
-  stream.getTracks().forEach(t=>t.stop());
-  stream = null;
-  camPreview.srcObject = null;
-  try{ camPanel.hidden = true; camPanel.setAttribute('aria-hidden','true'); }catch(e){}
-  camStatus.textContent = 'Camera stopped';
-}
-
-function captureBlob(){
-  return new Promise((resolve,reject)=>{
-    try{
-      const ctx = camCanvas.getContext('2d');
-      ctx.drawImage(camPreview, 0, 0, camCanvas.width, camCanvas.height);
-      camCanvas.toBlob(blob=>{
-        resolve(blob);
-      }, 'image/jpeg', 0.9);
-    }catch(e){ reject(e); }
-  });
-}
-
-document.getElementById('startCam').addEventListener('click', ()=>startCamera());
-document.getElementById('stopCam').addEventListener('click', ()=>stopCamera());
-document.getElementById('captureBtn').addEventListener('click', async ()=>{
-  camStatus.textContent = 'Capturing...';
-  try{
-    const blob = await captureBlob();
-    camStatus.textContent = 'Captured image';
-    // Put the last capture into a temporary data attribute so capture enrol/verify buttons can use it
-    camPreview.dataset.lastcapture = URL.createObjectURL(blob);
-    camPreview.lastBlob = blob;
-  }catch(e){ camStatus.textContent = 'Capture failed'; }
-});
-
-// Helper to send a blob to enroll/verify
-async function sendBlobFor(action, passport, blob){
-  const fd = new FormData(); fd.append('passport', passport); fd.append('image', blob, 'capture.jpg');
-  const res = await fetch(action, {method:'POST', body: fd});
-  return res;
-}
-
-// Hook camera capture enroll/verify buttons
-document.getElementById('enrollFromCam').addEventListener('click', async ()=>{
-  const passport = document.getElementById('enroll_passport').value.trim();
-  if(!passport){ alert('Enter passport to enroll'); return; }
-  if(!camPreview.lastBlob){
-    // auto start and capture once
-    await startCamera();
-    camStatus.textContent = 'Please position subject and click Capture then click Capture & Enroll';
-    return;
-  }
-  const res = await sendBlobFor('/api/face/enroll', passport, camPreview.lastBlob);
-  const body = await res.json();
-  if(res.ok){ alert('Enrolled from camera: ' + passport); } else { alert('Enroll failed: ' + (body.error||JSON.stringify(body))); }
-});
-
-document.getElementById('verifyFromCam').addEventListener('click', async ()=>{
-  const passport = document.getElementById('verify_passport').value.trim();
-  const out = document.getElementById('faceResult'); out.innerHTML='';
-  if(!passport){ out.textContent='Enter passport to verify'; return; }
-  if(!camPreview.lastBlob){
-    await startCamera();
-    camStatus.textContent = 'Please position subject and click Capture then click Capture & Verify';
-    return;
-  }
-  const res = await sendBlobFor('/api/face/verify', passport, camPreview.lastBlob);
-  const body = await res.json();
-  if(res.ok){
-    out.innerHTML = `<div>Match: ${body.match} — score: ${body.score}</div>`;
-    if(body.match){
-      // Navigate to boarding pass on success
-      window.location.href = '/api/boardingpass?passport=' + encodeURIComponent(passport);
-    }
-  } else {
-    out.textContent = body.error || 'verify failed';
-  }
-});
-
-// Consent modal logic
-const consentModal = document.getElementById('consentModal');
-const consentCheckbox = document.getElementById('consentCheckbox');
-const consentAccept = document.getElementById('consentAccept');
-const consentCancel = document.getElementById('consentCancel');
-const openConsent = document.getElementById('openConsent');
-// ensure initial inert state matches aria-hidden
-try { if (consentModal) consentModal.inert = consentModal.getAttribute('aria-hidden') === 'true'; } catch(e) {}
-
-function hasConsent(){
-  return localStorage.getItem('biometricConsent') === 'true';
-}
-
-function showConsent(){
-  consentModal.setAttribute('aria-hidden','false');
-  try { consentModal.inert = false; } catch(e) {}
-  consentCheckbox.checked = false;
-  consentAccept.disabled = true;
-  trapFocusConsent(consentModal);
-}
-
-function hideConsent(){
-  consentModal.setAttribute('aria-hidden','true');
-  try { consentModal.inert = true; } catch(e) {}
-}
-
-openConsent.addEventListener('click', (e)=>{ showConsent(); });
-consentCheckbox.addEventListener('change', ()=>{ consentAccept.disabled = !consentCheckbox.checked; });
-consentCancel.addEventListener('click', ()=>{ hideConsent(); });
-consentAccept.addEventListener('click', ()=>{
-  localStorage.setItem('biometricConsent', 'true');
-  hideConsent();
-  // optionally auto-start camera when accepted
-  startCamera();
-});
-
-// ensure showConsent toggles inert appropriately
-function showConsent(){
-  consentModal.setAttribute('aria-hidden','false');
-  try { consentModal.inert = false; } catch(e) {}
-  consentCheckbox.checked = false;
-  consentAccept.disabled = true;
-  trapFocusConsent(consentModal);
-}
-
-// lightweight focus trap for consent modal
-function trapFocusConsent(modal){
-  if(!modal) return;
-  modal._previouslyFocused = document.activeElement;
-  const focusable = Array.from(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')).filter(n=>!n.disabled);
-  const first = focusable[0] || modal;
-  const last = focusable[focusable.length-1] || first;
-  function handler(e){
-    if (e.key === 'Tab'){
-      if (focusable.length === 0){ e.preventDefault(); return; }
-      if (e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
-    }
-    if (e.key === 'Escape'){ hideConsent(); }
-  }
-  modal._handler = handler;
-  document.addEventListener('keydown', handler);
-  try{ first.focus(); }catch(e){}
-}
-
-function releaseFocusConsent(modal){
-  if(!modal) return;
-  if (modal._handler) document.removeEventListener('keydown', modal._handler);
-  if (modal._previouslyFocused && modal._previouslyFocused.focus) try{ modal._previouslyFocused.focus(); }catch(e){}
-  delete modal._handler; delete modal._previouslyFocused;
-}
-
-// enforce consent when attempting camera or enroll/verify actions
-function requireConsentOrShow(){
-  if(!hasConsent()){
-    showConsent();
-    return false;
-  }
-  return true;
-}
-
-// Patch start camera/enroll/verify buttons to require consent
-const startBtn = document.getElementById('startCam');
-const enrollCamBtn = document.getElementById('enrollFromCam');
-const verifyCamBtn = document.getElementById('verifyFromCam');
-startBtn.addEventListener('click', ()=>{ if(requireConsentOrShow()){ startCamera(); } });
-enrollCamBtn.addEventListener('click', async (e)=>{ if(!hasConsent()){ showConsent(); return; } /* original handler remains attached above */ });
-verifyCamBtn.addEventListener('click', async (e)=>{ if(!hasConsent()){ showConsent(); return; } /* original handler remains attached above */ });
-
-// If consent already given, hide banner
-  if(hasConsent()){
-  const banner = document.getElementById('consentBanner'); if(banner) try{ banner.hidden = true; banner.setAttribute('aria-hidden','true'); }catch(e){}
-}
-</script>
-<script src="/frontend/includes/fragment-loader.js"></script>
+        });
+    </script>
 </body>
 </html>

@@ -1513,5 +1513,23 @@
     "seat": 1,
     "baggage_count": 1,
     "timestamp": "2026-07-22T11:34:20.551557Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-23T20:39:33.505892Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-24T06:22:10.396090Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-24T10:32:05.188552Z"
   }
 ]

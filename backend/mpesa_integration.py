@@ -8,6 +8,8 @@ import requests
 import base64
 import json
 from datetime import datetime, timedelta
+import smtplib
+from email.message import EmailMessage
 import logging
 
 # Configure logging
