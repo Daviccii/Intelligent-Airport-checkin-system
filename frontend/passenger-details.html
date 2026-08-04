@@ -211,18 +211,19 @@
 
           <div class="form-group">
             <label for="route">Flight Route</label>
-            <select id="route" class="form-select" onchange="updateFare()">
-              <option value="NBO (Nairobi) → MBA (Mombasa)">Nairobi (NBO) → Mombasa (MBA)</option>
-              <option value="NBO (Nairobi) → KIS (Kisumu)">Nairobi (NBO) → Kisumu (KIS)</option>
-              <option value="NBO (Nairobi) → LHR (London Heathrow)">Nairobi (NBO) → London (LHR)</option>
-            </select>
+            <input type="text" id="route" class="form-input" readonly
+                   style="background:#F1F5F9; cursor:not-allowed;"
+                   title="Route was selected on the previous page and can't be changed here.">
           </div>
 
           <div class="form-group">
             <label for="cabin-class">Cabin Class</label>
-            <select id="cabin-class" class="form-select" onchange="updateFare()">
-              <option value="Economy Comfort">Economy Comfort</option>
-              <option value="Business Class">Business Class</option>
+            <select id="cabin-class" class="form-select" disabled
+                    title="Cabin class was selected on the previous page and can't be changed here.">
+              <option value="Economy">Economy</option>
+              <option value="Premium Economy">Premium Economy</option>
+              <option value="Business">Business</option>
+              <option value="First Class">First Class</option>
             </select>
           </div>
 
@@ -235,6 +236,73 @@
     </div>
   </div>
 
+  <script>
+    // Bridges the gap between availability.html and passenger-validation.js.
+    // Neither the URL query string nor sessionStorage.selectedFlight was being
+    // read anywhere on this page before — updateFare() and savePassengerDetails()
+    // were silently falling back to hardcoded defaults. This restores the real
+    // route/price/passenger-count context and exposes it as window.__incomingBooking,
+    // which is the exact global passenger-validation.js already expects.
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+
+      let fromStorage = {};
+      try {
+        const stored = sessionStorage.getItem('selectedFlight');
+        if (stored) fromStorage = JSON.parse(stored);
+      } catch (e) {
+        console.warn('Could not parse sessionStorage.selectedFlight:', e);
+      }
+
+      const price = Number(fromStorage.price ?? params.get('price')) || 0;
+      const from = fromStorage.from || params.get('from') || '';
+      const to = fromStorage.to || params.get('to') || '';
+      const departureDate = fromStorage.departureDate || params.get('departureDate') || '';
+
+      const passengerCode = fromStorage.passengers || params.get('passengers') || '1-0-0';
+      const [adults, children, infants] = passengerCode.split('-').map(Number);
+      const totalPassengers = (adults || 1) + (children || 0) + (infants || 0);
+
+      // The cabin class comes from availability.html's selection object as `cabinClass`
+      // in sessionStorage, or `cabin` in the URL — NOT `fareClass`/`fare` (an earlier fix
+      // here assumed those names, which don't exist in the real page, so it always fell
+      // back to Economy regardless of what was actually picked).
+      const cabinClassValue = fromStorage.cabinClass || params.get('cabin') || 'economy';
+      const cabinLabels = {
+        economy: 'Economy',
+        premium_economy: 'Premium Economy',
+        premium: 'Premium Economy', // homepage's class dropdown uses this value for Premium Economy
+        business: 'Business',
+        first: 'First Class'
+      };
+      const cabinClassLabel = cabinLabels[cabinClassValue] || 'Economy';
+
+      window.__incomingBooking = {
+        flight: fromStorage.flight || { flight_number: params.get('flightId') || 'N/A' },
+        price,
+        from,
+        to,
+        departureDate,
+        totalPassengers
+      };
+
+      // Reflect the locked-in route and cabin class on their read-only fields so what's
+      // displayed matches what savePassengerDetails() will actually charge and submit —
+      // the price from availability.html is already final for the class that was picked
+      // there, so this page must not let a second class selection re-price it.
+      document.addEventListener('DOMContentLoaded', () => {
+        const routeField = document.getElementById('route');
+        if (routeField) {
+          routeField.value = (from && to) ? `${from} → ${to}` : 'Route unavailable — please go back and reselect a flight.';
+        }
+        const cabinField = document.getElementById('cabin-class');
+        if (cabinField) {
+          cabinField.value = cabinClassLabel;
+        }
+        if (typeof updateFare === 'function') updateFare();
+      });
+    })();
+  </script>
   <script src="passenger-validation.js" defer></script>
 </body>
 </html>

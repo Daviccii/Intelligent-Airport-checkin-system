@@ -1,5 +1,5 @@
-
 import csv
+import re
 from flask import Flask, request, jsonify, send_from_directory, redirect, send_file, Response, stream_with_context
 from flask_cors import CORS
 from security_utils import security_manager, sanitize_input, validate_passport, require_admin
@@ -23,6 +23,7 @@ import time
 import logging
 from mpesa_integration import mpesa_integration, sms_integration, email_integration
 from validation_utils import ValidationUtils, ValidationError, validate_form_data
+from dynamic_booking_api import register_dynamic_booking_endpoints
 
 # Load environment variables from .env file
 load_dotenv()
@@ -66,6 +67,7 @@ HOLDS_FILE = os.path.join(BASE_DIR, 'holds.json')
 OPENAPI_FILE = os.path.join(BASE_DIR, 'openapi.json')
 BOOKINGS_FILE = os.path.join(BASE_DIR, 'bookings.json')
 FLIGHTS_FILE = os.path.join(BASE_DIR, 'flights.json')
+ANNOUNCEMENTS_FILE = os.path.join(BASE_DIR, 'announcements.json')
 FACE_DIR = os.path.join(BASE_DIR, 'face_store')
 SETTINGS_FILE = os.path.join(BASE_DIR, 'system_config.json')
 STAFF_FILE = os.path.join(BASE_DIR, 'staff.json')
@@ -75,6 +77,20 @@ STAFF_ALLOWED_PERMISSIONS = [
     'view_dashboard',
     'edit_passengers'
 ]
+
+# Each portal gets its OWN session cookie name. Previously every portal
+# (passenger/admin/staff/member) set a cookie named plain 'session' on
+# path '/', so logging into any one portal in a browser silently
+# overwrote the session cookie for every other portal open in that same
+# browser -- e.g. logging into /staff after /admin would clobber the
+# admin session, making admin/staff pages randomly "stop working"
+# depending on login order.
+SESSION_COOKIE_NAMES = {
+    'admin': 'admin_session',
+    'staff': 'staff_session',
+    'member': 'member_session',
+    'passenger': 'passenger_session',
+}
 try:
     os.makedirs(FRONTEND_DIR, exist_ok=True)
 except Exception:
@@ -95,6 +111,8 @@ app = Flask(__name__, static_folder=FRONTEND_DIR, static_url_path='')
 # Enable CORS for API routes to support local file-served frontend during development
 CORS(app, resources={r"/api/*": {"origins": "*"}}, supports_credentials=True)
 
+# Register dynamic booking endpoints
+register_dynamic_booking_endpoints(app)
 
 # ---------------------------------------------------------------------------
 # Helper Functions
@@ -118,6 +136,19 @@ def _save_json_file(filepath, data):
     except Exception as e:
         print(f'Error saving to {filepath}: {e}')
         return False
+
+def _load_passengers():
+    """Load persisted passengers from passengers.json."""
+    data = _load_json_file(PASSENGER_FILE, [])
+    return data if isinstance(data, list) else []
+
+# Restore any previously-persisted passengers so `/api/passengers`, check-in,
+# and seat-assignment flows see real data after a restart instead of starting
+# from an empty list (the in-memory `passengers` list above was never being
+# reloaded from disk, so every restart silently dropped all existing
+# passengers and the next save overwrote passengers.json with only whatever
+# had been created since that restart).
+passengers = _load_passengers()
 
 def _normalize_phone(phone):
     if not phone:
@@ -264,18 +295,30 @@ def send_booking_confirmation_sms(passenger, booking_ref, flight_details):
     })
     return True
 
-def _get_session_from_request(request):
-    """Extract session token from request headers or cookies."""
+def _get_session_from_request(request, role=None):
+    """Extract session token from request headers or cookies.
+
+    The X-SESSION / Authorization header always wins when present. If we
+    have to fall back to a cookie, use the cookie for the given `role`
+    when known; otherwise check every portal's cookie (and the legacy
+    'session' cookie, for any old sessions still on disk).
+    """
     token = request.headers.get('X-SESSION') or request.headers.get('Authorization', '')
     if token.startswith('Bearer '):
         token = token[7:]
-    if not token:
-        token = request.cookies.get('session', '')
-    return token
+    if token:
+        return token
+    if role:
+        return request.cookies.get(SESSION_COOKIE_NAMES.get(role, 'session'), '')
+    for cookie_name in SESSION_COOKIE_NAMES.values():
+        value = request.cookies.get(cookie_name)
+        if value:
+            return value
+    return request.cookies.get('session', '')
 
 def _require_session(request, require_role=None):
     """Check if user has valid session. Returns session dict or None."""
-    token = _get_session_from_request(request)
+    token = _get_session_from_request(request, role=require_role)
     if not token:
         return None
     
@@ -352,6 +395,14 @@ def _init_admin_users_from_env():
         except Exception:
             return {}
     return {}
+
+def _load_admin_users():
+    """Load admin users (username -> {password_hash, ...}), seeding from env vars if the file doesn't exist yet."""
+    users = _init_admin_users_from_env()
+    if not isinstance(users, dict):
+        users = {}
+    return users
+
 def _delete_session(token):
     """Delete a session token."""
     try:
@@ -758,10 +809,23 @@ def api_staff_profile():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# ---- Activities API (admin dashboard support) ---------------------------------------
+# ---- Activities API (admin/staff dashboard support) ----------------------------------
+def _require_admin_or_staff_session():
+    """Shared guard for the activity feeds below. These endpoints had NO
+    session check at all, so admin and staff dashboards (and anyone else)
+    were all reading the exact same unfiltered, unauthenticated feed --
+    which is why staff activity was showing up as if it belonged to the
+    admin dashboard and vice versa. Require a logged-in admin or staff
+    session (each now on its own cookie, see SESSION_COOKIE_NAMES) before
+    returning any activity data.
+    """
+    return _require_session(request, require_role='admin') or _require_session(request, require_role='staff')
+
 @app.route('/api/activities', methods=['GET'])
 def api_get_activities():
     """Return recent activities; optional filter by type via ?type=booking|payment|checkin"""
+    if not _require_admin_or_staff_session():
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         activity_type = request.args.get('type')
         try:
@@ -775,6 +839,8 @@ def api_get_activities():
 
 @app.route('/api/activities/bookings', methods=['GET'])
 def api_get_activities_bookings():
+    if not _require_admin_or_staff_session():
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         items = get_bookings_log() or []
         return jsonify({'bookings': items}), 200
@@ -783,6 +849,8 @@ def api_get_activities_bookings():
 
 @app.route('/api/activities/checkins', methods=['GET'])
 def api_get_activities_checkins():
+    if not _require_admin_or_staff_session():
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         items = get_checkins_log() or []
         return jsonify({'checkins': items}), 200
@@ -791,6 +859,8 @@ def api_get_activities_checkins():
 
 @app.route('/api/activities/payments', methods=['GET'])
 def api_get_activities_payments():
+    if not _require_admin_or_staff_session():
+        return jsonify({'error': 'unauthorized'}), 401
     try:
         # This is the more robust version of the function.
         # Get payment activities only. Booking activities already log payment metadata separately.
@@ -1179,6 +1249,13 @@ def _load_bookings():
         pass
     return []
 
+def _save_bookings(bookings):
+    """Save the full bookings list to bookings.json.
+    This was previously called from _add_booking() and refund_booking() but never
+    defined anywhere, so both of those silently failed to persist (the try/except
+    in _add_booking swallowed the resulting NameError and logged 'booking_save_failed')."""
+    return _save_json_file(BOOKINGS_FILE, bookings)
+
 def _add_booking(booking_data):
     """Add a new booking to the bookings list and save to file."""
     try:
@@ -1394,9 +1471,14 @@ def api_face_enroll():
     img = request.files.get('image')
     if not (passport and img):
         return jsonify({"error": "passport and image are required"}), 400
-    ok, reason = validate_passport(passport)
-    if not ok:
-        return jsonify({"error": "invalid_passport", "detail": reason}), 400
+    # Format check only — the stored/looked-up filename below still uses the
+    # original `passport` string as typed, so existing enrolled face files
+    # keep matching. This just makes "is this a valid passport" consistent
+    # with /api/register and /api/bookings.
+    try:
+        ValidationUtils.validate_passport(passport, field_name="passport")
+    except ValidationError as e:
+        return jsonify({"error": "invalid_passport", "detail": e.message}), 400
     # Save file to face store
     safe_name = passport.replace('/', '_')
     dest = os.path.join(FACE_DIR, f"{safe_name}.jpg")
@@ -1447,9 +1529,12 @@ def api_face_verify():
     img = request.files.get('image')
     if not (passport and img):
         return jsonify({"error": "passport and image are required"}), 400
-    ok, reason = validate_passport(passport)
-    if not ok:
-        return jsonify({"error": "invalid_passport", "detail": reason}), 400
+    # Format check only — filename derivation below is unchanged, so this
+    # still matches whatever was enrolled under the original passport string.
+    try:
+        ValidationUtils.validate_passport(passport, field_name="passport")
+    except ValidationError as e:
+        return jsonify({"error": "invalid_passport", "detail": e.message}), 400
     safe_name = passport.replace('/', '_')
     stored = os.path.join(FACE_DIR, f"{safe_name}.jpg")
     if not os.path.exists(stored):
@@ -1659,7 +1744,192 @@ def api_docs():
 
 @app.route('/api/bookings', methods=['GET', 'POST'])
 def api_bookings():
-    """GET: Return bookings. POST: Create a new booking."""
+    """GET: Return bookings (staff/admin see all, passengers see their own — requires a session).
+    POST: Create a new booking from the public checkout flow (availability -> passenger-details ->
+    payment). This is an anonymous, unauthenticated customer action, not a staff/admin action, so
+    it intentionally does NOT go through _require_session — that check only applies to GET."""
+
+    if request.method == 'POST':
+        data = request.get_json(force=True, silent=True) or {}
+
+        flight = data.get('selectedFlight') or {}
+        search = data.get('searchParams') or {}
+        passenger_list = data.get('passengers') or []
+        passenger = passenger_list[0] if passenger_list else {}
+
+        first_name_raw = (passenger.get('firstName') or '').strip()
+        last_name_raw = (passenger.get('lastName') or '').strip()
+        email_raw = (passenger.get('email') or '').strip()
+        passport = (passenger.get('passportNumber') or '').strip()
+        flight_input = (flight.get('flightNumber') or '').replace('-', '').strip()
+
+        # --- Validation rules ---------------------------------------------
+        # Use the same ValidationUtils the rest of the app already relies on
+        # (see /api/register, /api/staff) instead of ad hoc checks, so a name/
+        # email/flight number that's valid on one endpoint is valid on all of them.
+        validator = ValidationUtils()
+        try:
+            first_name = validator.validate_name(first_name_raw, field_name="First Name")
+            last_name = validator.validate_name(last_name_raw, field_name="Last Name")
+            email = validator.validate_email(email_raw, field_name="Email")
+            # A flight must actually be selected and well-formed — this is what
+            # previously let bookings get created with flight_number 'N/A' (nothing
+            # to check into). Airport-code-style ("FL01") flight numbers from the
+            # seed data won't pass this — see note at the end of this handler.
+            flight_number = validator.validate_flight_number(flight_input, field_name="Flight Number")
+        except ValidationError as e:
+            return jsonify({'error': 'validation_error', 'field': e.field, 'detail': e.message}), 400
+
+        # Passport is optional at booking time (some flows collect it later at
+        # check-in), but if one is supplied it must be well-formed. Uses the
+        # same ValidationUtils.validate_passport as /api/register, so a passport
+        # accepted here is accepted everywhere a *real* passport is expected.
+        # (This does not affect the booking_ref-as-passport fallback used below
+        # for passenger records with no real passport on file — see note at
+        # the bottom of this handler on why /api/checkin can't use this same
+        # strict check.)
+        if passport:
+            try:
+                passport = ValidationUtils.validate_passport(passport, field_name="passport")
+            except ValidationError as e:
+                return jsonify({'error': 'invalid_passport', 'detail': e.message}), 400
+
+        full_name = f"{first_name} {last_name}".strip()
+
+        # A passport number identifies one traveller. If this passport is already
+        # on file under a different name, refuse rather than silently letting two
+        # different people share one passenger record (as happened with EX54321
+        # being reused across two unrelated bookings).
+        if passport:
+            for b in _load_bookings():
+                other_passport = (b.get('passport') or '').strip()
+                if other_passport and other_passport.upper() == passport.upper():
+                    other_name = (b.get('name') or b.get('passenger_name') or '').strip()
+                    if other_name and other_name.lower() != full_name.lower():
+                        return jsonify({
+                            'error': 'passport_registered_to_different_passenger',
+                            'detail': f'Passport {passport} is already on file under a different name.'
+                        }), 409
+            for p in passengers:
+                other_passport = (p.get('passport') or '').strip()
+                if other_passport and other_passport.upper() == passport.upper():
+                    other_name = (p.get('name') or '').strip()
+                    if other_name and other_name.lower() != full_name.lower():
+                        return jsonify({
+                            'error': 'passport_registered_to_different_passenger',
+                            'detail': f'Passport {passport} is already on file under a different name.'
+                        }), 409
+        # --- End validation rules ---------------------------------------------
+
+        amount = flight.get('price', 0)
+        try:
+            amount = float(amount)
+        except (TypeError, ValueError):
+            amount = 0
+
+        # Booking reference: honor a client-supplied PNR only if it doesn't already
+        # exist; otherwise (or if none was supplied) generate a fresh, guaranteed-unique one.
+        existing_refs = {(b.get('booking_ref') or b.get('id') or b.get('booking_reference') or '').upper()
+                          for b in _load_bookings()}
+        booking_ref = (data.get('pnr') or '').strip()
+        if booking_ref and booking_ref.upper() in existing_refs:
+            return jsonify({'error': 'booking_reference_already_exists'}), 409
+        if not booking_ref:
+            booking_ref = 'SF-' + secrets.token_hex(3).upper()
+            while booking_ref.upper() in existing_refs:
+                booking_ref = 'SF-' + secrets.token_hex(3).upper()
+
+        payment_status = 'completed' if data.get('paymentStatus') == 'Paid' else 'pending'
+
+        new_booking = {
+            'id': booking_ref,
+            'booking_ref': booking_ref,
+            'name': full_name,
+            'passenger_name': full_name,
+            'email': email,
+            'passport': passport or None,
+            'phone': passenger.get('phone') or None,
+            'flight': flight_number,
+            'flight_number': flight_number,
+            'from': search.get('origin', ''),
+            'to': search.get('destination', ''),
+            'depart': search.get('departure', ''),
+            'class': flight.get('fareClass', 'Economy Comfort'),
+            'amount': amount,
+            'total_amount': amount,
+            'currency': data.get('currency', 'KES'),
+            'payment_method': (data.get('paymentMethod') or 'N/A'),
+            'transaction_id': data.get('transactionId'),
+            'payment_status': payment_status,
+            'status': payment_status,
+        }
+
+        saved = _add_booking(new_booking)
+        if saved is None:
+            return jsonify({'error': 'booking_save_failed'}), 500
+
+        # Log booking + payment activity so the admin Bookings/Payments activity
+        # dashboards (which read via get_bookings_log()/get_payments_log(), not
+        # bookings.json directly) actually see this booking. Without this, nothing
+        # ever calls log_activity('booking'|'payment', ...) and those two dashboards
+        # stay empty no matter how many real bookings/payments come through.
+        try:
+            activity_timestamp = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+            log_activity('booking', {
+                'passenger_name': full_name,
+                'flight_number': new_booking['flight'],
+                'booking_ref': booking_ref,
+                'amount': amount,
+                'status': payment_status,
+                'timestamp': activity_timestamp
+            })
+            log_activity('payment', {
+                'passenger_name': full_name,
+                'flight': new_booking['flight'],
+                'booking_ref': booking_ref,
+                'amount': amount,
+                'payment_method': new_booking['payment_method'],
+                'status': payment_status,
+                'timestamp': activity_timestamp
+            })
+        except Exception as e:
+            log_event({
+                'type': 'activity_log_failed',
+                'booking_ref': booking_ref,
+                'error': str(e),
+                'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+            })
+
+        # Also register the passenger the same way the check-in flow does, so this
+        # booking shows up consistently in passengers.json for check-in/lookup.
+        try:
+            seat = sum(1 for p in passengers if p.get('flight') == new_booking['flight']) + 1
+            passenger_record = {
+                'name': full_name,
+                'passport': passport or booking_ref,
+                'flight': new_booking['flight'],
+                'seat': seat,
+                'email': email,
+                'phone': passenger.get('phone') or None,
+                'payment_method': new_booking['payment_method'],
+                'currency': new_booking['currency'],
+                'amount': amount,
+                'checked_in': False
+            }
+            passengers.append(passenger_record)
+            save_passengers()
+        except Exception as e:
+            # Booking itself already saved successfully; don't fail the whole
+            # request just because the passenger-list mirror failed.
+            log_event({
+                'type': 'passenger_mirror_failed',
+                'booking_ref': booking_ref,
+                'error': str(e),
+                'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+            })
+
+        return jsonify({'booking': saved}), 201
+
     # GET endpoint
     session = _require_session(request)
     # Public access is not secure. All GET requests should be authenticated.
@@ -1688,286 +1958,164 @@ def api_bookings():
 
     return jsonify({'error': 'unauthorized_role'}), 403
 
-@app.route('/api/flights', methods=['GET','POST'])
-def api_flights():
-    """GET: list flights (aggregated from passengers + flights.json if present)
-       POST (admin only): add a flight { flight: str, meta?: dict }
-    """
-    if request.method == 'GET':
-        # Filters
-        date_q = (request.args.get('date') or '').strip()
-        origin_q = (request.args.get('origin') or '').strip().upper()
-        dest_q = (request.args.get('destination') or '').strip().upper()
-        avail_only = (request.args.get('availableOnly') or '').lower() == 'true'
+@app.route('/api/public/bookings', methods=['GET'])
+def api_public_bookings():
+    """Unauthenticated, read-only booking list for pre-login flows (online check-in,
+    'find my booking', etc). Serves the real BASE_DIR/bookings.json that _add_booking()
+    actually writes to — the static frontend/bookings.json copy the old checkin-validation.js
+    fetched directly is a separate, stale file that never gets updated by real bookings.
 
-        # Add backend validation for flight search
-        if origin_q and dest_q and origin_q == dest_q:
-            return jsonify({'error': 'validation_error', 'field': 'destination', 'detail': 'Origin and destination cannot be the same.'}), 400
+    SECURITY NOTE: this currently returns full booking records (email, phone, passport)
+    to anyone, matching this project's existing lookup-style endpoints. Before any real
+    deployment, this should require the PNR + last name as query params server-side and
+    return only the single matching (trimmed) record, instead of shipping the entire
+    bookings list to the client for it to filter locally."""
+    return jsonify(_load_bookings()), 200
 
+@app.route('/api/public/passengers', methods=['GET'])
+def api_public_passengers():
+    """Unauthenticated, read-only passenger manifest for the same pre-login flows.
+    See api_public_bookings() for the same rationale and the same security note."""
+    return jsonify(passengers), 200
+
+@app.route('/api/flights', methods=['GET'])
+def api_get_flights():
+    """Return all flights from flights.json, with optional filtering by origin, destination, and date.
+    If origin and destination are provided with a date, uses dynamic flight generation."""
+    try:
+        # Get query parameters for filtering
+        origin_filter = request.args.get('origin', '').strip().upper()
+        destination_filter = request.args.get('destination', '').strip().upper()
+        date_filter = request.args.get('date', '').strip()
+        
+        # Use dynamic generation if origin, destination, and date are provided
+        if origin_filter and destination_filter and date_filter:
+            try:
+                from dynamic_scheduler import DynamicScheduler
+                from pricing_engine import PricingEngine
+                from datetime import datetime, timedelta, timezone
+                
+                pricing_engine = PricingEngine()
+                scheduler = DynamicScheduler(pricing_engine)
+                
+                # Parse the date
+                try:
+                    search_date = datetime.fromisoformat(date_filter)
+                except ValueError:
+                    # Try other date formats
+                    search_date = datetime.strptime(date_filter, '%Y-%m-%d')
+                
+                # Generate flights for the specific date
+                end_date = search_date + timedelta(days=1)
+                dynamic_flights = scheduler.generate_flights_for_route(
+                    origin_filter, destination_filter, search_date, end_date, 1
+                )
+                
+                # Transform dynamic flights to match existing format
+                transformed_flights = []
+                for flight in dynamic_flights:
+                    transformed_flight = {
+                        'flight_number': flight['flight_number'],
+                        'flight': flight['flight_number'],
+                        'airline': flight['airline'],
+                        'aircraft': flight['aircraft'],
+                        'origin': flight['origin'],
+                        'destination': flight['destination'],
+                        'departure_time': flight['departure_time'],
+                        'departureTime': flight['departure_time'],
+                        'arrival_time': flight['arrival_time'],
+                        'arrivalTime': flight['arrival_time'],
+                        'time': flight['departure_time'],
+                        'arrival': flight['arrival_time'],
+                        'capacity': flight['capacity'],
+                        'booked_seats': flight['booked_seats'],
+                        'bookings': flight['booked_seats'],
+                        'gate': flight['gate'],
+                        'status': flight['status'],
+                        'economyPrice': flight['dynamic_pricing']['base_price'],
+                        'businessPrice': flight['dynamic_pricing']['base_price'] * 2.5,
+                        'is_dynamic': True
+                    }
+                    transformed_flights.append(transformed_flight)
+                
+                return jsonify({'flights': transformed_flights}), 200
+                
+            except Exception as e:
+                logger.error(f'Dynamic flight generation failed: {e}')
+                # Fall back to static flights if dynamic fails
+        
+        # Original static flight loading logic
         flights = _load_flights()
-
-        # passenger counts
-        counts = {}
+        
+        # Enrich with booking counts
+        booking_counts = {}
         for p in passengers:
             f = p.get('flight')
-            if not f:
-                continue
-            counts[f] = counts.get(f, 0) + 1
-
-        def to_date_iso(dt_str):
-            try:
-                dt = datetime.fromisoformat(dt_str.replace('Z', ''))
-                return dt.date().isoformat()
-            except Exception:
-                return None
-
-        def base_price(f):
-            aircraft = (f.get('aircraft') or '').lower()
-            cap = int(f.get('capacity') or 0)
-            if 'a380' in aircraft or '777' in aircraft or '787' in aircraft or 'a350' in aircraft:
-                tier = 200
-            elif 'a320' in aircraft or '737' in aircraft:
-                tier = 120
+            if f:
+                booking_counts[f] = booking_counts.get(f, 0) + 1
+        
+        filtered_flights = []
+        for flight in flights:
+            # Normalize flight_number vs flight field (support both)
+            flight_id = flight.get('flight_number') or flight.get('flight')
+            if flight_id and 'flight' not in flight:
+                flight['flight'] = flight_id
+            if flight_id and 'flight_number' not in flight:
+                flight['flight_number'] = flight_id
+            
+            flight['bookings'] = booking_counts.get(flight_id, 0)
+            flight['booked_seats'] = booking_counts.get(flight_id, 0)
+            
+            # Normalize time fields for frontend compatibility
+            if 'time' in flight and 'departure_time' not in flight:
+                flight['departure_time'] = flight['time']
+            if 'departureTime' not in flight and 'departure_time' in flight:
+                flight['departureTime'] = flight['departure_time']
+            if 'arrival' in flight and 'arrival_time' not in flight:
+                flight['arrival_time'] = flight['arrival']
+            if 'arrivalTime' not in flight and 'arrival_time' in flight:
+                flight['arrivalTime'] = flight['arrival_time']
+            
+            # Apply filters if provided
+            if origin_filter or destination_filter or date_filter:
+                matches = True
+                
+                # Filter by origin
+                if origin_filter:
+                    flight_origin = (flight.get('origin') or '').strip().upper()
+                    if flight_origin != origin_filter:
+                        matches = False
+                
+                # Filter by destination
+                if destination_filter:
+                    flight_dest = (flight.get('destination') or '').strip().upper()
+                    if flight_dest != destination_filter:
+                        matches = False
+                
+                # Filter by date (check if departure date matches)
+                if date_filter:
+                    dep_time = flight.get('departure_time') or flight.get('time') or flight.get('departureTime')
+                    if dep_time:
+                        try:
+                            # Extract date from datetime string
+                            dep_date = dep_time.split('T')[0] if 'T' in dep_time else dep_time[:10]
+                            if dep_date != date_filter:
+                                matches = False
+                        except:
+                            matches = False
+                    else:
+                        matches = False
+                
+                if matches:
+                    filtered_flights.append(flight)
             else:
-                tier = 90
-            size_factor = 1.0 if cap >= 220 else (0.9 if cap >= 180 else 0.8)
-            return round(size_factor * tier, 2)
-
-        CLASS_FACTORS = [
-            {'class': 'Economy', 'code': 'Y', 'mult': 1.0, 'amenities': ['Standard seat', '1 carry-on']},
-            {'class': 'Premium Economy', 'code': 'W', 'mult': 1.4, 'amenities': ['Extra legroom', 'Priority boarding']},
-            {'class': 'Business', 'code': 'J', 'mult': 2.5, 'amenities': ['Lie-flat (on widebody)', 'Lounge access']},
-            {'class': 'First', 'code': 'F', 'mult': 4.0, 'amenities': ['Suite (on A380/777)', 'Premium dining']},
-        ]
-
-        enriched = []
-        for fl in flights:
-            dep_date = to_date_iso(fl.get('time'))
-            if date_q and dep_date != date_q:
-                continue
-            if origin_q and (fl.get('origin') or '').upper() != origin_q:
-                continue
-            if dest_q and (fl.get('destination') or '').upper() != dest_q:
-                continue
-            if avail_only and not fl.get('checkin_enabled'):
-                continue
-
-            base = base_price(fl)
-            classes = []
-            for c in CLASS_FACTORS:
-                if c['code'] == 'F' and not any(k in (fl.get('aircraft') or '').lower() for k in ['a380', '777', '787']):
-                    continue
-                price = round(base * c['mult'], 2)
-                classes.append({
-                    'name': c['class'],
-                    'code': c['code'],
-                    'price': price,
-                    'currency': 'USD',
-                    'amenities': c['amenities']
-                })
-
-            enriched.append({
-                'flight': fl.get('flight'),
-                'airline': fl.get('airline'),
-                'aircraft': fl.get('aircraft'),
-                'origin': fl.get('origin'),
-                'destination': fl.get('destination'),
-                'departure_time': fl.get('time'),
-                'arrival_time': fl.get('arrival'),
-                'date': dep_date,
-                'gate': fl.get('gate'),
-                'capacity': fl.get('capacity'),
-                'checkin_enabled': fl.get('checkin_enabled'),
-                'classes': classes,
-                'bookings': counts.get(fl.get('flight'), 0)
-            })
-
-        return jsonify({'total': len(enriched), 'flights': enriched}), 200
-
-    # POST -> admin only (create flight)
-    session = _require_session(request, require_role='admin')
-    if not session:
-        return jsonify({'error': 'unauthorized'}), 401
-    data = request.get_json() or {}
-    flight = (data.get('flight') or '').strip()
-    time = data.get('time')
-    aircraft = (data.get('aircraft') or '').strip() or None
-    gate = (data.get('gate') or '').strip() or None
-    airline = (data.get('airline') or '').strip() or None
-    logo = (data.get('logo') or '').strip() or None
-    arrival = data.get('arrival')
-    checkin_enabled = data.get('checkin_enabled') if 'checkin_enabled' in data else True
-    if not flight:
-        return jsonify({'error': 'flight required'}), 400
-
-    def _parse_time_field(val):
-        """Parse a time/datetime string and return ISO8601 format, or raise ValueError."""
-        if not val:
-            return None
-        from datetime import datetime
-        # Try parsing as ISO8601, fallback to common formats
-        try:
-            # Already ISO
-            dt = datetime.fromisoformat(val.replace('Z', '+00:00'))
-            return dt.isoformat().replace('+00:00', 'Z')
-        except Exception:
-            pass
-        # Try common datetime formats
-        for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
-            try:
-                dt = datetime.strptime(val, fmt)
-                return dt.isoformat() + 'Z'
-            except Exception:
-                continue
-        raise ValueError(f"Unrecognized time format: {val}")
-
-    try:
-        time_iso = _parse_time_field(time) if time else None
-        arrival_iso = _parse_time_field(arrival) if arrival else None
-    except ValueError as e:
-        return jsonify({'error': 'invalid_time', 'detail': str(e)}), 400
-
-    flights = _load_flights()
-    # prevent duplicates
-    if any(f.get('flight') == flight for f in flights):
-        return jsonify({'error': 'flight_exists'}), 400
-    # capacity (optional)
-    capacity = None
-    try:
-        if data.get('capacity') is not None and str(data.get('capacity')).strip() != '':
-            capacity = int(data.get('capacity'))
-    except Exception:
-        return jsonify({'error': 'invalid_capacity'}), 400
-    entry = {'flight': flight, 'time': time_iso, 'capacity': capacity, 'aircraft': aircraft, 'gate': gate, 'arrival': arrival_iso, 'checkin_enabled': bool(checkin_enabled), 'blocked_seats': [], 'airline': airline, 'logo': logo}
-    flights.append(entry)
-    _save_flights(flights)
-    log_event({'type': 'flight_created', 'flight': flight, 'time': time_iso, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
-    return jsonify({'status': 'created', 'flight': entry}), 201
-
-# Pricing API: compute distance-based fares using airport lat/lon
-def _load_airports_map():
-    """Load a simple mapping of IATA -> { lat, lon, name, city } from the frontend assets folder.
-       Returns a dict keyed by uppercase IATA code.
-    """
-    path = os.path.join(FRONTEND_DIR, 'assets', 'data', 'airports.json')
-    try:
-        if not os.path.exists(path):
-            return {}
-        with open(path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    except Exception:
-        return {}
-    out = {}
-    if isinstance(data, list):
-        for a in data:
-            try:
-                code = (a.get('code') or a.get('iata') or '')
-                if not code: continue
-                code = code.strip().upper()
-                lat = a.get('lat') if 'lat' in a else a.get('latitude')
-                lon = a.get('lon') if 'lon' in a else a.get('longitude')
-                try:
-                    lat = float(lat) if lat is not None else None
-                except Exception:
-                    lat = None
-                try:
-                    lon = float(lon) if lon is not None else None
-                except Exception:
-                    lon = None
-                out[code] = {'lat': lat, 'lon': lon, 'name': a.get('name'), 'city': a.get('city'), 'country': a.get('country')}
-            except Exception:
-                continue
-    elif isinstance(data, dict):
-        for k, a in data.items():
-            try:
-                code = (a.get('iata') or a.get('icao') or k) or ''
-                code = code.strip().upper()
-                lat = a.get('lat') if 'lat' in a else a.get('latitude')
-                lon = a.get('lon') if 'lon' in a else a.get('longitude')
-                try:
-                    lat = float(lat) if lat is not None else None
-                except Exception:
-                    lat = None
-                try:
-                    lon = float(lon) if lon is not None else None
-                except Exception:
-                    lon = None
-                out[code] = {'lat': lat, 'lon': lon, 'name': a.get('name'), 'city': a.get('city'), 'country': a.get('country')}
-            except Exception:
-                continue
-    return out
-
-def _calculate_flight_price(origin, destination):
-    """Calculate a realistic flight price based on distance between airports.
-    Uses haversine distance formula and a base price model.
-    """
-    try:
-        airports = _load_airports_map()
-        origin_code = str(origin).strip().upper()
-        dest_code = str(destination).strip().upper()
+                # No filters, include all flights
+                filtered_flights.append(flight)
         
-        origin_data = airports.get(origin_code)
-        dest_data = airports.get(dest_code)
-        
-        if not origin_data or not dest_data:
-            # Default price if airport data not found
-            return round(random.uniform(250, 450), 2)
-        
-        origin_lat = origin_data.get('lat')
-        origin_lon = origin_data.get('lon')
-        dest_lat = dest_data.get('lat')
-        dest_lon = dest_data.get('lon')
-        
-        if origin_lat is None or origin_lon is None or dest_lat is None or dest_lon is None:
-            # Default price if coordinates not available
-            return round(random.uniform(250, 450), 2)
-        
-        # Calculate distance
-        distance = _haversine_km(origin_lat, origin_lon, dest_lat, dest_lon)
-        
-        if distance is None or distance == 0:
-            return round(random.uniform(250, 450), 2)
-        
-        # Pricing model:
-        # Base fare: $150
-        # Per km: $0.08 for short flights (<1500km), $0.06 for medium (1500-5000km), $0.04 for long (>5000km)
-        # Plus variance to avoid identical prices
-        base_fare = 150
-        if distance < 1500:
-            per_km_rate = 0.10
-        elif distance < 5000:
-            per_km_rate = 0.06
-        else:
-            per_km_rate = 0.04
-        
-        distance_fare = distance * per_km_rate
-        subtotal = base_fare + distance_fare
-        
-        # Add some variance (±15%) to make prices more realistic
-        variance = random.uniform(0.85, 1.15)
-        final_price = subtotal * variance
-        
-        return round(final_price, 2)
-    except Exception:
-        # Fallback to random price on any error
-        return round(random.uniform(200, 500), 2)
-
-def _haversine_km(lat1, lon1, lat2, lon2):
-    try:
-        import math
-        if lat1 is None or lon1 is None or lat2 is None or lon2 is None:
-            return None
-        r = 6371.0
-        phi1 = math.radians(lat1)
-        phi2 = math.radians(lat2)
-        dphi = math.radians(lat2 - lat1)
-        dlambda = math.radians(lon2 - lon1)
-        a = math.sin(dphi/2.0)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda/2.0)**2
-        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
-        return r * c
-    except Exception:
-        return None
-
+        return jsonify({'flights': filtered_flights}), 200
+    except Exception as e:
+        print(f'Error in api_get_flights: {e}')
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/api/prices', methods=['GET','POST'])
 def api_prices_v2():
@@ -2476,7 +2624,7 @@ def api_passenger_login():
     token, exp = _create_session(cand.get('passport'), role='passenger', extra_data={'passport': cand.get('passport')}, ttl_seconds=ttl)
     resp = jsonify({'token': token, 'expires': exp.get('expires'), 'passport': cand.get('passport')})
     try:
-        resp.set_cookie('session', token, max_age=int(ttl), httponly=True, samesite='Lax')
+        resp.set_cookie(SESSION_COOKIE_NAMES['passenger'], token, max_age=int(ttl), httponly=True, samesite='Lax', path='/')
     except Exception:
         pass
     return resp, 200
@@ -2530,7 +2678,16 @@ def api_checkin():
             results.append({'passport': passport, 'status': 'error', 'detail': 'passport,name,flight required'})
             continue
 
-        # validate passport format
+        # validate passport format — deliberately using security_utils.validate_passport
+        # (3-20 chars, allows dashes/underscores) rather than the stricter
+        # ValidationUtils.validate_passport (6-12 alnum only) used elsewhere.
+        # Passport-less bookings get their booking_ref (e.g. "SF-9B6CE2") used as a
+        # stand-in passport key when the passenger record is created — see
+        # _add_booking's caller in /api/bookings — and that value contains a
+        # dash, so the strict validator would reject it and break check-in for
+        # every passport-less booking. If that fallback is ever removed (i.e.
+        # every booking is required to have a real passport before check-in),
+        # this can switch to ValidationUtils.validate_passport too.
         ok, reason = validate_passport(passport)
         if not ok:
             results.append({'passport': passport, 'status': 'error', 'detail': 'invalid_passport', 'reason': reason})
@@ -2541,6 +2698,11 @@ def api_checkin():
         if p is None:
             p = {'name': name, 'passport': passport}
             passengers.append(p)
+        elif (p.get('name') or '').strip().lower() != name.strip().lower():
+            # This passport already belongs to someone else on file — refuse rather
+            # than silently renaming their record to match this check-in request.
+            results.append({'passport': passport, 'status': 'error', 'detail': 'passport_registered_to_different_passenger'})
+            continue
 
         # Check duplicate for same flight
         if find_duplicate(passport, flight):
@@ -2625,8 +2787,25 @@ def api_checkin():
         except Exception:
             pass
 
-        # Log event
+        # Log event (events.json — the internal audit trail)
         log_event({'type': 'checkin', 'passport': passport, 'flight': flight, 'seat': assigned_seat, 'baggage_count': baggage_count, 'timestamp': datetime.utcnow().isoformat() + 'Z'})
+
+        # Also record this in the activity tracker — this is what the admin
+        # Check-Ins dashboard (/api/activities/checkins) actually reads. Without
+        # this, every real check-in made through the online check-in flow was
+        # invisible to admin/staff: only /api/register's separate, simpler
+        # check-in path was feeding that dashboard, so it looked like nobody
+        # was checking in even while passengers were.
+        try:
+            log_activity('checkin', {
+                'passenger_name': name,
+                'flight_number': flight,
+                'seat': assigned_seat,
+                'gate': (flight_entry.get('gate') if flight_entry else None) or 'TBA',
+                'timestamp': datetime.utcnow().isoformat() + 'Z'
+            })
+        except Exception as e:
+            print(f"Warning: Failed to log checkin activity: {e}")
 
         # attempt to send boarding pass by email if email present (enqueue)
         email_sent = False
@@ -3266,6 +3445,100 @@ def api_admin_generate_report():
         'data': report_data
     }), 200
 
+# ---- Announcements / Offers (admin-managed banners shown to passengers) ----
+ANNOUNCEMENT_ALLOWED_TYPES = ['announcement', 'offer']
+
+def _load_announcements():
+    data = _load_json_file(ANNOUNCEMENTS_FILE, [])
+    return data if isinstance(data, list) else []
+
+def _save_announcements(items):
+    return _save_json_file(ANNOUNCEMENTS_FILE, items or [])
+
+@app.route('/api/admin/announcements', methods=['GET', 'POST'])
+def api_admin_announcements():
+    """GET: list all announcements/offers (newest first).
+    POST: create a new announcement/offer."""
+    sess = _require_session(request, require_role='admin')
+    if not sess:
+        return jsonify({'error': 'admin_auth_required'}), 401
+
+    if request.method == 'GET':
+        items = _load_announcements()
+        items_sorted = sorted(items, key=lambda a: a.get('created_at', ''), reverse=True)
+        return jsonify({'announcements': items_sorted}), 200
+
+    # POST
+    payload = request.get_json(silent=True) or {}
+    title = (payload.get('title') or '').strip()
+    message = (payload.get('message') or '').strip()
+    if not title or not message:
+        return jsonify({'error': 'validation_error', 'detail': 'title and message are required'}), 400
+
+    anno_type = payload.get('type') if payload.get('type') in ANNOUNCEMENT_ALLOWED_TYPES else 'announcement'
+    code = (payload.get('code') or '').strip() or None
+    cta_label = (payload.get('cta_label') or '').strip() or None
+    cta_url = (payload.get('cta_url') or '').strip() or None
+
+    record = {
+        'id': 'ANN-' + secrets.token_hex(4).upper(),
+        'type': anno_type,
+        'title': title,
+        'message': message,
+        'code': code,
+        'cta_label': cta_label,
+        'cta_url': cta_url,
+        'active': True,
+        'created_by': sess.get('username'),
+        'created_at': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z'),
+    }
+
+    items = _load_announcements()
+    items.append(record)
+    if not _save_announcements(items):
+        return jsonify({'error': 'save_failed'}), 500
+
+    return jsonify({'ok': True, 'announcement': record}), 201
+
+@app.route('/api/admin/announcements/<announcement_id>', methods=['PUT', 'DELETE'])
+def api_admin_announcement_detail(announcement_id):
+    """PUT: update fields (used by the dashboard to toggle `active`).
+    DELETE: remove the announcement/offer entirely."""
+    sess = _require_session(request, require_role='admin')
+    if not sess:
+        return jsonify({'error': 'admin_auth_required'}), 401
+
+    items = _load_announcements()
+    idx = next((i for i, a in enumerate(items) if a.get('id') == announcement_id), None)
+    if idx is None:
+        return jsonify({'error': 'not_found'}), 404
+
+    if request.method == 'DELETE':
+        removed = items.pop(idx)
+        if not _save_announcements(items):
+            return jsonify({'error': 'save_failed'}), 500
+        return jsonify({'ok': True, 'deleted': removed.get('id')}), 200
+
+    # PUT — apply any recognized fields present in the payload; the dashboard
+    # currently only ever sends {active: bool}, but accepting the rest here
+    # means edit-in-place can be added later without another backend change.
+    payload = request.get_json(silent=True) or {}
+    editable_fields = ['type', 'title', 'message', 'code', 'cta_label', 'cta_url', 'active']
+    for field in editable_fields:
+        if field in payload:
+            if field == 'type' and payload[field] not in ANNOUNCEMENT_ALLOWED_TYPES:
+                continue
+            if field == 'active':
+                items[idx][field] = bool(payload[field])
+            else:
+                items[idx][field] = (payload[field] or '').strip() if isinstance(payload[field], str) else payload[field]
+    items[idx]['updated_at'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+
+    if not _save_announcements(items):
+        return jsonify({'error': 'save_failed'}), 500
+
+    return jsonify({'ok': True, 'announcement': items[idx]}), 200
+
 @app.route('/api/admin/notifications/send', methods=['POST'])
 def api_admin_send_notification():
     session = _require_session(request, require_role='admin')
@@ -3566,7 +3839,7 @@ def api_login():
             log_event({'type': 'login', 'role': 'admin', 'username': username or 'master', 'timestamp': datetime.utcnow().isoformat() + 'Z'})
             resp = jsonify({'token': token, 'role': 'admin', 'expires': expires_data.get('expires'), 'username': username or 'master'})
             try:
-                resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax', path='/')
+                resp.set_cookie(SESSION_COOKIE_NAMES['admin'], token, max_age=int(admin_ttl), httponly=True, samesite='Lax', path='/')
             except Exception:
                 pass
             return resp, 200
@@ -3610,7 +3883,7 @@ def api_login():
                 
                 # Set session cookie
                 try:
-                    resp.set_cookie('session', token, max_age=int(admin_ttl), httponly=True, samesite='Lax', path='/')
+                    resp.set_cookie(SESSION_COOKIE_NAMES['admin'], token, max_age=int(admin_ttl), httponly=True, samesite='Lax', path='/')
                 except Exception:
                     pass
                 
@@ -3682,7 +3955,7 @@ def api_login():
             })
             
             try:
-                resp.set_cookie('session', token, max_age=int(staff_ttl), httponly=True, samesite='Lax', path='/')
+                resp.set_cookie(SESSION_COOKIE_NAMES['staff'], token, max_age=int(staff_ttl), httponly=True, samesite='Lax', path='/')
             except Exception:
                 pass
             
@@ -3732,7 +4005,7 @@ def api_login():
         })
         
         try:
-            resp.set_cookie('session', token, max_age=86400, httponly=True, samesite='Lax', path='/')
+            resp.set_cookie(SESSION_COOKIE_NAMES['member'], token, max_age=86400, httponly=True, samesite='Lax', path='/')
         except Exception:
             pass
         
@@ -4475,7 +4748,14 @@ def api_logout():
     token = _get_session_from_request(request)
     if token:
         _delete_session(token)
-    return jsonify({'status': 'ok'})
+    resp = jsonify({'status': 'ok'})
+    # Clear the cookie for whichever portal actually sent it (request may
+    # come from any of the four portals), leaving other portals' sessions
+    # in the same browser untouched.
+    for cookie_name in SESSION_COOKIE_NAMES.values():
+        if request.cookies.get(cookie_name):
+            resp.delete_cookie(cookie_name, path='/')
+    return resp
 
 @app.route('/api/sessions', methods=['GET'])
 def api_get_sessions():
@@ -4690,7 +4970,23 @@ def mpesa_callback():
             # Payment successful - send SMS confirmation
             if amount and mpesa_receipt and phone_number:
                 booking_reference = merchant_request_id  # Use merchant request ID as booking reference
-                
+
+                # Log payment activity so the Payments dashboard (/api/activities/payments)
+                # picks up real, asynchronously-confirmed M-Pesa payments, not just the
+                # synchronous "Paid at booking time" path handled in /api/bookings.
+                try:
+                    log_activity('payment', {
+                        'booking_ref': booking_reference,
+                        'amount': amount,
+                        'payment_method': 'M-Pesa',
+                        'status': 'completed',
+                        'transaction_id': mpesa_receipt,
+                        'phone': phone_number,
+                        'timestamp': datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+                    })
+                except Exception as e:
+                    logger.warning(f"Failed to log M-Pesa payment activity: {e}")
+
                 # Send SMS payment confirmation if SMS integration is available
                 if sms_integration:
                     sms_result = sms_integration.send_payment_confirmation(
@@ -5051,3 +5347,6 @@ def serve_passenger_portal(path):
         return send_from_directory(FRONTEND_DIR, path)
     else:
         return send_from_directory(FRONTEND_DIR, 'index.html')
+        
+if __name__ == "__main__":
+    app.run(debug=True)

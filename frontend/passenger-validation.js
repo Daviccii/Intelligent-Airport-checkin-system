@@ -1,3 +1,49 @@
+function fmtKES(v) {
+    try { return 'KES ' + Math.round(Number(v)).toLocaleString(); } catch (e) { return 'KES ' + v; }
+}
+
+// Recomputes the fare shown on the submit button. Cabin class was already chosen and
+// priced on availability.html — incoming.price is the real, route-and-class-aware
+// per-person fare for that choice, so this just applies passenger count and taxes.
+// It must NOT re-multiply by a class factor: the cabin-class field on this page is a
+// locked, read-only reflection of that earlier choice, not a second pricing input.
+function updateFare() {
+    const fareDisplay = document.getElementById('fare-display');
+    if (!fareDisplay) return;
+
+    const incoming = window.__incomingBooking || {};
+
+    // No incoming flight context (e.g. someone landed here directly) — flat estimate
+    const baseFarePerPerson = incoming.price > 0 ? incoming.price : 14850;
+
+    const totalPassengers = incoming.totalPassengers || 1;
+    const baseFare = baseFarePerPerson * totalPassengers;
+    const taxes = Math.round(baseFare * 0.15);
+    const total = Math.round(baseFare + taxes);
+
+    fareDisplay.textContent = fmtKES(total);
+    fareDisplay.dataset.total = total;
+}
+
+// Best-effort plausibility check, not true verification — client-side JS can never
+// confirm a name or document is genuine, only that it's *shaped* like a real one.
+// Flags strings with an unusually long run of consonants (a strong signal of
+// keyboard-mashed input like "utghbikhuj") — occasional real names may be caught
+// by this (e.g. some German/Polish surnames), it's a tradeoff, not a hard rule.
+function hasExcessiveConsonantRun(str, maxRun) {
+    const cleaned = str.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    let run = 0;
+    for (const ch of cleaned) {
+        if ('aeiou'.includes(ch)) {
+            run = 0;
+        } else {
+            run++;
+            if (run > maxRun) return true;
+        }
+    }
+    return false;
+}
+
 // Reusable validation functions that return an error message string or `true` if valid.
 const validators = {
     name: (val) => {
@@ -51,6 +97,24 @@ const validators = {
         if (dob > eighteenYearsAgo) return 'Passenger must be at least 18 years old.';
         return true;
     },
+    nationality: (val) => {
+        const v = val.trim();
+        if (v === '') return 'Nationality is required.';
+        if (!/^[a-zA-Z\s'-]{2,50}$/.test(v)) return 'Enter a valid nationality (letters only, e.g. Kenyan).';
+        return true;
+    },
+    address: (val) => {
+        const v = val.trim();
+        if (v === '') return 'Address is required.';
+        if (v.length < 8) return 'Please enter your full address (at least 8 characters).';
+        if (!/^[a-zA-Z0-9\s,.'#\/-]+$/.test(v)) return 'Address contains characters that aren\'t allowed.';
+        // Check each word-like token individually (not the whole string, since real
+        // addresses mix house numbers, abbreviations, and place names freely).
+        const words = v.split(/[^a-zA-Z]+/).filter(w => w.length >= 4);
+        if (words.length === 0) return 'Please enter a real address, not just numbers or symbols.';
+        if (words.every(w => hasExcessiveConsonantRun(w, 3))) return 'Please enter a valid address.';
+        return true;
+    },
     required: (val) => {
         if (!val || val.trim() === '') return 'This field is required.';
         return true;
@@ -60,7 +124,7 @@ const validators = {
 function validateField(field) {
     const { input, group, validator } = field;
     const result = validator(input.value);
-    const errorEl = group.querySelector('.invalid-feedback');
+    const errorEl = group.querySelector('.error-feedback');
 
     if (result !== true) {
         group.classList.add('invalid');
@@ -103,12 +167,14 @@ document.addEventListener('DOMContentLoaded', () => {
         'last-name': { validator: validators.name },
         'gender': { validator: validators.required },
         'dob': { validator: validators.dob },
-        'nationality': { validator: validators.required },
+        'nationality': { validator: validators.nationality },
         'passport': { validator: validators.passport },
         'national-id': { validator: validators.nationalId },
+        'emergency-contact-name': { validator: validators.name },
+        'emergency-contact-phone': { validator: validators.internationalPhone },
         'email': { validator: validators.email },
         'phone': { validator: validators.kenyanPhone },
-        'emergency-contact-name': { validator: validators.name }
+        'address': { validator: validators.address }
     };
 
     // Initialize field elements and attach listeners
@@ -118,12 +184,8 @@ document.addEventListener('DOMContentLoaded', () => {
         field.group = document.getElementById(`group-${id}`);
 
         if (field.input && field.group) {
-            // Add a placeholder for error messages if it doesn't exist
-            if (!field.group.querySelector('.invalid-feedback')) {
-                const errorDiv = document.createElement('div');
-                errorDiv.className = 'invalid-feedback';
-                field.group.appendChild(errorDiv);
-            }
+            // .error-feedback already exists in the HTML for every field and is
+            // already wired to the .form-group.invalid CSS rule — no need to create one.
 
             field.input.addEventListener('input', () => {
                 validateField(field);
@@ -160,15 +222,44 @@ function sanitizeInput(str) {
 }
 
 function savePassengerDetails() {
-    const bookingData = {
-        pnr: "KQ-" + Math.floor(100000 + Math.random() * 900000),
-        passengerName: `${sanitizeInput(document.getElementById('first-name').value.trim())} ${sanitizeInput(document.getElementById('last-name').value.trim())}`,
-        email: sanitizeInput(document.getElementById('email').value.trim()),
-        phone: sanitizeInput(document.getElementById('phone').value.trim()),
-        paymentStatus: "Pending",
-        bookingDate: new Date().toISOString()
+    const incoming = window.__incomingBooking || {};
+    const cabinSelect = document.getElementById('cabin-class');
+    const fareDisplay = document.getElementById('fare-display');
+
+    const totalPassengers = incoming.totalPassengers || 1;
+    // fare-display's dataset.total is set by updateFare() whenever the passenger changes
+    // route/cabin; if they never touched those dropdowns, derive it from what availability.html
+    // already priced (per-person price × passenger count + 15% taxes).
+    const perPersonPrice = incoming.price > 0 ? incoming.price : 3500; // sane KES fallback if landed here directly
+    const totalFare = fareDisplay?.dataset.total
+        ? Number(fareDisplay.dataset.total)
+        : Math.round(perPersonPrice * totalPassengers * 1.15);
+
+    // payment.html reads this exact shape from sessionStorage — it doesn't look at the
+    // URL at all, so the object here has to match what it expects field-for-field.
+    const bookingSession = {
+        selectedFlight: {
+            flightNumber: incoming.flight ? (incoming.flight.flight_number || incoming.flight.flight || 'N/A') : 'N/A',
+            fareClass: cabinSelect ? cabinSelect.value : 'Economy Comfort',
+            price: totalFare
+        },
+        passengers: [{
+            firstName: sanitizeInput(document.getElementById('first-name').value.trim()),
+            lastName: sanitizeInput(document.getElementById('last-name').value.trim()),
+            email: sanitizeInput(document.getElementById('email').value.trim()),
+            phone: sanitizeInput(document.getElementById('phone').value.trim()),
+            passportNumber: sanitizeInput(document.getElementById('passport').value.trim())
+        }],
+        searchParams: {
+            origin: incoming.from || '',
+            destination: incoming.to || '',
+            departure: incoming.departureDate || new Date().toISOString().split('T')[0]
+        },
+        selectedSeats: [] // seat selection isn't implemented yet — payment.html falls back to "AUTO"
     };
-    localStorage.setItem('smartfly_booking', JSON.stringify(bookingData));
-    // Redirect to the next step in the booking process
+
+    sessionStorage.setItem('smartflyBookingSession', JSON.stringify(bookingSession));
+
+    // payment.html reads purely from sessionStorage, not the URL
     window.location.href = 'payment.html';
 }

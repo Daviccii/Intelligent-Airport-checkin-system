@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM Content Loaded - Initializing dropdowns...');
 
@@ -355,16 +354,57 @@ document.addEventListener('DOMContentLoaded', () => {
 const flightSearchForm = document.getElementById('flightSearchForm');
 if (flightSearchForm) {
     flightSearchForm.addEventListener('submit', (e) => {
+        e.preventDefault(); // We navigate manually below instead of letting the browser GET-submit to itself
+        
         const submitBtn = flightSearchForm.querySelector('button[type="submit"]');
         if (submitBtn.disabled) {
-            e.preventDefault();
             console.log('❌ Form submission blocked due to validation errors.');
-            // Find first error and focus its input (Requirement 5: Never use alert() popups)
             const firstError = flightSearchForm.querySelector('.kq-form-group.invalid input');
             if (firstError) firstError.focus();
-        } else {
-            // Form is valid, allow submission
+            return;
         }
+        
+        const fromCode = document.getElementById('fromAirport')?.value || '';
+        const toCode = document.getElementById('toAirport')?.value || '';
+        const fromDisplay = document.querySelector('#fromDropdown .dropdown-value')?.textContent.trim() || fromCode;
+        const toDisplay = document.querySelector('#toDropdown .dropdown-value')?.textContent.trim() || toCode;
+        const departDate = document.getElementById('departDate')?.value || '';
+        const returnDate = document.getElementById('returnDate')?.value || '';
+        const tripType = document.getElementById('tripType')?.value || 'return';
+        const cabinClass = document.getElementById('cabinClass')?.value || 'economy';
+        const passengers = document.getElementById('passengers')?.value || '1-0-0';
+        
+        // Make sure the essentials are actually filled in before sending people to the results page
+        const missing = [];
+        if (!fromCode) missing.push('departure airport');
+        if (!toCode) missing.push('destination airport');
+        if (!departDate) missing.push('departure date');
+        if (tripType === 'return' && !returnDate) missing.push('return date');
+        if (missing.length) {
+            let msg = document.getElementById('searchValidationMessage');
+            if (!msg) {
+                msg = document.createElement('div');
+                msg.id = 'searchValidationMessage';
+                msg.style.cssText = 'color:#c33;font-size:13px;margin-top:8px;text-align:center;';
+                submitBtn.insertAdjacentElement('afterend', msg);
+            }
+            msg.textContent = `Please select ${missing.join(', ')} before searching.`;
+            msg.style.display = 'block';
+            return;
+        }
+        
+        // availability.html expects: from, to, departureDate, returnDate, tripType ('roundtrip'|'oneway'), cabin
+        const params = new URLSearchParams({
+            from: fromDisplay,          // e.g. "Eldoret (EDL)" — availability.html pulls the 3-letter code out of this
+            to: toDisplay,
+            departureDate: departDate,
+            tripType: tripType === 'return' ? 'roundtrip' : tripType,
+            cabin: cabinClass,
+            passengers: passengers
+        });
+        if (returnDate) params.set('returnDate', returnDate);
+        
+        window.location.href = `/availability.html?${params.toString()}`;
     });
 }
     
@@ -459,6 +499,12 @@ if (flightSearchForm) {
                 `;
                 li.addEventListener('click', (e) => {
                     e.stopPropagation();
+                    if (isSameAsOppositeAirport(hiddenInputId, airport.code)) {
+                        showAirportValidation(hiddenInputId, city, airport.code);
+                        return;
+                    }
+                    hideAirportValidation();
+                    
                     const valueDisplay = dropdown.querySelector('.dropdown-value');
                     const hiddenInput = document.getElementById(hiddenInputId);
                     const dropdownBtn = dropdown.querySelector('.dropdown-btn-compact');
@@ -468,6 +514,8 @@ if (flightSearchForm) {
                     
                     dropdownBtn.classList.remove('active');
                     menu.classList.remove('show');
+                    
+                    updateAirportOptionAvailability();
                 });
                 menu.appendChild(li);
             } else {
@@ -495,6 +543,12 @@ if (flightSearchForm) {
                     `;
                     li.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        if (isSameAsOppositeAirport(hiddenInputId, airport.code)) {
+                            showAirportValidation(hiddenInputId, city, airport.code);
+                            return;
+                        }
+                        hideAirportValidation();
+                        
                         const valueDisplay = dropdown.querySelector('.dropdown-value');
                         const hiddenInput = document.getElementById(hiddenInputId);
                         const dropdownBtn = dropdown.querySelector('.dropdown-btn-compact');
@@ -504,11 +558,76 @@ if (flightSearchForm) {
                         
                         dropdownBtn.classList.remove('active');
                         menu.classList.remove('show');
+                        
+                        updateAirportOptionAvailability();
                     });
                     menu.appendChild(li);
                 });
             }
         });
+        
+        // Reflect current selections (e.g. after a re-populate) in this freshly-built menu
+        updateAirportOptionAvailability();
+    }
+    
+    // Returns true if `code` is already selected in the *other* airport dropdown
+    function isSameAsOppositeAirport(hiddenInputId, code) {
+        const oppositeInputId = hiddenInputId === 'fromAirport' ? 'toAirport' : 'fromAirport';
+        const oppositeInput = document.getElementById(oppositeInputId);
+        return !!(oppositeInput && oppositeInput.value && oppositeInput.value === code);
+    }
+    
+    // Grey out / disable whichever option in each dropdown matches the other dropdown's current selection
+    function updateAirportOptionAvailability() {
+        const fromAirport = document.getElementById('fromAirport');
+        const toAirport = document.getElementById('toAirport');
+        const fromMenu = document.querySelector('#fromDropdown .dropdown-menu-compact');
+        const toMenu = document.querySelector('#toDropdown .dropdown-menu-compact');
+        if (!fromAirport || !toAirport || !fromMenu || !toMenu) return;
+        
+        fromMenu.querySelectorAll('li[data-value]').forEach(li => {
+            const isTaken = !!(toAirport.value && li.dataset.value === toAirport.value);
+            li.classList.toggle('option-disabled', isTaken);
+            li.style.opacity = isTaken ? '0.4' : '';
+            li.style.pointerEvents = isTaken ? 'none' : '';
+            li.title = isTaken ? 'Already selected as your destination' : '';
+        });
+        
+        toMenu.querySelectorAll('li[data-value]').forEach(li => {
+            const isTaken = !!(fromAirport.value && li.dataset.value === fromAirport.value);
+            li.classList.toggle('option-disabled', isTaken);
+            li.style.opacity = isTaken ? '0.4' : '';
+            li.style.pointerEvents = isTaken ? 'none' : '';
+            li.title = isTaken ? 'Already selected as your departure' : '';
+        });
+
+        // Reveal the Departure/Return date fields once both airports are set
+        // (defined in index.html; guarded here so script.js never breaks if
+        // that hook isn't present on some other page reusing this file).
+        if (typeof syncDateFieldsVisibility === 'function') {
+            syncDateFieldsVisibility();
+        }
+    }
+    
+    // Show an inline message near the From/To fields when someone tries to pick a duplicate
+    function showAirportValidation(hiddenInputId, city, code) {
+        const otherLabel = hiddenInputId === 'fromAirport' ? 'destination' : 'departure';
+        let msg = document.getElementById('airportValidationMessage');
+        if (!msg) {
+            const row = document.getElementById('fromDropdown')?.closest('.form-row-compact');
+            if (!row || !row.parentNode) return;
+            msg = document.createElement('div');
+            msg.id = 'airportValidationMessage';
+            msg.style.cssText = 'color:#c33;font-size:13px;margin-top:8px;';
+            row.parentNode.insertBefore(msg, row.nextSibling);
+        }
+        msg.textContent = `${city} (${code}) is already your ${otherLabel} — please choose a different airport.`;
+        msg.style.display = 'block';
+    }
+    
+    function hideAirportValidation() {
+        const msg = document.getElementById('airportValidationMessage');
+        if (msg) msg.style.display = 'none';
     }
     
     // Swap button functionality
@@ -534,6 +653,9 @@ if (flightSearchForm) {
                 fromAirport.value = toCode;
                 toAirport.value = fromCode;
                 console.log('Swapped airports:', fromValue, '<->', toValue);
+                
+                updateAirportOptionAvailability();
+                hideAirportValidation();
             }
         });
     }
@@ -745,11 +867,20 @@ function setupCalendarNavigation(gridId, labelId, initialOffset) {
     const navButtons = popup.querySelectorAll('.cal-nav');
     
     navButtons.forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        // The calendar re-initializes (and calls setupCalendarNavigation again)
+        // every time the popup is opened, but these buttons are never removed
+        // from the DOM. Without this, each reopen stacks another listener on
+        // top of the old ones, so a single click fires multiple times and the
+        // displayed month jumps out of sync with the label. Cloning the node
+        // strips any previously-bound listeners before we attach a fresh one.
+        const freshBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(freshBtn, btn);
+        
+        freshBtn.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
             
-            const action = btn.dataset.action;
+            const action = freshBtn.dataset.action;
             if (action === 'prev' && monthOffset > 0) {
                 monthOffset--;
             } else if (action === 'next') {

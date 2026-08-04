@@ -712,5 +712,82 @@
       "seat": 4,
       "timestamp": "2026-07-24T08:08:07.375089Z"
     }
+  },
+  {
+    "id": 53,
+    "type": "checkin",
+    "timestamp": "2026-07-28T21:55:55.593482",
+    "data": {
+      "passenger_name": "Gabriel kebiro",
+      "flight_number": "SF399",
+      "seat": "6B",
+      "timestamp": "2026-07-28T18:55:55.583059Z"
+    }
+  },
+  {
+    "id": 54,
+    "type": "checkin",
+    "timestamp": "2026-07-29T12:35:37.191731",
+    "data": {
+      "passenger_name": "Gabriel kebiro",
+      "flight_number": "KQ730",
+      "seat": "3C",
+      "gate": "TBA",
+      "timestamp": "2026-07-29T09:35:37.189887Z"
+    }
+  },
+  {
+    "id": 55,
+    "type": "booking",
+    "timestamp": "2026-07-30T14:45:31.823450",
+    "data": {
+      "passenger_name": "Gabriel kebiro",
+      "flight_number": "JM330",
+      "booking_ref": "SF-726AED",
+      "amount": 69828.0,
+      "status": "completed",
+      "timestamp": "2026-07-30T11:45:31.822255Z"
+    }
+  },
+  {
+    "id": 56,
+    "type": "payment",
+    "timestamp": "2026-07-30T14:45:31.855075",
+    "data": {
+      "passenger_name": "Gabriel kebiro",
+      "flight": "JM330",
+      "booking_ref": "SF-726AED",
+      "amount": 69828.0,
+      "payment_method": "MPESA",
+      "status": "completed",
+      "timestamp": "2026-07-30T11:45:31.822255Z"
+    }
+  },
+  {
+    "id": 57,
+    "type": "booking",
+    "timestamp": "2026-08-01T12:37:17.155234",
+    "data": {
+      "passenger_name": "Gabriel kebiro",
+      "flight_number": "KQ551",
+      "booking_ref": "SF-3278C5",
+      "amount": 86158.0,
+      "status": "completed",
+      "timestamp": "2026-08-01T09:37:17.149011Z"
+    }
+  },
+  {
+    "id": 58,
+    "type": "payment",
+    "timestamp": "2026-08-01T12:37:17.191200",
+    "data": {
+      "passenger_name": "Gabriel kebiro",
+      "flight": "KQ551",
+      "booking_ref": "SF-3278C5",
+      "amount": 86158.0,
+      "payment_method": "MPESA",
+      "status": "completed",
+      "timestamp": "2026-08-01T09:37:17.149011Z"
+    }
   }
 ]

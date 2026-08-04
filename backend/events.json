@@ -1531,5 +1531,253 @@
     "role": "admin",
     "username": "Riley Gabi",
     "timestamp": "2026-07-24T10:32:05.188552Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-27T19:05:21.703709Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-28T04:30:40.365612Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "bjson01",
+    "staff_id": "SF-2026-00003D",
+    "timestamp": "2026-07-28T04:31:07.809678+00:00Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-A28AC1",
+    "payment_method": "MPESA",
+    "amount": 18274.0,
+    "currency": "KES",
+    "timestamp": "2026-07-28T05:08:33.851703Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-9B6CE2",
+    "payment_method": "MPESA",
+    "amount": 17365.0,
+    "currency": "KES",
+    "timestamp": "2026-07-28T05:14:23.044300Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-4B34BB",
+    "payment_method": "MPESA",
+    "amount": 15634.0,
+    "currency": "KES",
+    "timestamp": "2026-07-28T05:34:37.808360Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-05A4E1",
+    "payment_method": "MPESA",
+    "amount": 23523.0,
+    "currency": "KES",
+    "timestamp": "2026-07-28T06:01:45.070582Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "A12345",
+    "flight": "JM442",
+    "seat": "5A",
+    "baggage_count": 3,
+    "timestamp": "2026-07-28T06:03:06.758842Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "bjson01",
+    "staff_id": "SF-2026-00003D",
+    "timestamp": "2026-07-28T06:11:30.559912+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-28T06:12:10.361968Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-C1CE01",
+    "payment_method": "MPESA",
+    "amount": 17365.0,
+    "currency": "KES",
+    "timestamp": "2026-07-28T11:43:31.758756Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "A12345",
+    "flight": "JM729",
+    "seat": "5A",
+    "baggage_count": 3,
+    "timestamp": "2026-07-28T11:45:09.685183Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-28T18:52:46.222381Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-30745F",
+    "payment_method": "MPESA",
+    "amount": 11650.0,
+    "currency": "KES",
+    "timestamp": "2026-07-28T18:53:37.858598Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-F5A095",
+    "payment_method": "MPESA",
+    "amount": 18998.0,
+    "currency": "KES",
+    "timestamp": "2026-07-28T18:54:53.720181Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "A12345",
+    "flight": "SF399",
+    "seat": "6B",
+    "baggage_count": 0,
+    "timestamp": "2026-07-28T18:55:55.560536Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-DDA7E7",
+    "payment_method": "MPESA",
+    "amount": 23311.0,
+    "currency": "KES",
+    "timestamp": "2026-07-28T19:18:41.190057Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-29T06:36:47.045264Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "bjson01",
+    "staff_id": "SF-2026-00003D",
+    "timestamp": "2026-07-29T06:37:00.151577+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-29T07:24:30.680885Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "bjson01",
+    "staff_id": "SF-2026-00003D",
+    "timestamp": "2026-07-29T07:55:28.613909+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-29T07:58:26.988862Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-64C2F4",
+    "payment_method": "MPESA",
+    "amount": 15358.0,
+    "currency": "KES",
+    "timestamp": "2026-07-29T09:33:24.359757Z"
+  },
+  {
+    "type": "checkin",
+    "passport": "A12345",
+    "flight": "KQ730",
+    "seat": "3C",
+    "baggage_count": 0,
+    "timestamp": "2026-07-29T09:35:37.180268Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-29T15:40:59.938544Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "bjson01",
+    "staff_id": "SF-2026-00003D",
+    "timestamp": "2026-07-29T15:41:11.627761+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-29T15:53:33.954453Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-30T04:15:15.692410Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "bjson01",
+    "staff_id": "SF-2026-00003D",
+    "timestamp": "2026-07-30T04:15:21.035154+00:00Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-07-30T11:03:47.921546Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "bjson01",
+    "staff_id": "SF-2026-00003D",
+    "timestamp": "2026-07-30T11:04:00.072413+00:00Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-726AED",
+    "payment_method": "MPESA",
+    "amount": 69828.0,
+    "currency": "KES",
+    "timestamp": "2026-07-30T11:45:31.808868Z"
+  },
+  {
+    "type": "booking_created",
+    "booking_id": "SF-3278C5",
+    "payment_method": "MPESA",
+    "amount": 86158.0,
+    "currency": "KES",
+    "timestamp": "2026-08-01T09:37:17.137913Z"
+  },
+  {
+    "type": "login",
+    "role": "admin",
+    "username": "Riley Gabi",
+    "timestamp": "2026-08-01T09:38:44.588105Z"
+  },
+  {
+    "type": "login",
+    "role": "staff",
+    "username": "bjson01",
+    "staff_id": "SF-2026-00003D",
+    "timestamp": "2026-08-01T09:44:04.767124+00:00Z"
   }
 ]

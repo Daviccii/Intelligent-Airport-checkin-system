@@ -112,8 +112,78 @@ function formatDateLong(dateStr) {
     return `${days[date.getDay()]} ${months[date.getMonth()]} ${date.getDate()}`;
 }
 
-// Generate mock flight data
-function generateFlights(from, to, date) {
+// Generate mock flight data using dynamic API
+async function generateFlights(from, to, date) {
+    // Show loading state
+    document.getElementById('resultsCount').textContent = 'Loading flights...';
+    
+    try {
+        // Call the dynamic flight search API
+        const response = await fetch('/api/dynamic/flights/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                origin: from,
+                destination: to,
+                departure_date: date,
+                passengers: 1,
+                seat_class: 'Economy'
+            })
+        });
+
+        if (!response.ok) {
+            console.error('API call failed:', response.status);
+            return generateFallbackFlights(from, to, date);
+        }
+
+        const data = await response.json();
+        
+        if (!data.flights || data.flights.length === 0) {
+            console.log('No flights found from API, using fallback');
+            return generateFallbackFlights(from, to, date);
+        }
+
+        // Transform API data to frontend format
+        return data.flights.map(flight => {
+            const departTime = new Date(flight.departure_time);
+            const arriveTime = new Date(flight.arrival_time);
+            
+            const durationHours = Math.floor(flight.duration);
+            const durationMins = Math.round((flight.duration % 1) * 60);
+            
+            const basePrice = flight.dynamic_pricing?.final_price || flight.dynamic_pricing?.base_price || 10000;
+            
+            return {
+                airline: flight.airline,
+                airlineCode: flight.flight_number.substring(0, 2),
+                airlineLogo: '✈️',
+                aircraft: flight.aircraft,
+                aircraftType: flight.aircraft_type,
+                departTime: departTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                arriveTime: arriveTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
+                duration: `${durationHours}h ${durationMins}m`,
+                durationMinutes: flight.duration * 60,
+                stops: 0, // Direct flights for now
+                stopText: 'Nonstop',
+                terminal: flight.gate || 'T1',
+                economyPrice: Math.round(basePrice),
+                businessPrice: Math.round(basePrice * 2.5),
+                seatsLeft: flight.capacity - flight.booked_seats,
+                isDomestic: flight.flight_category === 'domestic',
+                flightId: flight.id
+            };
+        });
+
+    } catch (error) {
+        console.error('Error calling dynamic API:', error);
+        return generateFallbackFlights(from, to, date);
+    }
+}
+
+// Fallback to original mock data if API fails
+function generateFallbackFlights(from, to, date) {
     const airlines = [
         { name: 'Kenya Airways', code: 'KQ', logo: '✈️' },
         { name: 'British Airways', code: 'BA', logo: '🛫' },
@@ -124,7 +194,7 @@ function generateFlights(from, to, date) {
 
     const isDomestic = isRouteDomestic(from, to);
     const aircraftPool = isDomestic ? DOMESTIC_AIRCRAFT : INTERNATIONAL_AIRCRAFT;
-    const numFlights = isDomestic ? 6 + Math.floor(Math.random() * 4) : 8 + Math.floor(Math.random() * 5); // Fewer domestic flights
+    const numFlights = isDomestic ? 6 + Math.floor(Math.random() * 4) : 8 + Math.floor(Math.random() * 5);
 
     const flights = [];
 
@@ -132,17 +202,16 @@ function generateFlights(from, to, date) {
         const airline = airlines[Math.floor(Math.random() * airlines.length)];
         const aircraft = aircraftPool[Math.floor(Math.random() * aircraftPool.length)];
         
-        // Domestic: 1-2 hours, International: 8-15 hours
         let durationHours, durationMins;
         if (isDomestic) {
-            durationHours = 1 + Math.floor(Math.random() * 2); // 1-2 hours
+            durationHours = 1 + Math.floor(Math.random() * 2);
             durationMins = Math.random() > 0.5 ? 0 : 30;
         } else {
-            durationHours = 8 + Math.floor(Math.random() * 7); // 8-14 hours
+            durationHours = 8 + Math.floor(Math.random() * 7);
             durationMins = Math.random() > 0.5 ? 0 : 30;
         }
         
-        const departHour = isDomestic ? (6 + Math.floor(Math.random() * 16)) : (6 + Math.floor(Math.random() * 18)); // 6am-10pm domestic, 6am-11pm intl
+        const departHour = isDomestic ? (6 + Math.floor(Math.random() * 16)) : (6 + Math.floor(Math.random() * 18));
         const departMin = Math.random() > 0.5 ? '00' : '30';
         
         const departTime = `${departHour.toString().padStart(2, '0')}:${departMin}`;
@@ -150,7 +219,6 @@ function generateFlights(from, to, date) {
         const arriveMins = (departMin === '30' && durationMins === 30) ? '00' : (durationMins === 30 ? '30' : departMin);
         const arriveTime = `${arriveHour.toString().padStart(2, '0')}:${arriveMins}`;
 
-        // Domestic: mostly nonstop; International: can have stops
         const stops = isDomestic ? (Math.random() > 0.8 ? 0 : 1) : (Math.random() > 0.6 ? 0 : (Math.random() > 0.5 ? 1 : 2));
         const stopText = stops === 0 ? 'Nonstop' : `${stops} stop${stops > 1 ? 's' : ''}`;
         
@@ -395,32 +463,36 @@ let currentFlights = [];
 let currentDateData = [];
 let selectedDate = '';
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const params = getSearchParams();
     
     // Render summary
     renderSummary(params);
     
-    // Define a handler for date selection to avoid arguments.callee
-    const onDateSelect = (date) => {
-        selectedDate = date;
-        // Update which date card is marked as selected
-        currentDateData.forEach(d => d.selected = (d.date === date));
-        renderDateSlider(currentDateData, onDateSelect);
-        
-        // Regenerate and render flights for the newly selected date
-        currentFlights = generateFlights(params.from, params.to, date);
-        const sortBy = document.getElementById('sortSelect').value;
-        renderFlights(sortFlights(currentFlights, sortBy));
-    };
-
-    // Generate and render the initial date slider
+    // Generate and render date slider
     selectedDate = params.departDate;
     currentDateData = generateDateSlider(params.departDate, params.tripType, params.from, params.to);
-    renderDateSlider(currentDateData, onDateSelect);
+    renderDateSlider(currentDateData, async (date) => {
+        selectedDate = date;
+        // Update date cards
+        currentDateData.forEach(d => d.selected = d.date === date);
+        renderDateSlider(currentDateData, async (date) => {
+            selectedDate = date;
+            currentDateData.forEach(d => d.selected = d.date === date);
+            renderDateSlider(currentDateData, arguments.callee);
+            // Regenerate flights for new date
+            currentFlights = await generateFlights(params.from, params.to, date);
+            const sortBy = document.getElementById('sortSelect').value;
+            renderFlights(sortFlights(currentFlights, sortBy));
+        });
+        // Regenerate flights for new date
+        currentFlights = await generateFlights(params.from, params.to, date);
+        const sortBy = document.getElementById('sortSelect').value;
+        renderFlights(sortFlights(currentFlights, sortBy));
+    });
     
     // Generate initial flights
-    currentFlights = generateFlights(params.from, params.to, params.departDate);
+    currentFlights = await generateFlights(params.from, params.to, params.departDate);
     renderFlights(sortFlights(currentFlights, 'recommended'));
     
     // Sort dropdown handler

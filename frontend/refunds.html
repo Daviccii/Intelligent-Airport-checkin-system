@@ -472,9 +472,13 @@
             <option value="0">Within 24 hours</option>
           </select>
         </div>
+
+        <div class="form-group" id="calcErrorGroup" style="display:none;">
+          <p id="calcError" style="color:#dc2626; font-size:14px; margin:0;"></p>
+        </div>
+
+        <button type="submit" class="calculate-btn">Calculate Refund</button>
       </form>
-      
-      <button type="submit" class="calculate-btn" onclick="calculateRefund(event)">Calculate Refund</button>
       
       <div class="result-box" id="resultBox">
         <h3 style="margin: 0 0 8px 0; color: #10b981;">Estimated Refund Amount</h3>
@@ -718,9 +722,22 @@
       const ticketPrice = parseFloat(document.getElementById('ticketPrice').value);
       const ticketType = document.getElementById('ticketType').value;
       const daysBefore = parseInt(document.getElementById('daysBefore').value);
-      
-      if (!ticketPrice || !ticketType || isNaN(daysBefore)) {
-        alert('Please fill in all fields');
+      const errorGroup = document.getElementById('calcErrorGroup');
+      const errorText = document.getElementById('calcError');
+
+      function showCalcError(msg) {
+        errorText.textContent = msg;
+        errorGroup.style.display = 'block';
+      }
+
+      errorGroup.style.display = 'none';
+
+      if (!ticketType || isNaN(daysBefore) || document.getElementById('daysBefore').value === '') {
+        showCalcError('Please select a ticket type and timeframe.');
+        return;
+      }
+      if (isNaN(ticketPrice) || ticketPrice < 1000) {
+        showCalcError('Enter a valid ticket price of at least Ksh 1,000.');
         return;
       }
       

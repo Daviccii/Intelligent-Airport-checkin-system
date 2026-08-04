@@ -228,23 +228,25 @@
             <h2>Find Your Booking</h2>
             <div class="search-form">
                 <div class="search-group">
-                    <label>Booking Reference</label>
-                    <input type="text" placeholder="e.g., ABC123" maxlength="6">
+                    <label for="searchRef">Booking Reference</label>
+                    <input type="text" id="searchRef" placeholder="e.g., ABC123" maxlength="6" autocomplete="off">
                 </div>
                 <div class="search-group">
-                    <label>Last Name</label>
-                    <input type="text" placeholder="Passenger surname">
+                    <label for="searchLastName">Last Name</label>
+                    <input type="text" id="searchLastName" placeholder="Passenger surname" autocomplete="off">
                 </div>
                 <div class="search-group">
-                    <label>Email Address</label>
-                    <input type="email" placeholder="Your email">
+                    <label for="searchEmail">Email Address</label>
+                    <input type="email" id="searchEmail" placeholder="Your email" autocomplete="off">
                 </div>
-                <button class="search-btn">Search Booking</button>
+                <button class="search-btn" id="searchBtn">Search Booking</button>
             </div>
+            <p id="searchError" style="color:#dc2626; font-size:14px; margin:12px 0 0; display:none;"></p>
         </div>
 
         <div id="bookingResults">
-            <div class="booking-card">
+            <p id="noBookingMsg" style="display:none; color:#666; padding:16px 0;"></p>
+            <div class="booking-card" id="bookingCardABC123" style="display:none;">
                 <div class="booking-header">
                     <div>
                         <div class="booking-ref">Booking Reference: ABC123</div>
@@ -335,16 +337,64 @@
     </footer>
 
     <script>
-        document.querySelector('.search-btn').addEventListener('click', function() {
-            const ref = document.querySelector('input[placeholder="e.g., ABC123"]').value;
-            const lastName = document.querySelector('input[placeholder="Passenger surname"]').value;
-            const email = document.querySelector('input[type="email"]').value;
+        const BOOKING_REF_PATTERN = /^[A-Z0-9]{6}$/;
+        const LAST_NAME_PATTERN = /^[A-Za-z][A-Za-z '-]{0,49}$/;
+        // Only booking in our demo data set — replace with a real API call when the backend is ready
+        const KNOWN_BOOKING_REF = 'ABC123';
 
-            if (ref && lastName && email) {
-                alert(`Searching for booking ${ref}...`);
-            } else {
-                alert('Please fill in all fields');
+        const refInput = document.getElementById('searchRef');
+        const lastNameInput = document.getElementById('searchLastName');
+        const emailInput = document.getElementById('searchEmail');
+        const searchError = document.getElementById('searchError');
+        const bookingCard = document.getElementById('bookingCardABC123');
+        const noBookingMsg = document.getElementById('noBookingMsg');
+
+        function showSearchError(msg) {
+            searchError.textContent = msg;
+            searchError.style.display = 'block';
+        }
+
+        function clearResults() {
+            searchError.style.display = 'none';
+            bookingCard.style.display = 'none';
+            noBookingMsg.style.display = 'none';
+        }
+
+        function runSearch(ref, lastName, email) {
+            clearResults();
+
+            ref = (ref || '').trim().toUpperCase();
+            lastName = (lastName || '').trim();
+            email = (email || '').trim();
+
+            if (!ref || !lastName) {
+                showSearchError('Please fill in booking reference and last name.');
+                return;
             }
+            if (!BOOKING_REF_PATTERN.test(ref)) {
+                showSearchError('Booking reference must be exactly 6 letters/numbers (e.g., ABC123).');
+                return;
+            }
+            if (!LAST_NAME_PATTERN.test(lastName)) {
+                showSearchError('Last name can only contain letters, spaces, hyphens, and apostrophes.');
+                return;
+            }
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showSearchError('Enter a valid email address.');
+                return;
+            }
+
+            if (ref === KNOWN_BOOKING_REF) {
+                bookingCard.style.display = 'block';
+            } else {
+                noBookingMsg.textContent = `No booking found for reference "${ref}". Double-check your booking reference and last name, or contact support.`;
+                noBookingMsg.style.display = 'block';
+            }
+        }
+
+        document.getElementById('searchBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            runSearch(refInput.value, lastNameInput.value, emailInput.value);
         });
 
         document.querySelectorAll('.action-btn').forEach(btn => {
@@ -353,6 +403,24 @@
                 alert(`Action: ${action}`);
             });
         });
+
+        // On load, read ref/name from the URL (as passed by book-manage.html's lookup form)
+        // and run the same search+validation flow instead of always showing the static demo booking.
+        (function initFromQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            const ref = params.get('ref');
+            const name = params.get('name');
+
+            if (!ref && !name) {
+                // Direct visit with no search performed yet — show nothing until the user searches
+                clearResults();
+                return;
+            }
+
+            refInput.value = (ref || '').toUpperCase();
+            lastNameInput.value = name || '';
+            runSearch(ref, name, '');
+        })();
     </script>
 </body>
 </html>

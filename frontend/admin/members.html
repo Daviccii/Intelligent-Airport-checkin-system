@@ -728,25 +728,71 @@
             setupEventListeners();
         });
 
-        function loadMembers() {
-            const membersData = localStorage.getItem('registeredMembers');
+        // Maps a raw /api/users record (username, email, full_name,
+        // membership_tier, created_at) to the shape the rest of this page's
+        // rendering/sorting/search code expects (firstName, lastName, email,
+        // phone, country, memberType, balance, joined). /api/users doesn't
+        // track phone/country/balance today, so those fall back to sensible
+        // placeholders rather than fabricated numbers.
+        function normalizeUser(u) {
+            const fullName = (u.full_name || u.username || '').trim();
+            const spaceIdx = fullName.indexOf(' ');
+            const firstName = spaceIdx === -1 ? (fullName || 'Unknown') : fullName.slice(0, spaceIdx);
+            const lastName = spaceIdx === -1 ? '' : fullName.slice(spaceIdx + 1);
+
+            const tierRaw = (u.membership_tier || '').toLowerCase();
+            let memberType = 'Silver';
+            if (tierRaw === 'gold') memberType = 'Gold';
+            else if (tierRaw === 'platinum') memberType = 'Platinum';
+            else if (tierRaw === 'silver') memberType = 'Silver';
+
+            return {
+                firstName: firstName || 'Unknown',
+                lastName: lastName || '',
+                email: u.email || '(no email on file)',
+                phone: u.phone || 'N/A',
+                country: u.country || 'Unknown',
+                memberType: memberType,
+                balance: typeof u.balance === 'number' ? u.balance : 0,
+                joined: u.created_at || new Date().toISOString(),
+                username: u.username,
+                user_id: u.user_id
+            };
+        }
+
+        async function loadMembers() {
             const noDataBanner = document.getElementById('noDataBanner');
-            
-            if (membersData) {
-                try {
-                    allMembers = JSON.parse(membersData);
-                    filteredMembers = [...allMembers];
-                    
-                    if (noDataBanner) noDataBanner.style.display = 'none';
-                    updateStats();
-                    sortMembers();
-                    renderMembers();
-                } catch (e) {
-                    console.error('Error parsing members data:', e);
+            const adminToken = localStorage.getItem('adminToken');
+
+            try {
+                const response = await fetch('/api/users', {
+                    headers: adminToken ? { 'Authorization': `Bearer ${adminToken}` } : {}
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
+                }
+
+                const data = await response.json();
+                const users = Array.isArray(data) ? data : (data.users || []);
+
+                allMembers = users.map(normalizeUser);
+                filteredMembers = [...allMembers];
+
+                if (allMembers.length === 0) {
                     if (noDataBanner) noDataBanner.style.display = 'block';
                     showEmptyState();
+                    return;
                 }
-            } else {
+
+                if (noDataBanner) noDataBanner.style.display = 'none';
+                updateStats();
+                sortMembers();
+                renderMembers();
+            } catch (e) {
+                console.error('Error loading members from /api/users:', e);
+                allMembers = [];
+                filteredMembers = [];
                 if (noDataBanner) noDataBanner.style.display = 'block';
                 showEmptyState();
             }

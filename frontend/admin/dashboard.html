@@ -288,6 +288,48 @@
         </div>
       </div>
 
+      <!-- Control Center -->
+      <div class="control-center mb-5">
+        <h3 class="kpi-section-title">Control Center</h3>
+        <div class="row g-3">
+          <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <h5 class="fw-semibold mb-2"><i class="fas fa-bell text-primary"></i> Send Notification</h5>
+                <p class="text-muted small">Email or SMS a message to specific passengers right now.</p>
+                <button class="btn btn-primary btn-sm" onclick="openSendNotificationModal()">
+                  <i class="fas fa-paper-plane"></i> Compose
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <h5 class="fw-semibold mb-2"><i class="fas fa-bullhorn text-warning"></i> Announcements & Offers</h5>
+                <p class="text-muted small">Create banners and promos that show up on the SmartFly website.</p>
+                <button class="btn btn-warning btn-sm" onclick="openAnnouncementsModal()">
+                  <i class="fas fa-plus"></i> Manage
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="col-12 col-lg-4">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-body">
+                <h5 class="fw-semibold mb-2"><i class="fas fa-sliders-h text-info"></i> Quick Links</h5>
+                <p class="text-muted small">Jump straight into managing flights, staff, or bookings.</p>
+                <div class="d-flex gap-2 flex-wrap">
+                  <a href="flights.html" class="btn btn-outline-secondary btn-sm"><i class="fas fa-plane"></i> Flights</a>
+                  <a href="staff.html" class="btn btn-outline-secondary btn-sm"><i class="fas fa-user-tie"></i> Staff</a>
+                  <a href="bookings.html" class="btn btn-outline-secondary btn-sm"><i class="fas fa-calendar-check"></i> Bookings</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Key Performance Indicators -->
       <div class="kpi-section">
         <h3 class="kpi-section-title">Key Performance Indicators</h3>
@@ -1008,7 +1050,227 @@
       `;
       document.body.appendChild(modal);
     }
+    function getAdminToken() {
+      return localStorage.getItem('adminToken') || localStorage.getItem('session') || '';
+    }
+
+    async function adminApiFetch(url, options = {}) {
+      const token = getAdminToken();
+      const headers = Object.assign({
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }, options.headers || {});
+      const response = await fetch(url, Object.assign({ credentials: 'include' }, options, { headers }));
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || `Request failed (${response.status})`);
+      }
+      return data;
+    }
+
+    // ---- Send Notification Modal ----
+    function openSendNotificationModal() {
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 16px; padding: 30px; max-width: 520px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-weight: 700; color: #0f172a;">📨 Send Notification</h3>
+            <button onclick="this.closest('div').parentElement.remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8;">&times;</button>
+          </div>
+          <div id="notifStatus" style="display:none; margin-bottom: 15px; padding: 10px; border-radius: 8px; font-size: 0.9rem;"></div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Channel</label>
+            <select id="notifType" class="form-select">
+              <option value="email">Email</option>
+              <option value="sms">SMS</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Recipients</label>
+            <input id="notifRecipients" type="text" class="form-control" placeholder="Passport, email, or phone — comma separated">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Message</label>
+            <textarea id="notifMessage" class="form-control" rows="4" placeholder="Your message..."></textarea>
+          </div>
+          <div style="display: flex; gap: 10px; justify-content: flex-end;">
+            <button onclick="this.closest('div').parentElement.remove()" class="btn btn-outline-secondary">Cancel</button>
+            <button class="btn btn-primary" onclick="submitNotification(this)"><i class="fas fa-paper-plane"></i> Send</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    async function submitNotification(btn) {
+      const type = document.getElementById('notifType').value;
+      const recipients = document.getElementById('notifRecipients').value.split(',').map(r => r.trim()).filter(Boolean);
+      const message = document.getElementById('notifMessage').value.trim();
+      const statusEl = document.getElementById('notifStatus');
+
+      if (!recipients.length || !message) {
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#fef2f2';
+        statusEl.style.color = '#dc2626';
+        statusEl.textContent = 'Please add at least one recipient and a message.';
+        return;
+      }
+
+      btn.disabled = true;
+      try {
+        const result = await adminApiFetch('/api/admin/notifications/send', {
+          method: 'POST',
+          body: JSON.stringify({ type, recipients, message })
+        });
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#ecfdf5';
+        statusEl.style.color = '#10b981';
+        statusEl.textContent = `Sent to ${result.summary.success}/${result.summary.total} recipients.`;
+      } catch (err) {
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#fef2f2';
+        statusEl.style.color = '#dc2626';
+        statusEl.textContent = `Failed: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ---- Announcements / Offers Modal ----
+    async function openAnnouncementsModal() {
+      const modal = document.createElement('div');
+      modal.id = 'announcementsModal';
+      modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999;';
+      modal.innerHTML = `
+        <div style="background: white; border-radius: 16px; padding: 30px; max-width: 700px; width: 92%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-weight: 700; color: #0f172a;">📣 Announcements & Offers</h3>
+            <button onclick="this.closest('div').parentElement.remove()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #94a3b8;">&times;</button>
+          </div>
+
+          <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0;">
+            <h5 class="fw-semibold mb-3">New announcement / offer</h5>
+            <div id="annoStatus" style="display:none; margin-bottom: 12px; padding: 10px; border-radius: 8px; font-size: 0.9rem;"></div>
+            <div class="row g-2">
+              <div class="col-6">
+                <select id="annoType" class="form-select form-select-sm">
+                  <option value="announcement">Site Announcement</option>
+                  <option value="offer">Special Offer</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <input id="annoCode" type="text" class="form-control form-control-sm" placeholder="Promo code (optional)">
+              </div>
+              <div class="col-12">
+                <input id="annoTitle" type="text" class="form-control form-control-sm" placeholder="Title">
+              </div>
+              <div class="col-12">
+                <textarea id="annoMessage" class="form-control form-control-sm" rows="2" placeholder="Message shown to passengers"></textarea>
+              </div>
+              <div class="col-6">
+                <input id="annoCtaLabel" type="text" class="form-control form-control-sm" placeholder="Button label (optional)">
+              </div>
+              <div class="col-6">
+                <input id="annoCtaUrl" type="text" class="form-control form-control-sm" placeholder="Button link (optional)">
+              </div>
+            </div>
+            <div class="mt-3 text-end">
+              <button class="btn btn-warning btn-sm" onclick="submitAnnouncement()"><i class="fas fa-plus"></i> Create</button>
+            </div>
+          </div>
+
+          <h5 class="fw-semibold mb-2">Current</h5>
+          <div id="announcementsList">
+            <div style="text-align:center; color:#94a3b8; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Loading...</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      loadAnnouncementsList();
+    }
+
+    async function loadAnnouncementsList() {
+      const listEl = document.getElementById('announcementsList');
+      try {
+        const data = await adminApiFetch('/api/admin/announcements');
+        const items = data.announcements || [];
+        if (!items.length) {
+          listEl.innerHTML = '<div style="color:#94a3b8; padding: 15px; text-align:center;">Nothing here yet.</div>';
+          return;
+        }
+        listEl.innerHTML = items.map(item => `
+          <div style="border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 10px; display:flex; justify-content: space-between; align-items:start; gap: 10px;">
+            <div>
+              <span class="badge ${item.type === 'offer' ? 'bg-warning text-dark' : 'bg-primary'}">${item.type === 'offer' ? 'Offer' : 'Announcement'}</span>
+              ${item.active ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>'}
+              <div style="font-weight:700; margin-top: 6px;">${item.title}</div>
+              <div style="color:#64748b; font-size:0.9rem;">${item.message}</div>
+              ${item.code ? `<div style="font-size:0.8rem; color:#0f172a; margin-top:4px;">Code: <strong>${item.code}</strong></div>` : ''}
+            </div>
+            <div style="display:flex; flex-direction: column; gap: 6px;">
+              <button class="btn btn-sm btn-outline-secondary" onclick="toggleAnnouncement('${item.id}', ${!item.active})">${item.active ? 'Deactivate' : 'Activate'}</button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteAnnouncement('${item.id}')">Delete</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        listEl.innerHTML = `<div style="color:#dc2626; padding: 15px; text-align:center;">Failed to load: ${err.message}</div>`;
+      }
+    }
+
+    async function submitAnnouncement() {
+      const statusEl = document.getElementById('annoStatus');
+      const payload = {
+        type: document.getElementById('annoType').value,
+        title: document.getElementById('annoTitle').value.trim(),
+        message: document.getElementById('annoMessage').value.trim(),
+        code: document.getElementById('annoCode').value.trim(),
+        cta_label: document.getElementById('annoCtaLabel').value.trim(),
+        cta_url: document.getElementById('annoCtaUrl').value.trim()
+      };
+      if (!payload.title || !payload.message) {
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#fef2f2';
+        statusEl.style.color = '#dc2626';
+        statusEl.textContent = 'Title and message are required.';
+        return;
+      }
+      try {
+        await adminApiFetch('/api/admin/announcements', { method: 'POST', body: JSON.stringify(payload) });
+        document.getElementById('annoTitle').value = '';
+        document.getElementById('annoMessage').value = '';
+        document.getElementById('annoCode').value = '';
+        document.getElementById('annoCtaLabel').value = '';
+        document.getElementById('annoCtaUrl').value = '';
+        statusEl.style.display = 'none';
+        loadAnnouncementsList();
+      } catch (err) {
+        statusEl.style.display = 'block';
+        statusEl.style.background = '#fef2f2';
+        statusEl.style.color = '#dc2626';
+        statusEl.textContent = `Failed: ${err.message}`;
+      }
+    }
+
+    async function toggleAnnouncement(id, active) {
+      try {
+        await adminApiFetch(`/api/admin/announcements/${id}`, { method: 'PUT', body: JSON.stringify({ active }) });
+        loadAnnouncementsList();
+      } catch (err) {
+        alert(`Failed to update: ${err.message}`);
+      }
+    }
+
+    async function deleteAnnouncement(id) {
+      if (!confirm('Delete this announcement/offer?')) return;
+      try {
+        await adminApiFetch(`/api/admin/announcements/${id}`, { method: 'DELETE' });
+        loadAnnouncementsList();
+      } catch (err) {
+        alert(`Failed to delete: ${err.message}`);
+      }
+    }
   </script>
-    <script src="dashboard.js?v=20260114-1"></script>
 </body>
 </html>

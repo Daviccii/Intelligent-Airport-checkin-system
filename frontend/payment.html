@@ -182,14 +182,15 @@
         </div>
       </div>
 
-      <form id="payment-form" onsubmit="processPayment(event)">
+      <form id="payment-form">
+        <input type="hidden" id="active-payment-method" value="card">
         <!-- Dynamic Payment Inputs -->
         <div id="card-fields">
-          <div class="form-group"><label>Card Number</label><input type="text" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19"></div>
-          <div class="form-group"><label>Cardholder Name</label><input type="text" class="form-input" placeholder="John Doe"></div>
+          <div class="form-group"><label>Card Number</label><input type="text" id="card-number" class="form-input" placeholder="4242 4242 4242 4242" maxlength="19"></div>
+          <div class="form-group"><label>Cardholder Name</label><input type="text" id="card-holder" class="form-input" placeholder="John Doe"></div>
           <div class="inline-fields">
-            <div class="form-group"><label>Expiry Date</label><input type="text" class="form-input" placeholder="MM/YY" maxlength="5"></div>
-            <div class="form-group"><label>CVC / CVV</label><input type="password" class="form-input" placeholder="123" maxlength="4"></div>
+            <div class="form-group"><label>Expiry Date</label><input type="text" id="card-expiry" class="form-input" placeholder="MM/YY" maxlength="5"></div>
+            <div class="form-group"><label>CVC / CVV</label><input type="password" id="card-cvv" class="form-input" placeholder="123" maxlength="4"></div>
           </div>
         </div>
 
@@ -198,8 +199,16 @@
           <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem;">An STK Push prompt will be sent directly to your phone to complete the transaction.</p>
         </div>
 
-        <div id="bank-fields" style="display:none;"><p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">You will be redirected securely to your banking institution to verify funds.</p></div>
-        <div id="paypal-fields" style="display:none;"><p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">You will be redirected to PayPal to complete authorization.</p></div>
+        <div id="bank-fields" style="display:none;">
+          <div class="form-group"><label>Account Holder Name</label><input type="text" id="bank-account-name" class="form-input" placeholder="John Doe"></div>
+          <div class="form-group"><label>Account Number</label><input type="text" id="bank-account-number" class="form-input" placeholder="0123456789" maxlength="17"></div>
+          <div class="form-group"><label>Bank Name</label><input type="text" id="bank-name" class="form-input" placeholder="e.g. Equity Bank"></div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">You will be redirected securely to your banking institution to verify funds.</p>
+        </div>
+        <div id="paypal-fields" style="display:none;">
+          <div class="form-group"><label>PayPal Email</label><input type="email" id="paypal-email" class="form-input" placeholder="john.doe@example.com"></div>
+          <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:1rem;">You will be redirected to PayPal to complete authorization.</p>
+        </div>
 
         <button type="submit" class="pay-btn" id="pay-submit-btn"><i class="fa-solid fa-lock"></i> Pay Securely</button>
       </form>
@@ -246,7 +255,7 @@
       </div>
 
       <div class="btn-group">
-        <button class="btn-secondary" onclick="window.print()"><i class="fa-solid fa-download"></i> Download / Print E-Receipt</button>
+        <button class="btn-secondary" onclick="downloadReceipt()"><i class="fa-solid fa-download"></i> Download E-Receipt</button>
         <button class="btn-primary" onclick="finishBooking()">Return to Home</button>
       </div>
 
@@ -255,7 +264,7 @@
 
   <script>
     let activeMethod = 'CARD';
-    let bookingSession = {};
+    window.bookingSession = {};
 
     // 1. LOAD DATA FROM PASSENGER DETAILS PAGE ON LOAD
     window.addEventListener('DOMContentLoaded', () => {
@@ -266,10 +275,10 @@
         return;
       }
 
-      bookingSession = JSON.parse(bookingDataString);
-      const flight = bookingSession.selectedFlight;
-      const passenger = bookingSession.passengers[0]; // Assuming one passenger for now
-      const search = bookingSession.searchParams;
+      window.bookingSession = JSON.parse(bookingDataString);
+      const flight = window.bookingSession.selectedFlight;
+      const passenger = window.bookingSession.passengers[0]; // Assuming one passenger for now
+      const search = window.bookingSession.searchParams;
 
       // Populate Summary Sidebar
       document.getElementById('display-name').innerText = `${passenger.firstName} ${passenger.lastName}`;
@@ -293,72 +302,74 @@
       document.getElementById('mpesa-fields').style.display = method === 'mpesa' ? 'block' : 'none';
       document.getElementById('bank-fields').style.display = method === 'bank' ? 'block' : 'none';
       document.getElementById('paypal-fields').style.display = method === 'paypal' ? 'block' : 'none';
-    }
 
-    // 3. PROCESS PAYMENT & SAVE TO ADMIN DATABASE IN REAL TIME
-    async function processPayment(e) {
-      e.preventDefault();
-      
-      const loader = document.getElementById('loader');
-      loader.style.display = 'flex';
-
-      const flight = bookingSession.selectedFlight;
-      const passenger = bookingSession.passengers[0];
-
-      // Prepare data for the backend API
-      const apiPayload = {
-          passenger_name: `${passenger.firstName} ${passenger.lastName}`,
-          passport_number: passenger.passportNumber,
-          flight_id: flight.flightNumber,
-          seat: bookingSession.selectedSeats.join(',') || "AUTO",
-          amount: flight.price,
-          payment_method: activeMethod,
-          email: passenger.email,
-          phone: passenger.phone
-      };
-
-      try {
-        const response = await fetch('/api/bookings', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(apiPayload)
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-            throw new Error(result.error || 'Booking failed on the server.');
-        }
-        
-        // Payment successful, show receipt
-        loader.style.display = 'none';
-        
-        // Stamp current timestamp
-        const now = new Date();
-        const formattedTimestamp = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-        // Populate Receipt Modal
-        document.getElementById('receipt-pnr').innerText = result.booking.pnr;
-        document.getElementById('receipt-txn').innerText = result.booking.transaction_id;
-        document.getElementById('receipt-timestamp').innerText = formattedTimestamp;
-        document.getElementById('receipt-passenger-name').innerText = apiPayload.passenger_name;
-        document.getElementById('receipt-route').innerText = `${bookingSession.searchParams.origin} → ${bookingSession.searchParams.destination}`;
-        document.getElementById('receipt-method').innerText = activeMethod;
-        document.getElementById('receipt-amount').innerText = `Ksh ${apiPayload.amount.toLocaleString()}`;
-
-        // Display Receipt Modal
-        document.getElementById('receipt-modal').style.display = 'flex';
-
-      } catch (error) {
-          loader.style.display = 'none';
-          alert(`An error occurred: ${error.message}`);
-      }
+      const methodInput = document.getElementById('active-payment-method');
+      if (methodInput) methodInput.value = method;
+      if (window.checkPaymentFormValidity) window.checkPaymentFormValidity();
     }
 
     function finishBooking() {
       sessionStorage.clear(); // Clear all session data after successful booking
       window.location.href = 'index.html';
     }
+
+    // Builds a small standalone HTML receipt from the values already shown in the
+    // modal and triggers a real file download (not window.print(), which just opens
+    // the browser's print dialog and requires the user to manually choose "Save as PDF").
+    function downloadReceipt() {
+      const val = (id) => document.getElementById(id)?.innerText || '';
+      const pnr = val('receipt-pnr');
+
+      const receiptHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SmartFly Receipt — ${pnr}</title>
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; max-width: 480px; margin: 40px auto; color: #1E293B; }
+  h1 { font-size: 20px; margin-bottom: 0; }
+  .status { display: inline-block; background: #ECFDF5; color: #10B981; font-weight: 700;
+            padding: 4px 12px; border-radius: 20px; font-size: 13px; margin: 8px 0 20px; }
+  .row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #E2E8F0; font-size: 14px; }
+  .label { color: #64748B; }
+  .value { font-weight: 600; text-align: right; }
+  .total { font-size: 18px; font-weight: 700; margin-top: 12px; }
+  .notice { background: #EFF6FF; border-left: 4px solid #2563EB; padding: 12px; margin-top: 20px; font-size: 13px; }
+</style>
+</head>
+<body>
+  <h1>SmartFly</h1>
+  <p style="color:#64748B; margin-top:2px;">Official Payment E-Receipt &amp; Booking Voucher</p>
+  <div class="status">&#10003; Paid &amp; Confirmed</div>
+
+  <div class="row"><span class="label">Booking Reference (PNR)</span><span class="value">${pnr}</span></div>
+  <div class="row"><span class="label">Transaction Reference</span><span class="value">${val('receipt-txn')}</span></div>
+  <div class="row"><span class="label">Issued On</span><span class="value">${val('receipt-timestamp')}</span></div>
+  <div class="row"><span class="label">Passenger Name</span><span class="value">${val('receipt-passenger-name')}</span></div>
+  <div class="row"><span class="label">Flight Route</span><span class="value">${val('receipt-route')}</span></div>
+  <div class="row"><span class="label">Payment Method</span><span class="value">${val('receipt-method')}</span></div>
+  <div class="row total"><span>Total Amount Paid</span><span>${val('receipt-amount')}</span></div>
+
+  <div class="notice">
+    <strong>Mandatory Airport Check-In Deadlines</strong><br>
+    Please present this receipt along with a valid ID at the airport:<br>
+    Domestic Flights: check-in closes 60–45 minutes before departure.<br>
+    International Flights: check-in closes 90–60 minutes before departure.
+  </div>
+</body>
+</html>`;
+
+      const blob = new Blob([receiptHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SmartFly-Receipt-${pnr || 'booking'}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
   </script>
+  <script src="payment-validation.js" defer></script>
 </body>
 </html>

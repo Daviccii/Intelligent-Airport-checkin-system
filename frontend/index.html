@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SmartFly Airways - Book Your Flight</title>
-    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="/style.css">
     <style>
         /* Global smooth scrolling */
         html {
@@ -439,16 +439,23 @@
         max-height: 350px;
         overflow-y: auto;
         z-index: 99999;
-        display: none;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         margin-top: 4px;
         list-style: none;
         padding: 8px 0;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-6px);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
     }
 
     .dropdown-menu-compact.show {
-        display: block;
-        animation: slideDown 0.2s ease;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0s;
     }
 
     .dropdown-menu-compact li {
@@ -470,21 +477,29 @@
     }
 
     /* Enhanced airport dropdown styling */
+    .dropdown-menu-compact.airport-menu {
+        left: 0;
+        right: auto;
+        width: max(100%, 340px);
+        max-height: 420px;
+    }
+
     .dropdown-menu-compact.airport-menu li {
         display: flex;
         flex-direction: column;
-        padding: 12px 16px;
+        padding: 14px 18px;
     }
 
     .dropdown-menu-compact.airport-menu li .airport-name {
         font-weight: 600;
         color: #1e3a8a;
-        font-size: 14px;
+        font-size: 14.5px;
         margin-bottom: 4px;
+        white-space: normal;
     }
 
     .dropdown-menu-compact.airport-menu li .airport-location {
-        font-size: 12px;
+        font-size: 12.5px;
         color: #6b7280;
         display: flex;
         align-items: center;
@@ -494,10 +509,11 @@
     .dropdown-menu-compact.airport-menu li .airport-code {
         background: #1e3a8a;
         color: white;
-        padding: 2px 6px;
+        padding: 4px 8px;
         border-radius: 4px;
-        font-size: 11px;
+        font-size: 11.5px;
         font-weight: 600;
+        flex-shrink: 0;
     }
 
     /* Swap Button Compact */
@@ -531,17 +547,24 @@
         background: #ffffff;
         border: 2px solid #e0e0e0;
         border-radius: 12px;
-        padding: 16px;
+        padding: 20px;
         z-index: 9999;
-        display: none;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         margin-top: 4px;
-        min-width: 300px;
+        width: max(100%, 360px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-6px);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
     }
 
     .calendar-popup.show {
-        display: block;
-        animation: slideDown 0.2s ease;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0s;
     }
 
     .calendar-header {
@@ -580,43 +603,44 @@
     .calendar-grid {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
-        gap: 2px;
+        gap: 6px;
     }
 
-    .calendar-day {
-        height: 36px;
-        border-radius: 4px;
+    .calendar-grid .calendar-day {
+        height: 54px;
+        border-radius: 6px;
         text-align: center;
         padding: 6px 2px;
         cursor: pointer;
         transition: all 0.2s ease;
         background: #f8f9fa;
         border: 1px solid #e0e0e0;
-        font-size: 12px;
-        font-weight: 500;
-        color: #1f2937;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 
-    .calendar-day:hover:not(.disabled) {
+    .calendar-grid .calendar-day:hover:not(.disabled) {
         background: #1e3a8a;
         color: white;
         border-color: #1e3a8a;
     }
 
-    .calendar-day.disabled {
+    .calendar-grid .calendar-day.disabled {
         opacity: 0.3;
         cursor: not-allowed;
         pointer-events: none;
     }
 
-    .calendar-day.today {
+    .calendar-grid .calendar-day.today {
         background: #2563eb;
         color: white;
         border-color: #2563eb;
         font-weight: 600;
     }
 
-    .calendar-day.selected {
+    .calendar-grid .calendar-day.selected {
         background: #1e3a8a;
         color: white;
         border-color: #1e3a8a;
@@ -633,15 +657,22 @@
         border-radius: 12px;
         padding: 16px;
         z-index: 9999;
-        display: none;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         margin-top: 4px;
         min-width: 280px;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-6px);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
     }
 
     .passengers-popup.show {
-        display: block;
-        animation: slideDown 0.2s ease;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0s;
     }
 
     .passenger-row {
@@ -722,15 +753,15 @@
 
     /* Field widths */
     .trip-type-field {
-        flex: 0 0 120px;
+        flex: 1;
     }
 
     .passengers-field {
-        flex: 0 0 140px;
+        flex: 1;
     }
 
     .class-field {
-        flex: 0 0 140px;
+        flex: 1;
     }
 
     /* Responsive */
@@ -883,6 +914,32 @@
         margin: 60px 0;
         text-align: center;
         color: #ffffff;
+    }
+
+    .offers-banner[hidden] { display: none; }
+
+    /* Site-wide announcement bar */
+    .site-announcement-bar {
+        background: #0f172a;
+        color: #ffffff;
+        text-align: center;
+        font-size: 14px;
+        padding: 10px 16px;
+        display: none;
+    }
+
+    .site-announcement-bar.visible {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .site-announcement-bar a.anno-cta {
+        color: #93c5fd;
+        text-decoration: underline;
+        font-weight: 600;
     }
 
     .offer-title {
@@ -1280,7 +1337,7 @@
       position: sticky;
       top: 0;
       width: 100%;
-      background: linear-gradient(120deg, #1e3a8a 0%, #2563eb 50%, #1e40af 100%);
+      background: linear-gradient(120deg, #8a1e1e 0%, #eb252f 50%, #af1e1e 100%);
       box-shadow: none;
       z-index: 1000;
       border-bottom: 2px solid rgba(255, 255, 255, 0.1);
@@ -1323,6 +1380,14 @@
       gap: 12px;
     }
 
+    .nav-wrapper .logo .logo-mark {
+      height: 40px;
+      width: auto;
+      max-width: 72px;
+      object-fit: contain;
+      display: block;
+    }
+
     .nav-wrapper .mobile-menu-button {
       display: none;
       flex-shrink: 0;
@@ -1332,6 +1397,7 @@
       flex: 1;
       display: flex;
       justify-content: center;
+      position: relative;
     }
 
     .nav-wrapper .cta-btn {
@@ -1393,7 +1459,7 @@
     }
 
     .nav-item {
-      position: relative;
+      position: static;
     }
 
     .nav-link {
@@ -1437,35 +1503,65 @@
     .mega-menu {
       position: absolute;
       top: 100%;
-      left: 0;
-      background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
-      padding: 16px 20px;
-      border-radius: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ffffff;
+      padding: 32px 36px;
+      border-radius: 16px;
       display: none;
-      flex-direction: column;
-      gap: 6px;
-      min-width: 220px;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+      width: min(1040px, 92vw);
+      box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.06);
       z-index: 999;
-      margin-top: 12px;
-      border: 2px solid rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(10px);
+      margin-top: 16px;
     }
 
     .nav-item.open .mega-menu {
-      display: flex;
-      animation: slideDown 0.3s ease;
+      display: block;
+      animation: slideDownMegaMenu 0.3s ease;
     }
 
-    @keyframes slideDown {
+    @keyframes slideDownMegaMenu {
       from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateX(-50%) translateY(-10px);
       }
       to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateX(-50%) translateY(0);
       }
+    }
+
+    .mega-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 36px;
+    }
+
+    .mega-container > div h4 {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #1e3a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin: 0 0 14px 0;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #eef1f6;
+    }
+
+    .mega-container > div a {
+      display: block;
+      color: #374151;
+      font-size: 14.5px;
+      font-weight: 500;
+      text-decoration: none;
+      padding: 7px 0;
+      line-height: 1.35;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+
+    .mega-container > div a:hover {
+      color: #1e40af;
+      transform: translateX(3px);
     }
 
     .mega-menu .nav-link {
@@ -1589,16 +1685,8 @@
         animation: slideDown 0.3s ease;
       }
 
-      @keyframes slideDown {
-        from {
-          opacity: 0;
-          transform: translateY(-10px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
+      /* slideDown is defined once, earlier in this stylesheet, so it can't
+         be silently overridden by an unrelated component reusing the name. */
 
       .nav-item {
         width: 100%;
@@ -1611,21 +1699,24 @@
 
       .mega-menu {
         position: static;
-        background: rgba(255,255,255,0.1);
-        padding: 10px;
-        border-radius: 6px;
+        left: auto;
+        transform: none;
+        width: 100%;
+        background: #ffffff;
+        padding: 18px;
+        border-radius: 10px;
         box-shadow: none;
         margin-top: 8px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
         display: none;
       }
 
       .mega-menu.show {
-        display: flex;
+        display: block;
       }
 
-      .mega-menu .nav-link {
-        color: #ffffff;
+      .mega-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
       }
 
       .header-buttons {
@@ -2042,25 +2133,315 @@
         text-align: center;
         padding: 4px;
     }
+
+    /* =====================================================
+       MODERN AIRLINE HEADER — REDESIGN OVERRIDES
+       ===================================================== */
+
+    .main-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Utility top bar */
+    .main-header .top-bar {
+      background: #0b1c4d !important;
+      color: rgba(255, 255, 255, 0.82) !important;
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 48px !important;
+      font-size: 12.5px;
+      letter-spacing: 0.2px;
+    }
+
+    .main-header .top-left,
+    .main-header .top-right {
+      display: flex;
+      align-items: center;
+      gap: 22px;
+    }
+
+    .main-header .top-bar-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: inherit;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .main-header .top-bar-item svg {
+      opacity: 0.75;
+      flex-shrink: 0;
+    }
+
+    .main-header .top-bar-item:hover {
+      color: #ffffff;
+    }
+
+    .main-header .top-bar-item:hover svg {
+      opacity: 1;
+    }
+
+    .main-header .top-left > * + *,
+    .main-header .top-right > * + * {
+      padding-left: 22px;
+      border-left: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    /* Main nav bar */
+    .main-header .nav-wrapper {
+      background: rgba(255, 255, 255, 0.98) !important;
+      backdrop-filter: blur(10px) saturate(160%);
+      -webkit-backdrop-filter: blur(10px) saturate(160%);
+      max-width: 1500px;
+      margin: 0 auto;
+      padding: 0 48px !important;
+      height: 88px !important;
+      box-shadow: 0 1px 0 rgba(15, 23, 42, 0.06);
+      transition: box-shadow 0.3s ease, height 0.3s ease;
+    }
+
+    .main-header.scrolled .nav-wrapper {
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+      height: 76px !important;
+    }
+
+    .main-header .logo {
+      gap: 10px;
+    }
+
+    .main-header .logo span {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+      color: #0f1f4d;
+    }
+
+    /* Nav links */
+    .main-header .nav-link {
+      color: #1f2a44 !important;
+      text-shadow: none !important;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 10px 16px;
+    }
+
+    .main-header .nav-link::after {
+      background: #f59e0b;
+      height: 2px;
+      bottom: -1px;
+    }
+
+    .main-header .nav-link:hover {
+      color: #0f1f4d !important;
+    }
+
+    /* CTA button */
+    .main-header .cta-btn a.book-now-btn {
+      display: inline-flex !important;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+      color: #ffffff !important;
+      border: none !important;
+      padding: 13px 30px !important;
+      border-radius: 999px !important;
+      font-weight: 700 !important;
+      font-size: 15px !important;
+      box-shadow: 0 6px 16px rgba(245, 158, 11, 0.35) !important;
+    }
+
+    .main-header .cta-btn a.book-now-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(245, 158, 11, 0.45) !important;
+    }
+
+    /* Mobile menu button contrast on light header */
+    .main-header .mobile-menu-button {
+      color: #0f1f4d !important;
+    }
+
+    @media (max-width: 1024px) {
+      .main-header .top-bar {
+        padding: 8px 24px !important;
+      }
+      .main-header .nav-wrapper {
+        height: 76px !important;
+        padding: 0 24px !important;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .main-header .top-bar {
+        font-size: 11px;
+        padding: 7px 16px !important;
+      }
+      .main-header .top-left > * + *,
+      .main-header .top-right > * + * {
+        padding-left: 12px;
+      }
+      .main-header .nav-wrapper {
+        height: 70px !important;
+      }
+    }
+
+    /* =====================================================
+       WIDER, MORE GENEROUS BOOKING WIDGET
+       ===================================================== */
+
+    .booking-widget-kq-compact {
+      max-width: 1000px !important;
+      padding: 28px 32px !important;
+      border-radius: 18px !important;
+      box-shadow: 0 24px 55px rgba(15, 23, 42, 0.25), 0 0 0 1px rgba(15, 23, 42, 0.04) !important;
+    }
+
+    .form-row-compact {
+      gap: 16px !important;
+    }
+
+    .trip-type-field {
+      flex: 1 !important;
+      min-width: 160px;
+    }
+
+    /* From/To and Departure/Return now share the exact same fixed-width,
+       centered two-column layout so the rows line up underneath one
+       another without stretching to fill the card. */
+    .airport-row,
+    .date-fields-row.is-visible {
+      display:flex;
+    justify-content:stretch;
+    align-items:flex-end;
+    gap:14px;
+    }
+
+    .airport-field,
+    .date-field {
+      flex: 1;
+      width: auto;
+      min-width: 0;
+    }
+
+    /* style.css defines a legacy .airport-field rule (display: flex; align-items:
+       center;) for an older icon-inside-input search field. This booking card
+       reuses the same class name for a different, stacked label-over-dropdown
+       layout, so it needs to explicitly opt back out of that flex-row behavior. */
+    .airport-row .airport-field {
+      display: block !important;
+    }
+
+    .dropdown-btn-compact {
+      padding: 10px 14px !important;
+      border-radius: 10px !important;
+      font-size: 14px !important;
+    }
+
+    .field-label-compact {
+      font-size: 11.5px;
+      letter-spacing: 0.6px;
+    }
+
+    /* Swap button sits inline between From and To, matching the row's gap,
+       instead of floating absolutely at the row's midpoint (which assumed
+       a full-width row). */
+    .swap-btn-compact {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #f8f9fa;
+        border: 2px solid #e0e0e0;
+        color: #1e3a8a;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+    }
+
+    .search-btn-compact:hover {
+        background: #1e3a8a;
+        color: #ffffff;
+        border-color: #1e3a8a;
+    }
+
+    /* Date fields row: hidden until departure + destination are both selected */
+    .date-fields-row {
+      display: none;
+    }
+
+    .date-fields-row.is-visible {
+      display: flex;
+      animation: dateRowReveal 0.35s ease;
+    }
+
+    @keyframes dateRowReveal {
+      from {
+        opacity: 0;
+        transform: translateY(-8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 1200px) {
+      .booking-widget-kq-compact {
+        max-width: 960px !important;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .airport-field,
+      .date-field {
+        width: 340px;
+        flex: none;
+        min-width: 0;
+      }
+
+      .swap-btn-compact {
+        position: static !important;
+        transform: none;
+        margin: 0 auto;
+      }
+
+      .passengers-field,
+      .class-field {
+        flex: 1 !important;
+      }
+    }
     </style>
 </head>
 <body>
+
+<div id="siteAnnouncementBar" class="site-announcement-bar"></div>
 
 <header class="main-header">
 
   <!-- TOP BAR -->
   <div class="top-bar">
     <div class="top-left">
-      <span>EN | KE</span>
-      <span>Help</span>
+      <span class="top-bar-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+        EN | KE
+      </span>
+      <a href="/help-center.html" class="top-bar-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+        Help
+      </a>
     </div>
     <div class="top-right">
-      <span>+254 700 000 000</span>
-      <div class="login-links">
-        <a href="/members-login.html">Member</a>
-        <a href="/staff-login.html">Staff</a>
-        <a href="/admin-login.html">Admin</a>
-      </div>
+      <a href="tel:+254700000000" class="top-bar-item">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+        +254 700 000 000
+      </a>
     </div>
   </div>
 
@@ -2220,7 +2601,7 @@
               <a href="/skypriority.html">SkyPriority</a>
               <a href="/lounge-services.html">Lounge Services</a>
               <a href="/baggage-dropoff-services.html">Baggage Drop-off Services</a>
-              <a href="/kiosk-checkin.html">Kiosk Check-in</a>
+              <a href="/kiosk-check-in.html">Kiosk Check-in</a>
             </div>
             <div>
               <h4>Our Aircraft</h4>
@@ -2238,6 +2619,7 @@
           <div class="mega-container">
             <div>
               <h4>Loyalty Program</h4>
+              <a href="/members-login.html">Member Sign In</a>
               <a href="/asante-rewards.html">Asante Rewards</a>
               <a href="/join-asante.html">Join Asante</a>
               <a href="/about-asante.html">About Asante</a>
@@ -2263,7 +2645,10 @@
     </nav>
 
     <div class="cta-btn">
-      <a href="#booking-section" class="book-now-btn">Book Now</a>
+      <a href="#booking-section" class="book-now-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M21 16v-2l-8-5V3.5a1.5 1.5 0 0 0-3 0V9l-8 5v2l8-2.5V19l-2.5 1.5V22l4-1 4 1v-1.5L13 19v-5.5z"></path></svg>
+        Book Now
+      </a>
     </div>
 
   </div>
@@ -2298,24 +2683,8 @@
               <div id="form-error-banner" class="error-banner" style="display: none;">
                 <ul id="form-error-list" style="margin:0; padding:0 0 0 20px; color:#b91c1c;"></ul>
               </div>
-                    <!-- Trip Type Dropdown -->
-                    <div class="form-row-compact">
-                        <div class="field-compact trip-type-field">
-                            <label class="field-label-compact">Trip Type</label>
-                            <div class="dropdown-compact" id="tripTypeDropdown">
-                                <button type="button" class="dropdown-btn-compact">
-                                    <span class="dropdown-value">Return</span>
-                                    <span class="dropdown-arrow">▼</span>
-                                </button>
-                                <ul class="dropdown-menu-compact">
-                                    <li data-value="return">Return</li>
-                                    <li data-value="oneway">One-way</li>
-                                    <li data-value="multicity">Multi-city</li>
-                                </ul>
-                            </div>
-                            <input type="hidden" id="tripType" name="tripType" value="return">
-                        </div>
-
+                    <!-- From / To Airports — same column widths as the date row below -->
+                    <div class="form-row-compact airport-row" id="airportRow" style="position: relative;">
                         <!-- From Airport -->
                         <div class="field-compact airport-field">
                             <label class="field-label-compact">From</label>
@@ -2329,13 +2698,14 @@
                             <input type="hidden" id="fromAirport" name="fromAirport" value="">
                         </div>
 
-                        <!-- Swap Button -->
+                        <!-- Swap Button — overlaid at the seam between From/To -->
                         <button type="button" class="swap-btn-compact" id="swapBtn">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M7 16V4M7 4L3 8M7 4L11 8"></path>
                                 <path d="M17 8V20M17 20L21 16M17 20L13 16"></path>
                             </svg>
                         </button>
+                    
 
                         <!-- To Airport -->
                         <div class="field-compact airport-field">
@@ -2349,10 +2719,10 @@
                             </div>
                             <input type="hidden" id="toAirport" name="toAirport" value="">
                         </div>
-                    </div>
+                  </div>
 
                     <!-- Date Fields -->
-                    <div class="form-row-compact" style="position: relative;">
+                    <div class="form-row-compact date-fields-row" id="dateFieldsRow" style="position: relative;">
                         <div class="field-compact date-field">
                             <label class="field-label-compact">Departure</label>
                             <div class="dropdown-compact" id="departDateDropdown">
@@ -2392,8 +2762,24 @@
                         </div>
                     </div>
 
-                    <!-- Passengers and Class -->
+                    <!-- Trip Type, Passengers and Class -->
                     <div class="form-row-compact">
+                        <div class="field-compact trip-type-field">
+                            <label class="field-label-compact">Trip Type</label>
+                            <div class="dropdown-compact" id="tripTypeDropdown">
+                                <button type="button" class="dropdown-btn-compact">
+                                    <span class="dropdown-value">Return</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </button>
+                                <ul class="dropdown-menu-compact">
+                                    <li data-value="return">Return</li>
+                                    <li data-value="oneway">One-way</li>
+                                    <li data-value="multicity">Multi-city</li>
+                                </ul>
+                            </div>
+                            <input type="hidden" id="tripType" name="tripType" value="return">
+                        </div>
+
                         <div class="field-compact passengers-field">
                             <label class="field-label-compact">Passengers</label>
                             <div class="dropdown-compact" id="passengersDropdown">
@@ -2457,6 +2843,98 @@
             </div>
         </div>
     </section>
+
+    <!-- Quick Links Row -->
+    <style>
+        .quick-links-kq {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .quick-links-grid-kq {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-top: -30px;
+            margin-bottom: 40px;
+        }
+
+        .quick-link-card-kq {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px 22px;
+            text-decoration: none;
+            box-shadow: 0 4px 16px rgba(30, 58, 138, 0.08);
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .quick-link-card-kq:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(30, 58, 138, 0.15);
+            border-color: #2563eb;
+        }
+
+        .quick-link-icon-kq {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: #eff4ff;
+            border: 1px solid #dbe6fe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #1e40af;
+        }
+
+        .quick-link-label-kq {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        @media (max-width: 900px) {
+            .quick-links-grid-kq {
+                grid-template-columns: repeat(2, 1fr);
+                margin-top: 16px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .quick-links-grid-kq {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <div class="quick-links-kq">
+        <div class="quick-links-grid-kq">
+            <a href="/check-in.html" class="quick-link-card-kq">
+                <span class="quick-link-icon-kq"><i class="fa-solid fa-ticket"></i></span>
+                <span class="quick-link-label-kq">Check-in</span>
+            </a>
+            <a href="/book-manage.html" class="quick-link-card-kq">
+                <span class="quick-link-icon-kq"><i class="fa-solid fa-mobile-screen"></i></span>
+                <span class="quick-link-label-kq">Manage Booking</span>
+            </a>
+            <a href="/flight-schedule.html" class="quick-link-card-kq">
+                <span class="quick-link-icon-kq"><i class="fa-solid fa-calendar-days"></i></span>
+                <span class="quick-link-label-kq">Flight Schedule</span>
+            </a>
+            <a href="/flight-status.html" class="quick-link-card-kq">
+                <span class="quick-link-icon-kq"><i class="fa-solid fa-clock"></i></span>
+                <span class="quick-link-label-kq">Flight Status</span>
+            </a>
+        </div>
+    </div>
 
     <!-- Content Section -->
     <div class="container">
@@ -2555,11 +3033,9 @@
         </section>
 
         <!-- Special Offers Banner -->
-        <section class="offers-banner">
-            <div class="offer-content">
-                <h2 class="offer-title">Special Offer: 20% Off Business Class</h2>
-                <p class="offer-desc">Book Business Class flights to any destination and enjoy luxury at a fraction of the price. Use code: FLYSMART20</p>
-                <button class="offer-btn">Book Now</button>
+        <section class="offers-banner" id="offersBanner" hidden>
+            <div class="offer-content" id="offerContent">
+                <!-- Populated dynamically from /api/announcements?type=offer -->
             </div>
         </section>
 
@@ -2647,7 +3123,7 @@
                     <h4 class="footer-heading-kq">Manage</h4>
                     <ul class="footer-links-kq">
                         <li><a href="/change-booking.html">Change Booking</a></li>
-                        <li><a href="/checkin.html">Check-in</a></li>
+                        <li><a href="/check-in.html">Check-in</a></li>
                         <li><a href="/refund.html">Refund Form</a></li>
                         <li><a href="/upgrade.html">Upgrade Flight</a></li>
                         <li><a href="/delays.html">Delay and Cancellations</a></li>
@@ -2808,16 +3284,18 @@
           return prices;
         }
 
-        function generateCalendar(containerId, calendarMonth, isReturnCalendar = false) {
+        function generateLegacyDualCalendar(containerId, calendarMonth, isReturnCalendar = false) {
           const container = document.getElementById(containerId);
           container.innerHTML = "";
           
           const today = new Date();
           today.setHours(0, 0, 0, 0);
           
-          // Get airport codes from input values
-          const fromCode = fromInput.value ? fromInput.value.split(',')[0].trim().toUpperCase() : 'NBO';
-          const toCode = toInput.value ? toInput.value.split(',')[0].trim().toUpperCase() : 'LHR';
+          // Get airport codes from the hidden inputs the airport dropdowns populate
+          const fromAirportInput = document.getElementById('fromAirport');
+          const toAirportInput = document.getElementById('toAirport');
+          const fromCode = fromAirportInput && fromAirportInput.value ? fromAirportInput.value.split(',')[0].trim().toUpperCase() : 'NBO';
+          const toCode = toAirportInput && toAirportInput.value ? toAirportInput.value.split(',')[0].trim().toUpperCase() : 'LHR';
           
           // Get first day of the month and total days
           const firstDay = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1);
@@ -2939,7 +3417,26 @@
                     console.log('Return date clicked');
                 });
             }
+
+            // In case the browser restores a previously-filled form (back/forward
+            // navigation), make sure the date row reflects that immediately.
+            syncDateFieldsVisibility();
         });
+
+        // Reveal Departure/Return date fields only once From + To airports are chosen.
+        // Called directly from script.js (updateAirportOptionAvailability) right
+        // after an airport is picked or the From/To fields are swapped, so the
+        // date row appears instantly rather than on a polling delay.
+        function syncDateFieldsVisibility() {
+            const fromInput = document.getElementById('fromAirport');
+            const toInput = document.getElementById('toAirport');
+            const dateRow = document.getElementById('dateFieldsRow');
+
+            if (!fromInput || !toInput || !dateRow) return;
+
+            const ready = fromInput.value.trim() !== '' && toInput.value.trim() !== '';
+            dateRow.classList.toggle('is-visible', ready);
+        }
 
         // Generate calendars for current month and next month using real-time dates
         const today = new Date();
@@ -2968,8 +3465,8 @@
             if (monthLeftEl) monthLeftEl.textContent = departLabel;
             if (monthRightEl) monthRightEl.textContent = returnLabel;
             
-            generateCalendar("calendarLeft", departureMonth, false); // Departure calendar
-            generateCalendar("calendarRight", returnMonth, true);    // Return calendar
+            if (document.getElementById('calendarLeft')) generateLegacyDualCalendar("calendarLeft", departureMonth, false); // Departure calendar
+            if (document.getElementById('calendarRight')) generateLegacyDualCalendar("calendarRight", returnMonth, true);    // Return calendar
         }
         
         // Month navigation handlers
@@ -2996,7 +3493,7 @@
         updateCalendars();
         
         // Done button functionality (removed - using new KQ style)
-    })();
+    
 
     // ============================================
     // MOBILE MENU TOGGLE
@@ -3068,7 +3565,7 @@
     // ============================================
     // HEADER SCROLL SHADOW
     // ============================================
-    const header = document.querySelector('.header');
+    const header = document.querySelector('.main-header');
     
     window.addEventListener('scroll', () => {
       if (window.scrollY > 10) {
@@ -3114,42 +3611,70 @@
     // ============================================
     // MEGA MENU CLICK TOGGLE (DESKTOP & MOBILE)
     // ============================================
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-      const trigger = item.querySelector('a');
-      const menu = item.querySelector('.mega-menu');
-      if (!trigger || !menu) return;
+    // Note: This functionality is now handled in script.js to avoid conflicts
+    // (having a second click handler here caused every click to open the
+    // menu and then immediately close it again).
+    </script>
 
-      trigger.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // Close all other menus
-        navItems.forEach(other => {
-          if (other !== item) {
-            other.classList.remove('open');
-            other.classList.remove('show');
-          }
-        });
-        
-        // Toggle current menu (works for both desktop and mobile)
-        if (window.innerWidth <= 768) {
-          menu.classList.toggle('show');
-        } else {
-          item.classList.toggle('open');
+    <!-- Live Announcements & Offers -->
+    <script>
+      (function() {
+        function escapeHtml(str) {
+          const div = document.createElement('div');
+          div.textContent = str || '';
+          return div.innerHTML;
         }
-      });
-    });
 
-    document.addEventListener('click', () => {
-      navItems.forEach(item => item.classList.remove('open'));
-    });
+        function renderAnnouncementBar(items) {
+          const bar = document.getElementById('siteAnnouncementBar');
+          if (!bar) return;
+          if (!items.length) {
+            bar.classList.remove('visible');
+            bar.innerHTML = '';
+            return;
+          }
+          const item = items[0];
+          bar.innerHTML = `<span>📢 <strong>${escapeHtml(item.title)}</strong> — ${escapeHtml(item.message)}</span>` +
+            (item.cta_url ? `<a class="anno-cta" href="${escapeHtml(item.cta_url)}">${escapeHtml(item.cta_label || 'Learn more')}</a>` : '');
+          bar.classList.add('visible');
+        }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        navItems.forEach(item => item.classList.remove('open'));
-      }
-    });
+        function renderOfferBanner(items) {
+          const section = document.getElementById('offersBanner');
+          const content = document.getElementById('offerContent');
+          if (!section || !content) return;
+          if (!items.length) {
+            section.hidden = true;
+            return;
+          }
+          const offer = items[0];
+          content.innerHTML = `
+            <h2 class="offer-title">${escapeHtml(offer.title)}</h2>
+            <p class="offer-desc">${escapeHtml(offer.message)}${offer.code ? ` Use code: ${escapeHtml(offer.code)}` : ''}</p>
+            ${offer.cta_url
+              ? `<a class="offer-btn" href="${escapeHtml(offer.cta_url)}">${escapeHtml(offer.cta_label || 'Book Now')}</a>`
+              : `<button class="offer-btn">${escapeHtml(offer.cta_label || 'Book Now')}</button>`}
+          `;
+          section.hidden = false;
+        }
+
+        async function loadAnnouncementsAndOffers() {
+          try {
+            const [annoRes, offerRes] = await Promise.all([
+              fetch('/api/announcements?type=announcement'),
+              fetch('/api/announcements?type=offer')
+            ]);
+            const annoData = annoRes.ok ? await annoRes.json() : { announcements: [] };
+            const offerData = offerRes.ok ? await offerRes.json() : { announcements: [] };
+            renderAnnouncementBar(annoData.announcements || []);
+            renderOfferBanner(offerData.announcements || []);
+          } catch (err) {
+            console.error('Error loading announcements/offers:', err);
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadAnnouncementsAndOffers);
+      })();
     </script>
 </body>
 </html>

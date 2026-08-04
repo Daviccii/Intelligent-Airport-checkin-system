@@ -376,7 +376,7 @@
                 <a href="/book.html" class="nav-link">Bookings</a>
                 <a href="/lookup.html" class="nav-link active">My Booking</a>
                 <a href="/book-manage.html" class="nav-link">Manage</a>
-                <a href="/checkin.html" class="nav-link">Check-in</a>
+                <a href="/checkin-online.html" class="nav-link">Check-in</a>
                 <a href="/help.html" class="nav-link">Help</a>
             </nav>
             <div class="header-actions">
@@ -515,7 +515,7 @@
         <div class="card" style="margin-top:24px">
           <h3><i class="fas fa-link"></i> Quick Links</h3>
           <div class="quick-actions">
-            <a href="/checkin.html" class="quick-action-btn">
+            <a href="/checkin-online.html" class="quick-action-btn">
               <i class="fas fa-check-circle"></i>
               <div>Check-In</div>
             </a>
@@ -736,15 +736,15 @@
   </main>
 
   <footer style="padding:60px 20px 40px; background:linear-gradient(135deg, #0a2463 0%, #667eea 100%); color:white; text-align:center; margin-top:80px; position:relative; overflow:hidden;">
-    <div style="position:absolute; top:0; left:0; right:0; bottom:0; background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M50 10 L60 40 L50 70 L40 40 Z" fill="rgba(255,255,255,0.03)"/></svg>') repeat; opacity:0.5;"></div>
-    <div style={{position: "relative", zIndex: 1, maxWidth: "1200px", margin: "0 auto"}}>
+    <div style="position:absolute; top:0; left:0; right:0; bottom:0; background: url('data:image/svg+xml,%3Csvg%20width%3D%22100%22%20height%3D%22100%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cpath%20d%3D%22M50%2010%20L60%2040%20L50%2070%20L40%2040%20Z%22%20fill%3D%22rgba(255%2C255%2C255%2C0.03)%22%2F%3E%3C%2Fsvg%3E') repeat; opacity:0.5;"></div>
+    <div style="position:relative; z-index:1; max-width:1200px; margin:0 auto;">
       <div style="font-size:32px; margin-bottom:16px;">✈️</div>
       <h3 style="margin:0 0 12px; font-size:24px; font-weight:700;">SmartFly Airways</h3>
       <p style="margin:0 0 24px; opacity:0.9; font-size:16px;">Your journey, simplified. Fly smart, arrive happy.</p>
       <div style="display:flex; gap:20px; justify-content:center; margin-bottom:32px; flex-wrap:wrap;">
         <a href="/" style="color:white; text-decoration:none; opacity:0.8; transition:opacity 0.3s;">Home</a>
         <a href="/flights-booking.html" style="color:white; text-decoration:none; opacity:0.8; transition:opacity 0.3s;">Book Flights</a>
-        <a href="/checkin.html" style="color:white; text-decoration:none; opacity:0.8; transition:opacity 0.3s;">Check-In</a>
+        <a href="/checkin-online.html" style="color:white; text-decoration:none; opacity:0.8; transition:opacity 0.3s;">Check-In</a>
         <a href="/help.html" style="color:white; text-decoration:none; opacity:0.8; transition:opacity 0.3s;">Help Center</a>
         <a href="/contact.html" style="color:white; text-decoration:none; opacity:0.8; transition:opacity 0.3s;">Contact</a>
       </div>
@@ -787,7 +787,7 @@
 
         <div id="baggageStep" hidden aria-hidden="true">
           <label>Baggage</label>
-          <input type="number" id="baggageCount" min="0" value="0">
+          <input type="number" id="baggageCount" min="0" max="10" value="0">
           <div class="muted" id="baggageFee">Fee: $0</div>
           <div style="margin-top:12px;display:flex;gap:8px"><button id="toConfirm" class="primary">Continue to confirm</button><button id="baggageBack" style="padding:10px;border-radius:8px">Back</button></div>
         </div>
@@ -890,8 +890,15 @@
           console.log('Lookup method:', method);
           
           if (method === 'pnr'){
-            const pnr = document.getElementById('pnr').value.trim();
+            const pnr = document.getElementById('pnr').value.trim().toUpperCase();
             if (!pnr){ message.innerHTML = '<p class="error">Please enter a PNR.</p>'; return; }
+            // Accept either a 6-character booking reference (e.g. ABC123)
+            // or a BK-YYYY-NNNNN reference, matching the two formats shown in the placeholder
+            const pnrPattern = /^([A-Z0-9]{6}|BK-\d{4}-\d{5})$/;
+            if (!pnrPattern.test(pnr)){
+              message.innerHTML = '<p class="error">Enter a valid booking reference (e.g., ABC123 or BK-2024-00001).</p>';
+              return;
+            }
             
             // First try booking lookup API
             try {
@@ -919,6 +926,16 @@
             console.log('Searching by email:', email);
             
             if (!email){ message.innerHTML = '<p class="error">Please enter your email address.</p>'; return; }
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)){
+              message.innerHTML = '<p class="error">Enter a valid email address.</p>';
+              return;
+            }
+            const namePattern = /^[a-z][a-z '-]{0,49}$/i;
+            if (name && !namePattern.test(name)){
+              message.innerHTML = '<p class="error">Name can only contain letters, spaces, hyphens, and apostrophes.</p>';
+              return;
+            }
             
             // Try email/name-based search API
             try {
@@ -977,6 +994,8 @@
           const user = document.getElementById('adminUser').value.trim();
           const pass = document.getElementById('adminPass').value;
           if (!user || !pass){ message.innerHTML = '<p class="error">Enter username and password.</p>'; return; }
+          if (user.length < 3){ message.innerHTML = '<p class="error">Username must be at least 3 characters.</p>'; return; }
+          if (pass.length < 8){ message.innerHTML = '<p class="error">Password must be at least 8 characters.</p>'; return; }
           try {
             const data = await postJson('/api/admin/login', { username: user, password: pass });
             if (data.token){ localStorage.setItem('session', data.token); document.cookie = `session=${data.token};path=/`; }
@@ -1167,8 +1186,9 @@
     }
 
     function calcBaggageFee(count){
-      const n = parseInt(count||0);
+      let n = parseInt(count||0);
       if (isNaN(n) || n <= 1) return 0;
+      if (n > 10) n = 10;
       return 50 * (n-1);
     }
 
